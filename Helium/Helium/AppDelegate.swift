@@ -126,6 +126,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NotificationCenter.default.post(name: Notification.Name(rawValue: keyPath), object: nil)
     }
     
+    @IBAction func openFilePress(_ sender: AnyObject) {
+        let open = NSOpenPanel()
+        open.allowsMultipleSelection = false
+        open.canChooseFiles = true
+        open.canChooseDirectories = false
+        
+        if open.runModal() == NSModalResponseOK {
+            if let url = open.url {
+                if let panel = NSApp.keyWindow as? HeliumPanel {
+                    if let hpc = panel.windowController as? HeliumPanelController {
+                        hpc.webViewController.loadURL(url: url)
+                    }
+                }
+            }
+        }
+    }
+    
     @IBAction func openLocationPress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserUrlStrings (
             currentURL: UserSettings.homePageURL.value,
@@ -135,7 +152,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
                           acceptHandler: { (newUrl: String) in
-                            UserSettings.homePageURL.value = newUrl
+                            if let panel = NSApp.keyWindow as? HeliumPanel {
+                                if let hpc = panel.windowController as? HeliumPanelController {
+                                    hpc.webViewController.loadURL(text: newUrl)
+                                }
+                            }
         }
         )
     }
@@ -145,6 +166,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.opacityPercentage.keyPath), object: nil)
     }
     
+	@IBAction func performClose(_ sender: Any) {
+        if let window = NSApp.keyWindow {
+            window.standardWindowButton(NSWindowButton.closeButton)!.isHidden = false
+            window.performClose(sender)
+        }
+	}
+	
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         UserSettings.translucencyPreference.value = AppDelegate.TranslucencyPreference(rawValue: sender.tag)!.rawValue
         translucencyPreference = AppDelegate.TranslucencyPreference(rawValue: UserSettings.translucencyPreference.value)! 
@@ -246,9 +274,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
             UserSettings.HistoryName.value = historyName as! String
         }
-        
-        // No close box for our 1st window
-        NSApp.keyWindow?.standardWindowButton(NSWindowButton.closeButton)!.isHidden = true
         
         // Load histories from defaults
         if let items = defaults.array(forKey: UserSettings.HistoryList.keyPath) {
