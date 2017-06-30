@@ -300,6 +300,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }()
     
     @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
+        playlistViewController.webViewController = self
         self.presentViewControllerAsSheet(playlistViewController)
     }
 
@@ -377,11 +378,12 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
         if let pageTitle = webView.title {
+            let hpc = self.view.window?.windowController as! HeliumPanelController
             var title = pageTitle;
             if title.isEmpty { title = UserSettings.windowTitle.default }
-            let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"), object: title);
+            let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
+                                     object: title, userInfo: ["hpc":hpc]);
             NotificationCenter.default.post(notif)
-            UserSettings.windowTitle.value = title
         }
     }
     
@@ -428,11 +430,16 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                     } else {
                         title = "Helium"
                     }
-                    UserSettings.windowTitle.value = title as String
                  }
 
-                let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"), object: title);
-                NotificationCenter.default.post(notif)
+                if let hpc = self.view.window?.windowController as? HeliumPanelController {
+                    let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
+                                             object: title, userInfo: ["hpc":hpc]);
+                    NotificationCenter.default.post(notif)
+ 
+                } else {
+                    self.view.window?.title = title as String
+                }
             }
         }
     }
