@@ -99,7 +99,6 @@ class AboutBoxController : NSViewController {
     static let maxStates: Int = 3
 
     override func viewWillAppear() {
-        print("viewWillAppear")
         let theWindow = appNameField.window
 
         //	We no need no sticking title!
@@ -133,8 +132,6 @@ class AboutBoxController : NSViewController {
     }
     
     override func viewDidLoad() {
-        print("viewDidLoad")
-        
         //	Initially don't show history
         toggleButton.state = NSOffState
  
