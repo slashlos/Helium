@@ -27,12 +27,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         shouldCascadeWindows = true
     }
 
+    var appSettings: UserSettings = UserSettings()
+
     // MARK: Window lifecycle
+    fileprivate var lastTitle : String = "Helium"
     fileprivate var lastStyle : Int = 0
     override func windowDidLoad() {
         panel.isFloatingPanel = true
         lastStyle = Int(panel.styleMask.rawValue)
-
+        
+        // Close button is loaded but hidden so we can close later
+        panel.standardWindowButton(NSWindowButton.closeButton)!.isHidden = true
+        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(HeliumPanelController.didBecomeActive),
@@ -48,39 +54,44 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             selector: #selector(HeliumPanelController.didUpdateTitle(_:)),
             name: NSNotification.Name(rawValue: "HeliumUpdateTitle"),
             object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.doPlaylistItem(_:)),
-            name: NSNotification.Name(rawValue: "HeliumPlaylistItem"),
-            object: nil)
 
         // MARK: Load settings from UserSettings
 
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(HeliumPanelController.setFloatOverFullScreenApps),
-            name: NSNotification.Name(rawValue: UserSettings.disabledFullScreenFloat.keyPath),
+            name: NSNotification.Name(rawValue: PanelSettings.disabledFullScreenFloat.keyPath),
             object:nil)
         setFloatOverFullScreenApps()
 
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(HeliumPanelController.willUpdateTitleBar),
-            name: NSNotification.Name(rawValue: UserSettings.autoHideTitle.keyPath),
+            name: NSNotification.Name(rawValue: PanelSettings.autoHideTitle.keyPath),
             object:nil)
         willUpdateTitleBar()
 
         NotificationCenter.default.addObserver(
             self,
+            selector: #selector(HeliumPanelController.didUpdateStyle(_:)),
+            name: NSNotification.Name(rawValue: PanelSettings.windowStyle.keyPath),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(HeliumPanelController.didUpdateTitle(_:)),
+            name: NSNotification.Name(rawValue: PanelSettings.windowTitle.keyPath),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
             selector: #selector(HeliumPanelController.willUpdateTranslucency),
-            name: NSNotification.Name(rawValue: UserSettings.translucencyPreference.keyPath),
+            name: NSNotification.Name(rawValue: PanelSettings.translucencyPreference.keyPath),
             object:nil)
         willUpdateTranslucency()
 
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(HeliumPanelController.willUpdateAlpha),
-            name: NSNotification.Name(rawValue: UserSettings.opacityPercentage.keyPath),
+            name: NSNotification.Name(rawValue: PanelSettings.opacityPercentage.keyPath),
             object:nil)
        willUpdateAlpha()
 
@@ -100,7 +111,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             panel.styleMask = NSWindowStyleMask(rawValue: UInt(lastStyle))
             
             let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
-                                     object: UserSettings.windowTitle.value);
+                                     object: lastTitle, userInfo: ["hpc":self])
             NotificationCenter.default.post(notif)
         }
     }
@@ -266,7 +277,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         
         let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
-                                 object: UserSettings.windowTitle.value);
+                                 object: lastTitle, userInfo: ["hpc":self]);
         NotificationCenter.default.post(notif)
     }
     
@@ -278,9 +289,22 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
 
+    @objc fileprivate func didUpdateStyle(_ notification: Notification) {
+        let hpc = notification.userInfo?["hpc"] as? HeliumPanelController
+        if let style = notification.object as? Int {
+            if hpc == self {
+                lastStyle = style
+            }
+        }
+    }
+    
     @objc fileprivate func didUpdateTitle(_ notification: Notification) {
+        let hpc = notification.userInfo?["hpc"] as? HeliumPanelController
         if let title = notification.object as? String {
-            panel.title = title
+            if hpc == self {
+                lastTitle = title
+                panel.title = title
+            }
         }
     }
     

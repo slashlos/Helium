@@ -56,12 +56,34 @@ class PlayList: NSObject {
 
 class Document : NSDocument {
 
-    var playlists: [PlayList]
+    var playlists: Dictionary<String, Any>
     
     override init() {
         // Add your subclass-specific initialization here.
 
-        playlists = [PlayList]()
+        playlists = Dictionary<String, Any>()
+        if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.keyPath) {
+            
+            for playlist in playArray {
+                let play = playlist as! Dictionary<String,AnyObject>
+                let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                var list : [PlayItem] = [PlayItem]()
+                for playitem in items {
+                    let item = playitem as Dictionary <String,AnyObject>
+                    let name = item[k.name] as! String
+                    let path = item[k.link] as! String
+                    let time = item[k.time] as? TimeInterval
+                    let link = URL.init(string: path)
+                    let rank = item[k.rank] as! Int
+                    let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                    list.append(temp)
+                }
+                let name = play[k.name] as? String
+                
+                playlists[name!] = list
+            }
+        }
+
         super.init()
     }
     
@@ -79,7 +101,9 @@ class Document : NSDocument {
     }
     
     override func data(ofType typeName: String) throws -> Data {
-        let data = NSKeyedArchiver.archivedData(withRootObject: playlists)
+        let data = try PropertyListSerialization.data(fromPropertyList: playlists, format: PropertyListSerialization.PropertyListFormat.xml, options: 0)
+
+        //let data = PropertyListSerialization.data(fromPropertyList: playlists, format: xmlFormat_v1_0, options: 0)
         if data.count > 0 {
             return data
         }
@@ -90,7 +114,7 @@ class Document : NSDocument {
     }
     
     override func read(from data: Data, ofType typeName: String) throws {
-        let list = NSKeyedUnarchiver.unarchiveObject(with: data) as! [PlayList]
+        let list = try! PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
         if list.count > 0 {
             playlists = list
         }
@@ -109,5 +133,5 @@ class Document : NSDocument {
         
         throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
     }
-
+    
 }
