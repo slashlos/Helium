@@ -100,6 +100,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         playlistTableView.register(forDraggedTypes: types)
         playitemTableView.register(forDraggedTypes: types)
 
+        playitemTableView.doubleAction = #selector(playPlaylist(_:))
         self.restorePlaylists(restoreButton)
     }
 
@@ -180,15 +181,24 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
+    // Our playlist panel return point if any
+    var webViewController: WebViewController? = nil
+    
     @IBAction func playPlaylist(_ sender: AnyObject) {
         if let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
-            let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair
             super.dismiss(sender)
 
-            Swift.print("play \(selectedPlayItem.name) from \(String(describing: selectedPlaylist?.key!))")
-
-            let notif = Notification(name: Notification.Name(rawValue: "HeliumPlaylistItem"), object: selectedPlayItem.link);
-            NotificationCenter.default.post(notif)
+            if (webViewController != nil) {
+                webViewController?.loadURL(url: selectedPlayItem.link)
+            }
+            else
+            {
+                if let first = NSApp.windows.first {
+                    if let hpc = first.windowController as? HeliumPanelController {
+                        hpc.webViewController.loadURL(url: selectedPlayItem.link)
+                    }
+                }
+             }
         }
         else
         if let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
