@@ -33,27 +33,6 @@ class PlayItem : NSObject {
     }
 }
 
-class PlayList: NSObject {
-    var name : String = k.list
-    var list : Array <PlayItem> = Array()
-    
-    override init() {
-        name = k.list
-        list = Array <PlayItem> ()
-        super.init()
-    }
-    
-    init(name:String, list:Array <PlayItem>) {
-        self.name = name
-        self.list = list
-        super.init()
-    }
-    
-    func listCount() -> Int {
-        return list.count
-    }
-}
-
 class Document : NSDocument {
 
     var playlists: Dictionary<String, Any>
@@ -102,36 +81,62 @@ class Document : NSDocument {
     
     override func data(ofType typeName: String) throws -> Data {
         let data = try PropertyListSerialization.data(fromPropertyList: playlists, format: PropertyListSerialization.PropertyListFormat.xml, options: 0)
-
-        //let data = PropertyListSerialization.data(fromPropertyList: playlists, format: xmlFormat_v1_0, options: 0)
         if data.count > 0 {
             return data
         }
 
-        // Insert code here to write your document to data of the specified type. If outError != nil, ensure that you create and set an appropriate error when returning nil.
-        // You can also choose to override fileWrapperOfType:error:, writeToURL:ofType:error:, or writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
         throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
     }
     
     override func read(from data: Data, ofType typeName: String) throws {
-        let list = try! PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
-        if list.count > 0 {
-            playlists = list
-        }
+        switch typeName {
+        case "internal":
+            let list = try! PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
+            if list.count > 0 {
+                Swift.print(String(format: "read %lu items", list.count))
+                //playlists = list
+            }
 
-        // Insert code here to read your document from the given data of the specified type. If outError != nil, ensure that you create and set an appropriate error when returning false.
-        // You can also choose to override readFromFileWrapper:ofType:error: or readFromURL:ofType:error: instead.
-        // If you override either of these, you should also override -isEntireFileLoaded to return false if the contents are lazily loaded.
-        throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        default:
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        }
     }
 
-    override func read(from url: URL, ofType typeName: String) throws {
-        let data = try Data.init(contentsOf: url)
-        do {
-            try! self.read(from: data, ofType: typeName)
-        }
+    convenience init(contentsOf: URL, ofType: String) throws {
+        self.init()
         
-        throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        switch ofType {
+        case "internal":
+            self.fileURL = contentsOf
+            self.fileType = ofType
+            break
+            
+        default:
+            Swift.print("nyi")
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        }
+   }
+    
+    override func read(from url: URL, ofType typeName: String) throws {
+        switch typeName {
+        case "internal":
+            self.fileURL = url
+            self.fileType = typeName
+            break
+
+        case "h2o":
+            let data = try Data.init(contentsOf: url)
+            do {
+                try! self.read(from: data, ofType: typeName)
+                self.fileURL = url as URL
+                self.fileType = typeName
+            }
+            break
+            
+        default:
+            Swift.print("nyi \(typeName)")
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        }
     }
     
 }
