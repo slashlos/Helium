@@ -16,54 +16,8 @@ extension NSPoint {
     }
 }
 
-internal struct PanelSettings {
-    internal class Setup<T> {
-        private let key: String
-        private var setting: T
-        
-        init(_ userDefaultsKey: String, value: T) {
-            self.key = userDefaultsKey
-            self.setting = value
-        }
-        
-        var keyPath: String {
-            get {
-                return self.key
-            }
-        }
-        var `default`: T {
-            get {
-                if let value = UserDefaults.standard.object(forKey: self.key) as? T {
-                    return value
-                } else {
-                    // Sets existing setting if failed
-                    return self.setting
-                }
-            }
-        }
-        var value: T {
-            get {
-                return self.setting
-            }
-            set (value) {
-                self.setting = value
-                //  Inform all interested parties for this panel's controller only only
-                NotificationCenter.default.post(name: Notification.Name(rawValue: self.keyPath), object: nil)
-            }
-        }
-    }
-    
-    static let autoHideTitle = Setup<Bool>("rawAutoHideTitle", value: false)
-    static let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
-    static let windowTitle = Setup<String>("windowTitle", value: "Helium")
-    static let windowStyle = Setup<Int>("windowStyle", value: 0)
-    static let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
-    
-    // See values in HeliumPanelController.TranslucencyPreference
-    static let translucencyPreference = Setup<Int>("rawTranslucencyPreference", value: 0)
-}
-
 class HeliumPanel: NSPanel {
+    
     override var canBecomeKey: Bool {
         return true
     }

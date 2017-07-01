@@ -74,7 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case mouseOutside = 3
     }
     
-    //  MARK:- Global IBAction
+    //  MARK:- Global IBAction, but ship to keyWindow when able
     @IBOutlet weak var appMenu: NSMenu!
     @IBOutlet weak var appItem: NSMenuItem!
 	var appStatusItem:NSStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
@@ -175,7 +175,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         UserSettings.translucencyPreference.value = AppDelegate.TranslucencyPreference(rawValue: sender.tag)!.rawValue
-        translucencyPreference = AppDelegate.TranslucencyPreference(rawValue: UserSettings.translucencyPreference.value)! 
+        translucencyPreference = AppDelegate.TranslucencyPreference(rawValue: UserSettings.translucencyPreference.value)!
         NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.translucencyPreference.keyPath), object: nil)
     }
 
@@ -188,20 +188,60 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case "Preferences":
             break
         case "Auto-hide Title Bar":
-            menuItem.state = UserSettings.autoHideTitle.value ? NSOnState : NSOffState
+            if let hwc = NSApp.keyWindow?.windowController {
+                menuItem.state = (hwc as! HeliumPanelController).settings.autoHideTitle.value ? NSOnState : NSOffState
+                menuItem.target = hwc
+            }
+            else
+            {
+                menuItem.state = UserSettings.autoHideTitle.value ? NSOnState : NSOffState
+                menuItem.target = self
+            }
             break
         //Transluceny Menu
         case "Never":
-            menuItem.state = translucencyPreference == .never ? NSOnState : NSOffState
+            if let hwc = NSApp.keyWindow?.windowController {
+                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .never ? NSOnState : NSOffState
+                menuItem.target = hwc
+            }
+            else
+            {
+                menuItem.state = translucencyPreference == .never ? NSOnState : NSOffState
+                menuItem.target = self
+            }
             break
         case "Always":
-            menuItem.state = translucencyPreference == .always ? NSOnState : NSOffState
+            if let hwc = NSApp.keyWindow?.windowController {
+                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .always ? NSOnState : NSOffState
+                menuItem.target = hwc
+            }
+            else
+            {
+                menuItem.state = translucencyPreference == .always ? NSOnState : NSOffState
+                menuItem.target = self
+            }
             break
         case "Mouse Over":
-            menuItem.state = translucencyPreference == .mouseOver ? NSOnState : NSOffState
+            if let hwc = NSApp.keyWindow?.windowController {
+                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .mouseOver ? NSOnState : NSOffState
+                menuItem.target = hwc
+            }
+            else
+            {
+                menuItem.state = translucencyPreference == .mouseOver ? NSOnState : NSOffState
+                menuItem.target = self
+            }
             break
         case "Mouse Outside":
-            menuItem.state = translucencyPreference == .mouseOutside ? NSOnState : NSOffState
+            if let hwc = NSApp.keyWindow?.windowController {
+                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .mouseOutside ? NSOnState : NSOffState
+                menuItem.target = hwc
+            }
+            else
+            {
+                menuItem.state = translucencyPreference == .mouseOutside ? NSOnState : NSOffState
+                menuItem.target = self
+            }
             break
         case "Float Above All Spaces":
             menuItem.state = UserSettings.disabledFullScreenFloat.value ? NSOffState : NSOnState
@@ -220,17 +260,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         default:
             // Opacity menu item have opacity as tag value
             if menuItem.tag >= 10 {
-                menuItem.state = (menuItem.tag == UserSettings.opacityPercentage.value ? NSOnState : NSOffState)
+                if let hwc = NSApp.keyWindow?.windowController {
+                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? NSOnState : NSOffState)
+                    menuItem.target = hwc
+                }
+                else
+                {
+                    menuItem.state = (menuItem.tag == UserSettings.opacityPercentage.value ? NSOnState : NSOffState)
+                    menuItem.target = self
+                }
             }
             break
         }
+        print("val.\(menuItem.title) -> \(menuItem.state)")
         return true;
     }
 
     //  MARK:- Lifecyle
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        return false
+        return true
     }
 
     let toHMS = hmsTransformer()
