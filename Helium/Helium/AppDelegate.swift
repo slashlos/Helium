@@ -272,8 +272,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             break
         }
-        print("val.\(menuItem.title) -> \(menuItem.state)")
-        return true;
+         return true;
     }
 
     //  MARK:- Lifecyle
