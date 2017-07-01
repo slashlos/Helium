@@ -136,9 +136,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     override func mouseEntered(with theEvent: NSEvent) {
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)
-            print("mouse up")
         }
-print("mouse in")
         mouseOver = true
         updateTranslucency()
         willUpdateTitleBar()
@@ -146,7 +144,6 @@ print("mouse in")
     
     override func mouseExited(with theEvent: NSEvent) {
         mouseOver = false
-print("mouse out")
         updateTranslucency()
         willUpdateTitleBar()
     }
@@ -228,14 +225,11 @@ print("mouse out")
     
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
-        print("hwc.opacity -> \(sender.tag)")
     }
 
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         translucencyPreference = settings.translucencyPreference.value
-        print("hwc.translucency -> \(sender.tag)")
-
     }
 
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
