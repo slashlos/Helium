@@ -64,7 +64,7 @@ class AboutBoxController : NSViewController {
             AboutBoxController.creditsState = 0
         }
 
-        let credits = ["README", "Credits", "LICENSE"];
+        let credits = ["README", "History", "LICENSE"];
         
         //	Setup our credits; if sender is nil, give 'em long history
         let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
