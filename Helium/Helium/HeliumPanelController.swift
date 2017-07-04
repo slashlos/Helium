@@ -8,57 +8,8 @@
 
 import AppKit
 
-internal struct Settings {
-    internal class Setup<T> {
-        private let key: String
-        private var setting: T
-        
-        init(_ userDefaultsKey: String, value: T) {
-            self.key = userDefaultsKey
-            self.setting = value
-        }
-        
-        var keyPath: String {
-            get {
-                return self.key
-            }
-        }
-        var `default`: T {
-            get {
-                if let value = UserDefaults.standard.object(forKey: self.key) as? T {
-                    return value
-                } else {
-                    // Sets existing setting if failed
-                    return self.setting
-                }
-            }
-        }
-        var value: T {
-            get {
-                return self.setting
-            }
-            set (value) {
-                self.setting = value
-                //  Inform all interested parties for this panel's controller only only
-                NotificationCenter.default.post(name: Notification.Name(rawValue: self.keyPath), object: nil)
-            }
-        }
-    }
-    
-    let autoHideTitle = Setup<Bool>("autoHideTitle", value: false)
-    let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
-    let windowTitle = Setup<String>("windowTitle", value: "Helium")
-    let windowStyle = Setup<Int>("windowStyle", value: 0)
-    let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
-    
-    // See values in HeliumPanelController.TranslucencyPreference
-    let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
-}
-
 class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
-    var settings:Settings = Settings()
-    
     var webViewController: WebViewController {
         get {
             return self.window?.contentViewController as! WebViewController
@@ -78,11 +29,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     // MARK: Window lifecycle
     override func windowDidLoad() {
+        panel.standardWindowButton(.closeButton)?.image = NSApp.applicationIconImage
         panel.isFloatingPanel = true
-        settings.windowStyle.value = Int(panel.styleMask.rawValue)
-        
-        // Close button is loaded but hidden so we can close later
-        panel.standardWindowButton(NSWindowButton.closeButton)!.isHidden = true
         
         NotificationCenter.default.addObserver(
             self,
@@ -94,55 +42,33 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             selector: #selector(HeliumPanelController.willResignActive),
             name: NSNotification.Name.NSApplicationWillResignActive,
             object: nil)
-
-        // MARK: Load settings from panel.settings
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.setFloatOverFullScreenApps),
-            name: NSNotification.Name(rawValue: settings.disabledFullScreenFloat.keyPath),
-            object:nil)
-        setFloatOverFullScreenApps()
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.willUpdateTitleBar),
-            name: NSNotification.Name(rawValue: settings.autoHideTitle.keyPath),
-            object:nil)
-        willUpdateTitleBar()
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.didUpdateTitle(_:)),
-            name: NSNotification.Name(rawValue: settings.windowTitle.keyPath),
-            object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.willUpdateTranslucency),
-            name: NSNotification.Name(rawValue: settings.translucencyPreference.keyPath),
-            object:nil)
-        willUpdateTranslucency()
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(HeliumPanelController.willUpdateAlpha),
-            name: NSNotification.Name(rawValue: settings.opacityPercentage.keyPath),
-            object:nil)
-       willUpdateAlpha()
-
     }
 
+    func documentViewDidLoad() {
+        // Moved later, called by view, when document is available
+        setFloatOverFullScreenApps()
+        
+        willUpdateTitleBar()
+        
+        willUpdateTranslucency()
+        
+        willUpdateAlpha()
+    }
+    
     // MARK:- Mouse events
     override func mouseEntered(with theEvent: NSEvent) {
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)
+            Swift.print(String(format: "mouse up %@", (self.window?.title)!))
         }
+        Swift.print(String(format: "mouse in %@", (self.window?.title)!))
         mouseOver = true
         updateTranslucency()
         willUpdateTitleBar()
     }
     
     override func mouseExited(with theEvent: NSEvent) {
+        Swift.print(String(format: "mouse ou %@", (self.window?.title)!))
         mouseOver = false
         updateTranslucency()
         willUpdateTitleBar()
@@ -209,11 +135,23 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     //MARK:- IBActions
     
+    fileprivate var doc: Document? {
+        get {
+            return self.document as? Document
+        }
+    }
+    fileprivate var settings: Settings {
+        get {
+            return doc!.settings
+        }
+    }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
+        willUpdateTitleBar()
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
+        setFloatOverFullScreenApps()
     }
     @IBAction func openLocationPress(_ sender: AnyObject) {
         didRequestLocation()
@@ -225,17 +163,64 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
+        willUpdateAlpha()
     }
 
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         translucencyPreference = settings.translucencyPreference.value
+        willUpdateTranslucency()
     }
 
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        let appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
-
-        return appDelegate.validateMenuItem(menuItem)
+        switch menuItem.title {
+        case "Preferences":
+            break
+        case "Auto-hide Title Bar":
+            menuItem.state = settings.autoHideTitle.value ? NSOnState : NSOffState
+            break
+        //Transluceny Menu
+        case "Never":
+            menuItem.state = settings.translucencyPreference.value == .never ? NSOnState : NSOffState
+            break
+        case "Always":
+            menuItem.state = settings.translucencyPreference.value == .always ? NSOnState : NSOffState
+            break
+        case "Mouse Over":
+            menuItem.state = settings.translucencyPreference.value == .mouseOver ? NSOnState : NSOffState
+            break
+        case "Mouse Outside":
+            menuItem.state = settings.translucencyPreference.value == .mouseOutside ? NSOnState : NSOffState
+            break
+        case "Float Above All Spaces":
+            menuItem.state = settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
+            break;
+        case "Hide Helium in menu bar":
+            menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
+            break
+        case "Home Page":
+            break
+        case "Magic URL Redirects":
+            menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+            break
+            
+        default:
+            // Opacity menu item have opacity as tag value
+            if menuItem.tag >= 10 {
+                if let hwc = NSApp.keyWindow?.windowController {
+                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? NSOnState : NSOffState)
+                    menuItem.target = hwc
+                }
+                else
+                {
+                    menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? NSOnState : NSOffState)
+                    menuItem.target = self
+                }
+            }
+            break
+        }
+        Swift.print(String(format: "hwc %@ %@", menuItem.title, menuItem.state == NSOnState ? "on" : "off"))
+        return true;
     }
 
     //MARK:- Notifications
@@ -251,6 +236,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowShouldClose(_ sender: Any) -> Bool {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         let delegate = webView.navigationDelegate as! NSObject
+        panel.ignoresMouseEvents = true
 
         // Wind down all observations
         webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
@@ -263,14 +249,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     //MARK:- Actual functionality
     
     @objc func willUpdateTitleBar() {
-        if settings.autoHideTitle.value == true {
+        if settings.autoHideTitle.value == true && !mouseOver {
             panel.titleVisibility = NSWindowTitleVisibility.hidden;
+            panel.titlebarAppearsTransparent = true
+//            panel.styleMask = NSWindowStyleMask(rawValue: NSWindowStyleMask.fullSizeContentView.rawValue + panel.styleMask.rawValue)
             panel.styleMask = NSWindowStyleMask.borderless
-            panel.title = settings.windowTitle.value
         } else {
             panel.titleVisibility = NSWindowTitleVisibility.visible;
-            panel.styleMask = NSWindowStyleMask(rawValue: UInt(settings.windowStyle.value))
-            panel.title = settings.windowTitle.value
+            panel.styleMask = panel.lastStyleMask
+            
+            let docIconButton = panel.standardWindowButton(.documentIconButton)
+            if let doc = self.document {
+                docIconButton?.image = (doc as! Document).displayImage
+                panel.title = doc.displayName
+            }
+            else
+            {
+                docIconButton?.image = NSApp.applicationIconImage
+            }
+            panel.styleMask = panel.lastStyleMask
+            panel.title = (document?.displayName)!
+            
+            self.synchronizeWindowTitleWithDocumentName()
         }
     }
     
@@ -282,10 +282,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
    
-    @objc fileprivate func didUpdateTitle(_ notification: Notification) {
-        panel.title = settings.windowTitle.value
-    }
-    
     fileprivate func didRequestFile() {
         
         let open = NSOpenPanel()
