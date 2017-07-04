@@ -54,18 +54,7 @@ internal struct UserSettings {
         }
     }
     
-    static let autoHideTitle = Setting<Bool>("rawAutoHideTitle", defaultValue: false)
-    static let windowTitle = Setting<String>("windowTitle", defaultValue: "Helium")
-    static let windowStyle = Setting<Int>("windowStyle", defaultValue: 0)
-    
     static let disabledMagicURLs = Setting<Bool>("disabledMagicURLs", defaultValue: false)
-    
-    static let disabledFullScreenFloat = Setting<Bool>("disabledFullScreenFloat", defaultValue: false)
-    
-    static let opacityPercentage = Setting<Int>("opacityPercentage", defaultValue: 60)
-
-    // See values in HeliumPanelController.TranslucencyPreference
-    static let translucencyPreference = Setting<Int>("rawTranslucencyPreference", defaultValue: 0)
     
     static let homePageURL = Setting<String>(
         "homePageURL",
@@ -81,6 +70,7 @@ internal struct UserSettings {
 
     //  User Defaults keys
     static let Playlists = Setting<String>("playlists", defaultValue:"playlists")
+    static let PlayPrefs = Setting<String>("playlists", defaultValue:"playprefs")
     static let HistoryName = Setting<String>("historyName", defaultValue:"History")
     static let HistoryList = Setting<String>("historyList", defaultValue:"histories")
     static let HideAppMenu = Setting<Bool>("hideAppMenu", defaultValue: false)
