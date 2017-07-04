@@ -46,53 +46,15 @@ fileprivate class URLField: NSTextField {
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @IBOutlet weak var magicURLMenu: NSMenuItem!
-    @IBOutlet weak var percentageMenu: NSMenuItem!
-    @IBOutlet weak var fullScreenFloatMenu: NSMenuItem!
-    @IBOutlet weak var autoHideTitleMenu: NSMenuItem!
 
-    fileprivate var alpha: CGFloat = 60 {
-        didSet {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.opacityPercentage.keyPath), object: nil)
-        }
-    }
-    
-    fileprivate func didUpdateAlpha(_ newAlpha: CGFloat) {
-        alpha = newAlpha / 100
-    }
-    
-    @IBOutlet weak var translucencyMenu: NSMenuItem!
-    fileprivate var translucencyPreference: TranslucencyPreference = .never {
-        didSet {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.translucencyPreference.keyPath), object: nil)
-        }
-    }
-    
-    enum TranslucencyPreference: Int {
-        case never = 0
-        case always = 1
-        case mouseOver = 2
-        case mouseOutside = 3
-    }
-    
     //  MARK:- Global IBAction, but ship to keyWindow when able
     @IBOutlet weak var appMenu: NSMenu!
-    @IBOutlet weak var appItem: NSMenuItem!
 	var appStatusItem:NSStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
     
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu '\(menuItem.title)' clicked")
         }
-    }
-    @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        let keyPath = UserSettings.autoHideTitle.keyPath
-        UserSettings.autoHideTitle.value = (sender.state == NSOffState)
-        NotificationCenter.default.post(name: Notification.Name(rawValue: keyPath), object: nil)
-    }
-    @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
-        let keyPath = UserSettings.disabledFullScreenFloat.keyPath
-        UserSettings.disabledFullScreenFloat.value = (sender.state == NSOnState)
-        NotificationCenter.default.post(name: Notification.Name(rawValue: keyPath), object: nil)
     }
 	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
 		UserSettings.HideAppMenu.value = (sender.state == NSOffState)
@@ -121,9 +83,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
-        let keyPath = UserSettings.disabledMagicURLs.keyPath
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
-        NotificationCenter.default.post(name: Notification.Name(rawValue: keyPath), object: nil)
     }
     
     @IBAction func openFilePress(_ sender: AnyObject) {
@@ -134,10 +94,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         if open.runModal() == NSModalResponseOK {
             if let url = open.url {
-                if let panel = NSApp.keyWindow as? HeliumPanel {
-                    if let hpc = panel.windowController as? HeliumPanelController {
-                        hpc.webViewController.loadURL(url: url)
-                    }
+                do {
+                    let doc = try Document.init(contentsOf: url, ofType: "DocumentType")
+                    let dc = NSDocumentController.shared()
+                    doc.makeWindowControllers()
+                    dc.addDocument(doc)
+                } catch let error {
+                    print("*** Error open file: \(error.localizedDescription)")
                 }
             }
         }
@@ -152,103 +115,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
                           acceptHandler: { (newUrl: String) in
-                            if let panel = NSApp.keyWindow as? HeliumPanel {
-                                if let hpc = panel.windowController as? HeliumPanelController {
-                                    hpc.webViewController.loadURL(text: newUrl)
+                            do {
+                                if let panel = NSApp.keyWindow as? HeliumPanel {
+                                    if let hpc = panel.windowController as? HeliumPanelController {
+                                        hpc.webViewController.loadURL(text: newUrl)
+                                    }
                                 }
                             }
         }
         )
     }
     
-    @IBAction func percentagePress(_ sender: NSMenuItem) {
-        UserSettings.opacityPercentage.value = sender.tag
-        NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.opacityPercentage.keyPath), object: nil)
-    }
-    
-	@IBAction func performClose(_ sender: Any) {
-        if let window = NSApp.keyWindow {
-            window.standardWindowButton(NSWindowButton.closeButton)!.isHidden = false
-            window.performClose(sender)
-        }
-	}
-	
-    @IBAction func translucencyPress(_ sender: NSMenuItem) {
-        UserSettings.translucencyPreference.value = AppDelegate.TranslucencyPreference(rawValue: sender.tag)!.rawValue
-        translucencyPreference = AppDelegate.TranslucencyPreference(rawValue: UserSettings.translucencyPreference.value)!
-        NotificationCenter.default.post(name: Notification.Name(rawValue: UserSettings.translucencyPreference.keyPath), object: nil)
-    }
-
-    @IBAction func quitPress(_ sender: AnyObject) {
-        NSApplication.shared().terminate(self)
-    }
-
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+   override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
             break
-        case "Auto-hide Title Bar":
-            if let hwc = NSApp.keyWindow?.windowController {
-                menuItem.state = (hwc as! HeliumPanelController).settings.autoHideTitle.value ? NSOnState : NSOffState
-                menuItem.target = hwc
-            }
-            else
-            {
-                menuItem.state = UserSettings.autoHideTitle.value ? NSOnState : NSOffState
-                menuItem.target = self
-            }
-            break
-        //Transluceny Menu
-        case "Never":
-            if let hwc = NSApp.keyWindow?.windowController {
-                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .never ? NSOnState : NSOffState
-                menuItem.target = hwc
-            }
-            else
-            {
-                menuItem.state = translucencyPreference == .never ? NSOnState : NSOffState
-                menuItem.target = self
-            }
-            break
-        case "Always":
-            if let hwc = NSApp.keyWindow?.windowController {
-                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .always ? NSOnState : NSOffState
-                menuItem.target = hwc
-            }
-            else
-            {
-                menuItem.state = translucencyPreference == .always ? NSOnState : NSOffState
-                menuItem.target = self
-            }
-            break
-        case "Mouse Over":
-            if let hwc = NSApp.keyWindow?.windowController {
-                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .mouseOver ? NSOnState : NSOffState
-                menuItem.target = hwc
-            }
-            else
-            {
-                menuItem.state = translucencyPreference == .mouseOver ? NSOnState : NSOffState
-                menuItem.target = self
-            }
-            break
-        case "Mouse Outside":
-            if let hwc = NSApp.keyWindow?.windowController {
-                menuItem.state = (hwc as! HeliumPanelController).settings.translucencyPreference.value == .mouseOutside ? NSOnState : NSOffState
-                menuItem.target = hwc
-            }
-            else
-            {
-                menuItem.state = translucencyPreference == .mouseOutside ? NSOnState : NSOffState
-                menuItem.target = self
-            }
-            break
-        case "Float Above All Spaces":
-            menuItem.state = UserSettings.disabledFullScreenFloat.value ? NSOffState : NSOnState
-            break;
-		case "Hide Helium in menu bar":
-			menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
-			break
         case "Home Page":
             break
         case "Magic URL Redirects":
@@ -258,27 +139,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             break
 
         default:
-            // Opacity menu item have opacity as tag value
-            if menuItem.tag >= 10 {
-                if let hwc = NSApp.keyWindow?.windowController {
-                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? NSOnState : NSOffState)
-                    menuItem.target = hwc
-                }
-                else
-                {
-                    menuItem.state = (menuItem.tag == UserSettings.opacityPercentage.value ? NSOnState : NSOffState)
-                    menuItem.target = self
-                }
-            }
             break
         }
-         return true;
+        Swift.print(String(format: "app %@ %@", menuItem.title, menuItem.state == NSOnState ? "on" : "off"))
+        return true;
     }
 
     //  MARK:- Lifecyle
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        return true
+        return true//NSApp.windows.count == 0
     }
 
     let toHMS = hmsTransformer()
@@ -290,17 +160,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             andEventID: AEEventID(kAEGetURL)
         )
 
-        //    So they can interact everywhere with us without focus
+        //  So they can interact everywhere with us without focus
         appStatusItem.image = NSImage.init(named: "statusIcon")
         appStatusItem.menu = appMenu
 
         //  Initialize our h:m:s transformer
         ValueTransformer.setValueTransformer(toHMS, forName: NSValueTransformerName(rawValue: "hmsTransformer"))
         
-        // Maintain a history of titles
+        //  Maintain a history of titles
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(AppDelegate.didUpdateTitle(_:)),
+            selector: #selector(AppDelegate.haveNewTitle(_:)),
             name: NSNotification.Name(rawValue: "HeliumNewURL"),
             object: nil)
     }
@@ -309,14 +179,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var defaults = UserDefaults.standard
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-
-        let alpha = UserSettings.opacityPercentage.value
-        let offset = alpha/10 - 1
-        for (index, button) in percentageMenu.submenu!.items.enumerated() {
-            (button).state = (offset == index) ? NSOnState : NSOffState
-        }
-
-        translucencyPreference = AppDelegate.TranslucencyPreference(rawValue: UserSettings.translucencyPreference.value)!
 
         // Restore history name change
         if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
@@ -363,7 +225,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return resDict
     }
 
-    @objc fileprivate func didUpdateTitle(_ notification: Notification) {
+    @objc fileprivate func haveNewTitle(_ notification: Notification) {
         if let itemURL = notification.object as? URL {
             let item: PlayItem = PlayItem.init()
             var fileURL: URL? = nil
@@ -381,7 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
                 item.name = fuzz.removingPercentEncoding!
                 item.link = URL.init(string: path!)!
-                item.time = attr?[kMDItemDurationSeconds] as! TimeInterval
+                item.time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0
             }
             else
             {
@@ -502,6 +364,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             // So this may (and will) fail. It should instead find url in whole
             // Text somehow
             NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"), object: selection)
+        }
+    }
+    // MARK: Finder drops
+    func application(_ sender: NSApplication, openFile: String) -> Bool {
+        Swift.print("sender \(sender) file \(openFile)")
+        return true
+    }
+    
+    func application(_ sender: NSApplication, openFiles: [String]) {
+        Swift.print("sender \(sender) list \(openFiles)")
+        // Create a FileManager instance
+        let fileManager = FileManager.default
+        
+        for path in openFiles {
+            
+            do {
+                let files = try fileManager.contentsOfDirectory(atPath: path)
+                for file in files {
+                    _ = self.application(sender, openFile: file)
+                }
+            }
+            catch let error as NSError {
+                print("Yoink \(error.localizedDescription)")
+            }
         }
     }
 }
