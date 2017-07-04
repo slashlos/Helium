@@ -1,0 +1,28 @@
+
+Author:
+    Jaden Geller
+
+Contributors:
+    in no particular order
+
+    Christian Hoffmann - UserSettings.swift
+    Samuel Beek - StringHelpers.swift
+    shdwprince - Panel.swift
+    Viktor Oreshkin - UrlHelpers.swift
+    https://travis-ci.org/stek29/Helium - Swift3
+    Carlos D. Santiago (slashlos)
+
+History
+
+  2.1-21
+    Carlos D Santiago
+      playlists, history,
+      value transformers,
+      auto hide title,
+      status item,
+      about box,
+      Swift v4,
+      windows
+
+  2.0-20, Nov 10, 2015
+    Jaden Geller
