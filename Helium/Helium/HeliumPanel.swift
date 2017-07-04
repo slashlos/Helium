@@ -29,6 +29,13 @@ class HeliumPanel: NSPanel {
     // nil when not dragging
     var previousMouseLocation: NSPoint?
     
+    // save last style for later restore
+    var lastStyleMask: NSWindowStyleMask {
+        get {
+            return (styleMask != NSWindowStyleMask(rawValue: 0) ? styleMask : NSWindowStyleMask(rawValue: 8347))
+        }
+    }
+
     override func sendEvent(_ event: NSEvent) {
         switch event.type {
         case .flagsChanged:
