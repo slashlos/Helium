@@ -25,6 +25,9 @@ class MyWebView : WKWebView {
     //    Either by contextual menu, or status item, populate our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
+        let doc = hwc.document as! Document
+        let translucency = doc.settings.translucencyPreference.value
+        
         var item: NSMenuItem
 
         item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
@@ -50,12 +53,12 @@ class MyWebView : WKWebView {
         item.submenu = subPref
 
         item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hwc.autoHideTitlePress(_:)), keyEquivalent: "")
-        item.state = UserSettings.autoHideTitle.value ? NSOnState : NSOffState
+        item.state = doc.settings.autoHideTitle.value ? NSOnState : NSOffState
         item.target = hwc
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
-        item.state = (UserSettings.disabledFullScreenFloat.value == true) ? NSOffState : NSOnState
+        item.state = (doc.settings.disabledFullScreenFloat.value == true) ? NSOffState : NSOnState
         item.target = hwc
         subPref.addItem(item)
         
@@ -74,7 +77,7 @@ class MyWebView : WKWebView {
         item.submenu = subTranslucency
 
         item = NSMenuItem(title: "Opacity", action: #selector(menuClicked(_:)), keyEquivalent: "")
-        let opacity = hwc.settings.opacityPercentage.value
+        let opacity = doc.settings.opacityPercentage.value
         subTranslucency.addItem(item)
         let subOpacity = NSMenu()
         item.submenu = subOpacity
@@ -85,7 +88,7 @@ class MyWebView : WKWebView {
         item.tag = 10
         subOpacity.addItem(item)
         item = NSMenuItem(title: "20%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.isEnabled = UserSettings.translucencyPreference.value > 0
+        item.isEnabled = translucency.rawValue > 0
         item.state = (20 == opacity ? NSOnState : NSOffState)
         item.target = hwc
         item.tag = 20
@@ -131,8 +134,6 @@ class MyWebView : WKWebView {
         item.tag = 100
         subOpacity.addItem(item)
 
-        let translucency = hwc.settings.translucencyPreference.value
-        
         item = NSMenuItem(title: "Never", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.never.rawValue
         item.state = translucency == .never ? NSOnState : NSOffState
@@ -154,8 +155,12 @@ class MyWebView : WKWebView {
         item.target = hwc
         subTranslucency.addItem(item)
 
-        item = NSMenuItem(title: "Quit", action: #selector(AppDelegate.quitPress(_:)), keyEquivalent: "")
-        item.target = appDelegate
+        item = NSMenuItem(title: "Close", action: #selector(NSApp.keyWindow?.performClose(_:)), keyEquivalent: "")
+        item.target = NSApp.keyWindow
+        menu.addItem(item)
+
+        item = NSMenuItem(title: "Quit", action: #selector(NSApp.terminate(_:)), keyEquivalent: "")
+        item.target = NSApp
         menu.addItem(item)
     }
 }
@@ -178,7 +183,12 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(WebViewController.loadURL(urlObject:)),
+            selector: #selector(WebViewController.loadURL(urlFileURL:)),
+            name: NSNotification.Name(rawValue: "HeliumLoadURL"),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
             object: nil)
         
@@ -207,9 +217,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         // Listen for load progress
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: NSKeyValueObservingOptions.new, context: nil)
 
-        // Listen for auto hide title changes
-        UserDefaults.standard.addObserver(self, forKeyPath: UserSettings.autoHideTitle.keyPath, options: NSKeyValueObservingOptions.new, context: nil)
-
         clear()
     }
     
@@ -218,6 +225,11 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     override func viewDidLayout() {
         super.viewDidLayout()
 
+        // Deferred window setup needing a document' settings
+        if let hwc = self.view.window?.windowController {
+            (hwc as! HeliumPanelController).documentViewDidLoad()
+        }
+        
         if let tag = trackingTag {
             view.removeTrackingRect(tag)
         }
@@ -243,7 +255,9 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         case "Forward":
             return webView.canGoForward
         default:
-            return appDelegate.validateMenuItem(menuItem)
+//            let hwc = self.view.window?.windowController as! HeliumPanelController
+ //           Swift.print(String(format: "web %@ %@", menuItem.title, menuItem.state == NSOnState ? "on" : "off"))
+            return true
         }
     }
 
@@ -298,8 +312,9 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }()
     
     @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
-        playlistViewController.webViewController = self
-        self.presentViewControllerAsSheet(playlistViewController)
+        let pvc = self.playlistViewController
+        pvc.webViewController = self
+        self.presentViewControllerAsSheet(pvc)
     }
 
     override var representedObject: Any? {
@@ -325,8 +340,22 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         webView.load(URLRequest(url: url))
     }
 
-    func loadURL(urlObject: Notification) {
-        if let string = urlObject.object as? String {
+    internal func loadURL(urlFileURL: Notification) {
+        if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
+            if info["hwc"] as? NSWindowController == self.view.window?.windowController {
+                webView.load(URLRequest(url: fileURL as! URL))
+            }
+        }
+    }
+    
+    func loadURL(urlString: Notification) {
+        if let userInfo = urlString.userInfo {
+            if userInfo["hwc"] as? NSWindowController != self.view.window?.windowController {
+                return
+            }
+        }
+        
+        if let string = urlString.object as? String {
             _ = loadURL(text: string)
         }
     }
@@ -376,11 +405,12 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
         if let pageTitle = webView.title {
-            let hpc = self.view.window?.windowController as! HeliumPanelController
+            let hwc = self.view.window?.windowController as! HeliumPanelController
+            let doc = hwc.document as! Document
             var title = pageTitle;
-            if title.isEmpty { title = UserSettings.windowTitle.default }
+            if title.isEmpty { title = doc.displayName }
             let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
-                                     object: title, userInfo: ["hpc":hpc]);
+                                     object: title, userInfo: ["hwc":hwc]);
             NotificationCenter.default.post(notif)
         }
     }
@@ -400,6 +430,13 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                 if percent == 100 {
                     videoFileReferencedURL = false
                     let url = (self.webView.url)
+
+                    if (url?.isFileURL)! {
+                        if let original = (url! as NSURL).resolvedFinderAlias() {
+                            self.loadURL(url: original)
+                            return
+                        }
+                    }
 
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
@@ -429,20 +466,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                         title = "Helium"
                     }
                     
-                    if let hpc = self.view.window?.windowController as? HeliumPanelController {
-                        let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
-                                                 object: title, userInfo: ["hpc":hpc]);
-                        NotificationCenter.default.post(notif)
-                        
-                    } else {
-                        self.view.window?.title = title as String
-                    }
-                    
+                    self.view.window?.title = title as String
+ 
                     // Remember for later restoration
-                    do {
-                        self.view.window?.windowController?.document = try NSDocument.init(contentsOf: url!, ofType: "Helium")
-                    } catch {
-                        print(error)
+                    if let doc = self.view.window?.windowController?.document {
+                        self.view.window?.representedURL = url
+                        (doc as! Document).updateURL(to: url!, ofType: "Any")
+                        
+                        let notif = Notification(name: Notification.Name(rawValue: "HeliumDidUpdateURL"), object: url);
+                        NotificationCenter.default.post(notif)
                     }
                  }
             }
