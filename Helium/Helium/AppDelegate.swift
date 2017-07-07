@@ -86,6 +86,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
     
+    fileprivate func doOpenFile(fileURL: URL) -> Bool {
+        let fileType = fileURL.pathExtension
+        
+        if let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
+ 
+            //  If it's a "h2w" type read it and load its fileURL
+            if fileType == "h2w" {
+                (doc as! Document).updateURL(to: fileURL, ofType: fileType)
+                (hwc.contentViewController as! WebViewController).loadURL(url: (doc as! Document).fileURL!)
+            }
+            else
+            {
+                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
+            }
+            
+            return true
+        }
+        else
+        {
+            //  This could be anything so add/if a doc and initialize
+            do {
+                let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
+                let dc = NSDocumentController.shared()
+                let hwc = (doc as NSDocument).windowControllers.first
+                hwc?.window?.makeKey()
+                doc.makeWindowControllers()
+                dc.addDocument(doc)
+
+                let notif = Notification(name: Notification.Name(rawValue: "HeliumLoadURL"),
+                                         object: fileURL,
+                                         userInfo: ["hwc":hwc as Any])
+                NotificationCenter.default.post(notif)
+                return true
+            } catch let error {
+                print("*** Error open file: \(error.localizedDescription)")
+                return false
+            }
+        }
+    }
     @IBAction func openFilePress(_ sender: AnyObject) {
         let open = NSOpenPanel()
         open.allowsMultipleSelection = false
@@ -94,14 +133,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         if open.runModal() == NSModalResponseOK {
             if let url = open.url {
-                do {
-                    let doc = try Document.init(contentsOf: url, ofType: "DocumentType")
-                    let dc = NSDocumentController.shared()
-                    doc.makeWindowControllers()
-                    dc.addDocument(doc)
-                } catch let error {
-                    print("*** Error open file: \(error.localizedDescription)")
-                }
+                _ = self.doOpenFile(fileURL: url)
             }
         }
     }
@@ -345,7 +377,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        
+        let hwc = NSApp.keyWindow?.windowController
+
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
             let urlString = keyDirectObject.stringValue else {
                 return print("No valid URL to handle")
@@ -355,21 +388,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let index = urlString.index(urlString.startIndex, offsetBy: 9)
         let url = urlString.substring(from: index)
 
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"), object: url)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
+                                        object: url,
+                                        userInfo: ["hwc" : hwc as Any])
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {
         if let selection = pboard.string(forType: NSPasteboardTypeString) {
+            let hwc = NSApp.keyWindow?.windowController
+
             // Notice: string will contain whole selection, not just the urls
             // So this may (and will) fail. It should instead find url in whole
             // Text somehow
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"), object: selection)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
+                                            object: selection,
+                                            userInfo: ["hwc" : hwc as Any])
         }
     }
     // MARK: Finder drops
     func application(_ sender: NSApplication, openFile: String) -> Bool {
-        Swift.print("sender \(sender) file \(openFile)")
-        return true
+        let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
+        return self.doOpenFile(fileURL: URL.init(string: urlString)!)
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
@@ -378,7 +417,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let fileManager = FileManager.default
         
         for path in openFiles {
-            
+
             do {
                 let files = try fileManager.contentsOfDirectory(atPath: path)
                 for file in files {
@@ -386,7 +425,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             }
             catch let error as NSError {
-                print("Yoink \(error.localizedDescription)")
+                if fileManager.fileExists(atPath: path) {
+                    _ = self.application(sender, openFile: path)
+                }
+                else
+                {
+                    print("Yoink \(error.localizedDescription)")
+                }
             }
         }
     }
