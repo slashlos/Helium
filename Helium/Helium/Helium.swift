@@ -86,8 +86,46 @@ class Document : NSDocument {
     var settings: Settings
     
     func updateURL(to url: URL, ofType typeName: String) {
-        fileType = typeName
-        fileURL = url
+        if typeName == "h2w" {
+            if let dict = NSDictionary(contentsOf: url) {
+                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
+                    for playlist in playArray as! [AnyObject] {
+                       let play = playlist as! Dictionary<String,AnyObject>
+                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                        var list : [PlayItem] = [PlayItem]()
+                        for playitem in items {
+                            let item = playitem as Dictionary <String,AnyObject>
+                            let name = item[k.name] as! String
+                            let path = item[k.link] as! String
+                            let time = item[k.time] as? TimeInterval
+                            let link = URL.init(string: path)
+                            let rank = item[k.rank] as! Int
+                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                            list.append(temp)
+                        }
+                        let name = play[k.name] as? String
+                        if let items = playlists[name!] {
+                            for item in items as! [PlayItem] {
+                                list.append(item)
+                            }
+                        }
+                        playlists[name!] = list
+                    }
+                }
+                if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
+                    settings = setup as! Settings
+                }
+                if let fileURL = dict.value(forKey: "fileURL") {
+                    self.fileURL = URL.init(string: fileURL as! String)
+                    self.fileType = self.fileURL?.pathExtension
+                }
+            }
+        }
+        else
+        {
+            fileType = typeName
+            fileURL = url
+        }
     }
     
     override init() {
@@ -146,8 +184,8 @@ class Document : NSDocument {
                                                                    options: [],
                                                                    format: nil) as! Dictionary<String,AnyObject>
             if plist.count > 0 {
-                playlists = plist[UserSettings.Playlists.keyPath] as! Dictionary<String, Any>
-                settings = plist[UserSettings.PlayPrefs.keyPath] as! Settings
+                playlists = plist[UserSettings.Playlists.default] as! Dictionary<String, Any>
+                settings = plist[UserSettings.PlayPrefs.default] as! Settings
                 break
             }
 
@@ -161,30 +199,66 @@ class Document : NSDocument {
         
         switch typeName {
         case "DocumentType":
+            if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.default) {
+                for playlist in playArray {
+                    let play = playlist as! Dictionary<String,AnyObject>
+                    let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                    var list : [PlayItem] = [PlayItem]()
+                    for playitem in items {
+                        let item = playitem as Dictionary <String,AnyObject>
+                        let name = item[k.name] as! String
+                        let path = item[k.link] as! String
+                        let time = item[k.time] as? TimeInterval
+                        let link = URL.init(string: path)
+                        let rank = item[k.rank] as! Int
+                        let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                        list.append(temp)
+                    }
+                    let name = play[k.name] as? String
+                    if let items = playlists[name!] {
+                        for item in items as! [PlayItem] {
+                            list.append(item)
+                        }
+                    }
+                    playlists[name!] = list
+                }
+                break
+            }
+            
+        case "h2w":
             if let dict = NSDictionary(contentsOf: url) {
-                if let lists = dict.value(forKey: UserSettings.Playlists.keyPath) {
+                if let lists = dict.value(forKey: UserSettings.Playlists.default) {
                     playlists = lists as! Dictionary<String, Any>
                 }
-                if let setup = dict.value(forKey: UserSettings.PlayPrefs.keyPath) {
+                if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
                     settings = setup as! Settings
                 }
+                if let fileURL = dict.value(forKey: "fileURL") {
+                    self.fileURL = URL.init(string: fileURL as! String)
+                    self.fileType = self.fileURL?.pathExtension
+                    break;
+                }
             }
-
-        case "h2w":
+            
+            //  Since we didn't have a fileURL use url given
             self.fileType = typeName
             self.fileURL = url
             break
 
         default:
-            Swift.print("nyi \(typeName) -> \(url)")
-            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            //  Record url and type, caller will load via notification
+            do {
+                self.fileURL = url
+                self.fileType = url.pathExtension
+                break
+            }
         }
    }
     
     override func read(from url: URL, ofType typeName: String) throws {
         switch typeName {
         case "DocumentType":
-            if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.keyPath) {
+            if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.default) {
                 
                 for playlist in playArray {
                     let play = playlist as! Dictionary<String,AnyObject>
@@ -211,6 +285,7 @@ class Document : NSDocument {
             break
 
         case "h2w":
+            // MARK: TODO write playlist and histories with default keys but also save current value
             let data = try Data.init(contentsOf: url)
             do {
                 try! self.read(from: data, ofType: typeName)
@@ -237,14 +312,14 @@ class Document : NSDocument {
                 }
                 temp.append([k.name:key as AnyObject, k.list:list as AnyObject])
             }
-            UserDefaults.standard.set(temp, forKey: UserSettings.Playlists.keyPath)
+            UserDefaults.standard.set(temp, forKey: UserSettings.Playlists.default)
             UserDefaults.standard.synchronize()
             break
             
         case "h2w":
             let dict = NSDictionary.init()
-            dict.setValue(playlists, forKey: UserSettings.Playlists.keyPath)
-            dict.setValue(settings, forKey: UserSettings.PlayPrefs.keyPath)
+            dict.setValue(playlists, forKey: UserSettings.Playlists.default)
+            dict.setValue(settings, forKey: UserSettings.PlayPrefs.default)
             dict.write(to: url, atomically: true)
             break
             
