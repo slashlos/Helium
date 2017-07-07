@@ -70,7 +70,7 @@ internal struct UserSettings {
 
     //  User Defaults keys
     static let Playlists = Setting<String>("playlists", defaultValue:"playlists")
-    static let PlayPrefs = Setting<String>("playlists", defaultValue:"playprefs")
+    static let PlayPrefs = Setting<String>("playprefs", defaultValue:"playprefs")
     static let HistoryName = Setting<String>("historyName", defaultValue:"History")
     static let HistoryList = Setting<String>("historyList", defaultValue:"histories")
     static let HideAppMenu = Setting<Bool>("hideAppMenu", defaultValue: false)
