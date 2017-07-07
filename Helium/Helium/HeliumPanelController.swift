@@ -42,6 +42,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             selector: #selector(HeliumPanelController.willResignActive),
             name: NSNotification.Name.NSApplicationWillResignActive,
             object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(HeliumPanelController.didUpdateUpdateURL(note:)),
+            name: NSNotification.Name(rawValue: "HeliumDidUpdateURL"),
+            object: nil)
+
     }
 
     func documentViewDidLoad() {
@@ -247,6 +253,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     //MARK:- Actual functionality
+    
+    @objc func didUpdateUpdateURL(note: Notification) {
+        let webView = self.window?.contentView?.subviews.first as! MyWebView
+
+        if note.object as? URL == webView.url {
+            self.willUpdateTitleBar()
+        }
+    }
     
     @objc func willUpdateTitleBar() {
         if settings.autoHideTitle.value == true && !mouseOver {
