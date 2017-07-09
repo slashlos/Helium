@@ -29,6 +29,7 @@ class MyWebView : WKWebView {
     //    Either by contextual menu, or status item, populate our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
+        let dc = NSDocumentController.shared()
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
         
@@ -47,6 +48,10 @@ class MyWebView : WKWebView {
         item.target = hwc
         subOpen.addItem(item)
 
+        item = NSMenuItem(title: "Window", action: #selector(dc.newDocument(_:)), keyEquivalent: "")
+        item.target = self
+        subOpen.addItem(item)
+        
         item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "")
         item.target = self.uiDelegate
         menu.addItem(item)
