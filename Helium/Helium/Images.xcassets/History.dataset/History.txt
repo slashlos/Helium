@@ -16,13 +16,14 @@ History
 
   2.1-21
     Carlos D Santiago
-      playlists, history,
+      document windows,
+      playlists - per document, global,
+      Finder status menu,
       value transformers,
+      document history,
       auto hide title,
-      status item,
-      about box,
-      Swift v4,
-      windows
-
+      contextual menu,
+      about box
+ 
   2.0-20, Nov 10, 2015
     Jaden Geller
