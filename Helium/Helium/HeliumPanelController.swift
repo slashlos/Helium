@@ -54,7 +54,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         // Moved later, called by view, when document is available
         setFloatOverFullScreenApps()
         
-        willUpdateTitleBar()
+        updateTitleBar()
         
         willUpdateTranslucency()
         
@@ -68,16 +68,22 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             Swift.print(String(format: "mouse up %@", (self.window?.title)!))
         }
         Swift.print(String(format: "mouse in %@", (self.window?.title)!))
+        let lastMouseOver = mouseOver
         mouseOver = true
         updateTranslucency()
-        willUpdateTitleBar()
+        if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
+            updateTitleBar()
+        }
     }
     
     override func mouseExited(with theEvent: NSEvent) {
         Swift.print(String(format: "mouse ou %@", (self.window?.title)!))
+        let lastMouseOver = mouseOver
         mouseOver = false
         updateTranslucency()
-        willUpdateTitleBar()
+        if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
+            updateTitleBar()
+        }
     }
     
     // MARK:- Translucency
@@ -153,7 +159,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
-        willUpdateTitleBar()
+        (panel.contentViewController as! WebViewController).updateTrackingAreas()
+        updateTitleBar()
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
@@ -171,13 +178,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
     }
-
+    
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         translucencyPreference = settings.translucencyPreference.value
         willUpdateTranslucency()
     }
-
+    
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
@@ -243,7 +250,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         let delegate = webView.navigationDelegate as! NSObject
         panel.ignoresMouseEvents = true
-
+        
+        //  Halt anything in progress
+        (contentViewController as! WebViewController).webView.loadHTMLString("Yoink://", baseURL: nil)
+        
         // Wind down all observations
         webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
         NotificationCenter.default.removeObserver(delegate)
@@ -258,33 +268,29 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
 
         if note.object as? URL == webView.url {
-            self.willUpdateTitleBar()
+            self.updateTitleBar()
         }
     }
     
-    @objc func willUpdateTitleBar() {
+    @objc func updateTitleBar() {
         if settings.autoHideTitle.value == true && !mouseOver {
-            panel.titleVisibility = NSWindowTitleVisibility.hidden;
+            panel.titleVisibility = NSWindowTitleVisibility.hidden
             panel.titlebarAppearsTransparent = true
-//            panel.styleMask = NSWindowStyleMask(rawValue: NSWindowStyleMask.fullSizeContentView.rawValue + panel.styleMask.rawValue)
-            panel.styleMask = NSWindowStyleMask.borderless
+            self.window!.styleMask.formUnion(.fullSizeContentView)
         } else {
-            panel.titleVisibility = NSWindowTitleVisibility.visible;
-            panel.styleMask = panel.lastStyleMask
-            
+            panel.titleVisibility = NSWindowTitleVisibility.visible
+            self.window!.styleMask.formSymmetricDifference(.fullSizeContentView)
+            self.synchronizeWindowTitleWithDocumentName()
+
             let docIconButton = panel.standardWindowButton(.documentIconButton)
             if let doc = self.document {
                 docIconButton?.image = (doc as! Document).displayImage
-                panel.title = doc.displayName
             }
             else
             {
                 docIconButton?.image = NSApp.applicationIconImage
             }
-            panel.styleMask = panel.lastStyleMask
-            panel.title = (document?.displayName)!
-            
-            self.synchronizeWindowTitleWithDocumentName()
+
         }
     }
     
