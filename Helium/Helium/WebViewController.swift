@@ -48,8 +48,8 @@ class MyWebView : WKWebView {
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(dc.newDocument(_:)), keyEquivalent: "")
-        item.target = self
+        item = NSMenuItem(title: "Window", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "")
+        item.target = dc
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "")

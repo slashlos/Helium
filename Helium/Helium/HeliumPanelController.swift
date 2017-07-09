@@ -48,6 +48,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             name: NSNotification.Name(rawValue: "HeliumDidUpdateURL"),
             object: nil)
 
+        //  We allow drag from title's documnet icon to self or Finder
+        panel.registerForDraggedTypes([NSURLPboardType])
     }
 
     func documentViewDidLoad() {
@@ -62,6 +64,27 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     // MARK:- Mouse events
+    func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
+        let pasteboard = sender.draggingPasteboard()
+        
+        if pasteboard.canReadItem(withDataConformingToTypes: [NSPasteboardURLReadingFileURLsOnlyKey]) {
+            return .copy
+        }
+        return .copy
+    }
+    func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
+        let pboard = sender.draggingPasteboard()
+        
+        if (pboard.types?.contains(NSURLPboardType))! {
+            Swift.print("we have NSURLPboardType")
+        }
+        else
+        if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
+            Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
+        }
+        return true
+    }
+        
     override func mouseEntered(with theEvent: NSEvent) {
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)

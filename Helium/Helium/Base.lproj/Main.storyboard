@@ -545,11 +545,6 @@ CA
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <menu key="submenu" title="Open/New" id="cgH-8w-eo4">
                                 <items>
-                                    <menuItem title="Window" keyEquivalent="n" id="jeT-TZ-JXU">
-                                        <connections>
-                                            <action selector="newDocument:" target="Ady-hI-5gd" id="bSU-N3-Sqq"/>
-                                        </connections>
-                                    </menuItem>
                                     <menuItem title="File" id="RbQ-rp-cWl">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
@@ -560,6 +555,11 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Window" keyEquivalent="s" id="jeT-TZ-JXU">
+                                        <connections>
+                                            <action selector="newDocument:" target="Ady-hI-5gd" id="bSU-N3-Sqq"/>
                                         </connections>
                                     </menuItem>
                                 </items>
