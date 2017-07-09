@@ -115,8 +115,8 @@ class Document : NSDocument {
                 if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
                     settings = setup as! Settings
                 }
-                if let fileURL = dict.value(forKey: "fileURL") {
-                    self.fileURL = URL.init(string: fileURL as! String)
+                if let urlString = dict.value(forKey: "fileURL") {
+                    self.fileURL = URL(string: (urlString as AnyObject).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
                     self.fileType = self.fileURL?.pathExtension
                 }
             }
@@ -156,7 +156,20 @@ class Document : NSDocument {
             }
         }
     }
-    
+    override var displayName: String! {
+        get {
+            if let justTheName = super.displayName  {
+                return (justTheName as NSString).deletingPathExtension
+            }
+            else
+            {
+                return super.displayName
+            }
+        }
+        set (newName) {
+            super.displayName = newName
+        }
+    }
     override func makeWindowControllers() {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
@@ -227,14 +240,36 @@ class Document : NSDocument {
             
         case "h2w":
             if let dict = NSDictionary(contentsOf: url) {
-                if let lists = dict.value(forKey: UserSettings.Playlists.default) {
-                    playlists = lists as! Dictionary<String, Any>
+                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
+                    for playlist in playArray as! [AnyObject] {
+                        let play = playlist as! Dictionary<String,AnyObject>
+                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                        var list : [PlayItem] = [PlayItem]()
+                        for playitem in items {
+                            let item = playitem as Dictionary <String,AnyObject>
+                            let name = item[k.name] as! String
+                            let path = item[k.link] as! String
+                            let time = item[k.time] as? TimeInterval
+                            let link = URL.init(string: path)
+                            let rank = item[k.rank] as! Int
+                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                            list.append(temp)
+                        }
+                        let name = play[k.name] as? String
+                        if let items = playlists[name!] {
+                            for item in items as! [PlayItem] {
+                                list.append(item)
+                            }
+                        }
+                        playlists[name!] = list
+                    }
                 }
+
                 if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
                     settings = setup as! Settings
                 }
                 if let fileURL = dict.value(forKey: "fileURL") {
-                    self.fileURL = URL.init(string: fileURL as! String)
+                    self.fileURL = URL(string: (fileURL as! String).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
                     self.fileType = self.fileURL?.pathExtension
                     break;
                 }
