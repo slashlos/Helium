@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20170630.091230</string>
+	<string>20170709.092212</string>
 	<key>CFBuildNumber</key>
-	<integer>193</integer>
+	<integer>534</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -13,7 +13,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>h2</string>
+				<string>h2w</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
@@ -27,6 +27,16 @@
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).Document</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>*</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Any</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>

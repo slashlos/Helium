@@ -18,6 +18,10 @@ class MyWebView : WKWebView {
         }
     }
 
+    override var mouseDownCanMoveWindow: Bool {
+        return true
+    }
+    
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
         publishApplicationMenu(menu);
     }
@@ -257,8 +261,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         case "Forward":
             return webView.canGoForward
         default:
-//            let hwc = self.view.window?.windowController as! HeliumPanelController
- //           Swift.print(String(format: "web %@ %@", menuItem.title, menuItem.state == NSOnState ? "on" : "off"))
             return true
         }
     }
@@ -441,11 +443,10 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                             return
                         }
                     }
-                    
-                    //  Keep history updated
+
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
- 
+
                     // once loaded update window title,size with video name,dimension
                     if let urlTitle = (self.webView.url?.absoluteString) {
                         title = urlTitle as NSString

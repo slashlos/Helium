@@ -178,8 +178,8 @@
 		4D867CB31AD6781200681331 /* Helium */ = {
 			isa = PBXGroup;
 			children = (
-				0F10354A1F0300DA00327B30 /* Helium.swift */,
 				4D867CB61AD6781200681331 /* AppDelegate.swift */,
+				0F10354A1F0300DA00327B30 /* Helium.swift */,
 				0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */,
 				4D867CD31AD6796A00681331 /* HeliumPanelController.swift */,
 				4D867CB81AD6781200681331 /* WebViewController.swift */,
@@ -319,7 +319,7 @@
 						CreatedOnToolsVersion = 6.3;
 						DevelopmentTeam = J3VNR8UWPP;
 						LastSwiftMigration = 0830;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -604,7 +604,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = J3VNR8UWPP;
