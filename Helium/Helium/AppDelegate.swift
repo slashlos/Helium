@@ -87,13 +87,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     fileprivate func doOpenFile(fileURL: URL) -> Bool {
+        let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
-        
+        dc.noteNewRecentDocumentURL(fileURL)
+
         if let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
- 
+
             //  If it's a "h2w" type read it and load its fileURL
             if fileType == "h2w" {
                 (doc as! Document).updateURL(to: fileURL, ofType: fileType)
+                
                 (hwc.contentViewController as! WebViewController).loadURL(url: (doc as! Document).fileURL!)
             }
             else
@@ -108,32 +111,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             //  This could be anything so add/if a doc and initialize
             do {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
-                let dc = NSDocumentController.shared()
-                let hwc = (doc as NSDocument).windowControllers.first
-                hwc?.window?.makeKey()
                 doc.makeWindowControllers()
                 dc.addDocument(doc)
 
-                let notif = Notification(name: Notification.Name(rawValue: "HeliumLoadURL"),
-                                         object: fileURL,
-                                         userInfo: ["hwc":hwc as Any])
-                NotificationCenter.default.post(notif)
-                return true
+                if let hwc = (doc as NSDocument).windowControllers.first {
+                    hwc.window?.orderFront(self)
+                    (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
+                    
+                    return true
+                }
+                else
+                {
+                    return false
+                }
             } catch let error {
                 print("*** Error open file: \(error.localizedDescription)")
                 return false
             }
         }
     }
+	@IBAction func openDocument(_ sender: Any) {
+		self.openFilePress(sender as AnyObject)
+	}
     @IBAction func openFilePress(_ sender: AnyObject) {
         let open = NSOpenPanel()
         open.allowsMultipleSelection = false
         open.canChooseFiles = true
         open.canChooseDirectories = false
+        open.orderFront(sender)
         
         if open.runModal() == NSModalResponseOK {
-            if let url = open.url {
-                _ = self.doOpenFile(fileURL: url)
+            if let url = open.url, let fileURL = URL(string: url.absoluteString.removingPercentEncoding!) {
+                _ = self.doOpenFile(fileURL: fileURL)
             }
         }
     }
@@ -158,8 +167,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
     }
     
-   override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
+        if let window = NSApp.mainWindow {
+            let storyboard = NSStoryboard(name: "Main", bundle: nil)
+            let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
+            let wvc = window.windowController?.contentViewController
+            wvc?.presentViewControllerAsSheet(pvc)
+        }
+        else
+        {
+            let storyboard = NSStoryboard(name: "Main", bundle: nil)
+            let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
+            ppc.window?.center()
+            
+            NSApp.runModal(for: ppc.window!)
+        }
+    }
+    
+	@IBOutlet weak var openNewMenu: NSMenu!
+	@IBAction func updateOpenNewTitle(_ sender: NSMenu) {
+		sender.title = (nil != NSApp.keyWindow ? "Open" : "New")
+	}
+	@IBOutlet weak var appOpenNewMenu: NSMenuItem!
+    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
+		case "Open/New", "Open", "New":
+			menuItem.title = (nil != NSApp.windows.first ? "Open" : "New")
+			break
         case "Preferences":
             break
         case "Home Page":
@@ -408,7 +442,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Finder drops
     func application(_ sender: NSApplication, openFile: String) -> Bool {
         let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
-        return self.doOpenFile(fileURL: URL.init(string: urlString)!)
+        let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
+        return self.doOpenFile(fileURL: fileURL)
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
