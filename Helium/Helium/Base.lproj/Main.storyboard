@@ -210,7 +210,6 @@
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="ySE-xa-5KO"/>
-                                                            <segue destination="o3w-13-r8w" kind="modal" id="V52-Z8-j0r"/>
                                                         </connections>
                                                     </menuItem>
                                                 </items>
@@ -261,33 +260,46 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Location" id="bib-Uj-vzu">
                                     <items>
-                                        <menuItem title="New Window" keyEquivalent="n" id="Lba-KG-mgX">
-                                            <connections>
-                                                <action selector="newDocument:" target="Ady-hI-5gd" id="kFI-WF-ngV"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Open Web URL..." keyEquivalent="l" id="JqH-ds-lJa">
-                                            <connections>
-                                                <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Open File..." keyEquivalent="o" id="iba-HN-Jos">
-                                            <connections>
-                                                <action selector="openFilePress:" target="Voe-Tx-rLC" id="f5f-OR-pBN"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Open Recent" id="awr-xo-jo4">
+                                        <menuItem title="Open/New" id="wiF-om-ZaY">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="RSV-Ho-Yzi">
+                                            <menu key="submenu" title="Open/New" id="wjR-Gf-o9v">
                                                 <items>
-                                                    <menuItem title="Clear Menu" id="CME-f2-iQr">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <menuItem title="Window" keyEquivalent="n" id="Lba-KG-mgX">
                                                         <connections>
-                                                            <action selector="clearRecentDocuments:" target="Ady-hI-5gd" id="gbF-fm-tHh"/>
+                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="kFI-WF-ngV"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Web URL..." keyEquivalent="l" id="JqH-ds-lJa">
+                                                        <connections>
+                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="File..." keyEquivalent="o" id="iba-HN-Jos">
+                                                        <connections>
+                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="f5f-OR-pBN"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Recent" id="ijm-7H-tnN">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Recent" systemMenu="recentDocuments" id="4CK-ZL-gyh">
+                                                            <items>
+                                                                <menuItem title="Clear Menu" id="fBa-AQ-Uom">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="clearRecentDocuments:" target="Ady-hI-5gd" id="bzE-FW-MPz"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
                                                 </items>
+                                                <connections>
+                                                    <outlet property="delegate" destination="Voe-Tx-rLC" id="gle-FF-4xy"/>
+                                                </connections>
                                             </menu>
+                                            <connections>
+                                                <action selector="updateOpenNewTitle:" target="Voe-Tx-rLC" id="Xpt-Y9-Ofe"/>
+                                            </connections>
                                         </menuItem>
                                         <menuItem title="Reload" keyEquivalent="r" id="drw-0K-OAV">
                                             <connections>
@@ -319,6 +331,9 @@ CA
                                             </connections>
                                         </menuItem>
                                     </items>
+                                    <connections>
+                                        <outlet property="delegate" destination="Voe-Tx-rLC" id="VbI-6E-D40"/>
+                                    </connections>
                                 </menu>
                             </menuItem>
                             <menuItem title="Appearance" id="H8h-7b-M4v">
@@ -512,10 +527,31 @@ CA
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
+                <menu title="Open/New" id="CPl-RO-Kny">
+                    <items>
+                        <menuItem title="Window" keyEquivalent="n" id="8Zx-Up-ojI"/>
+                        <menuItem title="Web URL..." keyEquivalent="l" id="hpd-iY-IDt">
+                            <connections>
+                                <action selector="openLocationPress:" target="Voe-Tx-rLC" id="SGG-LV-ANU"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="File..." keyEquivalent="o" id="PrW-5Z-z2q">
+                            <connections>
+                                <action selector="openDocument:" target="Voe-Tx-rLC" id="jkS-ux-qmk"/>
+                            </connections>
+                        </menuItem>
+                    </items>
+                    <connections>
+                        <outlet property="delegate" destination="Voe-Tx-rLC" id="naP-Ju-V1B"/>
+                    </connections>
+                </menu>
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Helium" customModuleProvider="target">
                     <connections>
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
+                        <outlet property="appOpenNewMenu" destination="fDe-O9-X2L" id="r1a-hc-gYP"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
+                        <outlet property="openNewMenu" destination="wjR-Gf-o9v" id="zNL-jF-ECu"/>
+                        <outlet property="openNewMenuItem" destination="wjR-Gf-o9v" id="wj1-zv-y5A"/>
                     </connections>
                 </customObject>
                 <customObject id="sQQ-SA-Rgm" customClass="SUUpdater"/>
@@ -523,9 +559,9 @@ CA
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">
                     <items>
-                        <menuItem title="Open" id="fDe-O9-X2L">
+                        <menuItem title="Open/New" id="fDe-O9-X2L">
                             <modifierMask key="keyEquivalentModifierMask"/>
-                            <menu key="submenu" title="Open" id="cgH-8w-eo4">
+                            <menu key="submenu" title="Open/New" id="cgH-8w-eo4">
                                 <items>
                                     <menuItem title="File" id="RbQ-rp-cWl">
                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -541,6 +577,9 @@ CA
                                     </menuItem>
                                 </items>
                             </menu>
+                            <connections>
+                                <action selector="updateOpenNewTitle:" target="Voe-Tx-rLC" id="0uw-7q-rDj"/>
+                            </connections>
                         </menuItem>
                         <menuItem title="Playlists" id="14E-f1-zMF" userLabel="Playlists">
                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -658,7 +697,7 @@ CA
             <objects>
                 <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="9Nm-Xe-vMy" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" resizable="YES" nonactivatingPanel="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" resizable="YES" utility="YES" nonactivatingPanel="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="425" y="461" width="480" height="270"/>
@@ -880,7 +919,7 @@ Gw
 </string>
                                                 </buttonCell>
                                                 <connections>
-                                                    <action selector="dismissController:" target="YAy-lX-dae" id="DbP-L8-Giv"/>
+                                                    <action selector="dismissController:" target="YAy-lX-dae" id="k3y-Is-YFV"/>
                                                 </connections>
                                             </button>
                                             <button toolTip="Dismiss editing, keep changes" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NuZ-En-DGv">
@@ -893,7 +932,7 @@ Gw
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
                                                 <connections>
-                                                    <action selector="dismissController:" target="YAy-lX-dae" id="RrX-Lw-E3r"/>
+                                                    <action selector="dismissController:" target="YAy-lX-dae" id="NBA-fS-jC9"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -1167,7 +1206,7 @@ Gw
                     </connections>
                 </arrayController>
             </objects>
-            <point key="canvasLocation" x="593" y="750"/>
+            <point key="canvasLocation" x="612" y="406"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
