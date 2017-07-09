@@ -88,7 +88,7 @@ extension NSURL {
                 if !urlString.hasPrefix("file://") {
                     urlString = "file://" + urlString
                 }
-                return URL.init(string: urlString)
+                return URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
             } catch {
                 // We know that the input path exists, but treating it as an alias
                 // file failed, so we assume it's not an alias file so return nil.
@@ -286,7 +286,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     @IBAction override func dismiss(_ sender: Any?) {
         super.dismiss(sender)
-
+        
+        //  If we were run modally as a window, close it
+        if let ppc = self.view.window?.windowController {
+            if ppc.isKind(of: PlaylistPanelController.self) {
+                NSApp.abortModal()
+            }
+        }
+        
         //    Save or go
         switch (sender! as AnyObject).tag == 0 {
             case true:
