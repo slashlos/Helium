@@ -221,7 +221,14 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
-
+    
+    func updateTrackingAreas() {
+        if let tag = trackingTag {
+            view.removeTrackingRect(tag)
+        }
+        
+        trackingTag = view.addTrackingRect(view.bounds, owner: self, userData: nil, assumeInside: false)
+    }
     override func viewDidLayout() {
         super.viewDidLayout()
 
@@ -230,10 +237,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             (hwc as! HeliumPanelController).documentViewDidLoad()
         }
         
-        if let tag = trackingTag {
-            view.removeTrackingRect(tag)
-        }
-
         if videoFileReferencedURL {
             let newSize = webView.bounds.size
             let aspect = webSize.height / webSize.width
@@ -243,8 +246,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             webView.setMagnification((magnify > 1 ? magnify : 1), centeredAt: NSMakePoint(adjSize.width/2.0, adjSize.height/2.0))
             view.setBoundsSize(adjSize)
         }
-
-        trackingTag = view.addTrackingRect(view.bounds, owner: self, userData: nil, assumeInside: false)
+        updateTrackingAreas()
     }
 
     // MARK: Actions
@@ -404,18 +406,21 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
+        Swift.print("webView:didFinish:")
         if let pageTitle = webView.title {
-            let hwc = self.view.window?.windowController as! HeliumPanelController
-            let doc = hwc.document as! Document
-            var title = pageTitle;
-            if title.isEmpty { title = doc.displayName }
-            let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
-                                     object: title, userInfo: ["hwc":hwc]);
-            NotificationCenter.default.post(notif)
+            if let hwc = self.view.window?.windowController {
+                let doc = hwc.document as! Document
+                var title = pageTitle;
+                if title.isEmpty { title = doc.displayName }
+                let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
+                                         object: title, userInfo: ["hwc":hwc]);
+                NotificationCenter.default.post(notif)
+            }
         }
     }
     
     func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {
+        Swift.print("webView:didFinishLoad:")
     }
     
     var videoFileReferencedURL = false
@@ -427,29 +432,29 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             if let progress = change?[NSKeyValueChangeKey(rawValue: "new")] as? Float {
                 let percent = progress * 100
                 var title = NSString(format: "Loading... %.2f%%", percent)
-                if percent == 100 {
+                if percent == 100, let url = (self.webView.url) {
                     videoFileReferencedURL = false
-                    let url = (self.webView.url)
 
-                    if (url?.isFileURL)! {
-                        if let original = (url! as NSURL).resolvedFinderAlias() {
+                    if (url.isFileURL) {
+                        if let original = (url as NSURL).resolvedFinderAlias() {
                             self.loadURL(url: original)
                             return
                         }
                     }
-
+                    
+                    //  Keep history updated
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
-
+ 
                     // once loaded update window title,size with video name,dimension
                     if let urlTitle = (self.webView.url?.absoluteString) {
                         title = urlTitle as NSString
 
-                        if let track = AVURLAsset(url: url!, options: nil).tracks.first {
+                        if let track = AVURLAsset(url: url, options: nil).tracks.first {
 
                             //    if it's a video file, get and set window content size to its dimentions
                             if track.mediaType == AVMediaTypeVideo {
-                                title = url!.lastPathComponent as NSString
+                                title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
                                 webView.window?.setContentSize(webSize)
                                 webView.bounds.size = webSize
@@ -457,7 +462,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                             }
 
                             //  Wait for URL to finish
-                            let videoPlayer = AVPlayer(url: url!)
+                            let videoPlayer = AVPlayer(url: url)
                             let item = videoPlayer.currentItem
                             NotificationCenter.default.addObserver(self, selector: #selector(WebViewController.playerDidFinishPlaying(_:)),
                                                                              name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: item)
@@ -471,7 +476,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                     // Remember for later restoration
                     if let doc = self.view.window?.windowController?.document {
                         self.view.window?.representedURL = url
-                        (doc as! Document).updateURL(to: url!, ofType: "Any")
+                        (doc as! Document).updateURL(to: url, ofType: "Any")
                         
                         let notif = Notification(name: Notification.Name(rawValue: "HeliumDidUpdateURL"), object: url);
                         NotificationCenter.default.post(notif)
