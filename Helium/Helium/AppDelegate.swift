@@ -207,7 +207,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         default:
             break
         }
-        Swift.print(String(format: "app %@ %@", menuItem.title, menuItem.state == NSOnState ? "on" : "off"))
         return true;
     }
 
