@@ -154,7 +154,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     @IBAction func addPlaylist(_ sender: NSButton) {
-        if let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
+        let whoAmI = self.view.window?.firstResponder
+        
+        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
             let list: Array<PlayItem> = selectedPlaylist.value as! Array
             let item = PlayItem(name:"item#",link:URL.init(string: "http://")!,time:0.0,rank:list.count + 1);
             let temp = NSString(format:"%p",item) as String
@@ -165,7 +167,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             DispatchQueue.main.async {
                 self.playitemTableView.scrollRowToVisible(list.count - 1)
             }
-        } else {
+        }
+        else
+        if whoAmI == playlistTableView {
             let item = playlistArrayController.newObject()
             let list = Array <PlayItem>()
 
@@ -180,14 +184,20 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 self.playlistTableView.scrollRowToVisible(self.playlists.count - 1)
             }
         }
+        else
+        {
+            Swift.print("firstResponder: \(String(describing: whoAmI))")
+        }
     }
 
     @IBAction func removePlaylist(_ sender: AnyObject) {
-        if sender as! NSObject == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
+        let whoAmI = self.view.window?.firstResponder
+
+        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
             playlistArrayController.removeObject(selectedPlaylist)
         }
         else
-        if sender as! NSObject == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
+        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
             playitemArrayController.removeObject(selectedPlayItem)
         }
         else
@@ -200,7 +210,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         {
-             AudioServicesPlaySystemSound(1051);
+            Swift.print("firstResponder: \(String(describing: whoAmI))")
+            AudioServicesPlaySystemSound(1051);
         }
     }
 
@@ -208,7 +219,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     @IBAction func playPlaylist(_ sender: AnyObject) {
-        if let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
+        let whoAmI = self.view.window?.firstResponder
+
+        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
             super.dismiss(sender)
 
             if (webViewController != nil) {
@@ -224,7 +237,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
              }
         }
         else
-        if let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
+        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
             let list: Array<PlayItem> = selectedPlaylist.value as! Array
             
             if list.count > 0 {
@@ -236,11 +249,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
             }
         }
+        else
+        {
+            Swift.print("firstResponder: \(String(describing: whoAmI))")
+        }
     }
     
     @IBOutlet weak var restoreButton: NSButton!
     @IBAction func restorePlaylists(_ sender: NSButton) {
-        if let playArray = defaults.array(forKey: UserSettings.Playlists.keyPath) {
+        let whoAmI = self.view.window?.firstResponder
+
+        if whoAmI == playlistTableView, let playArray = defaults.array(forKey: UserSettings.Playlists.keyPath) {
             playlistArrayController.remove(contentsOf: playlistArrayController.arrangedObjects as! [AnyObject])
 
             for playlist in playArray {
@@ -265,6 +284,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 temp.value = list
                 playlistArrayController.addObject(temp)
             }
+        }
+        else
+        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
+            Swift.print("restorePlaylists: playItem: \(selectedPlayItem)")
+        }
+        else
+        {
+            Swift.print("firstResponder: \(String(describing: whoAmI))")
         }
     }
 
