@@ -557,7 +557,8 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Window" keyEquivalent="s" id="jeT-TZ-JXU">
+                                    <menuItem title="Window" id="jeT-TZ-JXU">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="bSU-N3-Sqq"/>
                                         </connections>
