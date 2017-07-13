@@ -162,9 +162,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                         hpc.webViewController.loadURL(text: newUrl)
                                     }
                                 }
+                                else
+                                {
+                                    do {
+                                        let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
+                                        if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                                            hpc.webViewController.loadURL(text: newUrl)
+                                        }
+                                    } catch let error {
+                                        NSApp.presentError(error)
+                                    }
+                                }
                             }
-        }
-        )
+        })
     }
     
     @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
