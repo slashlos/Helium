@@ -533,7 +533,6 @@ CA
                         <outlet property="appOpenNewMenu" destination="fDe-O9-X2L" id="r1a-hc-gYP"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
                         <outlet property="openNewMenu" destination="wjR-Gf-o9v" id="zNL-jF-ECu"/>
-                        <outlet property="openNewMenuItem" destination="wjR-Gf-o9v" id="wj1-zv-y5A"/>
                     </connections>
                 </customObject>
                 <customObject id="sQQ-SA-Rgm" customClass="SUUpdater"/>
