@@ -194,8 +194,8 @@ class Document : NSDocument {
         switch typeName {
         case "DocumentType":
             let plist = try! PropertyListSerialization.propertyList(from:data,
-                                                                   options: [],
-                                                                   format: nil) as! Dictionary<String,AnyObject>
+                                                                    options: [],
+                                                                    format: nil) as! Dictionary<String,AnyObject>
             if plist.count > 0 {
                 playlists = plist[UserSettings.Playlists.default] as! Dictionary<String, Any>
                 settings = plist[UserSettings.PlayPrefs.default] as! Settings
