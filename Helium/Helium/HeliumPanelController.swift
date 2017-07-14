@@ -338,14 +338,17 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         
         let open = NSOpenPanel()
         open.allowsMultipleSelection = false
-        open.canChooseFiles = true
         open.canChooseDirectories = false
-        
-        if open.runModal() == NSModalResponseOK {
-            if let url = open.url {
-                webViewController.loadURL(url:url)
+        open.resolvesAliases = true
+        open.canChooseFiles = true
+        open.worksWhenModal = true
+        open.beginSheetModal(for: self.window!, completionHandler: { (response: NSModalResponse) in
+            if response == NSModalResponseOK {
+                if let url = open.url {
+                    self.webViewController.loadURL(url:url)
+                }
             }
-        }
+        })
     }
     
     fileprivate func didRequestLocation() {
