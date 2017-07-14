@@ -322,7 +322,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             else
             {
-                let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
+                let fuzz = itemURL.deletingPathExtension().lastPathComponent
                 let name = fuzz.removingPercentEncoding
                 
                 // Ignore our home page from the history queue
