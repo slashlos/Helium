@@ -75,6 +75,7 @@ internal struct Settings {
     let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let windowURL = Setup<URL>("windowURL", value: URL.init(string: "http://")!)
+    let frame = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -126,6 +127,7 @@ class Document : NSDocument {
             fileType = typeName
             fileURL = url
         }
+        self.updateChangeCount(.changeDone)
     }
     
     override init() {
@@ -177,6 +179,8 @@ class Document : NSDocument {
         
         //  Close down any observations before closure
         controller.window?.delegate = controller as? NSWindowDelegate
+        self.settings.frame.value = (controller.window?.frame)!
+        self.updateChangeCount(.changeDone)
     }
     
     override func data(ofType typeName: String) throws -> Data {
