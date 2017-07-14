@@ -63,6 +63,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         willUpdateAlpha()
     }
     
+    func windowDidMove(_ notification: Notification) {
+        if (notification.object as! NSWindow) == self.window {
+            self.doc?.settings.frame.value = (self.window?.frame)!
+            self.doc?.updateChangeCount(.changeDone)
+            Swift.print(String(format: "%@ -> %@", (doc?.displayName!)!, NSStringFromRect((doc?.settings.frame.value)!)))
+        }
+    }
+
     // MARK:- Mouse events
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard()
