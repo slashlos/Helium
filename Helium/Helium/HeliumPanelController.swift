@@ -66,6 +66,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         if (notification.object as! NSWindow) == self.window {
             self.doc?.settings.frame.value = (self.window?.frame)!
+            self.doc?.updateChangeCount(.changeDone)
         }
     }
 
