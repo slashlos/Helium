@@ -125,13 +125,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
         self.restorePlaylists(restoreButton)
+        //  Maintain a history of titles
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(gotNewHistoryItem(_:)),
+            name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
+            object: nil)
     }
 
     var historyCache: NSDictionaryControllerKeyValuePair? = nil
     override func viewWillAppear() {
-        // cache our list before editing
-        playCache = playlists
-        
         // add existing history entry if any
         if historyCache == nil && appDelegate.histories.count > 0 {
             playlists[UserSettings.HistoryName.value] = nil
@@ -140,13 +144,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
             historyCache!.key = UserSettings.HistoryName.value
             historyCache!.value = appDelegate.histories
-            playlistArrayController.addObject(historyCache!)
         }
         else
         if historyCache != nil
         {
             historyCache!.value = appDelegate.histories
         }
+        playlistArrayController.addObject(historyCache!)
+        
+        // cache our list before editing
+        playCache = playlists
         
         self.playlistSplitView.setPosition(120, ofDividerAt: 0)
         NSApp.activate(ignoringOtherApps: true)
@@ -255,11 +262,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
+    // Return notification from webView controller
+    @objc func gotNewHistoryItem(_ note: Notification) {
+        historyCache!.value = appDelegate.histories
+    }
+
     @IBOutlet weak var restoreButton: NSButton!
     @IBAction func restorePlaylists(_ sender: NSButton) {
-        let whoAmI = self.view.window?.firstResponder
-
-        if whoAmI == playlistTableView, let playArray = defaults.array(forKey: UserSettings.Playlists.keyPath) {
+        if playCache.count > 0 {
+            playlists = playCache
+        }
+        else
+        if let playArray = defaults.array(forKey: UserSettings.Playlists.keyPath) {
             playlistArrayController.remove(contentsOf: playlistArrayController.arrangedObjects as! [AnyObject])
 
             for playlist in playArray {
@@ -284,14 +298,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 temp.value = list
                 playlistArrayController.addObject(temp)
             }
-        }
-        else
-        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
-            Swift.print("restorePlaylists: playItem: \(selectedPlayItem)")
-        }
-        else
-        {
-            Swift.print("firstResponder: \(String(describing: whoAmI))")
         }
     }
 
@@ -329,6 +335,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     appDelegate.histories = historyCache?.value as! Array<PlayItem>
                     UserSettings.HistoryName.value = (historyCache?.key)!
                 }
+                // Save to the cache
+                playCache = playlists
                 break
             case false:
                 // Restore from cache
@@ -547,26 +555,39 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             if items.count == 0 {
                 for element in pasteboard.pasteboardItems! {
                     for type in element.types {
+                        if !okydoKey {
+                            play?.key = type
+                        }
                         let item = element.string(forType:type)
-                        if type == "public.url" {
-                            if !okydoKey {
-                                play?.key = type
-                            }
-                            let url = URL.init(string: item!)
-                            let fuzz = url?.deletingPathExtension().lastPathComponent
-                            let name = fuzz?.removingPercentEncoding
-                            let temp = PlayItem(name: name!,
-                                                link: url!,
-                                                time: 0,
-                                                rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
-                            playitemArrayController.insert(temp, atArrangedObjectIndex: row + newIndexOffset)
-                            newIndexOffset += 1
+                        var url: URL?
+                        switch (type) {
+                        case "public.url":
+                            url = URL(string: item!)
                             break
-                        }
-                        else
-                        {
+                        case "public.file-url":
+                            url = URL(string: item!)?.standardizedFileURL
+                            break
+                        case "com.apple.finder.node":
+                            continue // handled as public.file-url
+                        default:
                             Swift.print("type \(type) \(item!)")
+                            continue
                         }
+                        if let original = (url! as NSURL).resolvedFinderAlias() {
+                            url = original
+                        }
+
+                        let attr = appDelegate.metadataDictionaryForFileAt((url?.path)!)
+                        let time = attr?[kMDItemDurationSeconds] as! TimeInterval
+                        let fuzz = url?.deletingPathExtension().lastPathComponent
+                        let name = fuzz?.removingPercentEncoding
+                        let temp = PlayItem(name: name!,
+                                            link: url!,
+                                            time: time,
+                                            rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
+                        playitemArrayController.insert(temp, atArrangedObjectIndex: row + newIndexOffset)
+                        newIndexOffset += 1
+
                     }
                 }
             }
