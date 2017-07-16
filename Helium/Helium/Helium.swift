@@ -124,7 +124,7 @@ class Document : NSDocument {
         }
         else
         {
-            fileType = typeName
+            fileType = url.pathExtension
             fileURL = url
         }
         self.updateChangeCount(.changeDone)
@@ -180,7 +180,6 @@ class Document : NSDocument {
         //  Close down any observations before closure
         controller.window?.delegate = controller as? NSWindowDelegate
         self.settings.frame.value = (controller.window?.frame)!
-        self.updateChangeCount(.changeDone)
     }
     
     override func data(ofType typeName: String) throws -> Data {
@@ -319,7 +318,7 @@ class Document : NSDocument {
                 }
             }
 
-            self.fileType = typeName
+            self.fileType = url.pathExtension
             self.fileURL = url
             break
 
@@ -366,6 +365,11 @@ class Document : NSDocument {
             Swift.print("nyi \(typeName)")
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
+        self.updateChangeCount(.changeCleared)
+    }
+    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
+        Swift.print("writeSafely: \(url.absoluteString)")
+        self.updateChangeCount(.changeCleared)
     }
     
 }
