@@ -334,6 +334,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             histories.append(item)
             item.rank = histories.count
+
+            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewHistoryItem"), object: item)
+            NotificationCenter.default.post(notif)
         }
     }
     
