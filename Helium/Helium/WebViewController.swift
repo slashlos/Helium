@@ -80,6 +80,11 @@ class MyWebView : WKWebView {
         item.target = appDelegate
         subPref.addItem(item)
 
+        item = NSMenuItem(title: "Shared preferences", action: #selector(AppDelegate.sharePlaylistAndpreferences(_:)), keyEquivalent: "")
+        item.state = (UserSettings.SharePlayists.value == true) ? NSOffState : NSOnState
+        item.target = appDelegate
+        subPref.addItem(item)
+
         item = NSMenuItem(title: "Translucency", action: #selector(menuClicked(_:)), keyEquivalent: "")
         subPref.addItem(item)
         let subTranslucency = NSMenu()
@@ -413,15 +418,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-        Swift.print("webView:didFinish:")
         if let pageTitle = webView.title {
             if let hwc = self.view.window?.windowController {
                 let doc = hwc.document as! Document
                 var title = pageTitle;
                 if title.isEmpty { title = doc.displayName }
-                let notif = Notification(name: Notification.Name(rawValue: "HeliumUpdateTitle"),
+                let notif = Notification(name: Notification.Name(rawValue: "HeliumNextTitle"),
                                          object: title, userInfo: ["hwc":hwc]);
                 NotificationCenter.default.post(notif)
+                Swift.print("webView:didFinish: \(title)")
             }
         }
     }
@@ -472,7 +477,23 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                             let item = videoPlayer.currentItem
                             NotificationCenter.default.addObserver(self, selector: #selector(WebViewController.playerDidFinishPlaying(_:)),
                                                                              name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: item)
-                        }
+
+                            NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main, using: { (_) in
+                                DispatchQueue.main.async {
+                                    Swift.print("restarting #1")
+                                    videoPlayer.seek(to: kCMTimeZero)
+                                    videoPlayer.play()
+                                }
+                            })
+                            
+                            NotificationCenter.default.addObserver(forName: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: item, queue: .main, using: { (_) in
+                                DispatchQueue.main.async {
+                                    Swift.print("restarting #2")
+                                    videoPlayer.seek(to: kCMTimeZero)
+                                    videoPlayer.play()
+                                }
+                            })
+                       }
                     } else {
                         title = "Helium"
                     }
