@@ -212,6 +212,12 @@
                                                             <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="ySE-xa-5KO"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Shared preferences" toolTip="initialize document prefs with globals" id="ubJ-Fl-uGs">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="sharePlaylistAndpreferences:" target="Voe-Tx-rLC" id="Yel-27-pdC"/>
+                                                        </connections>
+                                                    </menuItem>
                                                 </items>
                                                 <connections>
                                                     <outlet property="delegate" destination="Voe-Tx-rLC" id="7xL-pl-5Bj"/>
@@ -606,6 +612,12 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="DUb-Jc-Weo"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Shared preferences" toolTip="initialize document prefs with globals" id="EP7-st-8xe">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="sharePlaylistAndpreferences:" target="Voe-Tx-rLC" id="SK7-Gz-Lsy"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Translucency" id="JEh-0f-gsX">
