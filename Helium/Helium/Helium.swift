@@ -127,7 +127,6 @@ class Document : NSDocument {
             fileType = url.pathExtension
             fileURL = url
         }
-        self.updateChangeCount(.changeDone)
     }
     
     override init() {
@@ -365,11 +364,9 @@ class Document : NSDocument {
             Swift.print("nyi \(typeName)")
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
-        self.updateChangeCount(.changeCleared)
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         Swift.print("writeSafely: \(url.absoluteString)")
-        self.updateChangeCount(.changeCleared)
     }
     
 }
