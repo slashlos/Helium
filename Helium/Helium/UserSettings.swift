@@ -69,7 +69,6 @@ internal struct UserSettings {
     )
 
     //  User Defaults keys
-    static let SharePlayists = Setting<Bool>("sharePlaylists", defaultValue: false)
     static let Playlists = Setting<String>("playlists", defaultValue:"playlists")
     static let PlayPrefs = Setting<String>("playprefs", defaultValue:"playprefs")
     static let HistoryName = Setting<String>("historyName", defaultValue:"History")
