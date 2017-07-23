@@ -194,10 +194,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-	@IBAction func sharePlaylistAndpreferences(_ sender: NSMenuItem) {
-        UserSettings.SharePlayists.value = (sender.state == NSOffState)
-	}
-	
 	@IBOutlet weak var openNewMenu: NSMenu!
 	@IBAction func updateOpenNewTitle(_ sender: NSMenu) {
 		sender.title = (nil != NSApp.keyWindow ? "Open" : "New")
@@ -214,9 +210,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
-            break
-        case "Shared preferences":
-            menuItem.state = UserSettings.SharePlayists.value ? NSOnState : NSOffState
             break
         case "Quit":
             break
