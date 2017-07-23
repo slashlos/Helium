@@ -227,6 +227,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     let toHMS = hmsTransformer()
+    let rectToString = rectTransformer()
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSAppleEventManager.shared().setEventHandler(
             self,
@@ -242,6 +243,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Initialize our h:m:s transformer
         ValueTransformer.setValueTransformer(toHMS, forName: NSValueTransformerName(rawValue: "hmsTransformer"))
         
+        //  Initialize our rect [point,size] transformer
+        ValueTransformer.setValueTransformer(rectToString, forName: NSValueTransformerName(rawValue: "rectTransformer"))
+
         //  Maintain a history of titles
         NotificationCenter.default.addObserver(
             self,

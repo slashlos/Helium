@@ -38,3 +38,28 @@ class hmsTransformer: ValueTransformer {
         return value
     }
 }
+
+class rectTransformer: ValueTransformer {
+    
+    // flag indicating transformation is read-write
+    internal override class func allowsReverseTransformation() -> Bool {
+        return true
+    }
+    
+    // by default returns value
+    internal override func transformedValue(_ value: Any?) -> Any? {
+        if let rect : NSRect = value as? NSRect {
+            return NSStringFromRect(rect)
+        }
+        return nil
+    }
+    
+    // by default raises an exception if +allowsReverseTransformation returns NO and otherwise invokes transformedValue:
+    internal override func reverseTransformedValue(_ value: Any?) -> Any? {
+        if let rect: String = value as? String {
+            return NSRectFromString(rect)
+        }
+        return value
+    }
+}
+
