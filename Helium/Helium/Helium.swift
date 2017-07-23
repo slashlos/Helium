@@ -113,9 +113,6 @@ class Document : NSDocument {
                         playlists[name!] = list
                     }
                 }
-                if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
-                    settings = setup as! Settings
-                }
                 if let urlString = dict.value(forKey: "fileURL") {
                     self.fileURL = URL(string: (urlString as AnyObject).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
                     self.fileType = self.fileURL?.pathExtension
@@ -200,7 +197,6 @@ class Document : NSDocument {
                                                                     format: nil) as! Dictionary<String,AnyObject>
             if plist.count > 0 {
                 playlists = plist[UserSettings.Playlists.default] as! Dictionary<String, Any>
-                settings = plist[UserSettings.PlayPrefs.default] as! Settings
                 break
             }
 
@@ -267,9 +263,6 @@ class Document : NSDocument {
                     }
                 }
 
-                if let setup = dict.value(forKey: UserSettings.PlayPrefs.default) {
-                    settings = setup as! Settings
-                }
                 if let fileURL = dict.value(forKey: "fileURL") {
                     self.fileURL = URL(string: (fileURL as! String).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
                     self.fileType = self.fileURL?.pathExtension
@@ -337,6 +330,10 @@ class Document : NSDocument {
         }
     }
     
+    @IBAction override func save(_ sender: (Any)?) {
+        Swift.print("save: \(self.displayName)")
+    }
+    
     override func write(to url: URL, ofType typeName: String) throws {
         switch typeName {
         case "DocumentType":
@@ -356,7 +353,6 @@ class Document : NSDocument {
         case "h2w":
             let dict = NSDictionary.init()
             dict.setValue(playlists, forKey: UserSettings.Playlists.default)
-            dict.setValue(settings, forKey: UserSettings.PlayPrefs.default)
             dict.write(to: url, atomically: true)
             break
             
@@ -365,8 +361,22 @@ class Document : NSDocument {
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
     }
+    
+    override func save(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType, completionHandler: @escaping (Error?) -> Void) {
+        Swift.print("save: \(url.absoluteString)")
+        do {
+            try self.write(to: url, ofType: typeName)
+        } catch let error {
+            NSApp.presentError(error)
+        }
+    }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         Swift.print("writeSafely: \(url.absoluteString)")
+        do {
+            try self.write(to: url, ofType: typeName)
+        } catch let error {
+            NSApp.presentError(error)
+        }
     }
     
 }
