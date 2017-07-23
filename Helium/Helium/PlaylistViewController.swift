@@ -45,6 +45,7 @@ class PlayTableView : NSTableView {
 
 class PlayItemCornerView : NSView {
     @IBOutlet weak var playlistArrayController: NSDictionaryController!
+	@IBOutlet weak var playitemArrayController: NSArrayController!
     @IBOutlet weak var playitemTableView: PlayTableView!
     override func draw(_ dirtyRect: NSRect) {
         let tote = NSImage.init(imageLiteralResourceName: "NSRefreshTemplate")
@@ -56,14 +57,10 @@ class PlayItemCornerView : NSView {
     }
     
     override func mouseDown(with event: NSEvent) {
+        // Renumber playlist items via array controller
         playitemTableView.beginUpdates()
-        // Renumber playlist items
-        let list = (playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair).value as! [PlayItem]
-        let col = playitemTableView.column(withIdentifier: "rank")
-        for row in 0...playitemTableView.numberOfRows-1 {
-            let cell = playitemTableView.view(atColumn: col, row: row, makeIfNecessary: true) as! NSTableCellView
-            cell.textField?.integerValue = row + 1
-            list[row].rank = row + 1
+        for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
+            item.rank = row + 1
         }
         playitemTableView.endUpdates()
     }
