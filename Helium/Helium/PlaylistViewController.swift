@@ -69,6 +69,33 @@ class PlayItemCornerView : NSView {
     }
 }
 
+class PlayItemHeaderView : NSTableHeaderView {
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let action = #selector(PlaylistViewController.toggleColumnVisiblity(_ :))
+        let target = self.tableView?.delegate
+        let menu = NSMenu.init()
+        var item: NSMenuItem
+        
+        //	We auto enable items as views present them
+        menu.autoenablesItems = true
+        
+        //	TableView level column customizations
+        for col in (self.tableView?.tableColumns)! {
+            let title = col.headerCell.stringValue
+            let state = col.isHidden
+            
+            item = NSMenuItem.init(title: title, action: action, keyEquivalent: "")
+            item.image = NSImage.init(named: (state) ? "NSOnImage" : "NSOffImage")
+            item.state = (state ? NSOffState : NSOnState)
+            item.representedObject = col
+            item.isEnabled = true
+            item.target = target
+            menu.addItem(item)
+        }
+        return menu
+    }
+}
+
 extension NSURL {
     
     func compare(_ other: URL ) -> ComparisonResult {
@@ -132,6 +159,28 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             selector: #selector(gotNewHistoryItem(_:)),
             name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
             object: nil)
+
+        //  Restore hidden columns in playitems using defaults
+        let hideit = ["link","rect","label","hover","alpha","trans"]
+        for col in playitemTableView.tableColumns {
+            let identifier = col.identifier
+            let pref = String(format: "hide.%@", identifier)
+            var isHidden = false
+            
+            //	If have a preference, honor it, else apply hidden default
+            if defaults.value(forKey: pref) != nil
+            {
+                isHidden = defaults.bool(forKey: pref)
+                hiddenColumns[pref] = String(isHidden)
+            }
+            else
+            if hideit.contains(identifier)
+            {
+                isHidden = true
+            }
+            col.isHidden = isHidden
+        }
+
     }
 
     var historyCache: NSDictionaryControllerKeyValuePair? = nil
@@ -343,7 +392,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 playlists = playCache
         }
     }
-    
+
+    dynamic var hiddenColumns = Dictionary<String, Any>()
+    @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
+        let col = sender.representedObject as! NSTableColumn
+        let identifier = col.identifier
+        let pref = String(format: "hide.%@", identifier)
+        let isHidden = !col.isHidden
+        
+        hiddenColumns.updateValue(String(isHidden), forKey: pref)
+        defaults.set(isHidden, forKey: pref)
+        col.isHidden = isHidden
+     }
+
     // MARK:- Drag-n-Drop
     
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {

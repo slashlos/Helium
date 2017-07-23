@@ -1146,8 +1146,8 @@ Gw
                                             <rect key="frame" x="298" y="23" width="15" height="194"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
-                                        <tableHeaderView key="headerView" id="YTX-gj-uhH">
-                                            <rect key="frame" x="0.0" y="0.0" width="396" height="23"/>
+                                        <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayItemHeaderView" customModule="Helium" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="731" height="23"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
