@@ -194,15 +194,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-	@IBOutlet weak var openNewMenu: NSMenu!
 	@IBAction func updateOpenNewTitle(_ sender: NSMenu) {
 		sender.title = (nil != NSApp.keyWindow ? "Open" : "New")
 	}
+	@IBOutlet weak var openNewMenu: NSMenuItem!
 	@IBOutlet weak var appOpenNewMenu: NSMenuItem!
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        let currDoc = NSDocumentController.shared().currentDocument
         switch menuItem.title {
 		case "Open/New", "Open", "New":
-			menuItem.title = (nil != NSApp.windows.first ? "Open" : "New")
+			menuItem.title = (nil != currDoc ? "Open" : "New")
 			break
         case "Preferences":
             break
@@ -210,6 +211,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+            break
+        case "New Window":
+            menuItem.target = currDoc
             break
         case "Quit":
             break
@@ -274,6 +278,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let link = URL.init(string: path)
                 let rank = item[k.rank] as! Int
                 let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                
+                // Non-visible (tableView) cells
+                temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                temp.label = item[k.label]?.boolValue ?? false
+                temp.hover = item[k.hover]?.boolValue ?? false
+                temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                temp.trans = item[k.trans]?.intValue ?? 0
+
                 histories.append(temp)
             }
         }

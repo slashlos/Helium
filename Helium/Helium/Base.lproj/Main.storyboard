@@ -265,8 +265,14 @@
                                             <menu key="submenu" title="Open/New" id="wjR-Gf-o9v">
                                                 <items>
                                                     <menuItem title="Window" keyEquivalent="n" id="Lba-KG-mgX">
+                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                                         <connections>
-                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="kFI-WF-ngV"/>
+                                                            <action selector="newWindow:" target="Ady-hI-5gd" id="NGR-xf-V3b"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Document" keyEquivalent="n" id="DR8-hJ-Dgj">
+                                                        <connections>
+                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="uDc-Ar-nDl"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="Web URL..." keyEquivalent="l" id="JqH-ds-lJa">
@@ -532,7 +538,7 @@ CA
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
                         <outlet property="appOpenNewMenu" destination="fDe-O9-X2L" id="r1a-hc-gYP"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
-                        <outlet property="openNewMenu" destination="wjR-Gf-o9v" id="zNL-jF-ECu"/>
+                        <outlet property="openNewMenu" destination="wiF-om-ZaY" id="Bjn-tG-4qp"/>
                     </connections>
                 </customObject>
                 <customObject id="sQQ-SA-Rgm" customClass="SUUpdater"/>
@@ -556,7 +562,13 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Window" id="jeT-TZ-JXU">
+                                    <menuItem title="Window" id="VKa-yC-mZQ">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="newWindow:" target="Ady-hI-5gd" id="roe-sS-Cgl"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Document" id="jeT-TZ-JXU">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="bSU-N3-Sqq"/>
@@ -1046,7 +1058,7 @@ Gw
                                                             </tableHeaderCell>
                                                             <popUpButtonCell key="dataCell" type="bevel" title="Never" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="bezel" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="B1g-sX-P7u" id="jRG-i3-NRI">
                                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                <font key="font" metaFont="system"/>
+                                                                <font key="font" metaFont="menu"/>
                                                                 <menu key="menu" id="ZUK-pq-tFB">
                                                                     <items>
                                                                         <menuItem title="Never" state="on" id="B1g-sX-P7u"/>
@@ -1089,7 +1101,7 @@ Gw
                                                             </tableHeaderCell>
                                                             <popUpButtonCell key="dataCell" type="bevel" title="Float" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="bezel" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="Zic-q4-Zgm" id="SIq-rM-1SG">
                                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                <font key="font" metaFont="system"/>
+                                                                <font key="font" metaFont="menu"/>
                                                                 <menu key="menu" id="t8V-TI-UNl">
                                                                     <items>
                                                                         <menuItem title="Float" state="on" id="Zic-q4-Zgm"/>
@@ -1110,7 +1122,7 @@ Gw
                                                             </tableHeaderCell>
                                                             <popUpButtonCell key="dataCell" type="bevel" title="Never" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="bezel" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="5hp-RN-6gc" id="G0K-19-9Of">
                                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                <font key="font" metaFont="system"/>
+                                                                <font key="font" metaFont="menu"/>
                                                                 <menu key="menu" id="Tjz-OY-g2e">
                                                                     <items>
                                                                         <menuItem title="Never" state="on" id="5hp-RN-6gc"/>

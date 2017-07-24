@@ -378,5 +378,25 @@ class Document : NSDocument {
             NSApp.presentError(error)
         }
     }
+    //MARK:- Actions
+    @IBAction func newDocument(_ sender: AnyObject) {
+        let dc = NSDocumentController.shared()
+        let doc = Document.init()
+        doc.makeWindowControllers()
+        dc.addDocument(doc)
+        doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
+    }
     
+    @IBAction func newWindow(_ sender: AnyObject) {
+        // like makeWindowControllers() but no document changes
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
+        self.addWindowController(controller)
+        
+        //  Close down any observations before closure
+        controller.window?.delegate = controller as? NSWindowDelegate
+        self.settings.rect.value = (controller.window?.frame)!
+        controller.window?.makeKeyAndOrderFront(sender)
+    }
+
 }
