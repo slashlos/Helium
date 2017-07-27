@@ -55,5 +55,53 @@ class HeliumPanel: NSPanel {
         
         super.sendEvent(event)
     }
+}
+
+//  Offset a window from the current app key window
+extension NSWindow {
+    func offsetFromKeyWindow() {
+        let keyWindow = NSApp.keyWindow
     
+        if keyWindow != nil {
+            self.offsetFromWindow(keyWindow!)
+        }
+    }
+
+    func offsetFromWindow(_ theWindow: NSWindow) {
+        let oldRect = theWindow.frame
+        let newRect = self.frame
+        let titleHeight = theWindow.isFloatingPanel ? k.TitleUtility : k.TitleNormal
+        
+        //	Offset this window from the key window by title height pixels to right, just below
+        //	either the title bar or the toolbar accounting for incons and/or text.
+        
+        let x = oldRect.origin.x + k.TitleNormal
+        var y = oldRect.origin.y + (oldRect.size.height - newRect.size.height) - titleHeight
+        
+        if let toolbar = theWindow.toolbar {
+            if toolbar.isVisible {
+                let item = theWindow.toolbar?.visibleItems?.first
+                let size = item?.maxSize
+                
+                if ((size?.height)! > CGFloat(0)) {
+                    y -= (k.ToolbarItemSpacer + (size?.height)!);
+                }
+                else
+                {
+                    y -= k.ToolbarItemHeight;
+                }
+                if theWindow.toolbar?.displayMode == .iconAndLabel {
+                    y -= (k.ToolbarItemSpacer + k.ToolbarTextHeight);
+                }
+                y -= k.ToolbarItemSpacer;
+            }
+        }
+        else
+        {
+            y -= k.ToolbarlessSpacer;
+        }
+
+        
+        self.setFrameOrigin(NSMakePoint(x,y))
+    }
 }
