@@ -260,17 +260,11 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Location" id="bib-Uj-vzu">
                                     <items>
-                                        <menuItem title="Open/New" id="wiF-om-ZaY">
+                                        <menuItem title="Open" id="wiF-om-ZaY">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Open/New" id="wjR-Gf-o9v">
+                                            <menu key="submenu" title="Open" id="wjR-Gf-o9v">
                                                 <items>
-                                                    <menuItem title="Window" keyEquivalent="n" id="Lba-KG-mgX">
-                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
-                                                        <connections>
-                                                            <action selector="newWindow:" target="Ady-hI-5gd" id="NGR-xf-V3b"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Document" keyEquivalent="n" id="DR8-hJ-Dgj">
+                                                    <menuItem title="Window" keyEquivalent="n" id="DR8-hJ-Dgj">
                                                         <connections>
                                                             <action selector="newDocument:" target="Ady-hI-5gd" id="uDc-Ar-nDl"/>
                                                         </connections>
@@ -303,9 +297,6 @@
                                                     <outlet property="delegate" destination="Voe-Tx-rLC" id="gle-FF-4xy"/>
                                                 </connections>
                                             </menu>
-                                            <connections>
-                                                <action selector="updateOpenNewTitle:" target="Voe-Tx-rLC" id="Xpt-Y9-Ofe"/>
-                                            </connections>
                                         </menuItem>
                                         <menuItem title="Reload" keyEquivalent="r" id="drw-0K-OAV">
                                             <connections>
@@ -536,9 +527,7 @@ CA
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Helium" customModuleProvider="target">
                     <connections>
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
-                        <outlet property="appOpenNewMenu" destination="fDe-O9-X2L" id="r1a-hc-gYP"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
-                        <outlet property="openNewMenu" destination="wiF-om-ZaY" id="Bjn-tG-4qp"/>
                     </connections>
                 </customObject>
                 <customObject id="sQQ-SA-Rgm" customClass="SUUpdater"/>
@@ -546,9 +535,9 @@ CA
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">
                     <items>
-                        <menuItem title="Open/New" id="fDe-O9-X2L">
+                        <menuItem title="Open" id="fDe-O9-X2L">
                             <modifierMask key="keyEquivalentModifierMask"/>
-                            <menu key="submenu" title="Open/New" id="cgH-8w-eo4">
+                            <menu key="submenu" title="Open" id="cgH-8w-eo4">
                                 <items>
                                     <menuItem title="File" id="RbQ-rp-cWl">
                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -565,20 +554,11 @@ CA
                                     <menuItem title="Window" id="VKa-yC-mZQ">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
-                                            <action selector="newWindow:" target="Ady-hI-5gd" id="roe-sS-Cgl"/>
-                                        </connections>
-                                    </menuItem>
-                                    <menuItem title="Document" id="jeT-TZ-JXU">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="newDocument:" target="Ady-hI-5gd" id="bSU-N3-Sqq"/>
+                                            <action selector="newDocument:" target="Ady-hI-5gd" id="KUx-Wv-qtD"/>
                                         </connections>
                                     </menuItem>
                                 </items>
                             </menu>
-                            <connections>
-                                <action selector="updateOpenNewTitle:" target="Voe-Tx-rLC" id="0uw-7q-rDj"/>
-                            </connections>
                         </menuItem>
                         <menuItem title="Playlists" id="14E-f1-zMF" userLabel="Playlists">
                             <modifierMask key="keyEquivalentModifierMask"/>
