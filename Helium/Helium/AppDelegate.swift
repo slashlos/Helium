@@ -194,26 +194,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-	@IBAction func updateOpenNewTitle(_ sender: NSMenu) {
-		sender.title = (nil != NSApp.keyWindow ? "Open" : "New")
-	}
-	@IBOutlet weak var openNewMenu: NSMenuItem!
-	@IBOutlet weak var appOpenNewMenu: NSMenuItem!
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        let currDoc = NSDocumentController.shared().currentDocument
         switch menuItem.title {
-		case "Open/New", "Open", "New":
-			menuItem.title = (nil != currDoc ? "Open" : "New")
-			break
         case "Preferences":
             break
         case "Home Page":
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
-            break
-        case "New Window":
-            menuItem.target = currDoc
             break
         case "Quit":
             break
@@ -244,6 +232,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appStatusItem.image = NSImage.init(named: "statusIcon")
         appStatusItem.menu = appMenu
 
+        //  Prime user defaults playitems dictionary
+        if UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) == nil {
+            let playitems: Dictionary<String,AnyObject> = Dictionary()
+            UserDefaults.standard.set(playitems, forKey: UserSettings.Playitems.default)
+        }
+        
         //  Initialize our h:m:s transformer
         ValueTransformer.setValueTransformer(toHMS, forName: NSValueTransformerName(rawValue: "hmsTransformer"))
         
