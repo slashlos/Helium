@@ -48,8 +48,8 @@ class MyWebView : WKWebView {
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "")
-        item.target = dc
+        item = NSMenuItem(title: "Window", action: #selector(Document.newWindow(_:)), keyEquivalent: "")
+        item.target = dc.currentDocument
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "")
@@ -77,11 +77,6 @@ class MyWebView : WKWebView {
 
         item = NSMenuItem(title: "Magic URL Redirects", action: #selector(AppDelegate.magicURLRedirectPress(_:)), keyEquivalent: "")
         item.state = (UserSettings.disabledMagicURLs.value == true) ? NSOffState : NSOnState
-        item.target = appDelegate
-        subPref.addItem(item)
-
-        item = NSMenuItem(title: "Shared preferences", action: #selector(AppDelegate.sharePlaylistAndpreferences(_:)), keyEquivalent: "")
-        item.state = (UserSettings.SharePlayists.value == true) ? NSOffState : NSOnState
         item.target = appDelegate
         subPref.addItem(item)
 
@@ -471,6 +466,9 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                 webView.bounds.size = webSize
                                 videoFileReferencedURL = true
                             }
+                            //  If we have save attributes restore them
+                            self.restoreSettings(title as String)
+
 
                             //  Wait for URL to finish
                             let videoPlayer = AVPlayer(url: url)
@@ -493,7 +491,11 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                     videoPlayer.play()
                                 }
                             })
-                       }
+                        }
+                        else
+                        {
+                            self.restoreSettings(title as String)
+                        }
                     } else {
                         title = "Helium"
                     }
@@ -509,6 +511,28 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                         NotificationCenter.default.post(notif)
                     }
                  }
+            }
+        }
+    }
+    
+    fileprivate func restoreSettings(_ title: String) {
+        if let playitems = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) {
+            if let playitem = playitems[title] as? PlayItem {
+                let hwc = self.view.window?.windowController as! HeliumPanelController
+                let doc = hwc.document as! Document
+                let rect = playitem.rect
+                webSize = rect.size
+                webView.window?.setContentSize(webSize)
+                webView.bounds.size = webSize
+                self.view.window?.setFrameOrigin(rect.origin)
+                doc.settings.autoHideTitle.value = playitem.label
+                hwc.updateTitleBar(didChange: false)
+                doc.settings.opacityPercentage.value = Int(playitem.alpha)
+                hwc.willUpdateAlpha()
+                doc.settings.disabledFullScreenFloat.value = playitem.hover
+                doc.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: playitem.trans)!
+                hwc.translucencyPreference = doc.settings.translucencyPreference.value
+                hwc.willUpdateTranslucency()
             }
         }
     }
