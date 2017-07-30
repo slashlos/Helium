@@ -14,12 +14,22 @@ class PlayItem : NSObject {
     var link : URL = URL.init(string: "http://")!
     var time : TimeInterval
     var rank : Int
+    var rect : NSRect
+    var label: Bool
+    var hover: Bool
+    var alpha: Float
+    var trans: Int
     
     override init() {
         name = k.item
         link = URL.init(string: "http://")!
         time = 0.0
         rank = 0
+        rect = NSZeroRect
+        label = false
+        hover = false
+        alpha = 0.6
+        trans = 0
         super.init()
     }
     init(name:String, link:URL, time:TimeInterval, rank:Int) {
@@ -27,6 +37,11 @@ class PlayItem : NSObject {
         self.link = link
         self.time = time
         self.rank = rank
+        self.rect = NSZeroRect
+        self.label = false
+        self.hover = false
+        self.alpha = 0.6
+        self.trans = 0
         super.init()
     }
     override var description : String {
@@ -75,7 +90,9 @@ internal struct Settings {
     let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let windowURL = Setup<URL>("windowURL", value: URL.init(string: "http://")!)
-    let frame = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
+    let rank = Setup<Int>("rank", value: 0)
+    let time = Setup<TimeInterval>("time", value: 0.0)
+    let rect = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -102,6 +119,14 @@ class Document : NSDocument {
                             let link = URL.init(string: path)
                             let rank = item[k.rank] as! Int
                             let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                            
+                            // Non-visible (tableView) cells
+                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                            temp.label = item[k.label]?.boolValue ?? false
+                            temp.hover = item[k.hover]?.boolValue ?? false
+                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                            temp.trans = item[k.trans]?.intValue ?? 0
+                            
                             list.append(temp)
                         }
                         let name = play[k.name] as? String
@@ -124,6 +149,7 @@ class Document : NSDocument {
             fileType = url.pathExtension
             fileURL = url
         }
+        self.save(self)
     }
     
     override init() {
@@ -168,42 +194,6 @@ class Document : NSDocument {
             super.displayName = newName
         }
     }
-    override func makeWindowControllers() {
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
-        self.addWindowController(controller)
-        
-        //  Close down any observations before closure
-        controller.window?.delegate = controller as? NSWindowDelegate
-        self.settings.frame.value = (controller.window?.frame)!
-    }
-    
-    override func data(ofType typeName: String) throws -> Data {
-        let data = try PropertyListSerialization.data(fromPropertyList: playlists,
-                                                      format: PropertyListSerialization.PropertyListFormat.xml,
-                                                      options: 0)
-        if data.count > 0 {
-            return data
-        }
-
-        throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-    }
-    
-    override func read(from data: Data, ofType typeName: String) throws {
-        switch typeName {
-        case "DocumentType":
-            let plist = try! PropertyListSerialization.propertyList(from:data,
-                                                                    options: [],
-                                                                    format: nil) as! Dictionary<String,AnyObject>
-            if plist.count > 0 {
-                playlists = plist[UserSettings.Playlists.default] as! Dictionary<String, Any>
-                break
-            }
-
-        default:
-            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-        }
-    }
 
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
@@ -223,6 +213,14 @@ class Document : NSDocument {
                         let link = URL.init(string: path)
                         let rank = item[k.rank] as! Int
                         let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                        
+                        // Non-visible (tableView) cells
+                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                        temp.label = item[k.label]?.boolValue ?? false
+                        temp.hover = item[k.hover]?.boolValue ?? false
+                        temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                        temp.trans = item[k.trans]?.intValue ?? 0
+
                         list.append(temp)
                     }
                     let name = play[k.name] as? String
@@ -251,6 +249,14 @@ class Document : NSDocument {
                             let link = URL.init(string: path)
                             let rank = item[k.rank] as! Int
                             let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                            
+                            // Non-visible (tableView) cells
+                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                            temp.label = item[k.label]?.boolValue ?? false
+                            temp.hover = item[k.hover]?.boolValue ?? false
+                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                            temp.trans = item[k.trans]?.intValue ?? 0
+                            
                             list.append(temp)
                         }
                         let name = play[k.name] as? String
@@ -302,6 +308,14 @@ class Document : NSDocument {
                         let link = URL.init(string: path)
                         let rank = item[k.rank] as! Int
                         let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                        
+                        // Non-visible (tableView) cells
+                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                        temp.label = item[k.label]?.boolValue ?? false
+                        temp.hover = item[k.hover]?.boolValue ?? false
+                        temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                        temp.trans = item[k.trans]?.intValue ?? 0
+                        
                         list.append(temp)
                     }
                     let name = play[k.name] as? String
@@ -316,11 +330,45 @@ class Document : NSDocument {
 
         case "h2w":
             // MARK: TODO write playlist and histories with default keys but also save current value
-            let data = try Data.init(contentsOf: url)
-            do {
-                try! self.read(from: data, ofType: typeName)
-                self.fileURL = url as URL
-                self.fileType = typeName
+            if let dict = NSDictionary(contentsOf: url) {
+                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
+                    for playlist in playArray as! [AnyObject] {
+                        let play = playlist as! Dictionary<String,AnyObject>
+                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                        var list : [PlayItem] = [PlayItem]()
+                        for playitem in items {
+                            let item = playitem as Dictionary <String,AnyObject>
+                            let name = item[k.name] as! String
+                            let path = item[k.link] as! String
+                            let time = item[k.time] as? TimeInterval
+                            let link = URL.init(string: path)
+                            let rank = item[k.rank] as! Int
+                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                            
+                            // Non-visible (tableView) cells
+                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                            temp.label = item[k.label]?.boolValue ?? false
+                            temp.hover = item[k.hover]?.boolValue ?? false
+                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                            temp.trans = item[k.trans]?.intValue ?? 0
+                            
+                            list.append(temp)
+                        }
+                        let name = play[k.name] as? String
+                        if let items = playlists[name!] {
+                            for item in items as! [PlayItem] {
+                                list.append(item)
+                            }
+                        }
+                        playlists[name!] = list
+                    }
+                }
+                
+                if let fileURL = dict.value(forKey: "fileURL") {
+                    self.fileURL = URL(string: (fileURL as! String).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
+                    self.fileType = self.fileURL?.pathExtension
+                    break;
+                }
             }
             break
             
@@ -331,25 +379,18 @@ class Document : NSDocument {
     }
     
     @IBAction override func save(_ sender: (Any)?) {
-        Swift.print("save: \(self.displayName)")
+        if fileURL != nil {
+            do {
+                try self.write(to: fileURL!, ofType: fileType!)
+                Swift.print("save: \(self.displayName)")
+            } catch let error {
+                NSApp.presentError(error)
+            }
+        }
     }
     
     override func write(to url: URL, ofType typeName: String) throws {
         switch typeName {
-        case "DocumentType":
-            var temp = [Dictionary<String,AnyObject>]()
-            for key in playlists.keys {
-                var list = Array<AnyObject>()
-                for playitem in playlists[key] as! [PlayItem] {
-                    let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
-                    list.append(item as AnyObject)
-                }
-                temp.append([k.name:key as AnyObject, k.list:list as AnyObject])
-            }
-            UserDefaults.standard.set(temp, forKey: UserSettings.Playlists.default)
-            UserDefaults.standard.synchronize()
-            break
-            
         case "h2w":
             let dict = NSDictionary.init()
             dict.setValue(playlists, forKey: UserSettings.Playlists.default)
@@ -357,38 +398,62 @@ class Document : NSDocument {
             break
             
         default:
-            Swift.print("nyi \(typeName)")
-            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            //  "DocumentType" writter to user defaults play items dictionary
+            var playitems = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default)
+
+            for key in playlists.keys {
+                for playitem in playlists[key] as! [PlayItem] {
+                    let rect = settings.rect.value as NSRect
+                    let item : [String:AnyObject] = [k.name  : playitem.name as String as AnyObject,
+                                                     k.link  : playitem.link.absoluteString as AnyObject,
+                                                     k.time  : playitem.time as AnyObject,
+                                                     k.rank  : playitem.rank as AnyObject,
+                                                     k.rect  : rect as AnyObject,
+                                                     k.label : playitem.label as AnyObject,
+                                                     k.hover : playitem.hover as AnyObject,
+                                                     k.alpha : playitem.alpha as AnyObject,
+                                                     k.trans : playitem.trans as AnyObject]
+                    playitems?[playitem.name] = item
+                }
+            }
+            
+            //  Cache ourselves too
+            let rect = settings.rect.value as NSRect
+            let item : [String:AnyObject] = [k.name  : self.displayName as AnyObject,
+                                             k.link  : self.fileURL!.absoluteString as AnyObject,
+                                             k.time  : settings.time.value as AnyObject,
+                                             k.rank  : settings.rank.value as AnyObject,
+                                             k.rect  : NSStringFromRect(rect) as AnyObject,
+                                             k.label : settings.autoHideTitle.value as AnyObject,
+                                             k.hover : settings.disabledFullScreenFloat.value as AnyObject,
+                                             k.alpha : settings.opacityPercentage.value as AnyObject,
+                                             k.trans : settings.translucencyPreference.value.rawValue as AnyObject]
+            playitems?[self.displayName] = item
+            
+            UserDefaults.standard.set(playitems, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.synchronize()
         }
+        self.updateChangeCount(.changeCleared)
     }
     
     override func save(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType, completionHandler: @escaping (Error?) -> Void) {
-        Swift.print("save: \(url.absoluteString)")
         do {
             try self.write(to: url, ofType: typeName)
+            Swift.print("save(to: \(url.absoluteString) ofType: \(typeName)) ")
         } catch let error {
             NSApp.presentError(error)
         }
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
-        Swift.print("writeSafely: \(url.absoluteString)")
         do {
             try self.write(to: url, ofType: typeName)
+            Swift.print("writeSafely: \(url.absoluteString)")
         } catch let error {
             NSApp.presentError(error)
         }
     }
     //MARK:- Actions
-    @IBAction func newDocument(_ sender: AnyObject) {
-        let dc = NSDocumentController.shared()
-        let doc = Document.init()
-        doc.makeWindowControllers()
-        dc.addDocument(doc)
-        doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
-    }
-    
-    @IBAction func newWindow(_ sender: AnyObject) {
-        // like makeWindowControllers() but no document changes
+    override func makeWindowControllers() {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
         self.addWindowController(controller)
@@ -396,7 +461,35 @@ class Document : NSDocument {
         //  Close down any observations before closure
         controller.window?.delegate = controller as? NSWindowDelegate
         self.settings.rect.value = (controller.window?.frame)!
-        controller.window?.makeKeyAndOrderFront(sender)
+        self.save(self)
+    }
+
+    @IBAction func newDocument(_ sender: AnyObject) {
+        let dc = NSDocumentController.shared()
+        let doc = Document.init()
+        doc.makeWindowControllers()
+        dc.addDocument(doc)
+        let wc = doc.windowControllers.first
+        let window : NSPanel = wc!.window as! NSPanel as NSPanel
+
+        //  Close down any observations before closure
+        window.delegate = wc as? NSWindowDelegate
+        self.settings.rect.value = window.frame
+        window.makeKeyAndOrderFront(sender)
+    }
+    
+    @IBAction func newWindow(_ sender: AnyObject) {
+        // like makeWindowControllers() but offset from window
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
+        let window : NSPanel = controller.window as! NSPanel as NSPanel
+        
+        //  Close down any observations before closure
+        window.delegate = controller as? NSWindowDelegate
+        self.addWindowController(controller)
+        window.offsetFromKeyWindow()
+        self.settings.rect.value = window.frame
+        window.makeKeyAndOrderFront(sender)
     }
 
 }
