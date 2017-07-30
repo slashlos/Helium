@@ -262,11 +262,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
 
     //MARK:- Notifications
-    @objc fileprivate func willUpdateAlpha() {
+    @objc func willUpdateAlpha() {
         let alpha = settings.opacityPercentage.value
         didUpdateAlpha(CGFloat(alpha))
     }
-    @objc fileprivate func willUpdateTranslucency() {
+    @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
         updateTranslucency()
     }
