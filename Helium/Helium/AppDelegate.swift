@@ -142,6 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         if open.runModal() == NSModalResponseOK {
             if let url = open.url, let fileURL = URL(string: url.absoluteString.removingPercentEncoding!) {
+                open.orderOut(sender)
                 _ = self.doOpenFile(fileURL: fileURL)
             }
         }
