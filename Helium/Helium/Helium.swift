@@ -377,18 +377,6 @@ class Document : NSDocument {
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
     }
-    
-    @IBAction override func save(_ sender: (Any)?) {
-        if fileURL != nil {
-            do {
-                try self.write(to: fileURL!, ofType: fileType!)
-                Swift.print("save: \(self.displayName)")
-            } catch let error {
-                NSApp.presentError(error)
-            }
-        }
-    }
-    
     override func write(to url: URL, ofType typeName: String) throws {
         switch typeName {
         case "h2w":
@@ -434,15 +422,6 @@ class Document : NSDocument {
             UserDefaults.standard.synchronize()
         }
         self.updateChangeCount(.changeCleared)
-    }
-    
-    override func save(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType, completionHandler: @escaping (Error?) -> Void) {
-        do {
-            try self.write(to: url, ofType: typeName)
-            Swift.print("save(to: \(url.absoluteString) ofType: \(typeName)) ")
-        } catch let error {
-            NSApp.presentError(error)
-        }
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         do {
