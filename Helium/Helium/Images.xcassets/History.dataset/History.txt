@@ -20,6 +20,7 @@ History
       playlists - per document, global,
       Finder status menu,
       value transformers,
+      user agent editing,
       document history,
       auto hide title,
       contextual menu,
