@@ -516,12 +516,10 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                     self.view.window?.title = title as String
  
                     // Remember for later restoration
-                    if let doc = self.view.window?.windowController?.document {
+                    if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
                         self.view.window?.representedURL = url
                         (doc as! Document).updateURL(to: url, ofType: "Any")
-                        
-                        let notif = Notification(name: Notification.Name(rawValue: "HeliumDidUpdateURL"), object: url);
-                        NotificationCenter.default.post(notif)
+                        (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
                     }
                  }
             }
