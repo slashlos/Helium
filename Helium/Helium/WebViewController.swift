@@ -48,7 +48,7 @@ class MyWebView : WKWebView {
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(Document.newWindow(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Window", action: #selector(dc.newDocument(_:)), keyEquivalent: "")
         item.target = dc.currentDocument
         subOpen.addItem(item)
         
