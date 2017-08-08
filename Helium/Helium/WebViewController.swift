@@ -80,6 +80,10 @@ class MyWebView : WKWebView {
         item.target = appDelegate
         subPref.addItem(item)
 
+        item = NSMenuItem(title: "User Agent", action: #selector(AppDelegate.userAgentPress(_:)), keyEquivalent: "")
+        item.target = appDelegate
+        subPref.addItem(item)
+        
         item = NSMenuItem(title: "Translucency", action: #selector(menuClicked(_:)), keyEquivalent: "")
         subPref.addItem(item)
         let subTranslucency = NSMenu()
@@ -200,7 +204,12 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
             object: nil)
-        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
+            name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
+            object: nil)
+
         // Layout webview
         view.addSubview(webView)
         fit(webView, parentView: view)
@@ -212,7 +221,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         webView.configuration.preferences.plugInsEnabled = true
         
         // Custom user agent string for Netflix HTML5 support
-        webView._customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17"
+        webView._customUserAgent = UserSettings.userAgent.value
         
         // Setup magic URLs
         webView.navigationDelegate = self
@@ -338,6 +347,10 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         return webView.url?.absoluteString
     }
 
+    internal func loadUserAgent(userAgentString: Notification) {
+        webView._customUserAgent = UserSettings.userAgent.value
+    }
+    
     internal func loadURL(text: String) {
         let text = UrlHelpers.ensureScheme(text)
         if let url = URL(string: text) {

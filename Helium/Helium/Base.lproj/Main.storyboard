@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
@@ -203,6 +203,12 @@
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="dGe-Ut-ADQ"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="User Agent" id="oRg-Z4-GTG">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="maU-bZ-NeO"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="agM-n6-9Km"/>
@@ -522,6 +528,7 @@ CA
                     </menu>
                     <connections>
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
+                        <outlet property="dockMenu" destination="aho-AB-RLH" id="vmg-NN-xqU"/>
                     </connections>
                 </application>
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Helium" customModuleProvider="target">
@@ -598,6 +605,12 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="DUb-Jc-Weo"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="User Agent" id="oeK-lr-tYp">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="fov-K5-mhb"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Translucency" id="JEh-0f-gsX">

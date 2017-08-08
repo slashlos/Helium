@@ -12,7 +12,7 @@
 //
 import Cocoa
 
-struct RequestUserUrlStrings {
+struct RequestUserStrings {
     let currentURL: String?
     let alertMessageText: String
     let alertButton1stText: String
@@ -69,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 		}
 	}
     @IBAction func homePagePress(_ sender: AnyObject) {
-        didRequestUserUrl(RequestUserUrlStrings (
+        didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.homePageURL.value,
             alertMessageText: "Enter new home Page URL",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
@@ -149,7 +149,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        didRequestUserUrl(RequestUserUrlStrings (
+        didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.homePageURL.value,
             alertMessageText: "Enter Destination URL",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
@@ -195,6 +195,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
+    @IBAction func userAgentPress(_ sender: AnyObject) {
+        didRequestUserAgent(RequestUserStrings (
+            currentURL: UserSettings.userAgent.value,
+            alertMessageText: "Enter new user agent",
+            alertButton1stText: "Set",      alertButton1stInfo: nil,
+            alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.userAgent.default),
+                          onWindow: NSApp.keyWindow as? HeliumPanel,
+                          acceptHandler: { (newUserAgent: String) in
+                            UserSettings.userAgent.value = newUserAgent
+                            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewUserAgentString"),
+                                                     object: newUserAgent);
+                            NotificationCenter.default.post(notif)
+        }
+        )
+    }
+    internal func userAlertMessage(_ message: String, info: String?) {
+        let alert = NSAlert()
+        alert.messageText = message
+        alert.addButton(withTitle: "OK")
+        if info != nil {
+            alert.informativeText = info!
+        }
+        if let window = NSApp.mainWindow {
+            alert.beginSheetModal(for: window, completionHandler: { response in
+                return
+            })
+        }
+        else
+        {
+            alert.runModal()
+            return
+        }
+    }
+    
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
@@ -203,6 +238,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+            break
+        case "User Agent":
             break
         case "Quit":
             break
@@ -284,7 +321,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 histories.append(temp)
             }
         }
-   }
+    }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
@@ -351,11 +388,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-    /// Shows alert asking user to input URL on their window or floating.
+    /// Shows alert asking user to input user agent string
     /// Process response locally, validate, dispatch via supplied handler
-    func didRequestUserUrl(_ strings: RequestUserUrlStrings,
-                           onWindow: HeliumPanel?,
-                           acceptHandler: @escaping (String) -> Void) {
+    func didRequestUserAgent(_ strings: RequestUserStrings,
+                             onWindow: HeliumPanel?,
+                             acceptHandler: @escaping (String) -> Void) {
         
         // Create alert
         let alert = NSAlert()
@@ -387,6 +424,96 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are accept, cancel, default
                 if response == NSAlertThirdButtonReturn {
+                    let newUA = (alert.accessoryView as! NSTextField).stringValue
+                    if UAHelpers.isValid(uaString: newUA) {
+                        acceptHandler(newUA)
+                    }
+                    else
+                    {
+                        self.userAlertMessage("This apppears to be an invalid User Agent", info: newUA)
+                    }
+                }
+                else
+                if response == NSAlertFirstButtonReturn {
+                    // swiftlint:disable:next force_cast
+                    let newUA = (alert.accessoryView as! NSTextField).stringValue
+                    if UAHelpers.isValid(uaString: newUA) {
+                        acceptHandler(newUA)
+                    }
+                    else
+                    {
+                        self.userAlertMessage("This apppears to be an invalid User Agent", info: newUA)
+                    }
+                }
+            })
+        }
+        else
+        {
+            switch alert.runModal() {
+            case NSAlertThirdButtonReturn:
+                let newUA = (alert.accessoryView as! NSTextField).stringValue
+                if UAHelpers.isValid(uaString: newUA) {
+                    acceptHandler(newUA)
+                }
+                else
+                {
+                    userAlertMessage("This apppears to be an invalid User Agent", info: newUA)
+                }
+                break
+                
+            case NSAlertFirstButtonReturn:
+                let newUA = (alert.accessoryView as! NSTextField).stringValue
+                if UAHelpers.isValid(uaString: newUA) {
+                    acceptHandler(newUA)
+                }
+                else
+                {
+                    userAlertMessage("This apppears to be an invalid User Agent", info: newUA)
+                }
+
+            default:// NSAlertSecondButtonReturn:
+                return
+            }
+        }
+        
+        // Set focus on urlField
+        alert.accessoryView!.becomeFirstResponder()
+    }
+
+    func didRequestUserUrl(_ strings: RequestUserStrings,
+                           onWindow: HeliumPanel?,
+                           acceptHandler: @escaping (String) -> Void) {
+        
+        // Create alert
+        let alert = NSAlert()
+        alert.alertStyle = NSAlertStyle.informational
+        alert.messageText = strings.alertMessageText
+        
+        // Create urlField
+        let urlField = URLField(withValue: strings.currentURL)
+        urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
+        
+        // Add urlField and buttons to alert
+        alert.accessoryView = urlField
+        let alert1stButton = alert.addButton(withTitle: strings.alertButton1stText)
+        if let alert1stToolTip = strings.alertButton1stInfo {
+            alert1stButton.toolTip = alert1stToolTip
+        }
+        let alert2ndButton = alert.addButton(withTitle: strings.alertButton2ndText)
+        if let alert2ndtToolTip = strings.alertButton2ndInfo {
+            alert2ndButton.toolTip = alert2ndtToolTip
+        }
+        if let alert3rdText = strings.alertButton3rdText {
+            let alert3rdButton = alert.addButton(withTitle: alert3rdText)
+            if let alert3rdtToolTip = strings.alertButton3rdInfo {
+                alert3rdButton.toolTip = alert3rdtToolTip
+            }
+        }
+        
+        if let urlWindow = onWindow {
+            alert.beginSheetModal(for: urlWindow, completionHandler: { response in
+                // buttons are accept, cancel, default
+                if response == NSAlertThirdButtonReturn {
                     var newUrl = (alert.buttons[2] as NSButton).toolTip
                     newUrl = UrlHelpers.ensureScheme(newUrl!)
                     if UrlHelpers.isValid(urlString: newUrl!) {
@@ -404,7 +531,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             })
         }
-        else {
+        else
+        {
             switch alert.runModal() {
             case NSAlertThirdButtonReturn:
                 var newUrl = (alert.buttons[2] as NSButton).toolTip
@@ -412,7 +540,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 if UrlHelpers.isValid(urlString: newUrl!) {
                     acceptHandler(newUrl!)
                 }
-
+                
                 break
                 
             case NSAlertFirstButtonReturn:
@@ -421,7 +549,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 if UrlHelpers.isValid(urlString: newUrl) {
                     acceptHandler(newUrl)
                 }
-
+                
             default:// NSAlertSecondButtonReturn:
                 return
             }
@@ -430,7 +558,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Set focus on urlField
         alert.accessoryView!.becomeFirstResponder()
     }
-
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {

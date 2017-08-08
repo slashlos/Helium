@@ -78,3 +78,11 @@ extension NSAttributedString {
         return text!
     }
 }
+
+struct UAHelpers {
+    static func isValid(uaString: String) -> Bool {
+        // From https://stackoverflow.com/questions/20569000/regex-for-http-user-agent
+        let regex = try! NSRegularExpression(pattern: ".+?[/\\s][\\d.]+")
+        return (regex.firstMatch(in: uaString, range: uaString.nsrange) != nil)
+    }
+}
