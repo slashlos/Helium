@@ -353,7 +353,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     fileprivate func didRequestLocation() {
         let appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
         
-        appDelegate.didRequestUserUrl(RequestUserUrlStrings (
+        appDelegate.didRequestUserUrl(RequestUserStrings (
             currentURL: self.webViewController.currentURL,
             alertMessageText: "Enter new home Page URL",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
