@@ -518,7 +518,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                     // Remember for later restoration
                     if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
                         self.view.window?.representedURL = url
-                        (doc as! Document).updateURL(to: url, ofType: "Any")
+                        (doc as! Document).updateURL(to: url, ofType: url.pathExtension)
                         (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
                     }
                  }
