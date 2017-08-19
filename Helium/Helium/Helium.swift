@@ -44,8 +44,46 @@ class PlayItem : NSObject {
         self.trans = 0
         super.init()
     }
+    init(name:String, link:URL, time:TimeInterval, rank:Int, rect:NSRect, label:Bool, hover:Bool, alpha:Float, trans: Int) {
+        self.name = name
+        self.link = link
+        self.time = time
+        self.rank = rank
+        self.rect = rect
+        self.label = label
+        self.hover = hover
+        self.alpha = alpha
+        self.trans = trans
+        super.init()
+    }
+    
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
+    }
+    
+    required convenience init(coder: NSCoder) {
+        let name = coder.decodeObject(forKey: "name") as! String
+        let link = URL.init(string: coder.decodeObject(forKey: "link") as! String)
+        let time = coder.decodeDouble(forKey: "time")
+        let rank = coder.decodeInteger(forKey: "rank")
+        let rect = NSRectFromString(coder.decodeObject(forKey: "rect") as! String)
+        let label = coder.decodeBool(forKey: "label")
+        let hover = coder.decodeBool(forKey: "hover")
+        let alpha = coder.decodeFloat(forKey: "alpha")
+        let trans = coder.decodeInteger(forKey: "trans")
+        self.init(name: name, link: link!, time: time, rank: rank, rect: rect, label: label, hover: hover, alpha: alpha, trans: trans)
+    }
+    
+    func encode(with coder: NSCoder) {
+        coder.encode(name, forKey: "name")
+        coder.encode(link, forKey: "link")
+        coder.encode(time, forKey: "time")
+        coder.encode(rank, forKey: "rank")
+        coder.encode(NSStringFromRect(rect), forKey: "rect")
+        coder.encode(label, forKey: "label")
+        coder.encode(hover, forKey: "hover")
+        coder.encode(alpha, forKey: "alpha")
+        coder.encode(trans, forKey: "trans")
     }
 }
 
@@ -96,6 +134,23 @@ internal struct Settings {
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
+}
+
+class HeliumDocumentController : NSDocumentController {
+    override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> NSDocument {
+        var doc: Document
+        do {
+            doc = try Document.init(contentsOf: contentsURL, ofType: contentsURL.pathExtension)
+            if (urlOrNil != nil) {
+                doc.fileURL = urlOrNil
+                doc.fileType = urlOrNil?.pathExtension
+            }
+        } catch let error {
+            NSApp.presentError(error)
+            doc = try Document.init(contentsOf: contentsURL, ofType: contentsURL.pathExtension)
+        }
+        return doc
+    }
 }
 
 class Document : NSDocument {
@@ -167,28 +222,26 @@ class Document : NSDocument {
 
     var displayImage: NSImage? {
         get {
-            let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
-
-            let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
-            if let tmpImage = tmp?.takeUnretainedValue() {
-                let tmpIcon = NSImage(cgImage: tmpImage, size: size)
-                return tmpIcon
+            if (self.fileURL?.isFileURL) != nil {
+                let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
+                
+                let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
+                if let tmpImage = tmp?.takeUnretainedValue() {
+                    let tmpIcon = NSImage(cgImage: tmpImage, size: size)
+                    return tmpIcon
+                }
             }
-            else
-            {
-                return NSApp.applicationIconImage
-            }
+            return NSApp.applicationIconImage
         }
     }
     override var displayName: String! {
         get {
-            if let justTheName = super.displayName  {
-                return (justTheName as NSString).deletingPathExtension
+            if (self.fileURL?.isFileURL) != nil {
+                if let justTheName = super.displayName  {
+                    return (justTheName as NSString).deletingPathExtension
+                }
             }
-            else
-            {
-                return super.displayName
-            }
+            return super.displayName
         }
         set (newName) {
             super.displayName = newName
@@ -283,13 +336,21 @@ class Document : NSDocument {
 
         default:
             //  Record url and type, caller will load via notification
+
             do {
+                self.makeWindowControllers()
+                NSDocumentController.shared().addDocument(self)
+
+                if let hwc = self.windowControllers.first {
+                    hwc.window?.orderFront(self)
+                    (hwc.contentViewController as! WebViewController).loadURL(url: url)
+                }
                 self.fileURL = url
                 self.fileType = url.pathExtension
                 break
             }
         }
-   }
+    }
     
     override func read(from url: URL, ofType typeName: String) throws {
         switch typeName {
@@ -377,6 +438,17 @@ class Document : NSDocument {
             throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
     }
+    
+    @IBAction override func save(_ sender: (Any)?) {
+        if fileURL != nil {
+            do {
+                try self.write(to: fileURL!, ofType: fileType!)
+            } catch let error {
+                NSApp.presentError(error)
+            }
+        }
+    }
+    
     override func write(to url: URL, ofType typeName: String) throws {
         switch typeName {
         case "h2w":
@@ -426,7 +498,6 @@ class Document : NSDocument {
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         do {
             try self.write(to: url, ofType: typeName)
-            Swift.print("writeSafely: \(url.absoluteString)")
         } catch let error {
             NSApp.presentError(error)
         }
@@ -457,18 +528,4 @@ class Document : NSDocument {
         window.makeKeyAndOrderFront(sender)
     }
     
-    @IBAction func newWindow(_ sender: AnyObject) {
-        // like makeWindowControllers() but offset from window
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
-        let window : NSPanel = controller.window as! NSPanel as NSPanel
-        
-        //  Close down any observations before closure
-        window.delegate = controller as? NSWindowDelegate
-        self.addWindowController(controller)
-        window.offsetFromKeyWindow()
-        self.settings.rect.value = window.frame
-        window.makeKeyAndOrderFront(sender)
-    }
-
 }
