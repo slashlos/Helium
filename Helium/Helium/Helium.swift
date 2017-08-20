@@ -9,7 +9,44 @@
 import Foundation
 import QuickLook
 
-class PlayItem : NSObject {
+class PlayList : NSObject {
+    var name : String = k.list
+    var list : Array <PlayItem> = Array()
+    
+    override init() {
+        name = k.list
+        list = Array <PlayItem> ()
+        super.init()
+    }
+    
+    init(name:String, list:Array <PlayItem>) {
+        self.name = name
+        self.list = list
+        super.init()
+    }
+    
+    func listCount() -> Int {
+        return list.count
+    }
+    
+    func writableTypes(for pasteboard: NSPasteboard) -> [String] {
+        return ["com.helium.playlist"]
+    }
+    
+    func pasteboardPropertyList(forType type: String) -> Any? {
+        if type == "com.helium.playlist" {
+            return [name, list]
+        }
+        else
+        {
+            Swift.print("pasteboardPropertyList:\(type) unknown")
+            return nil
+        }
+    }
+
+}
+
+class PlayItem : NSObject, NSCoding {
     var name : String = k.item
     var link : URL = URL.init(string: "http://")!
     var time : TimeInterval
@@ -159,7 +196,7 @@ class Document : NSDocument {
     var settings: Settings
     
     func updateURL(to url: URL, ofType typeName: String) {
-        if typeName == "h2w" {
+        if typeName == "h3w" {
             if let dict = NSDictionary(contentsOf: url) {
                 if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
                     for playlist in playArray as! [AnyObject] {
@@ -287,7 +324,7 @@ class Document : NSDocument {
                 break
             }
             
-        case "h2w":
+        case "h3w":
             if let dict = NSDictionary(contentsOf: url) {
                 if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
                     for playlist in playArray as! [AnyObject] {
@@ -389,7 +426,7 @@ class Document : NSDocument {
             self.fileURL = url
             break
 
-        case "h2w":
+        case "h3w":
             // MARK: TODO write playlist and histories with default keys but also save current value
             if let dict = NSDictionary(contentsOf: url) {
                 if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
@@ -451,7 +488,7 @@ class Document : NSDocument {
     
     override func write(to url: URL, ofType typeName: String) throws {
         switch typeName {
-        case "h2w":
+        case "h3w":
             let dict = NSDictionary.init()
             dict.setValue(playlists, forKey: UserSettings.Playlists.default)
             dict.write(to: url, atomically: true)
