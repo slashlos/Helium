@@ -93,8 +93,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         if let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
 
-            //  If it's a "h2w" type read it and load its fileURL
-            if fileType == "h2w" {
+            //  If it's a "h3w" type read it and load its fileURL
+            if fileType == "h3w" {
                 (doc as! Document).updateURL(to: fileURL, ofType: fileType)
                 
                 (hwc.contentViewController as! WebViewController).loadURL(url: (doc as! Document).fileURL!)
@@ -111,8 +111,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             //  This could be anything so add/if a doc and initialize
             do {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
-                doc.makeWindowControllers()
-                dc.addDocument(doc)
 
                 if let hwc = (doc as NSDocument).windowControllers.first {
                     hwc.window?.orderFront(self)
@@ -259,6 +257,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
     func applicationWillFinishLaunching(_ notification: Notification) {
+        //  We need our own to reopen our "document" urls
+        _ = HeliumDocumentController.init()
+        
         NSAppleEventManager.shared().setEventHandler(
             self,
             andSelector: #selector(AppDelegate.handleURLEvent(_:withReply:)),
