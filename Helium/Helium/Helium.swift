@@ -43,7 +43,16 @@ class PlayList : NSObject {
             return nil
         }
     }
-
+    
+    func dictionary() -> Dictionary<String,[Any]> {
+        var plist: Dictionary<String,[Any]> = Dictionary()
+        var items: [Any] = Array()
+        for item in list {
+            items.append(item.dictionary)
+        }
+        plist[name] = items
+        return plist
+    }
 }
 
 class PlayItem : NSObject, NSCoding {
@@ -93,34 +102,61 @@ class PlayItem : NSObject, NSCoding {
         self.trans = trans
         super.init()
     }
-    
+    init(with dictionary: Dictionary<String,Any>) {
+        let plist = dictionary as NSDictionary
+        self.name = plist[k.name] as! String
+        self.link = URL.init(string: plist[k.link] as! String)!
+        self.time = (plist[k.time] as AnyObject).timeInterval ?? 0.0
+        self.rank = (plist[k.rank] as AnyObject).intValue ?? 0
+        self.rect = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
+        self.label = (plist[k.label] as AnyObject).boolValue ?? false
+        self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
+        self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
+        self.trans = (plist[k.trans] as AnyObject).intValue ?? 0
+    }
+
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
     }
     
     required convenience init(coder: NSCoder) {
-        let name = coder.decodeObject(forKey: "name") as! String
-        let link = URL.init(string: coder.decodeObject(forKey: "link") as! String)
-        let time = coder.decodeDouble(forKey: "time")
-        let rank = coder.decodeInteger(forKey: "rank")
-        let rect = NSRectFromString(coder.decodeObject(forKey: "rect") as! String)
-        let label = coder.decodeBool(forKey: "label")
-        let hover = coder.decodeBool(forKey: "hover")
-        let alpha = coder.decodeFloat(forKey: "alpha")
-        let trans = coder.decodeInteger(forKey: "trans")
-        self.init(name: name, link: link!, time: time, rank: rank, rect: rect, label: label, hover: hover, alpha: alpha, trans: trans)
+        let name = coder.decodeObject(forKey: k.name) as! String
+        let link = URL.init(string: coder.decodeObject(forKey: k.link) as! String)
+        let time = coder.decodeDouble(forKey: k.time)
+        let rank = coder.decodeInteger(forKey: k.rank)
+        let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
+        let label = coder.decodeBool(forKey: k.label)
+        let hover = coder.decodeBool(forKey: k.hover)
+        let alpha = coder.decodeFloat(forKey: k.alpha)
+        let trans = coder.decodeInteger(forKey: k.trans)
+        self.init(name: name, link: link!, time: time, rank: rank, rect: rect,
+                  label: label, hover: hover, alpha: alpha, trans: trans)
     }
     
     func encode(with coder: NSCoder) {
-        coder.encode(name, forKey: "name")
-        coder.encode(link, forKey: "link")
-        coder.encode(time, forKey: "time")
-        coder.encode(rank, forKey: "rank")
-        coder.encode(NSStringFromRect(rect), forKey: "rect")
-        coder.encode(label, forKey: "label")
-        coder.encode(hover, forKey: "hover")
-        coder.encode(alpha, forKey: "alpha")
-        coder.encode(trans, forKey: "trans")
+        coder.encode(name, forKey: k.name)
+        coder.encode(link, forKey: k.link)
+        coder.encode(time, forKey: k.time)
+        coder.encode(rank, forKey: k.rank)
+        coder.encode(NSStringFromRect(rect), forKey: k.rect)
+        coder.encode(label, forKey: k.label)
+        coder.encode(hover, forKey: k.hover)
+        coder.encode(alpha, forKey: k.alpha)
+        coder.encode(trans, forKey: k.trans)
+    }
+    
+    func dictionary() -> Dictionary<String,Any> {
+        var dict: Dictionary<String,Any> = Dictionary()
+        dict[k.name] = name
+        dict[k.link] = link.absoluteString
+        dict[k.time] = time
+        dict[k.rank] =  rank
+        dict[k.rect] = NSStringFromRect(rect)
+        dict[k.label] = label
+        dict[k.hover] = hover
+        dict[k.alpha] = alpha
+        dict[k.trans] = trans
+        return dict
     }
 }
 
@@ -195,44 +231,57 @@ class Document : NSDocument {
     var playlists: Dictionary<String, Any>
     var settings: Settings
     
+    func dictionary() -> Dictionary<String,Any> {
+        var dict: Dictionary<String,Any> = Dictionary()
+        dict[k.name] = self.displayName
+        dict[k.link] = self.fileURL?.absoluteString
+        dict[k.time] = settings.time.value
+        dict[k.rank] = settings.rank.value
+        dict[k.rect] = NSStringFromRect(settings.rect.value)
+        dict[k.label] = settings.autoHideTitle.value
+        dict[k.hover] = settings.disabledFullScreenFloat.value
+        dict[k.alpha] = settings.opacityPercentage.value
+        dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
+        return dict
+    }
+    
+    func restoreSettings(with dictionary: Dictionary<String,Any>) {
+        let plist = dictionary as NSDictionary
+        self.displayName = dictionary[k.name] as! String
+        self.fileURL = URL.init(string: plist[k.link] as! String)!
+        self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
+        self.settings.rank.value = (plist[k.rank] as AnyObject).intValue ?? 0
+        self.settings.rect.value = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
+        self.settings.autoHideTitle.value = (plist[k.label] as AnyObject).boolValue ?? false
+        self.settings.disabledFullScreenFloat.value = (plist[k.hover] as AnyObject).boolValue ?? false
+        self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
+        self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: (plist[k.trans] as AnyObject).intValue ?? 0)!
+    }
+
     func updateURL(to url: URL, ofType typeName: String) {
         if typeName == "h3w" {
             if let dict = NSDictionary(contentsOf: url) {
-                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
-                    for playlist in playArray as! [AnyObject] {
-                       let play = playlist as! Dictionary<String,AnyObject>
-                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                        var list : [PlayItem] = [PlayItem]()
-                        for playitem in items {
-                            let item = playitem as Dictionary <String,AnyObject>
-                            let name = item[k.name] as! String
-                            let path = item[k.link] as! String
-                            let time = item[k.time] as? TimeInterval
-                            let link = URL.init(string: path)
-                            let rank = item[k.rank] as! Int
-                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                            
-                            // Non-visible (tableView) cells
-                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                            temp.label = item[k.label]?.boolValue ?? false
-                            temp.hover = item[k.hover]?.boolValue ?? false
-                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                            temp.trans = item[k.trans]?.intValue ?? 0
-                            
-                            list.append(temp)
-                        }
-                        let name = play[k.name] as? String
-                        if let items = playlists[name!] {
-                            for item in items as! [PlayItem] {
-                                list.append(item)
-                            }
-                        }
-                        playlists[name!] = list
+                var items: [PlayItem] = [PlayItem]()
+                for (key,list) in dict {
+                    for item in list as! [Dictionary<String,Any>] {
+                        let playitem = PlayItem.init(with: item )
+                        items.append(playitem)
                     }
-                }
-                if let urlString = dict.value(forKey: "fileURL") {
-                    self.fileURL = URL(string: (urlString as AnyObject).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-                    self.fileType = self.fileURL?.pathExtension
+                    var playname = key as! String
+                    var nbr = 0
+                    while true {
+                        if playlists[playname] == nil
+                        {
+                            break
+                        }
+                        else
+                        {
+                            nbr += 1
+                            playname = String(format: "%@%@", key as! String,
+                                              (nbr == 0 ? "" : String(format: "-%ld", nbr)))
+                        }
+                    }
+                    playlists[playname] = items
                 }
             }
         }
@@ -296,22 +345,8 @@ class Document : NSDocument {
                     let items = play[k.list] as! [Dictionary <String,AnyObject>]
                     var list : [PlayItem] = [PlayItem]()
                     for playitem in items {
-                        let item = playitem as Dictionary <String,AnyObject>
-                        let name = item[k.name] as! String
-                        let path = item[k.link] as! String
-                        let time = item[k.time] as? TimeInterval
-                        let link = URL.init(string: path)
-                        let rank = item[k.rank] as! Int
-                        let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                        
-                        // Non-visible (tableView) cells
-                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                        temp.label = item[k.label]?.boolValue ?? false
-                        temp.hover = item[k.hover]?.boolValue ?? false
-                        temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                        temp.trans = item[k.trans]?.intValue ?? 0
-
-                        list.append(temp)
+                        let item = PlayItem.init(with: playitem)
+                        list.append(item)
                     }
                     let name = play[k.name] as? String
                     if let items = playlists[name!] {
@@ -326,37 +361,22 @@ class Document : NSDocument {
             
         case "h3w":
             if let dict = NSDictionary(contentsOf: url) {
-                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
-                    for playlist in playArray as! [AnyObject] {
-                        let play = playlist as! Dictionary<String,AnyObject>
-                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                        var list : [PlayItem] = [PlayItem]()
-                        for playitem in items {
-                            let item = playitem as Dictionary <String,AnyObject>
-                            let name = item[k.name] as! String
-                            let path = item[k.link] as! String
-                            let time = item[k.time] as? TimeInterval
-                            let link = URL.init(string: path)
-                            let rank = item[k.rank] as! Int
-                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                            
-                            // Non-visible (tableView) cells
-                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                            temp.label = item[k.label]?.boolValue ?? false
-                            temp.hover = item[k.hover]?.boolValue ?? false
-                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                            temp.trans = item[k.trans]?.intValue ?? 0
-                            
-                            list.append(temp)
-                        }
-                        let name = play[k.name] as? String
-                        if let items = playlists[name!] {
-                            for item in items as! [PlayItem] {
-                                list.append(item)
-                            }
-                        }
-                        playlists[name!] = list
+                let playarray = dict.value(forKey: UserSettings.Playlists.default)
+                for playlist in playarray as! [Dictionary<String, Any>] {
+                    let play = playlist as Dictionary<String,AnyObject>
+                    let items = play[k.list] as! [Dictionary <String,AnyObject>]
+                    var list : [PlayItem] = [PlayItem]()
+                    for playitem in items {
+                        let item = PlayItem.init(with: playitem)
+                        list.append(item)
                     }
+                    let name = play[k.name] as? String
+                    if let items = playlists[name!] {
+                        for item in items as! [PlayItem] {
+                            list.append(item)
+                        }
+                    }
+                    playlists[name!] = list
                 }
 
                 if let fileURL = dict.value(forKey: "fileURL") {
@@ -399,22 +419,8 @@ class Document : NSDocument {
                     let items = play[k.list] as! [Dictionary <String,AnyObject>]
                     var list : [PlayItem] = [PlayItem]()
                     for playitem in items {
-                        let item = playitem as Dictionary <String,AnyObject>
-                        let name = item[k.name] as! String
-                        let path = item[k.link] as! String
-                        let time = item[k.time] as? TimeInterval
-                        let link = URL.init(string: path)
-                        let rank = item[k.rank] as! Int
-                        let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                        
-                        // Non-visible (tableView) cells
-                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                        temp.label = item[k.label]?.boolValue ?? false
-                        temp.hover = item[k.hover]?.boolValue ?? false
-                        temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                        temp.trans = item[k.trans]?.intValue ?? 0
-                        
-                        list.append(temp)
+                        let item = PlayItem.init(with: playitem)
+                        list.append(item)
                     }
                     let name = play[k.name] as? String
                     
@@ -435,22 +441,8 @@ class Document : NSDocument {
                         let items = play[k.list] as! [Dictionary <String,AnyObject>]
                         var list : [PlayItem] = [PlayItem]()
                         for playitem in items {
-                            let item = playitem as Dictionary <String,AnyObject>
-                            let name = item[k.name] as! String
-                            let path = item[k.link] as! String
-                            let time = item[k.time] as? TimeInterval
-                            let link = URL.init(string: path)
-                            let rank = item[k.rank] as! Int
-                            let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                            
-                            // Non-visible (tableView) cells
-                            temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                            temp.label = item[k.label]?.boolValue ?? false
-                            temp.hover = item[k.hover]?.boolValue ?? false
-                            temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                            temp.trans = item[k.trans]?.intValue ?? 0
-                            
-                            list.append(temp)
+                            let item = PlayItem.init(with: playitem)
+                            list.append(item)
                         }
                         let name = play[k.name] as? String
                         if let items = playlists[name!] {
@@ -462,9 +454,8 @@ class Document : NSDocument {
                     }
                 }
                 
-                if let fileURL = dict.value(forKey: "fileURL") {
-                    self.fileURL = URL(string: (fileURL as! String).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-                    self.fileType = self.fileURL?.pathExtension
+                if let document = dict.value(forKey: "document") {
+                    self.restoreSettings(with: document as! Dictionary<String,Any>)
                     break;
                 }
             }
@@ -490,44 +481,29 @@ class Document : NSDocument {
         switch typeName {
         case "h3w":
             let dict = NSDictionary.init()
-            dict.setValue(playlists, forKey: UserSettings.Playlists.default)
+            for (name,playitem) in playlists {
+                let item = (playitem as! PlayItem).dictionary()
+                dict.setValue(item, forKey: name)
+            }
             dict.write(to: url, atomically: true)
             break
             
         default:
             //  "DocumentType" writter to user defaults play items dictionary
-            var playitems = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default)
-
-            for key in playlists.keys {
-                for playitem in playlists[key] as! [PlayItem] {
-                    let rect = settings.rect.value as NSRect
-                    let item : [String:AnyObject] = [k.name  : playitem.name as String as AnyObject,
-                                                     k.link  : playitem.link.absoluteString as AnyObject,
-                                                     k.time  : playitem.time as AnyObject,
-                                                     k.rank  : playitem.rank as AnyObject,
-                                                     k.rect  : rect as AnyObject,
-                                                     k.label : playitem.label as AnyObject,
-                                                     k.hover : playitem.hover as AnyObject,
-                                                     k.alpha : playitem.alpha as AnyObject,
-                                                     k.trans : playitem.trans as AnyObject]
-                    playitems?[playitem.name] = item
+            var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) ?? NSDictionary.init() as! [String : Any]
+            for (name,list) in playlists {
+                var items = [Dictionary<String,Any>]()
+                for item in list as! [PlayItem] {
+                    items.append(item.dictionary())
                 }
+                lists[name] = items
             }
             
             //  Cache ourselves too
-            let rect = settings.rect.value as NSRect
-            let item : [String:AnyObject] = [k.name  : self.displayName as AnyObject,
-                                             k.link  : self.fileURL!.absoluteString as AnyObject,
-                                             k.time  : settings.time.value as AnyObject,
-                                             k.rank  : settings.rank.value as AnyObject,
-                                             k.rect  : NSStringFromRect(rect) as AnyObject,
-                                             k.label : settings.autoHideTitle.value as AnyObject,
-                                             k.hover : settings.disabledFullScreenFloat.value as AnyObject,
-                                             k.alpha : settings.opacityPercentage.value as AnyObject,
-                                             k.trans : settings.translucencyPreference.value.rawValue as AnyObject]
-            playitems?[self.displayName] = item
+            let item = self.dictionary()
+            lists[self.displayName] = item
             
-            UserDefaults.standard.set(playitems, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.set(lists, forKey: UserSettings.Playlists.default)
             UserDefaults.standard.synchronize()
         }
         self.updateChangeCount(.changeCleared)
