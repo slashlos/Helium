@@ -83,7 +83,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let pboard = sender.draggingPasteboard()
         
         if (pboard.types?.contains(NSURLPboardType))! {
-            Swift.print("we have NSURLPboardType")
+            let items = pboard.pasteboardItems
+            Swift.print("hw have NSURLPboardType \(String(describing: items))")
         }
         else
         if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
