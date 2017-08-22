@@ -17,6 +17,93 @@ struct k {
     static let link = "link"
     static let time = "time"
     static let rank = "rank"
+    static let rect = "rect"
+    static let label = "label"
+    static let hover = "hover"
+    static let alpha = "alpha"
+    static let trans = "trans"
+    static let TitleUtility: CGFloat = 16.0
+    static let TitleNormal: CGFloat = 22.0
+    static let ToolbarItemHeight: CGFloat = 48.0
+    static let ToolbarItemSpacer: CGFloat = 4.0
+    static let ToolbarTextHeight: CGFloat = 12.0
+    static let ToolbarlessSpacer: CGFloat = 4.0
+}
+
+extension NSImage {
+    
+    func resize(w: Int, h: Int) -> NSImage {
+        let destSize = NSMakeSize(CGFloat(w), CGFloat(h))
+        let newImage = NSImage(size: destSize)
+        newImage.lockFocus()
+        self.draw(in: NSMakeRect(0, 0, destSize.width, destSize.height),
+                   from: NSMakeRect(0, 0, self.size.width, self.size.height),
+                         operation: .sourceOver,
+                         fraction: CGFloat(1))
+        newImage.unlockFocus()
+        newImage.size = destSize
+        return NSImage(data: newImage.tiffRepresentation!)!
+    }
+}
+
+//	Create a file Handle or url for writing to a new file located in the directory specified by 'dirpath'.
+//  If the file basename.extension already exists at that location, then append "-N" (where N is a whole
+//  number starting with 1) until a unique basename-N.extension file is found.  On return oFilename
+//  contains the name of the newly created file referenced by the returned NSFileHandle (autoreleased).
+func NewFileHandleForWriting(path: String, name: String, type: String, outFile: inout String?) -> FileHandle? {
+    let fm = FileManager.default
+    var file: String? = nil
+    var fileURL: URL? = nil
+    var uniqueNum = 0
+
+    do {
+        while true {
+            let tag = (uniqueNum > 0 ? String(format: "-%d", uniqueNum) : "")
+            let unique = String(format: "%@%@.%@", name, tag, type)
+            file = String(format: "%@/%@", path, unique)
+            fileURL = URL.init(fileURLWithPath: file!)
+            if false == ((try? fileURL?.checkResourceIsReachable()) ?? false) { break }
+            
+            // Try another tag.
+            uniqueNum += 1;
+        }
+        outFile = file!
+        
+        if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey.extensionHidden.rawValue: true]) {
+            let fileHandle = try FileHandle.init(forWritingTo: fileURL!)
+            print("\(file!) was opened for writing")
+            return fileHandle
+        } else {
+            return nil
+        }
+    } catch let error {
+        NSApp.presentError(error)
+        return nil;
+    }
+}
+
+func NewFileURLForWriting(path: String, name: String, type: String) -> URL? {
+    let fm = FileManager.default
+    var file: String? = nil
+    var fileURL: URL? = nil
+    var uniqueNum = 0
+    
+    while true {
+        let tag = (uniqueNum > 0 ? String(format: "-%d", uniqueNum) : "")
+        let unique = String(format: "%@%@.%@", name, tag, type)
+        file = String(format: "%@/%@", path, unique)
+        fileURL = URL.init(fileURLWithPath: file!)
+        if false == ((try? fileURL?.checkResourceIsReachable()) ?? false) { break }
+        
+        // Try another tag.
+        uniqueNum += 1;
+    }
+    
+    if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey.extensionHidden.rawValue: true]) {
+        return fileURL
+    } else {
+        return nil
+    }
 }
 
 class PlayTableView : NSTableView {
@@ -34,10 +121,31 @@ class PlayTableView : NSTableView {
             super.keyDown(with: event)
         }
     }
-    
+
+    override func mouseDragged(with event: NSEvent) {
+        let dragPosition = self.convert(event.locationInWindow, to: nil)
+        let imageLocation = NSMakeRect(dragPosition.x - 16.0, dragPosition.y - 16.0, 32.0, 32.0)
+
+        _ = self.dragPromisedFiles(ofTypes: ["h3w"], from: imageLocation, source: self, slideBack: true, event: event)
+    }
+
+    override func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        return .copy
+    }
+
+    override func dragImageForRows(with dragRows: IndexSet, tableColumns: [NSTableColumn], event dragEvent: NSEvent, offset dragImageOffset: NSPointPointer) -> NSImage {
+        return NSApp.applicationIconImage.resize(w: 32, h: 32)
+    }
+    override func draggingEntered(_ info: NSDraggingInfo) -> NSDragOperation {
+        let pasteboard = info.draggingPasteboard()
+        
+        if pasteboard.canReadItem(withDataConformingToTypes: [NSPasteboardURLReadingFileURLsOnlyKey]) {
+            return .copy
+        }
+        return .copy
+    }
     func tableViewColumnDidResize(notification: NSNotification ) {
-        // Pay attention to column resizes and aggressively force the tableview's
-        // cornerview to redraw.
+        // Pay attention to column resizes and aggressively force the tableview's cornerview to redraw.
         self.cornerView?.needsDisplay = true
     }
 
@@ -140,14 +248,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     override func viewDidLoad() {
         let types = ["public.data",kUTTypeURL as String,
-                     PlayItem.className(),
-                     NSFilenamesPboardType,
-                     NSURLPboardType]
+                         NSDictionaryControllerKeyValuePair.className(),
+                         PlayList.className(),
+                         PlayItem.className(),
+                         NSFilenamesPboardType,
+                         NSFilesPromisePboardType,
+                         NSURLPboardType]
 
         playlistTableView.register(forDraggedTypes: types)
         playitemTableView.register(forDraggedTypes: types)
 
+        playlistTableView.doubleAction = #selector(playPlaylist(_:))
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
+        
         self.restorePlaylists(restoreButton)
         //  Maintain a history of titles
 
@@ -182,18 +295,20 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
     var historyCache: NSDictionaryControllerKeyValuePair? = nil
     override func viewWillAppear() {
-        // add existing history entry if any
-        if historyCache == nil && appDelegate.histories.count > 0 {
+        // add existing history entry if any AVQueuePlayer
+        if historyCache == nil
+        {
+            historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
+            historyCache!.key = UserSettings.HistoryName.value
+            historyCache!.value = [PlayItem]()
+        }
+        else
+        if appDelegate.histories.count > 0 {
             playlists[UserSettings.HistoryName.value] = nil
             
             // overlay in history using NSDictionaryControllerKeyValuePair Protocol setKey
             historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
             historyCache!.key = UserSettings.HistoryName.value
-            historyCache!.value = appDelegate.histories
-        }
-        else
-        if historyCache != nil
-        {
             historyCache!.value = appDelegate.histories
         }
         playlistArrayController.addObject(historyCache!)
@@ -277,34 +392,64 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
             super.dismiss(sender)
 
+            //  If we were run modally as a window, close it
+            if let ppc = self.view.window?.windowController {
+                if ppc.isKind(of: PlaylistPanelController.self) {
+                    NSApp.abortModal()
+                }
+            }
+            
             if (webViewController != nil) {
                 webViewController?.loadURL(url: selectedPlayItem.link)
             }
             else
             {
+                //  if we have a panel send it there, else create new doc window
                 if let first = NSApp.windows.first {
                     if let hpc = first.windowController as? HeliumPanelController {
                         hpc.webViewController.loadURL(url: selectedPlayItem.link)
+                        return
                     }
+                }
+                
+                //  This could be anything so add/if a doc and initialize
+                do {
+                    let dc = NSDocumentController.shared()
+                    let fileURL = selectedPlayItem.link
+                    let fileType = fileURL.pathExtension
+                    
+                    let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
+                    doc.makeWindowControllers()
+                    dc.addDocument(doc)
+                    
+                    if let hwc = (doc as NSDocument).windowControllers.first {
+                        (hwc.contentViewController as! WebViewController).loadURL(url: (doc as Document).fileURL!)
+                        hwc.window?.orderFront(self)
+                    }
+                } catch let error {
+                    print("*** Error open file: \(error.localizedDescription)")
                 }
              }
         }
         else
         if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
-            let list: Array<PlayItem> = selectedPlaylist.value as! Array
+            let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
+                return lhs.rank < rhs.rank
+                })
             
             if list.count > 0 {
                 super.dismiss(sender)
                 // TODO: For now just log what we would play once we figure out how to determine when an item finishes so we can start the next
                 print("play \(selectedPlaylist) \(list.count)")
                 for (i,item) in list.enumerated() {
-                    print("\(i) \(item.rank) \(item.name)")
+                    print(String(format: "%3d %3d %@", i, item.rank, item.name))
                 }
             }
         }
         else
         {
             Swift.print("firstResponder: \(String(describing: whoAmI))")
+            AudioServicesPlaySystemSound(1051);
         }
     }
     
@@ -334,6 +479,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     let link = URL.init(string: path)
                     let rank = item[k.rank] as! Int
                     let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                    
+                    // Non-visible (tableView) cells
+                    temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                    temp.label = item[k.label]?.boolValue ?? false
+                    temp.hover = item[k.hover]?.boolValue ?? false
+                    temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                    temp.trans = item[k.trans]?.intValue ?? 0
+
                     list.append(temp)
                 }
                 let name = play[k.name] as? String
@@ -403,7 +556,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
      }
 
     // MARK:- Drag-n-Drop
-    
+/*
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard()
 
@@ -412,39 +565,118 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         return .copy
     }
-
+**
     func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
         let item = NSPasteboardItem()
         
-        item.setString(String(row), forType: "public.data")
-        
+        if tableView == playlistTableView {
+            let selection: NSDictionaryControllerKeyValuePair = playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair
+            item.setDataProvider(selection as! NSPasteboardItemDataProvider, forTypes:[NSFilesPromisePboardType])
+            item.setString(selection.key, forType: "public.data")
+        }
+        else
+        {
+            let selection: PlayItem = playitemArrayController.selectedObjects.first as! PlayItem
+            item.setDataProvider(selection as! NSPasteboardItemDataProvider, forTypes:[NSFilesPromisePboardType])
+            item.setString(selection.name, forType: "public.data")
+        }
+
         return item
     }
-
+*/
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
-        let data = NSKeyedArchiver.archivedData(withRootObject: rowIndexes)
-        let registeredTypes:[String] = ["public.data"]
 
-        pboard.declareTypes(registeredTypes, owner: self)
-        pboard.setData(data, forType: "public.data")
-        
+        if tableView == playlistTableView {
+            let objects: [NSDictionaryControllerKeyValuePair] = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
+            var promises = [String]()
+            for index in rowIndexes {
+                let item = objects[index]
+                promises.append(item.key!)
+            }
+            pboard.setPropertyList(["h3w"], forType:NSFilesPromisePboardType)
+            pboard.writeObjects(promises as [NSPasteboardWriting])
+        }
+        else
+        {
+            let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
+            var promises = [String]()
+            for index in rowIndexes {
+                let playitem = objects[index]
+                promises.append(playitem.name)
+            }
+            pboard.setPropertyList(["h3w"], forType:NSFilesPromisePboardType)
+            pboard.writeObjects(promises as [NSPasteboardWriting])
+        }
         return true
     }
     
-    func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int, proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
-        let sourceTableView = info.draggingSource() as? NSTableView
+    func performDragOperation(info: NSDraggingInfo) -> Bool {
+        let pboard: NSPasteboard = info.draggingPasteboard()
+        let types = pboard.types
+    
+        if (types?.contains(NSFilenamesPboardType))! {
+            let names = info.namesOfPromisedFilesDropped(atDestination: URL.init(string: "file://~/Desktop/")!)
+            // Perform operation using the files’ names, but without the
+            // files actually existing yet
+            Swift.print("performDragOperation: NSFilenamesPboardType \(String(describing: names))")
+        }
+        if (types?.contains(NSFilesPromisePboardType))! {
+            let names = info.namesOfPromisedFilesDropped(atDestination: URL.init(string: "file://~/Desktop/")!)
+            // Perform operation using the files’ names, but without the
+            // files actually existing yet
+            Swift.print("performDragOperation: NSFilesPromisePboardType \(String(describing: names))")
+        }
+        return true
+    }
 
-        if sourceTableView == tableView {
-            Swift.print("drag same")
+    func tableView(_ tableView: NSTableView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedRowsWith indexSet: IndexSet) -> [String] {
+        var names: [String] = [String]()
+        //	Always marshall an array of items regardless of item count
+        if tableView == playlistTableView {
+            let objects: [NSDictionaryControllerKeyValuePair] = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
+            for index in indexSet {
+                let dictKV = objects[index]
+                var items: [Any] = [Any]()
+                let name = dictKV.key!
+                for item in dictKV.value as! [PlayItem] {
+                    let dict = item.dictionary()
+                    items.append(dict)
+                }
+
+                if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
+                    var dict = Dictionary<String,[Any]>()
+                    dict[name] = items
+                    (dict as NSDictionary).write(to: fileURL, atomically: true)
+                    names.append(fileURL.absoluteString)
+                }
+            }
         }
         else
-        if sourceTableView == playlistTableView {
-            Swift.print("drag from playlist")
+        {
+            let selection = playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair
+            let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
+            let name = String(format: "%@+%ld.h3w", selection.key!, indexSet.count)
+            var items: [AnyObject] = [AnyObject]()
+
+            for index in indexSet {
+                let item = objects[index]
+                items.append(item)
+            }
+            
+            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
+                var dict = Dictionary<String,[AnyObject]>()
+                dict[UserSettings.Playitems.default] = items
+                dict[UserSettings.Playlists.default] = [name as AnyObject]
+                (dict as NSDictionary).write(to: fileURL, atomically: true)
+                names.append(fileURL.absoluteString)
+            }
         }
-        else
-        if sourceTableView == playitemTableView {
-            Swift.print("drag from playitem")
-        }
+        return names
+    }
+
+    func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int, proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
+//        let sourceTableView = info.draggingSource() as? NSTableView
+
         if dropOperation == .above {
             let pboard = info.draggingPasteboard();
             let options = [NSPasteboardURLReadingFileURLsOnlyKey : true,
@@ -466,10 +698,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     }
                 }
             }
-            Swift.print("drag move")
-            return .move
+            return .copy
         }
-        Swift.print("drag \(NSDragOperation())")
         return .every
     }
     
@@ -602,7 +832,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                         link:URL.init(string: path)!,
                                         time:time,
                                         rank:(playitemArrayController.arrangedObjects as AnyObject).count + 1)
-                    playitemArrayController.insert(item, atArrangedObjectIndex: row + newIndexOffset)
+                    if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
+                        playitemArrayController.insert(item, atArrangedObjectIndex: row + newIndexOffset)
+                    }
+                    else
+                    {
+                        playitemArrayController.addObject(item)
+                    }
                     newIndexOffset += 1
                 } else {
                     print("accept item -> \((itemURL as AnyObject).absoluteString)")
@@ -636,18 +872,24 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         }
 
                         let attr = appDelegate.metadataDictionaryForFileAt((url?.path)!)
-                        let time = attr?[kMDItemDurationSeconds] as! TimeInterval
+                        let time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0.0
                         let fuzz = url?.deletingPathExtension().lastPathComponent
                         let name = fuzz?.removingPercentEncoding
                         let temp = PlayItem(name: name!,
                                             link: url!,
                                             time: time,
                                             rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
-                        playitemArrayController.insert(temp, atArrangedObjectIndex: row + newIndexOffset)
+                        if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
+                            playitemArrayController.insert(temp, atArrangedObjectIndex: row + newIndexOffset)
+                        }
+                        else
+                        {
+                            playitemArrayController.addObject(temp)
+                        }
                         newIndexOffset += 1
-
                     }
                 }
+                return false
             }
             
             DispatchQueue.main.async {
