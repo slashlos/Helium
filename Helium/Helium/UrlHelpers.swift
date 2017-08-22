@@ -29,6 +29,8 @@ struct UrlHelpers {
 // MARK: - Magic Handlers
 extension UrlHelpers {
     static func doMagic(_ url: URL) -> URL? {
+        //  Skip file urls
+        if url.isFileURL { return url }
         return UrlHelpers.Magic(url).newUrl
     }
     
