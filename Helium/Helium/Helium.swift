@@ -228,7 +228,6 @@ class HeliumDocumentController : NSDocumentController {
 
 class Document : NSDocument {
 
-    var playlists: Dictionary<String, Any>
     var settings: Settings
     
     func dictionary() -> Dictionary<String,Any> {
@@ -257,48 +256,20 @@ class Document : NSDocument {
         self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
         self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: (plist[k.trans] as AnyObject).intValue ?? 0)!
     }
-
-    func updateURL(to url: URL, ofType typeName: String) {
-        if typeName == "h3w" {
-            if let dict = NSDictionary(contentsOf: url) {
-                var items: [PlayItem] = [PlayItem]()
-                for (key,list) in dict {
-                    for item in list as! [Dictionary<String,Any>] {
-                        let playitem = PlayItem.init(with: item )
-                        items.append(playitem)
-                    }
-                    var playname = key as! String
-                    var nbr = 0
-                    while true {
-                        if playlists[playname] == nil
-                        {
-                            break
-                        }
-                        else
-                        {
-                            nbr += 1
-                            playname = String(format: "%@%@", key as! String,
-                                              (nbr == 0 ? "" : String(format: "-%ld", nbr)))
-                        }
-                    }
-                    playlists[playname] = items
-                }
+    
+    func update(to url: URL, ofType typeName: String) {
+        if let dict = NSDictionary(contentsOf: url) {
+            if let item = dict.value(forKey: "settings") {
+                self.restoreSettings(with: item as! Dictionary<String,Any> )
             }
         }
-        else
-        {
-            fileType = url.pathExtension
-            fileURL = url
-        }
+        fileType = typeName
+        fileURL = url
         self.save(self)
     }
     
     override init() {
-        // Add your subclass-specific initialization here.
-
-        playlists = Dictionary<String, Any>()
         settings = Settings()
-        
         super.init()
     }
     
@@ -336,134 +307,17 @@ class Document : NSDocument {
 
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
+        self.update(to: url, ofType: typeName)
         
-        switch typeName {
-        case "DocumentType":
-            if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.default) {
-                for playlist in playArray {
-                    let play = playlist as! Dictionary<String,AnyObject>
-                    let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                    var list : [PlayItem] = [PlayItem]()
-                    for playitem in items {
-                        let item = PlayItem.init(with: playitem)
-                        list.append(item)
-                    }
-                    let name = play[k.name] as? String
-                    if let items = playlists[name!] {
-                        for item in items as! [PlayItem] {
-                            list.append(item)
-                        }
-                    }
-                    playlists[name!] = list
-                }
-                break
+        //  Record url and type, caller will load via notification
+        do {
+            self.makeWindowControllers()
+            NSDocumentController.shared().addDocument(self)
+
+            if let hwc = self.windowControllers.first {
+                hwc.window?.orderFront(self)
+                (hwc.contentViewController as! WebViewController).loadURL(url: url)
             }
-            
-        case "h3w":
-            if let dict = NSDictionary(contentsOf: url) {
-                let playarray = dict.value(forKey: UserSettings.Playlists.default)
-                for playlist in playarray as! [Dictionary<String, Any>] {
-                    let play = playlist as Dictionary<String,AnyObject>
-                    let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                    var list : [PlayItem] = [PlayItem]()
-                    for playitem in items {
-                        let item = PlayItem.init(with: playitem)
-                        list.append(item)
-                    }
-                    let name = play[k.name] as? String
-                    if let items = playlists[name!] {
-                        for item in items as! [PlayItem] {
-                            list.append(item)
-                        }
-                    }
-                    playlists[name!] = list
-                }
-
-                if let fileURL = dict.value(forKey: "fileURL") {
-                    self.fileURL = URL(string: (fileURL as! String).addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-                    self.fileType = self.fileURL?.pathExtension
-                    break;
-                }
-            }
-            
-            //  Since we didn't have a fileURL use url given
-            self.fileType = typeName
-            self.fileURL = url
-            break
-
-        default:
-            //  Record url and type, caller will load via notification
-
-            do {
-                self.makeWindowControllers()
-                NSDocumentController.shared().addDocument(self)
-
-                if let hwc = self.windowControllers.first {
-                    hwc.window?.orderFront(self)
-                    (hwc.contentViewController as! WebViewController).loadURL(url: url)
-                }
-                self.fileURL = url
-                self.fileType = url.pathExtension
-                break
-            }
-        }
-    }
-    
-    override func read(from url: URL, ofType typeName: String) throws {
-        switch typeName {
-        case "DocumentType":
-            if let playArray = UserDefaults.standard.array(forKey: UserSettings.Playlists.default) {
-                
-                for playlist in playArray {
-                    let play = playlist as! Dictionary<String,AnyObject>
-                    let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                    var list : [PlayItem] = [PlayItem]()
-                    for playitem in items {
-                        let item = PlayItem.init(with: playitem)
-                        list.append(item)
-                    }
-                    let name = play[k.name] as? String
-                    
-                    playlists[name!] = list
-                }
-            }
-
-            self.fileType = url.pathExtension
-            self.fileURL = url
-            break
-
-        case "h3w":
-            // MARK: TODO write playlist and histories with default keys but also save current value
-            if let dict = NSDictionary(contentsOf: url) {
-                if let playArray = dict.value(forKey: UserSettings.Playlists.default) {
-                    for playlist in playArray as! [AnyObject] {
-                        let play = playlist as! Dictionary<String,AnyObject>
-                        let items = play[k.list] as! [Dictionary <String,AnyObject>]
-                        var list : [PlayItem] = [PlayItem]()
-                        for playitem in items {
-                            let item = PlayItem.init(with: playitem)
-                            list.append(item)
-                        }
-                        let name = play[k.name] as? String
-                        if let items = playlists[name!] {
-                            for item in items as! [PlayItem] {
-                                list.append(item)
-                            }
-                        }
-                        playlists[name!] = list
-                    }
-                }
-                
-                if let document = dict.value(forKey: "document") {
-                    self.restoreSettings(with: document as! Dictionary<String,Any>)
-                    break;
-                }
-            }
-            break
-            
-        default:
-            Swift.print("nyi \(typeName)")
-            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
         }
     }
     
@@ -478,35 +332,13 @@ class Document : NSDocument {
     }
     
     override func write(to url: URL, ofType typeName: String) throws {
-        switch typeName {
-        case "h3w":
-            let dict = NSDictionary.init()
-            for (name,playitem) in playlists {
-                let item = (playitem as! PlayItem).dictionary()
-                dict.setValue(item, forKey: name)
-            }
-            dict.write(to: url, atomically: true)
-            break
-            
-        default:
-            //  "DocumentType" writter to user defaults play items dictionary
-            var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) ?? NSDictionary.init() as! [String : Any]
-            for (name,list) in playlists {
-                var items = [Dictionary<String,Any>]()
-                for item in list as! [PlayItem] {
-                    items.append(item.dictionary())
-                }
-                lists[name] = items
-            }
-            
-            //  Cache ourselves too
-            let item = self.dictionary()
-            lists[self.displayName] = item
-            
-            UserDefaults.standard.set(lists, forKey: UserSettings.Playlists.default)
+        //  When a document is written, update in global items
+        if var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) {
+            lists[self.displayName] = self.dictionary()
+            UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
             UserDefaults.standard.synchronize()
+            self.updateChangeCount(.changeCleared)
         }
-        self.updateChangeCount(.changeCleared)
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         do {
