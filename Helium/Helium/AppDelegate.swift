@@ -95,7 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
             //  If it's a "h3w" type read it and load its fileURL
             if fileType == "h3w" {
-                (doc as! Document).updateURL(to: fileURL, ofType: fileType)
+                (doc as! Document).update(to: fileURL, ofType: fileType)
                 
                 (hwc.contentViewController as! WebViewController).loadURL(url: (doc as! Document).fileURL!)
             }
@@ -251,8 +251,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  MARK:- Lifecyle
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        return true//NSApp.windows.count == 0
-    }
+        let dc = NSDocumentController.shared()
+        return dc.documents.count == 0
+     }
 
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
@@ -271,7 +272,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appStatusItem.image = NSImage.init(named: "statusIcon")
         appStatusItem.menu = appMenu
 
-        //  Prime user defaults playitems dictionary
+        //  Prime user globals playitems dictionary
         if UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) == nil {
             let playitems: Dictionary<String,AnyObject> = Dictionary()
             UserDefaults.standard.set(playitems, forKey: UserSettings.Playitems.default)
@@ -383,7 +384,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             histories.append(item)
             item.rank = histories.count
-
+            
+            //  keep a global play items list used to restore settings
+            var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) ?? NSDictionary.init() as! [String : Any]
+            lists[item.name] = item.dictionary()
+            
+            UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.synchronize()
+            
+            //  tell any playlist controller we have updated history
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewHistoryItem"), object: item)
             NotificationCenter.default.post(notif)
         }
