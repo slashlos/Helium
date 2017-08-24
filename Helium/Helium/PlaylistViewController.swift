@@ -261,8 +261,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         playlistTableView.doubleAction = #selector(playPlaylist(_:))
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
         
+        //  Load playlists shared by all document; our delegate maintains history
         self.restorePlaylists(restoreButton)
-        //  Maintain a history of titles
 
         NotificationCenter.default.addObserver(
             self,
@@ -290,19 +290,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             col.isHidden = isHidden
         }
-
     }
 
     var historyCache: NSDictionaryControllerKeyValuePair? = nil
     override func viewWillAppear() {
         // add existing history entry if any AVQueuePlayer
-        if historyCache == nil
-        {
+        if historyCache == nil {
             historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
             historyCache!.key = UserSettings.HistoryName.value
             historyCache!.value = [PlayItem]()
         }
-        else
+        
         if appDelegate.histories.count > 0 {
             playlists[UserSettings.HistoryName.value] = nil
             
@@ -464,38 +462,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             playlists = playCache
         }
         else
-        if let playArray = defaults.array(forKey: UserSettings.Playlists.keyPath) {
-            playlistArrayController.remove(contentsOf: playlistArrayController.arrangedObjects as! [AnyObject])
-
-            for playlist in playArray {
-                let play = playlist as! Dictionary<String,AnyObject>
-                let items = play[k.list] as! [Dictionary <String,AnyObject>]
+        if let playArray = defaults.dictionary(forKey: UserSettings.Playlists.keyPath) {
+            for (name,plist) in playArray {
+                guard let items = plist as? [Dictionary<String,Any>] else {
+                    let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
+                    playlists[name] = [item]
+                    continue
+                }
                 var list : [PlayItem] = [PlayItem]()
                 for playitem in items {
-                    let item = playitem as Dictionary <String,AnyObject>
-                    let name = item[k.name] as! String
-                    let path = item[k.link] as! String
-                    let time = item[k.time] as? TimeInterval
-                    let link = URL.init(string: path)
-                    let rank = item[k.rank] as! Int
-                    let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                    
-                    // Non-visible (tableView) cells
-                    temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                    temp.label = item[k.label]?.boolValue ?? false
-                    temp.hover = item[k.hover]?.boolValue ?? false
-                    temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                    temp.trans = item[k.trans]?.intValue ?? 0
-
-                    list.append(temp)
+                    let item = PlayItem.init(with: playitem)
+                    list.append(item)
                 }
-                let name = play[k.name] as? String
-
-                // Use NSDictionaryControllerKeyValuePair Protocol setKey
-                let temp = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
-                temp.key = name
-                temp.value = list
-                playlistArrayController.addObject(temp)
+                playlists[name] = list
             }
         }
     }
@@ -503,14 +482,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBOutlet weak var saveButton: NSButton!
     @IBAction func savePlaylists(_ sender: AnyObject) {
         let playArray = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
-        var temp = [Dictionary<String,AnyObject>]()
+        var temp = Dictionary<String,Any>()
         for playlist in playArray {
-            var list = Array<AnyObject>()
+            var list = Array<Any>()
             for playitem in playlist.value as! [PlayItem] {
-                let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
-                list.append(item as AnyObject)
+                let dict = playitem.dictionary()
+                list.append(dict)
             }
-            temp.append([k.name:playlist.key as AnyObject, k.list:list as AnyObject])
+            temp[playlist.key!] = list
         }
         defaults.set(temp, forKey: UserSettings.Playlists.keyPath)
         defaults.synchronize()
