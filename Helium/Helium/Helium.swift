@@ -332,9 +332,9 @@ class Document : NSDocument {
     }
     
     override func write(to url: URL, ofType typeName: String) throws {
-        //  When a document is written, update in global items
+        //  When a document is written, update in global play items
         if var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) {
-            lists[self.displayName] = self.dictionary()
+            lists[url.absoluteString] = self.dictionary()
             UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
             UserDefaults.standard.synchronize()
             self.updateChangeCount(.changeCleared)
