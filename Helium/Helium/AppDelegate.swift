@@ -387,7 +387,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             
             //  keep a global play items list used to restore settings
             var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) ?? NSDictionary.init() as! [String : Any]
-            lists[item.name] = item.dictionary()
+            lists[item.link.absoluteString] = item.dictionary()
             
             UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
             UserDefaults.standard.synchronize()
