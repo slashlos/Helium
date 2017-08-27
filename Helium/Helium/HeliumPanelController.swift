@@ -187,7 +187,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
-        updateTitleBar(didChange: false)
+        updateTitleBar(didChange: !mouseOver)
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
