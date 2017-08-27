@@ -232,6 +232,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         switch menuItem.title {
         case "Preferences":
             break
+        case "Hide Helium in menu bar":
+            menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
+            break
         case "Home Page":
             break
         case "Magic URL Redirects":
