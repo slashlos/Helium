@@ -288,7 +288,9 @@ class Document : NSDocument {
                     return tmpIcon
                 }
             }
-            return NSApp.applicationIconImage
+            let tmpImage = NSImage.init(named: "docIcon")
+            let docImage = tmpImage?.resize(w: 32, h: 32)
+            return docImage
         }
     }
     override var displayName: String! {
