@@ -10,11 +10,21 @@ Contributors:
     shdwprince - Panel.swift
     Viktor Oreshkin - UrlHelpers.swift
     https://travis-ci.org/stek29/Helium - Swift3
+    Carlos D. Santiago (slashlos)
 
-    Carlos D. Santiago (slashlos)  - 
-            playlists, history,
-            value transformers,
-            auto hide title,
-            status item,
-            about box
+History
 
+  2.1-21
+    Carlos D Santiago
+      document windows,
+      playlists - per document, global,
+      Finder status menu,
+      value transformers,
+      user agent editing,
+      document history,
+      auto hide title,
+      contextual menu,
+      about box
+ 
+  2.0-20, Nov 10, 2015
+    Jaden Geller
