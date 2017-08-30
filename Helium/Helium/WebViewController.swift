@@ -473,10 +473,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
                             //    if it's a video file, get and set window content size to its dimentions
                             if track.mediaType == AVMediaTypeVideo {
+                                let oldSize = webView.window?.contentView?.bounds.size
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
-                                webView.window?.setContentSize(webSize)
-                                webView.bounds.size = webSize
+                                if oldSize != webSize, var origin = self.webView.window?.frame.origin {
+                                    origin.y += ((oldSize?.height)! - webSize.height)
+                                    webView.window?.setContentSize(webSize)
+                                    webView.window?.setFrameOrigin(origin)
+                                    webView.bounds.size = webSize
+                                }
                                 videoFileReferencedURL = true
                             }
                             //  If we have save attributes restore them
