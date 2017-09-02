@@ -58,7 +58,8 @@ internal struct UserSettings {
     
     static let homePageURL = Setting<String>(
         "homePageURL",
-        defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
+//      defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
+        defaultValue: "https://cdn.rawgit.com/slashlos/Helium3/115908bb/helium_start.html"
     )
     static let homePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
