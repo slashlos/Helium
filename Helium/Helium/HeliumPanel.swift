@@ -100,7 +100,6 @@ extension NSWindow {
         {
             y -= k.ToolbarlessSpacer;
         }
-
         
         self.setFrameOrigin(NSMakePoint(x,y))
     }
