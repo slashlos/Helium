@@ -106,7 +106,7 @@ class PlayItem : NSObject, NSCoding {
         let plist = dictionary as NSDictionary
         self.name = plist[k.name] as! String
         self.link = URL.init(string: plist[k.link] as! String)!
-        self.time = (plist[k.time] as AnyObject).timeInterval ?? 0.0
+        self.time = (plist[k.time] as AnyObject).doubleValue ?? 0.0
         self.rank = (plist[k.rank] as AnyObject).intValue ?? 0
         self.rect = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
         self.label = (plist[k.label] as AnyObject).boolValue ?? false
@@ -242,6 +242,20 @@ class Document : NSDocument {
         dict[k.alpha] = settings.opacityPercentage.value
         dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
         return dict
+    }
+    
+    func playitem() -> PlayItem {
+        let item = PlayItem.init()
+        item.name = self.displayName
+        item.link = self.fileURL!
+        item.time = self.settings.time.value
+        item.rank = self.settings.rank.value
+        item.rect = self.settings.rect.value
+        item.label = self.settings.autoHideTitle.value
+        item.hover = self.settings.disabledFullScreenFloat.value
+        item.alpha = Float(self.settings.opacityPercentage.value)
+        item.trans = self.settings.translucencyPreference.value.rawValue
+        return item
     }
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
