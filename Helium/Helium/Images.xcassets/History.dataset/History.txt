@@ -17,7 +17,8 @@ History
   3-21
     Carlos D Santiago
       document windows,
-      playlists - per document, global,
+      playlists - global / shared, savable
+      balloon images https://pixabay.com
       Finder status menu,
       value transformers,
       user agent editing,
