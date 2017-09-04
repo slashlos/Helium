@@ -247,13 +247,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     dynamic var playCache = Dictionary<String, Any>()
     
     override func viewDidLoad() {
-        let types = ["public.data",kUTTypeURL as String,
-                         NSDictionaryControllerKeyValuePair.className(),
-                         PlayList.className(),
-                         PlayItem.className(),
-                         NSFilenamesPboardType,
-                         NSFilesPromisePboardType,
-                         NSURLPboardType]
+        let types = [kUTTypeData as String,
+                     kUTTypeURL as String,
+                     NSDictionaryControllerKeyValuePair.className(),
+                     PlayItem.className(),
+                     NSFilenamesPboardType,
+                     NSFilesPromisePboardType,
+                     NSURLPboardType]
 
         playlistTableView.register(forDraggedTypes: types)
         playitemTableView.register(forDraggedTypes: types)
