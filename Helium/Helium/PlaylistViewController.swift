@@ -562,6 +562,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         return item
     }
+
+     NSDictionaryControllerKeyValuePair.className(),
+     PlayList.className(),
+     PlayItem.className(),
+     NSFilenamesPboardType,
+     NSFilesPromisePboardType,
+     NSURLPboardType]
 */
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
@@ -634,12 +641,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         {
             let selection = playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
-            let name = String(format: "%@+%ld.h3w", selection.key!, indexSet.count)
+            let name = String(format: "%@+%ld", selection.key!, indexSet.count)
             var items: [AnyObject] = [AnyObject]()
 
             for index in indexSet {
                 let item = objects[index]
-                items.append(item)
+                names.append(item.link.absoluteString)
+                items.append(item.dictionary() as AnyObject)
             }
             
             if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
@@ -647,7 +655,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 dict[UserSettings.Playitems.default] = items
                 dict[UserSettings.Playlists.default] = [name as AnyObject]
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
-                names.append(fileURL.absoluteString)
             }
         }
         return names
