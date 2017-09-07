@@ -811,79 +811,111 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             
             for itemURL in items {
-                if (itemURL as! NSURL).isFileReferenceURL() {
-                    let fileURL : URL? = (itemURL as AnyObject).filePathURL
+                let fileURL : URL? = (itemURL as AnyObject).filePathURL
+                let dc = NSDocumentController.shared()
+                var item: PlayItem?
 
-                    // Capture playlist name from origin folder of 1st item
-                    if !okydoKey {
-                        let spec = fileURL?.deletingLastPathComponent
-                        let head = spec!().absoluteString
-                        play?.key = head
-                        okydoKey = true
+                // Capture playlist name from origin folder of 1st item
+                if !okydoKey {
+                    let spec = fileURL?.deletingLastPathComponent
+                    let head = spec!().absoluteString
+                    play?.key = head
+                    okydoKey = true
+                }
+                //  If we already know this url use its settings
+                if let doc = dc.document(for: fileURL!) {
+                    item = (doc as! Document).playitem()
+                    //  Doc found but no time; fill in time if we can
+                    if item?.time == 0.0 {
+                        let attr = appDelegate.metadataDictionaryForFileAt((item?.link.path)!)
+                        item?.time = attr?[kMDItemDurationSeconds] as! Double
                     }
-                    
+                }
+                else
+                if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[(fileURL?.absoluteString)!] as? PlayItem {
+                    item = playitem
+                }
+                else
+                {
                     let path = fileURL!.absoluteString//.stringByRemovingPercentEncoding
                     let attr = appDelegate.metadataDictionaryForFileAt((fileURL?.path)!)
-                    let time = attr?[kMDItemDurationSeconds] as! TimeInterval
+                    let time = attr?[kMDItemDurationSeconds] as! Double
                     let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
                     let name = fuzz.removingPercentEncoding
-                    let item = PlayItem(name:name!,
-                                        link:URL.init(string: path)!,
-                                        time:time,
-                                        rank:(playitemArrayController.arrangedObjects as AnyObject).count + 1)
-                    if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                        playitemArrayController.insert(item, atArrangedObjectIndex: row + newIndexOffset)
-                    }
-                    else
-                    {
-                        playitemArrayController.addObject(item)
-                    }
-                    newIndexOffset += 1
-                } else {
-                    print("accept item -> \((itemURL as AnyObject).absoluteString)")
+                    item = PlayItem(name:name!,
+                                    link:URL.init(string: path)!,
+                                    time:time,
+                                    rank:(playitemArrayController.arrangedObjects as AnyObject).count + 1)
                 }
+
+                if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
+                    playitemArrayController.insert(item as Any, atArrangedObjectIndex: row + newIndexOffset)
+                    if dropOperation == .on {
+                        //  We've shifted so remove old item at new location
+                        playitemArrayController.remove(atArrangedObjectIndex: row+newIndexOffset+1)
+                    }
+                }
+                else
+                {
+                    playitemArrayController.addObject(item as Any)
+                }
+                newIndexOffset += 1
             }
             
             // Try to pick off whatever they sent us
             if items.count == 0 {
                 for element in pasteboard.pasteboardItems! {
-                    for type in element.types {
-                        if !okydoKey {
-                            play?.key = type
-                        }
-                        let item = element.string(forType:type)
+                    for elementType in element.types {
+                        let elementItem = element.string(forType:elementType)
+                        var item: PlayItem?
                         var url: URL?
-                        switch (type) {
-                        case "public.url":
-                            url = URL(string: item!)
+                        
+                        //  Use first playlist name 
+                        if !okydoKey { play?.key = elementType }
+
+                        switch (elementType) {
+                        case "public.url"://kUTTypeURL
+                            url = URL(string: elementItem!)
                             break
-                        case "public.file-url":
-                            url = URL(string: item!)?.standardizedFileURL
+                        case "public.file-url"://kUTTypeFileURL
+                            url = URL(string: elementItem!)?.standardizedFileURL
                             break
                         case "com.apple.finder.node":
                             continue // handled as public.file-url
                         default:
-                            Swift.print("type \(type) \(item!)")
+                            Swift.print("type \(elementType) \(elementItem!)")
                             continue
                         }
-                        if let original = (url! as NSURL).resolvedFinderAlias() {
-                            url = original
-                        }
-
-                        let attr = appDelegate.metadataDictionaryForFileAt((url?.path)!)
-                        let time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0.0
-                        let fuzz = url?.deletingPathExtension().lastPathComponent
-                        let name = fuzz?.removingPercentEncoding
-                        let temp = PlayItem(name: name!,
-                                            link: url!,
-                                            time: time,
-                                            rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
-                        if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                            playitemArrayController.insert(temp, atArrangedObjectIndex: row + newIndexOffset)
+                        
+                        //  Resolve finder alias
+                        if let original = (url! as NSURL).resolvedFinderAlias() { url = original }
+                        
+                        //  If item is in our playitems cache use it
+                        if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[(url?.absoluteString)!] as? PlayItem {
+                            item = playitem
                         }
                         else
                         {
-                            playitemArrayController.addObject(temp)
+                            let attr = appDelegate.metadataDictionaryForFileAt((url?.path)!)
+                            let time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0.0
+                            let fuzz = url?.deletingPathExtension().lastPathComponent
+                            let name = fuzz?.removingPercentEncoding
+                            item = PlayItem(name: name!,
+                                            link: url!,
+                                            time: time,
+                                            rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
+                        }
+                        
+                        if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
+                            playitemArrayController.insert(item as Any, atArrangedObjectIndex: row + newIndexOffset)
+                            if dropOperation == .on {
+                                //  We've shifted so remove old item at new location
+                                playitemArrayController.remove(atArrangedObjectIndex: row+newIndexOffset+1)
+                            }
+                        }
+                        else
+                        {
+                            playitemArrayController.addObject(item as Any)
                         }
                         newIndexOffset += 1
                     }
