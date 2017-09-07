@@ -437,10 +437,23 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             if list.count > 0 {
                 super.dismiss(sender)
-                // TODO: For now just log what we would play once we figure out how to determine when an item finishes so we can start the next
+                //  Try to restore item at it's last known location
                 print("play \(selectedPlaylist) \(list.count)")
                 for (i,item) in list.enumerated() {
-                    print(String(format: "%3d %3d %@", i, item.rank, item.name))
+                    do {
+                        let doc = try Document.init(contentsOf: item.link, ofType: "Any")
+                        if item.rect != NSZeroRect {
+                            doc.windowControllers.first?.window?.setFrameOrigin(item.rect.origin)
+                        }
+                        else
+                        if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[item.link.absoluteString] as? PlayItem {
+                            doc.windowControllers.first?.window?.setFrameOrigin((playitem as AnyObject).rect.origin)
+                        }
+
+                        print(String(format: "%3d %3d %@", i, item.rank, item.name))
+                    } catch let error {
+                        NSApp.presentError(error)
+                    }
                 }
             }
         }
