@@ -93,7 +93,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         if let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
 
-            //  If it's a "h3w" type read it and load its fileURL
+            //  If it's a "h3w" type read it and load it into defaults
             if fileType == "h3w" {
                 (doc as! Document).update(to: fileURL, ofType: fileType)
                 
@@ -322,6 +322,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 temp.hover = item[k.hover]?.boolValue ?? false
                 temp.alpha = item[k.alpha]?.floatValue ?? 0.6
                 temp.trans = item[k.trans]?.intValue ?? 0
+                temp.refresh()
 
                 histories.append(temp)
             }
@@ -333,8 +334,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // Save histories to defaults
         var temp = Array<AnyObject>()
-        for item in histories {
-            let item : [String:AnyObject] = [k.name:item.name as AnyObject, k.link:item.link.absoluteString as AnyObject, k.time:item.time as AnyObject, k.rank:item.rank as AnyObject]
+        for playitem in histories {
+            //  Capture latest rect if this item's is zero and one is available
+            playitem.refresh()
+
+            let item : [String:AnyObject] = [k.name:playitem.name as AnyObject,
+                                             k.link:playitem.link.absoluteString as AnyObject,
+                                             k.time:playitem.time as AnyObject,
+                                             k.rank:playitem.rank as AnyObject]
+
             temp.append(item as AnyObject)
         }
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
