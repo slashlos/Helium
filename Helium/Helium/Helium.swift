@@ -125,8 +125,8 @@ class PlayItem : NSObject, NSCoding {
         }
         if rect == NSZeroRect,
             let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
-            let item: PlayItem = lists[link.absoluteString] as? PlayItem {
-            rect = item.rect
+            let plist: Dictionary<String,Any> = lists[link.absoluteString] as? Dictionary<String, Any> {
+            self.rect = NSRectFromString(plist[k.rect] as! String) 
         }
     }
     override var description : String {
