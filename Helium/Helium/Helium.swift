@@ -113,8 +113,22 @@ class PlayItem : NSObject, NSCoding {
         self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
         self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
         self.trans = (plist[k.trans] as AnyObject).intValue ?? 0
+        super.init()
+        self.refresh()
     }
-
+    func refresh() {
+        if time == 0.0 {
+            let appDelegate = NSApp.delegate as! AppDelegate
+            if let attr = appDelegate.metadataDictionaryForFileAt(link.path) {
+                time = attr[kMDItemDurationSeconds] as? Double ?? 0.0
+            }
+        }
+        if rect == NSZeroRect,
+            let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+            let item: PlayItem = lists[link.absoluteString] as? PlayItem {
+            rect = item.rect
+        }
+    }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
     }
@@ -255,6 +269,7 @@ class Document : NSDocument {
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = Float(self.settings.opacityPercentage.value)
         item.trans = self.settings.translucencyPreference.value.rawValue
+        item.refresh()
         return item
     }
     
@@ -269,6 +284,17 @@ class Document : NSDocument {
         self.settings.disabledFullScreenFloat.value = (plist[k.hover] as AnyObject).boolValue ?? false
         self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
         self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: (plist[k.trans] as AnyObject).intValue ?? 0)!
+
+        if self.settings.time.value == 0.0 {
+            let appDelegate = NSApp.delegate as! AppDelegate
+            let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
+            self.settings.time.value = attr?[kMDItemDurationSeconds] as! Double
+        }
+        if self.settings.rect.value == NSZeroRect,
+            let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+            let playitem: PlayItem = lists[(self.fileURL?.absoluteString)!] as? PlayItem {
+            self.settings.rect.value = playitem.rect
+        }
     }
     
     func update(to url: URL, ofType typeName: String) {
