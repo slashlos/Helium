@@ -9,6 +9,7 @@
 import Cocoa
 import WebKit
 import AVFoundation
+import Carbon.HIToolbox
 
 class MyWebView : WKWebView {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -26,6 +27,18 @@ class MyWebView : WKWebView {
         publishApplicationMenu(menu);
     }
 
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == UInt16(kVK_Escape) {
+            //  We crash otherwise, so just close window
+            self.window?.performClose(event)
+        }
+        else
+        {
+            // still here?
+            super.keyDown(with: event)
+        }
+    }
+    
     //    Either by contextual menu, or status item, populate our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
