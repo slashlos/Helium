@@ -441,15 +441,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 print("play \(selectedPlaylist) \(list.count)")
                 for (i,item) in list.enumerated() {
                     do {
-                        let doc = try Document.init(contentsOf: item.link, ofType: "Any")
-                        if item.rect != NSZeroRect {
-                            doc.windowControllers.first?.window?.setFrameOrigin(item.rect.origin)
-                        }
-                        else
-                        if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[item.link.absoluteString] as? PlayItem {
-                            doc.windowControllers.first?.window?.setFrameOrigin((playitem as AnyObject).rect.origin)
-                        }
-
+                        _ = try Document.init(withPlayitem: item)
                         print(String(format: "%3d %3d %@", i, item.rank, item.name))
                     } catch let error {
                         NSApp.presentError(error)
@@ -485,6 +477,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 var list : [PlayItem] = [PlayItem]()
                 for playitem in items {
                     let item = PlayItem.init(with: playitem)
+                    
                     list.append(item)
                 }
                 playlists[name] = list
@@ -499,6 +492,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         for playlist in playArray {
             var list = Array<Any>()
             for playitem in playlist.value as! [PlayItem] {
+                //  Capture latest rect if this item's is zero and one is available
+                playitem.refresh()
+
                 let dict = playitem.dictionary()
                 list.append(dict)
             }
@@ -548,62 +544,33 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
      }
 
     // MARK:- Drag-n-Drop
-/*
-    func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
-        let pasteboard = sender.draggingPasteboard()
-
-        if pasteboard.canReadItem(withDataConformingToTypes: [NSPasteboardURLReadingFileURLsOnlyKey]) {
-            return .copy
-        }
-        return .copy
-    }
-**
-    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
-        let item = NSPasteboardItem()
-        
-        if tableView == playlistTableView {
-            let selection: NSDictionaryControllerKeyValuePair = playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair
-            item.setDataProvider(selection as! NSPasteboardItemDataProvider, forTypes:[NSFilesPromisePboardType])
-            item.setString(selection.key, forType: "public.data")
-        }
-        else
-        {
-            let selection: PlayItem = playitemArrayController.selectedObjects.first as! PlayItem
-            item.setDataProvider(selection as! NSPasteboardItemDataProvider, forTypes:[NSFilesPromisePboardType])
-            item.setString(selection.name, forType: "public.data")
-        }
-
-        return item
-    }
-
-     NSDictionaryControllerKeyValuePair.className(),
-     PlayList.className(),
-     PlayItem.className(),
-     NSFilenamesPboardType,
-     NSFilesPromisePboardType,
-     NSURLPboardType]
-*/
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
         if tableView == playlistTableView {
             let objects: [NSDictionaryControllerKeyValuePair] = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
+            var items: [NSDictionaryControllerKeyValuePair] = [NSDictionaryControllerKeyValuePair]()
             var promises = [String]()
             for index in rowIndexes {
-                let item = objects[index]
-                promises.append(item.key!)
+                let listitem = objects[index]
+                promises.append(listitem.key!)
+                items.append(listitem)
             }
-            pboard.setPropertyList(["h3w"], forType:NSFilesPromisePboardType)
+            pboard.setPropertyList(items, forType: NSDictionaryControllerKeyValuePair.className())
+            pboard.setPropertyList(promises, forType:NSFilesPromisePboardType)
             pboard.writeObjects(promises as [NSPasteboardWriting])
         }
         else
         {
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
+            var items: [PlayItem] = [PlayItem]()
             var promises = [String]()
             for index in rowIndexes {
                 let playitem = objects[index]
-                promises.append(playitem.name)
+                promises.append(playitem.link.absoluteString)
+                items.append(playitem)
             }
-            pboard.setPropertyList(["h3w"], forType:NSFilesPromisePboardType)
+            pboard.setPropertyList(promises, forType:NSFilesPromisePboardType)
+            pboard.setPropertyList(promises, forType: kUTTypeFileURL as String)
             pboard.writeObjects(promises as [NSPasteboardWriting])
         }
         return true
@@ -644,6 +611,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
                 if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
                     var dict = Dictionary<String,[Any]>()
+                    dict[UserSettings.Playitems.default] = items
+                    dict[UserSettings.Playlists.default] = [name as AnyObject]
                     dict[name] = items
                     (dict as NSDictionary).write(to: fileURL, atomically: true)
                     names.append(fileURL.absoluteString)
@@ -667,6 +636,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 var dict = Dictionary<String,[AnyObject]>()
                 dict[UserSettings.Playitems.default] = items
                 dict[UserSettings.Playlists.default] = [name as AnyObject]
+                dict[name] = items
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
             }
         }
@@ -683,7 +653,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let items = pboard.readObjects(forClasses: [NSURL.classForCoder()], options: options)
             if items!.count > 0 {
                 for item in items! {
-                    if (item as! NSURL).isFileReferenceURL() {
+                    if (item as! URL).isFileURL {
                         let fileURL : NSURL? = (item as AnyObject).filePathURL!! as NSURL
                         
                         //    if it's a video file, get and set window content size to its dimentions
@@ -825,14 +795,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 //  If we already know this url use its settings
                 if let doc = dc.document(for: fileURL!) {
                     item = (doc as! Document).playitem()
-                    //  Doc found but no time; fill in time if we can
-                    if item?.time == 0.0 {
-                        let attr = appDelegate.metadataDictionaryForFileAt((item?.link.path)!)
-                        item?.time = attr?[kMDItemDurationSeconds] as! Double
-                    }
                 }
                 else
-                if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[(fileURL?.absoluteString)!] as? PlayItem {
+                if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+                    let playitem: PlayItem = lists[(fileURL?.absoluteString)!] as? PlayItem {
                     item = playitem
                 }
                 else
@@ -847,7 +813,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                     time:time,
                                     rank:(playitemArrayController.arrangedObjects as AnyObject).count + 1)
                 }
-
+                
+                //  Refresh time,rect as needed
+                item?.refresh()
+                
                 if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
                     playitemArrayController.insert(item as Any, atArrangedObjectIndex: row + newIndexOffset)
                     if dropOperation == .on {
@@ -891,7 +860,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         if let original = (url! as NSURL).resolvedFinderAlias() { url = original }
                         
                         //  If item is in our playitems cache use it
-                        if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default), let playitem: PlayItem = lists[(url?.absoluteString)!] as? PlayItem {
+                        if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+                            let playitem: PlayItem = lists[(url?.absoluteString)!] as? PlayItem {
                             item = playitem
                         }
                         else
@@ -906,6 +876,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                             rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
                         }
                         
+                        //  Refresh time,rect as needed
+                        item?.refresh()
+
                         if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
                             playitemArrayController.insert(item as Any, atArrangedObjectIndex: row + newIndexOffset)
                             if dropOperation == .on {

@@ -308,6 +308,14 @@ class Document : NSDocument {
         self.save(self)
     }
     
+    func update(with item: PlayItem, ofType typeName: String) {
+        self.restoreSettings(with: item.dictionary())
+
+        fileType = typeName
+        fileURL = item.link
+        self.save(self)
+    }
+    
     override init() {
         settings = Settings()
         super.init()
@@ -363,6 +371,26 @@ class Document : NSDocument {
         }
     }
     
+    convenience init(withPlayitem item: PlayItem) throws {
+        self.init()
+        self.update(with: item, ofType: item.link.pathExtension)
+
+        //  Record url and type, caller will load via notification
+        do {
+            let url = item.link
+            self.makeWindowControllers()
+            NSDocumentController.shared().addDocument(self)
+            
+            if let hwc = self.windowControllers.first {
+                hwc.window?.orderFront(self)
+                (hwc.contentViewController as! WebViewController).loadURL(url: url)
+                if item.rect != NSZeroRect {
+                    hwc.window?.setFrameOrigin(item.rect.origin)
+                }
+            }
+        }
+    }
+    
     @IBAction override func save(_ sender: (Any)?) {
         if fileURL != nil {
             do {
@@ -395,9 +423,13 @@ class Document : NSDocument {
         let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
         self.addWindowController(controller)
         
-        //  Close down any observations before closure
+        //  Delegate will close down any observations before closure
         controller.window?.delegate = controller as? NSWindowDelegate
-        self.settings.rect.value = (controller.window?.frame)!
+        
+        //  Relocate to origin if any
+        if self.settings.rect.value != NSZeroRect, let window = controller.window {
+            window.setFrameOrigin(self.settings.rect.value.origin)
+        }
         self.save(self)
     }
 
