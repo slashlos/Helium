@@ -1,4 +1,4 @@
-# Helium
+# Helium3
 
 Helium is a floating browser window by Jaden Geller. This is Helium3; it's a
 forked project supporting multiple windows as documents, each with their own
@@ -14,8 +14,7 @@ simultaneously see your content and your work, without intercepting mouse
 clicks when it's translucent.  You have the ability to click, drag, scroll
 behind your floating content. 
 
-## This site is under construction - some references being made to the
-## original Helium web site.
+# This site is under construction - some references being made to the original Helium web site.
 
 ## Getting Started - Helium3
 
