@@ -8,7 +8,7 @@ automatically.
 
 ### Managing Multiple Windows
 
-![Windows](Helium\images\windows.png)
+![Windows](/Helium\images\windows.png)
 
 To drag a window, drag its title bar or content - if title bar was hidden.
 
@@ -21,19 +21,19 @@ is present.
 
 ### Preferences Menu
 
-![Preferences](http://slashlos.com/preferences.png)
+![Preferences](/Helium/images/preferences.png)
 
 Helium provides convenient access to document and global preferences via the Finder, Stauts Icon, and Dock Icon menus.
 
 ### Dock Icon Menu
 
-![Dock](http://slashlos.com/dock.png)
+![Dock](/Helium/images/dock.png)
 
 Helium provides a dock icon menu to recent document and actions.
 
 ### Status Icon Menu
 
-![Status](http://slashlos.com/status.png)
+![Status](/Helium/images/status.png)
 
 Document actions from the status item menu will affect the current window
 or "key" (keystoke) window.  To affect a window which is currently not the
@@ -41,14 +41,14 @@ key window, use the contextual menu, or "SHIFT" into the target window.
 
 ### Contextual Menu
 
-![Contextual](http://slashlos.com/contextual.png)
+![Contextual](/Helium/images/contextual.png)
 
 Each Helium window provides a contextual menu, which varies based on type of
 content being displayed.
 
 ### Documents Menu
 
-![Documents](http://slashlos.com/documents.png)
+![Documents](/Helium/images/documents.png)
 
 For content based on file URLs rather than websites Helium document window,
 when a file save is possible, will allow you to save the document. All file
@@ -60,7 +60,7 @@ captured such its window frame size, location, title. See playlists below.
 
 Helium maintains two types of information: History and Playlists.
 
-![Playlists](http://slashlos.com/playlists.png)
+![Playlists](/Helium/images/playlists.png)
 
 From all Helium windows, a contextual menu item, Playlists, gains access to
 all recorded information stored within the users applications default store
