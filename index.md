@@ -22,15 +22,16 @@ is present.
 ![Preferences](https://slashlos.github.io/Helium/preferences.png)
 
 Helium provides convenient access to document and global preferences via the Finder, Stauts Icon, and Dock Icon menus.
+
 ### Dock Icon Menu
 
-![Dock](http://slashos.com/Helium/dock.png)
+![Dock](https://slashlos.github.io/Helium/dock.png)
 
 Helium provides a dock icon menu to recent document and actions.
 
 ### Status Icon Menu
 
-![Status](http://slashos.com/Helium/status.png)
+![Status](https://slashlos.github.io/Helium/status.png)
 
 Document actions from the status item menu will affect the current window
 or "key" (keystoke) window.  To affect a window which is currently not the
@@ -38,14 +39,14 @@ key window, use the contextual menu, or "SHIFT" into the target window.
 
 ### Contextual Menu
 
-![Contextual](http://slashos.com/Helium/contextal.png)
+![Contextual](https://slashlos.github.io/Helium/contextual.png)
 
 Each Helium window provides a contextual menu, which varies based on type of
 content being displayed.
 
 ### Documents Menu
 
-![Documents](http://slashos.com/Helium/documents.png)
+![Documents](https://slashlos.github.io/Helium/documents.png)
 
 For content based on file URLs rather than websites Helium document window,
 when a file save is possible, will allow you to save the document. All file
@@ -57,7 +58,7 @@ captured such its window frame size, location, title. See playlists below.
 
 Helium maintains two types of information: History and Playlists.
 
-![Playlists](http://slashlos.com/Helium/playlists.png)
+![Playlists](https://slashlos.github.io/Helium/playlists.png)
 
 From all Helium windows, a contextual menu item, Playlists, gains access to
 all recorded information stored within the users applications default store
