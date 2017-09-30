@@ -8,7 +8,7 @@ automatically.
 
 ### Managing Multiple Windows
 
-![Windows](/Helium\images\windows.png)
+![Windows](/Helium/images/windows.png)
 
 To drag a window, drag its title bar or content - if title bar was hidden.
 
