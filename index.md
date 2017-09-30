@@ -19,7 +19,7 @@ is present.
 
 ### Status Icon Menu
 
-[Status Item Menu](http://slashlos.com/Helium/Status Item Menu.jpg)
+[Status Item Menu](status.jpg)
 
 Document actions from the status item menu will affect the current window
 or "key" (keystoke) window.  To affect a window which is currently not the
