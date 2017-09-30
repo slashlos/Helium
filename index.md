@@ -1,22 +1,58 @@
-### Welcome to GitHub Pages.
-This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:
+# Helium 3
 
-```
-$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-```
+### Helium is now a multi-window browser.
 
-If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.
+Getting started with Helium 3 is easy and evolutionary with documents. Each
+document or window maintains several specific attributes which are saved
+automatically.
 
-### Designer Templates
-We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.
+### Managing Multiple Windows
 
-### Rather Drive Stick?
-If you prefer to not use the automatic generator, push a branch named `gh-pages` to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.
+To drag a window, drag its title bar or content - if title bar was hidden.
 
-### Authors and Contributors
-You can @mention a GitHub username to generate a link to their profile. The resulting `<a>` element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (@defunkt), PJ Hyett (@pjhyett), and Tom Preston-Werner (@mojombo) founded GitHub.
+### SHIFT Into Key Window
 
-### Support or Contact
-Having trouble with Pages? Check out the documentation at https://help.github.com/pages or contact support@github.com and we’ll help you sort it out.
+To focus a window, just hold down the SHIFT key bemove moving into window.
+
+The current "key" Helium window title name is in bold text, when title bar
+is present.
+
+### Status Icon Menu
+
+Document actions from the status item menu will affect the current window
+or "key" (keystoke) window.  To affect a window which is currently not the
+key window, use the contextual menu, or "SHIFT" into the target window.
+
+### Contextual Menu
+
+Each Helium window provides a contextual menu, which varies based on type of
+content being displayed.
+
+### Documents Menu
+
+For content based on file URLs rather than websites Helium document window,
+when a file save is possible, will allow you to save the document. All file
+operations for Helium store to the user's defaults application preferences,
+which are global for all documents yet individual settings per document are
+captured such its window frame size, location, title. See playlists below.
+
+### Playlists
+
+Helium maintains two types of information: History and Playlists.
+
+From all Helium windows, a contextual menu item, Playlists, gains access to
+all recorded information stored within the users applications default store
+for Helium.
+
+Helium does provide a means to save and retrival entire playlist or items,
+by drag-n-drop from the the playlist table views. Also playlist items can
+be dragged from a Helium window document icon into a playlist item or list
+which if "over" will cause the item to be updated.
+
+Note that all playlists saved can be done by the playlist panel Save button
+and automatically when the app terminates.
+
+History catalogs in order of viewing, all loaded URLs be they local, remote
+or web sites. This history is itself a "playlist" who name can be tailored,
+by altering its name in the playlist editor.
+
