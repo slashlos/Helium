@@ -19,16 +19,22 @@ is present.
 
 ### Status Icon Menu
 
+[Status Item Menu](Status Item Menu.jpg)
+
 Document actions from the status item menu will affect the current window
 or "key" (keystoke) window.  To affect a window which is currently not the
 key window, use the contextual menu, or "SHIFT" into the target window.
 
 ### Contextual Menu
 
+[Contextual Menu](Contextual Menu.jpg)
+
 Each Helium window provides a contextual menu, which varies based on type of
 content being displayed.
 
 ### Documents Menu
+
+[Documents Menu](Documents Menu.jpg)
 
 For content based on file URLs rather than websites Helium document window,
 when a file save is possible, will allow you to save the document. All file
