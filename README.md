@@ -20,7 +20,7 @@ behind your floating content.
 
 ## Getting Started - Helium 3
 
-Check out the videos on Helium 3 inside the Videos folder.
+Check out the videos on Helium 3 on YouTube:
 
 [Helium Video #0](https://www.youtube.com/watch?v=z-T0MPI6PfU)
 
