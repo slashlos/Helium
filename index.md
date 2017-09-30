@@ -8,6 +8,8 @@ automatically.
 
 ### Managing Multiple Windows
 
+![Windows](https://slashlos.github.io/Helium/windows.png)
+
 To drag a window, drag its title bar or content - if title bar was hidden.
 
 ### SHIFT Into Key Window
