@@ -56,19 +56,29 @@ class AboutBoxController : NSViewController {
         }
     }
     
-    @IBAction func toggleCredits(_ sender: Any) {
+	@IBAction func cycleCredits(_ sender: Any) {
 
         AboutBoxController.creditsState += 1
-        if AboutBoxController.creditsState >= AboutBoxController.maxStates
-        {
-            AboutBoxController.creditsState = 0
-        }
 
-        let credits = ["README", "History", "LICENSE"];
-        
-        //	Setup our credits; if sender is nil, give 'em long history
-        let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
-        creditsField.string = creditsString
+        if toggleButton.state == NSOffState {
+            if AboutBoxController.creditsState >= AboutBoxController.creditsCount
+            {
+                AboutBoxController.creditsState = 0
+            }
+            creditsButton.title = copyrightStrings![AboutBoxController.creditsState % AboutBoxController.creditsCount]
+        }
+        else
+        {
+            let credits = ["README", "History", "LICENSE"];
+            
+            if AboutBoxController.creditsState >= AboutBoxController.maxStates
+            {
+                AboutBoxController.creditsState = 0
+            }
+            //	Setup our credits; if sender is nil, give 'em long history
+            let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
+            creditsField.string = creditsString
+        }
     }
     
     @IBAction func toggleVersion(_ sender: Any) {
@@ -92,11 +102,12 @@ class AboutBoxController : NSViewController {
 
     var appName: String? = nil
     var versionString: String? = nil
-    var copyrightString: String? = nil
+    var copyrightStrings: [String]? = nil
 
     static var versionState: Int = 0
     static var creditsState: Int = 0
     static let maxStates: Int = 3
+    static let creditsCount: Int = 2// CDS, JG, ...
 
     override func viewWillAppear() {
         let theWindow = appNameField.window
@@ -106,7 +117,7 @@ class AboutBoxController : NSViewController {
 
         appNameField.stringValue = appName!
         versionButton.title = versionData!
-        creditsButton.title = copyrightString!
+        creditsButton.title = copyrightStrings![AboutBoxController.creditsState % AboutBoxController.creditsCount]
 
         if (appNameField.window?.isVisible)! {
             creditsField.scroll(NSMakePoint( 0, 0 ))
@@ -119,7 +130,7 @@ class AboutBoxController : NSViewController {
         //  Credit criteria initially hidden
         AboutBoxController.creditsState = 0-1
         toggleButton.state = NSOffState
-        toggleCredits(self)
+        cycleCredits(self)
         toggleContent(self)
         
         // Setup the window
@@ -156,8 +167,8 @@ class AboutBoxController : NSViewController {
         hideRect = hideView.frame
         origRect = self.view.frame
 
-        // Setup the copyright field
-        copyrightString = infoDictionary["NSHumanReadableCopyright"] as? String
+        // Setup the copyrights field; each separated by "|"
+        copyrightStrings = (infoDictionary["NSHumanReadableCopyright"] as? String)?.components(separatedBy: "|")
         toggleButton.state = NSOffState
     }
     

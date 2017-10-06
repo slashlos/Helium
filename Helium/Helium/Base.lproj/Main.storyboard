@@ -81,7 +81,7 @@
                                     <font key="font" metaFont="system" size="10"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="toggleCredits:" target="umu-a0-Tfe" id="dNV-9o-RHJ"/>
+                                    <action selector="cycleCredits:" target="umu-a0-Tfe" id="Xzu-1S-bZs"/>
                                 </connections>
                             </button>
                             <scrollView hidden="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OZR-xn-j0b">
