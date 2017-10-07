@@ -1,7 +1,6 @@
 # Helium 3 does windows!
 
-![screenshot](/Helium/screeshot.png)
-![logo](/Helium/helium_logo.png)
+![screenshot](screeshot.png "Helium does windows")
 
 Helium 3 it's a forked project of the floating browser window by Jaden Geller.
 
