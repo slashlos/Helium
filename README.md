@@ -1,6 +1,7 @@
-# Helium 3
+# Helium 3 does windows!
 
-### Helium is now a multi-window browser.
+[screenshot](https://cdn.rawgit.com/slashlos/Helium/screeshot.png)
+[logo](https://github.com/slashlos/Helium/blob/master/helium_logo.png)
 
 Helium 3 it's a forked project of the floating browser window by Jaden Geller.
 
