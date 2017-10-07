@@ -1,6 +1,6 @@
 # Helium 3
 
-![helium_logo](helium_logo.png)
+![helium_logo](/images/helium_logo.png)
 ### Helium is now a multi-window browser.
 
 Getting started with Helium 3 is easy and evolutionary with documents. Each
@@ -9,7 +9,7 @@ automatically.
 
 ### Managing Multiple Windows
 
-![Windows](windows.png)
+![Windows](/images/windows.png)
 
 To drag a window, drag its title bar or content - if title bar was hidden.
 
@@ -22,7 +22,7 @@ is present.
 
 ### Preferences Menu
 
-![Preferences](preferences.png)
+![Preferences](/images/preferences.png)
 
 Helium provides convenient access to document and global preferences via the Finder, Stauts Icon, and Dock Icon menus.
 
@@ -34,7 +34,7 @@ Helium provides a dock icon menu to recent document and actions.
 
 ### Status Icon Menu
 
-![Status](status.png)
+![Status](/images/status.png)
 
 Document actions from the status item menu will affect the current window
 or "key" (keystoke) window.  To affect a window which is currently not the
@@ -49,7 +49,7 @@ content being displayed.
 
 ### Documents Menu
 
-![Documents](documents.png)
+![Documents](/images/documents.png)
 
 For content based on file URLs rather than websites Helium document window,
 when a file save is possible, will allow you to save the document. All file
