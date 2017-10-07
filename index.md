@@ -1,6 +1,6 @@
 # Helium 3
 
-![screenshot](helium_logo.png)
+![helium_logo](helium_logo.png)
 ### Helium is now a multi-window browser.
 
 Getting started with Helium 3 is easy and evolutionary with documents. Each
