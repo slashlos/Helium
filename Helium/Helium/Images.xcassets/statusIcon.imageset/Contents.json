@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "helium_logo_18.png",
+      "filename" : "appIcon18.pdf",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "helium_logo_36.png",
+      "filename" : "appIcon36.pdf",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "helium_logo_54.png",
+      "filename" : "appIcon54.pdf",
       "scale" : "3x"
     }
   ],
