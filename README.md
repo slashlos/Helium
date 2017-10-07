@@ -2,7 +2,7 @@
 
 ![helium_logo](helium_logo.png "Helium does windows")
 
-Helium 3 it's a forked project of the floating browser window by Jaden Geller.
+Helium 3 it's a forked project of the floating browser window by [Jaden Geller](https://github.com/JadenGeller/Helium).
 
 Helium 3 supports multiple windows as documents, each with their own
 settings as well as global preferences such as playlists and history, and
