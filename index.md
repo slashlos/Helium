@@ -15,7 +15,7 @@ To drag a window, drag its title bar or content - if title bar was hidden.
 
 ### SHIFT Into Key Window
 
-To focus a window, just hold down the SHIFT key bemove moving into window.
+To focus a window, just hold down the SHIFT key before moving into window.
 
 The current "key" Helium window title name is in bold text, when title bar
 is present.
@@ -28,7 +28,7 @@ Helium provides convenient access to document and global preferences via the Fin
 
 ### Dock Icon Menu
 
-![Dock](dock.png)
+![Dock](/images/dock.png)
 
 Helium provides a dock icon menu to recent document and actions.
 
