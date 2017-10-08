@@ -9,10 +9,10 @@
 import Foundation
 
 struct UrlHelpers {
-    /// Prepends `http://` if scheme isn't `https?://`
+    /// Prepends `http://` if scheme isn't `https?://` unless "file://"
     static func ensureScheme(_ urlString: String) -> String {
         if !(urlString.lowercased().hasPrefix("http://") || urlString.lowercased().hasPrefix("https://")) {
-            return "http://" + urlString
+            return urlString.hasPrefix("file://") ? urlString : "http://" + urlString
         } else {
             return urlString
         }
