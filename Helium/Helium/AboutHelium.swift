@@ -39,6 +39,7 @@ class AboutBoxController : NSViewController {
                 window.minSize = NSMakeSize((hideRect?.size.width)!,(hideRect?.size.height)!+CGFloat(kTitleNormal))
                 window.maxSize = window.minSize
                 creditScroll.isHidden = true
+                showCredits()
             }
             else
             {
@@ -56,6 +57,18 @@ class AboutBoxController : NSViewController {
         }
     }
     
+    internal func showCredits() {
+        let credits = ["README", "History", "LICENSE"];
+        
+        if AboutBoxController.creditsState >= AboutBoxController.maxStates
+        {
+            AboutBoxController.creditsState = 0
+        }
+        //	Setup our credits; if sender is nil, give 'em long history
+        let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
+        creditsField.string = creditsString
+    }
+    
 	@IBAction func cycleCredits(_ sender: Any) {
 
         AboutBoxController.creditsState += 1
@@ -69,15 +82,7 @@ class AboutBoxController : NSViewController {
         }
         else
         {
-            let credits = ["README", "History", "LICENSE"];
-            
-            if AboutBoxController.creditsState >= AboutBoxController.maxStates
-            {
-                AboutBoxController.creditsState = 0
-            }
-            //	Setup our credits; if sender is nil, give 'em long history
-            let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
-            creditsField.string = creditsString
+            showCredits()
         }
     }
     
