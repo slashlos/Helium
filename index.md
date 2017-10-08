@@ -28,7 +28,7 @@ Helium provides convenient access to document and global preferences via the Fin
 
 ### Dock Icon Menu
 
-![Dock](dock.png)
+![Dock](/images/dock.png)
 
 Helium provides a dock icon menu to recent document and actions.
 
