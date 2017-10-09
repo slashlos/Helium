@@ -29,9 +29,7 @@
 		4D8DAEB41C3A427D00B212EC /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4D8DAEB21C3A427D00B212EC /* Info.plist */; };
 		5B75B5121C9A13D600475921 /* StringHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75B5111C9A13D600475921 /* StringHelpers.swift */; };
 		5B75B5131C9A13D600475921 /* StringHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75B5111C9A13D600475921 /* StringHelpers.swift */; };
-		B34C1EC31ADE3B520094ADBA /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B34C1EC21ADE3B520094ADBA /* Sparkle.framework */; };
 		B34C1EC61ADE3CBE0094ADBA /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = B34C1EC51ADE3CBE0094ADBA /* dsa_pub.pem */; };
-		B34C1EC91ADE3F980094ADBA /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B34C1EC21ADE3B520094ADBA /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,21 +61,12 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B34C1EC81ADE3F870094ADBA /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				B34C1EC91ADE3F980094ADBA /* Sparkle.framework in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutHelium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F10354A1F0300DA00327B30 /* Helium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helium.swift; sourceTree = "<group>"; usesTabs = 0; };
+		0F923B321F8BB27700EE1778 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
 		0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumPanel.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UrlHelpers.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistPanelController.swift; sourceTree = "<group>"; usesTabs = 0; };
@@ -120,7 +109,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B34C1EC31ADE3B520094ADBA /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +166,7 @@
 		4D867CB31AD6781200681331 /* Helium */ = {
 			isa = PBXGroup;
 			children = (
+				0F923B321F8BB27700EE1778 /* Helium.entitlements */,
 				4D867CB61AD6781200681331 /* AppDelegate.swift */,
 				0F10354A1F0300DA00327B30 /* Helium.swift */,
 				0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */,
@@ -262,7 +251,6 @@
 				4D867CAD1AD6781200681331 /* Sources */,
 				4D867CAE1AD6781200681331 /* Frameworks */,
 				4D867CAF1AD6781200681331 /* Resources */,
-				B34C1EC81ADE3F870094ADBA /* CopyFiles */,
 				27199AC21BE422AC00E02297 /* Embed App Extensions */,
 				0F05C8281EFF1B54001B5D02 /* Version */,
 			);
@@ -323,7 +311,7 @@
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
-								enabled = 0;
+								enabled = 1;
 							};
 						};
 					};
@@ -607,6 +595,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Helium/Helium.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -635,6 +624,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Helium/Helium.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
