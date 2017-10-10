@@ -224,11 +224,8 @@
                                                 </connections>
                                             </menu>
                                         </menuItem>
-                                        <menuItem title="Check for Updates" enabled="NO" id="ugT-xN-SoJ">
+                                        <menuItem title="Check for Updates" hidden="YES" enabled="NO" id="ugT-xN-SoJ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="checkForUpdates:" target="sQQ-SA-Rgm" id="dbi-vN-hI7"/>
-                                            </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
                                         <menuItem title="Services" id="NMo-om-nkz">
@@ -537,7 +534,6 @@ CA
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
                     </connections>
                 </customObject>
-                <customObject id="sQQ-SA-Rgm" customClass="SUUpdater"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">
