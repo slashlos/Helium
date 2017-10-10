@@ -158,9 +158,8 @@ class AboutBoxController : NSViewController {
         appName = infoDictionary[kCFBundleExecutableKey as String] as? String
         
         //	Setup the version to one we constrict
-        versionString = String(format:"Version %@ (%@)",
-                               infoDictionary["CFBundleShortVersionString"] as! CVarArg,
-                               infoDictionary["CFBundleVersion"] as! CVarArg)
+        versionString = String(format:"Version %@",
+                               infoDictionary["CFBundleShortVersionString"] as! CVarArg)
 
         // Version criteria to cycle thru
         self.versionData = versionString;
