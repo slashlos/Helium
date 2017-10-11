@@ -224,7 +224,7 @@
                                                 </connections>
                                             </menu>
                                         </menuItem>
-                                        <menuItem title="Check for Updates" hidden="YES" enabled="NO" id="ugT-xN-SoJ">
+                                        <menuItem title="Check for Updates" enabled="NO" id="ugT-xN-SoJ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
@@ -534,6 +534,7 @@ CA
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
                     </connections>
                 </customObject>
+                <customObject id="sQQ-SA-Rgm"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">
