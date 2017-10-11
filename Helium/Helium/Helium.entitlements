@@ -4,8 +4,6 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.assets.movies.read-only</key>
-	<true/>
 	<key>com.apple.security.assets.music.read-only</key>
 	<true/>
 	<key>com.apple.security.assets.pictures.read-only</key>
@@ -16,5 +14,11 @@
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-only</key>
+	<array>
+		<string>/</string>
+	</array>
 </dict>
 </plist>
