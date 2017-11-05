@@ -579,17 +579,17 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             return url
         } else {
             var returnURL = url
-            let timing = url.substring(from: url.characters.index(url.startIndex, offsetBy: idx+3))
+            let timing = url.substring(from: url.index(url.startIndex, offsetBy: idx+3))
             let hoursDigits = timing.indexOf("h")
             var minutesDigits = timing.indexOf("m")
             let secondsDigits = timing.indexOf("s")
             
-            returnURL.removeSubrange(returnURL.characters.index(returnURL.startIndex, offsetBy: idx+1) ..< returnURL.endIndex)
+            returnURL.removeSubrange(returnURL.index(returnURL.startIndex, offsetBy: idx+1) ..< returnURL.endIndex)
             returnURL = "?start="
             
             //If there are no h/m/s params and only seconds (i.e. ...?t=89)
             if (hoursDigits == -1 && minutesDigits == -1 && secondsDigits == -1) {
-                let onlySeconds = url.substring(from: url.characters.index(url.startIndex, offsetBy: idx+3))
+                let onlySeconds = url.substring(from: url.index(url.startIndex, offsetBy: idx+3))
                 returnURL = returnURL + onlySeconds
                 return returnURL
             }
@@ -597,13 +597,13 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             //Do check to see if there is an hours parameter.
             var hours = 0
             if (hoursDigits != -1) {
-                hours = Int(timing.substring(to: timing.characters.index(timing.startIndex, offsetBy: hoursDigits)))!
+                hours = Int(timing.substring(to: timing.index(timing.startIndex, offsetBy: hoursDigits)))!
             }
             
             //Do check to see if there is a minutes parameter.
             var minutes = 0
             if (minutesDigits != -1) {
-                minutes = Int(timing.substring(with: timing.characters.index(timing.startIndex, offsetBy: hoursDigits+1) ..< timing.characters.index(timing.startIndex, offsetBy: minutesDigits)))!
+                minutes = Int(timing.substring(with: timing.index(timing.startIndex, offsetBy: hoursDigits+1) ..< timing.index(timing.startIndex, offsetBy: minutesDigits)))!
             }
             
             if minutesDigits == -1 {
@@ -613,7 +613,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             //Do check to see if there is a seconds parameter.
             var seconds = 0
             if (secondsDigits != -1) {
-                seconds = Int(timing.substring(with: timing.characters.index(timing.startIndex, offsetBy: minutesDigits+1) ..< timing.characters.index(timing.startIndex, offsetBy: secondsDigits)))!
+                seconds = Int(timing.substring(with: timing.index(timing.startIndex, offsetBy: minutesDigits+1) ..< timing.index(timing.startIndex, offsetBy: secondsDigits)))!
             }
             
             //Combine all to make seconds.
@@ -628,8 +628,8 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     fileprivate func getVideoHash(_ url: String) -> String {
         let startOfHash = url.indexOf(".be/")
         let endOfHash = url.indexOf("?t")
-        let hash = url.substring(with: url.characters.index(url.startIndex, offsetBy: startOfHash+4) ..<
-                                                        (endOfHash == -1 ? url.endIndex : url.characters.index(url.startIndex, offsetBy: endOfHash)))
+        let hash = url.substring(with: url.index(url.startIndex, offsetBy: startOfHash+4) ..<
+                                                        (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
         return hash
     }
 }
