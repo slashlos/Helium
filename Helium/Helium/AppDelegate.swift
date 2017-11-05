@@ -132,6 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 		self.openFilePress(sender as AnyObject)
 	}
     @IBAction func openFilePress(_ sender: AnyObject) {
+        let app: AppDelegate = NSApp.delegate as! AppDelegate
         let open = NSOpenPanel()
         open.allowsMultipleSelection = false
         open.canChooseFiles = true
@@ -139,9 +140,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         open.orderFront(sender)
         
         if open.runModal() == NSModalResponseOK {
-            if let url = open.url, let fileURL = URL(string: url.absoluteString.removingPercentEncoding!) {
+            if let url = open.url {
                 open.orderOut(sender)
-                _ = self.doOpenFile(fileURL: fileURL)
+                guard isSandboxed(), url.isFileURL else {
+                    let fileURL = URL(string: url.absoluteString.removingPercentEncoding!)
+
+                    _ = self.doOpenFile(fileURL: fileURL!)
+                    return
+                }
+                guard app.storeBookmark(url: url)/*, let data = app.bookmarks[url], app.fetchBookmark(key: url, value:data)*/ else {
+                    return
+                }
+                _ = self.doOpenFile(fileURL: open.url!)
             }
         }
     }
@@ -293,6 +303,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             selector: #selector(AppDelegate.haveNewTitle(_:)),
             name: NSNotification.Name(rawValue: "HeliumNewURL"),
             object: nil)
+
+        //  Load sandbox bookmark url
+        if self.isSandboxed() { _ = self.loadBookmarks() }
     }
 
     var histories = Array<PlayItem>()
@@ -330,7 +343,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+        //  Save sandbox bookmark url
+        if self.isSandboxed() { _ = self.saveBookmarks() }
 
         // Save histories to defaults
         var temp = Array<AnyObject>()
@@ -640,6 +654,136 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             }
         }
+    }
+    
+    // MARK:- Sandbox Support
+    var bookmarks = [URL: Data]()
+
+    func isSandboxed() -> Bool {
+        let bundleURL = Bundle.main.bundleURL
+        var staticCode:SecStaticCode?
+        var isSandboxed:Bool = false
+        let kSecCSDefaultFlags:SecCSFlags = SecCSFlags(rawValue: SecCSFlags.RawValue(0))
+        
+        if SecStaticCodeCreateWithPath(bundleURL as CFURL, kSecCSDefaultFlags, &staticCode) == errSecSuccess {
+            if SecStaticCodeCheckValidityWithErrors(staticCode!, SecCSFlags(rawValue: kSecCSBasicValidateOnly), nil, nil) == errSecSuccess {
+                let appSandbox = "entitlement[\"com.apple.security.app-sandbox\"] exists"
+                var sandboxRequirement:SecRequirement?
+                
+                if SecRequirementCreateWithString(appSandbox as CFString, kSecCSDefaultFlags, &sandboxRequirement) == errSecSuccess {
+                    let codeCheckResult:OSStatus  = SecStaticCodeCheckValidityWithErrors(staticCode!, SecCSFlags(rawValue: kSecCSBasicValidateOnly), sandboxRequirement, nil)
+                    if (codeCheckResult == errSecSuccess) {
+                        isSandboxed = true
+                    }
+                }
+            }
+        }
+        return isSandboxed
+    }
+    
+    func bookmarkPath() -> String?
+    {
+        if var documentsPathURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            documentsPathURL = documentsPathURL.appendingPathComponent("Bookmarks.dict")
+            return documentsPathURL.path
+        }
+        else
+        {
+            return nil
+        }
+    }
+    
+    func loadBookmarks() -> Bool
+    {
+        let fm = FileManager.default
+
+        guard let path = bookmarkPath(), fm.fileExists(atPath: path) else {
+            return saveBookmarks()
+        }
+        
+        var restored = 0
+        bookmarks = NSKeyedUnarchiver.unarchiveObject(withFile: path) as! [URL: Data]
+        for bookmark in bookmarks
+        {
+            restored += (true == fetchBookmark(bookmark) ? 1 : 0)
+        }
+        return restored == bookmarks.count
+    }
+    
+    func saveBookmarks() -> Bool
+    {
+        if let path = bookmarkPath() {
+            return NSKeyedArchiver.archiveRootObject(bookmarks, toFile: path)
+        }
+        else
+        {
+            return false
+        }
+    }
+    
+    func storeBookmark(url: URL) -> Bool
+    {
+        //  Peek to see if we've seen this key before
+        if let data = bookmarks[url] {
+            if self.fetchBookmark(key: url, value: data) {
+                Swift.print ("Known \(url.path)")
+                return true
+            }
+        }
+        do
+        {
+            let options:NSURL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
+            let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
+            Swift.print ("Storing \(url.path)")
+            if !url.startAccessingSecurityScopedResource()
+            {
+                Swift.print ("Couldn't access: \(url.path)")
+            }
+            bookmarks[url] = data
+            return true
+        }
+        catch
+        {
+            Swift.print ("Error storing bookmark: \(url)")
+            return false
+        }
+    }
+    
+    func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool
+    {
+        let restoredUrl: URL?
+        var isStale = false
+        
+        do
+        {
+            restoredUrl = try URL.init(resolvingBookmarkData: bookmark.value, options: NSURL.BookmarkResolutionOptions.withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+        }
+        catch
+        {
+            Swift.print ("Error restoring bookmark: \(bookmark.key)")
+            restoredUrl = nil
+        }
+        
+        if let url = restoredUrl
+        {
+            if isStale
+            {
+                Swift.print ("URL is stale")
+            }
+            else
+            {
+                if !url.startAccessingSecurityScopedResource()
+                {
+                    Swift.print ("Couldn't access: \(url.path)")
+                }
+                else
+                {
+                    Swift.print ("Restored \(bookmark.key)")
+                    isStale = false
+                }
+            }
+        }
+        return !isStale
     }
 }
 
