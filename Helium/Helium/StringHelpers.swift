@@ -22,7 +22,7 @@ extension String {
     func indexOf(_ target: String) -> Int {
         let range = self.range(of: target)
         if let range = range {
-            return self.characters.distance(from: self.startIndex, to: range.lowerBound)
+            return self.distance(from: self.startIndex, to: range.lowerBound)
         } else {
             return -1
         }
