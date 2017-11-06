@@ -372,7 +372,17 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
 
     internal func loadURL(url:URL) {
-        webView.load(URLRequest(url: url))
+        if appDelegate.isSandboxed() && url.isFileURL {
+            //  Store and fetch our url security scope url
+            _ = appDelegate.storeBookmark(url: url)
+        }
+        if url.isFileURL {
+            webView.loadFileURL(url, allowingReadAccessTo: url)
+        }
+        else
+        {
+            webView.load(URLRequest(url: url))
+        }
     }
 
     internal func loadURL(urlFileURL: Notification) {
