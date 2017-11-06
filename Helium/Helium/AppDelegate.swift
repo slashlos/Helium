@@ -148,7 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     _ = self.doOpenFile(fileURL: fileURL!)
                     return
                 }
-                guard app.storeBookmark(url: url)/*, let data = app.bookmarks[url], app.fetchBookmark(key: url, value:data)*/ else {
+                guard app.storeBookmark(url: url) else {
                     return
                 }
                 _ = self.doOpenFile(fileURL: open.url!)
@@ -726,7 +726,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
             if self.fetchBookmark(key: url, value: data) {
-                Swift.print ("Known \(url.path)")
+                Swift.print ("= \(url.absoluteString)")
                 return true
             }
         }
@@ -734,13 +734,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             let options:NSURL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
             let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
-            Swift.print ("Storing \(url.path)")
-            if !url.startAccessingSecurityScopedResource()
-            {
-                Swift.print ("Couldn't access: \(url.path)")
-            }
             bookmarks[url] = data
-            return true
+            return self.fetchBookmark(key: url, value: data)
         }
         catch
         {
@@ -760,7 +755,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         catch
         {
-            Swift.print ("Error restoring bookmark: \(bookmark.key)")
+            Swift.print ("! \(bookmark.key)")
             restoredUrl = nil
         }
         
@@ -768,17 +763,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             if isStale
             {
-                Swift.print ("URL is stale")
+                Swift.print ("? \(bookmark.key)")
             }
             else
             {
                 if !url.startAccessingSecurityScopedResource()
                 {
-                    Swift.print ("Couldn't access: \(url.path)")
+                    Swift.print ("- \(url.path)")
                 }
                 else
                 {
-                    Swift.print ("Restored \(bookmark.key)")
+                    Swift.print ("+ \(bookmark.key)")
                     isStale = false
                 }
             }
