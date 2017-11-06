@@ -326,7 +326,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let list: Array<PlayItem> = selectedPlaylist.value as! Array
             let item = PlayItem(name:"item#",link:URL.init(string: "http://")!,time:0.0,rank:list.count + 1);
             let temp = NSString(format:"%p",item) as String
-            item.name += String(temp.characters.suffix(3))
+            item.name += String(temp.suffix(3))
 
             playitemArrayController.addObject(item)
 
@@ -340,7 +340,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let list = Array <PlayItem>()
 
             let temp = NSString(format:"%p",list) as String
-            let name = "play#" + String(temp.characters.suffix(3))
+            let name = "play#" + String(temp.suffix(3))
             item.key = name
             item.value = list
             
@@ -744,7 +744,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 selectedPlaylist = playlistArrayController.newObject()
                 list = [PlayItem]()
                 let temp = NSString(format:"%p",list!) as String
-                let name = "play#" + String(temp.characters.suffix(3))
+                let name = "play#" + String(temp.suffix(3))
                 selectedPlaylist?.value = list
                 selectedPlaylist?.key = name
                 playlistArrayController.addObject(selectedPlaylist!)
