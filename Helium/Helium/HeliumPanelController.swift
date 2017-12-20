@@ -48,7 +48,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             name: NSNotification.Name(rawValue: "HeliumDidUpdateURL"),
             object: nil)
 
-        //  We allow drag from title's documnet icon to self or Finder
+        //  We allow drag from title's document icon to self or Finder
         panel.registerForDraggedTypes([NSURLPboardType])
     }
 
