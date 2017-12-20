@@ -39,6 +39,68 @@ class MyWebView : WKWebView {
         }
     }
     
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let doc = self.window?.windowController?.document as! Document
+        let pboard = sender.draggingPasteboard()
+        let items = pboard.pasteboardItems
+        
+        if (pboard.types?.contains(NSURLPboardType))! {
+            for item in items! {
+                if let urlString = item.string(forType: kUTTypeURL as String) {
+                    self.load(URLRequest(url: URL(string: urlString)!))
+                }
+                else
+                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
+                    guard let itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
+                        self.load(URLRequest(url: URL(string: urlString)!))
+                        return true
+                    }
+                    if appDelegate.storeBookmark(url: itemURL as URL) {
+                        // MARK:- only initial url loads; subsequent ignored.
+                        // The app historically has the ability to drop new assets, links
+                        // etc to supersede what went before but this functionality
+                        // is lost in a sandbox enviornment.
+                        if doc.fileURL == nil {
+                            self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
+                            doc.update(to: itemURL, ofType: itemURL.pathExtension)
+                            return true
+                        }
+                        else
+                        {
+                            do {
+                                let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+                                let oldWindow = doc.windowControllers.first?.window
+                                let newWindow = next.windowControllers.first?.window
+                                (newWindow?.contentView?.subviews.first as! MyWebView).loadFileURL(itemURL, allowingReadAccessTo: itemURL)
+                                newWindow?.offsetFromWindow(oldWindow!)
+                                next.update(to: itemURL, ofType: itemURL.pathExtension)
+                                return true
+                            }
+                            catch
+                            {
+                                Swift.print("Yoink, unable to create new doc for (\(itemURL))")
+                                return false
+                            }
+                        }
+                    }
+                    Swift.print("Yoink, storeBookmark(\(itemURL)) failed?")
+                    return false
+                }
+                else
+                {
+                    Swift.print("items has \(item.types)")
+                    return false
+                }
+            }
+        }
+        else
+        if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
+            Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
+            //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
+        }
+        return true
+    }
+    
     //    Either by contextual menu, or status item, populate our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
@@ -247,6 +309,9 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         
         // Listen for load progress
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: NSKeyValueObservingOptions.new, context: nil)
+
+        //  Intercept Finder drags
+        webView.register(forDraggedTypes: [NSURLPboardType])
 
         clear()
     }
