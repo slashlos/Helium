@@ -738,8 +738,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             bookmarks[url] = data
             return self.fetchBookmark(key: url, value: data)
         }
-        catch
+        catch let error
         {
+            NSApp.presentError(error)
             Swift.print ("Error storing bookmark: \(url)")
             return false
         }
