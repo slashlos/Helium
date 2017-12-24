@@ -4,6 +4,7 @@
 //
 //  Created by Christian Hoffmann on 10/31/15.
 //  Copyright © 2015 Jaden Geller. All rights reserved.
+//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation

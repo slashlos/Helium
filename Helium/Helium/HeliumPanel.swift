@@ -4,6 +4,7 @@
 //
 //  Created by shdwprince on 8/10/16.
 //  Copyright © 2016 Jaden Geller. All rights reserved.
+//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
