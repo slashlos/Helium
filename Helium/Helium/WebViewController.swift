@@ -52,10 +52,15 @@ class MyWebView : WKWebView {
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    guard let itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
+                    guard var itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
                         self.load(URLRequest(url: URL(string: urlString)!))
                         return true
                     }
+                    //  Resolve alias before storing bookmark
+                    if let origURL = (itemURL as NSURL).resolvedFinderAlias() {
+                        itemURL = origURL
+                    }
+
                     if appDelegate.storeBookmark(url: itemURL as URL) {
                         // MARK:- only initial url loads; subsequent ignored.
                         // The app historically has the ability to drop new assets, links
@@ -77,8 +82,9 @@ class MyWebView : WKWebView {
                                 next.update(to: itemURL, ofType: itemURL.pathExtension)
                                 return true
                             }
-                            catch
+                            catch let error
                             {
+                                NSApp.presentError(error)
                                 Swift.print("Yoink, unable to create new doc for (\(itemURL))")
                                 return false
                             }
@@ -437,17 +443,23 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         }
     }
 
-    internal func loadURL(url:URL) {
-        if appDelegate.isSandboxed() && url.isFileURL {
+    internal func loadURL(url: URL) {
+        var loadURL: URL = url
+        if appDelegate.isSandboxed() && loadURL.isFileURL {
+            //  Resolve alias before storing bookmark
+            if let origURL = (loadURL as NSURL).resolvedFinderAlias() {
+                loadURL = origURL
+            }
+
             //  Store and fetch our url security scope url
-            _ = appDelegate.storeBookmark(url: url)
+            _ = appDelegate.storeBookmark(url: loadURL)
         }
-        if url.isFileURL {
-            webView.loadFileURL(url, allowingReadAccessTo: url)
+        if loadURL.isFileURL {
+            webView.loadFileURL(loadURL, allowingReadAccessTo: loadURL)
         }
         else
         {
-            webView.load(URLRequest(url: url))
+            webView.load(URLRequest(url: loadURL))
         }
     }
 
