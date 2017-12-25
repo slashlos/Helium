@@ -54,7 +54,7 @@
                             </box>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IV0-Ql-nbs">
                                 <rect key="frame" x="62" y="138" width="161" height="20"/>
-                                <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="AppName" placeholderString="" id="dzr-yS-Vgn">
+                                <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Helium" placeholderString="" id="dzr-yS-Vgn">
                                     <font key="font" size="14" name="Arial-BoldMT"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
