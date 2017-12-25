@@ -624,12 +624,13 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                     }
                     
                     self.view.window?.title = title as String
- 
+
                     // Remember for later restoration
                     if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
                         self.view.window?.representedURL = url
                         (doc as! Document).update(to: url, ofType: url.pathExtension)
                         (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
+                        NSApp.addWindowsItem(self.view.window!, title: (doc as! Document).displayName, filename: false)
                     }
                  }
             }

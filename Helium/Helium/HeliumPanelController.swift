@@ -316,10 +316,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     @objc func updateTitleBar(didChange: Bool) {
         let docIconButton = panel.standardWindowButton(.documentIconButton)
 
-        if document != nil, window != nil {
-            NSApp.addWindowsItem(window!, title: (self.document?.displayName)!, filename: false)
-        }
-
         if didChange {
             if settings.autoHideTitle.value == true && !mouseOver {
                 panel.titleVisibility = NSWindowTitleVisibility.hidden
