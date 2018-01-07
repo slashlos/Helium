@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0F05C7EF1EFEC5F3001B5D02 /* AboutHelium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */; };
 		0F1035921F032E6A00327B30 /* Helium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F10354A1F0300DA00327B30 /* Helium.swift */; };
+		0F51973E2002C7DB0090C431 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 0F51973C2002C7C80090C431 /* Help */; };
 		0FD57FDE1EEC89F400A0F84D /* HeliumPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */; };
 		0FD57FE01EECF0FF00A0F84D /* UrlHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */; };
 		0FD6C7381E62286000D6F836 /* PlaylistPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */; };
@@ -66,6 +67,7 @@
 /* Begin PBXFileReference section */
 		0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutHelium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F10354A1F0300DA00327B30 /* Helium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helium.swift; sourceTree = "<group>"; usesTabs = 0; };
+		0F51973C2002C7C80090C431 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Help; sourceTree = "<group>"; };
 		0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
 		0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumPanel.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UrlHelpers.swift; sourceTree = "<group>"; usesTabs = 0; };
@@ -220,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				B34C1EC51ADE3CBE0094ADBA /* dsa_pub.pem */,
+				0F51973C2002C7C80090C431 /* Help */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -356,6 +359,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F51973E2002C7DB0090C431 /* Help in Resources */,
 				4D867CBB1AD6781200681331 /* Images.xcassets in Resources */,
 				B34C1EC61ADE3CBE0094ADBA /* dsa_pub.pem in Resources */,
 				0FDE23ED1F040484009D4B16 /* Helium.icns in Resources */,
