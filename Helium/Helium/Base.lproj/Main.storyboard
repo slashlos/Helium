@@ -37,9 +37,9 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button toolTip="version information" translatesAutoresizingMaskIntoConstraints="NO" id="rKn-5s-fYK">
-                                <rect key="frame" x="12" y="116" width="259" height="12"/>
+                                <rect key="frame" x="12" y="115" width="259" height="13"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="12" id="baR-Xp-agq"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="12" id="baR-Xp-agq"/>
                                 </constraints>
                                 <buttonCell key="cell" type="square" title="&lt;version&gt;" bezelStyle="shadowlessSquare" alignment="center" controlSize="mini" state="on" imageScaling="proportionallyDown" inset="2" id="3Ei-xL-Jwz">
                                     <behavior key="behavior" lightByContents="YES"/>
@@ -50,7 +50,7 @@
                                 </connections>
                             </button>
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ApO-5O-qon">
-                                <rect key="frame" x="12" y="85" width="259" height="5"/>
+                                <rect key="frame" x="12" y="84" width="259" height="5"/>
                             </box>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IV0-Ql-nbs">
                                 <rect key="frame" x="62" y="138" width="161" height="20"/>
@@ -75,7 +75,7 @@
                                 </connections>
                             </button>
                             <button toolTip="version information" translatesAutoresizingMaskIntoConstraints="NO" id="0NX-wg-Xfe">
-                                <rect key="frame" x="12" y="95" width="257" height="12"/>
+                                <rect key="frame" x="12" y="94" width="257" height="12"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="12" id="Tzv-hz-N36"/>
                                 </constraints>
@@ -88,16 +88,16 @@
                                 </connections>
                             </button>
                             <scrollView hidden="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OZR-xn-j0b">
-                                <rect key="frame" x="12" y="6" width="259" height="76"/>
+                                <rect key="frame" x="12" y="6" width="259" height="75"/>
                                 <clipView key="contentView" id="6A6-Eg-DDC">
-                                    <rect key="frame" x="1" y="1" width="257" height="74"/>
+                                    <rect key="frame" x="1" y="1" width="257" height="73"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4IG-nm-Y5X">
-                                            <rect key="frame" x="0.0" y="0.0" width="257" height="74"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="257" height="73"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                            <size key="minSize" width="257" height="74"/>
+                                            <size key="minSize" width="257" height="73"/>
                                             <size key="maxSize" width="678" height="10000000"/>
                                             <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
@@ -184,7 +184,13 @@
                                                             <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="m4H-Fo-eBP"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Float Above All Spaces" state="on" id="J8Z-sv-9PI" userLabel="Float over Full Screen Apps Menu">
+                                                    <menuItem title="Create New Windows" id="XlG-m9-GkO">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="createNewWindowPress:" target="Voe-Tx-rLC" id="OzI-m7-v2a"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Float Above All Spaces" id="J8Z-sv-9PI" userLabel="Float over Full Screen Apps Menu">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="JOZ-SB-dtT"/>
@@ -202,7 +208,7 @@
                                                             <action selector="homePagePress:" target="Voe-Tx-rLC" id="bNV-li-Zd2"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Magic URL Redirects" state="on" id="GQ3-Bi-0IJ">
+                                                    <menuItem title="Magic URL Redirects" id="GQ3-Bi-0IJ">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="dGe-Ut-ADQ"/>
@@ -585,6 +591,12 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="TWO-Et-uNB"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Create New Windows" id="YHy-bp-M43">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="createNewWindowPress:" target="Voe-Tx-rLC" id="Nt4-Zm-Jlw"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Float Above All Spaces" id="4Lx-l2-xwH">

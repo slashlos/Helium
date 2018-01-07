@@ -55,7 +55,9 @@ internal struct UserSettings {
         }
     }
     
+    //  Global Defaults keys
     static let disabledMagicURLs = Setting<Bool>("disabledMagicURLs", defaultValue: false)
+    static let createNewWindows = Setting<Bool>("createNewWindows", defaultValue: false)
     
     static let homePageURL = Setting<String>(
         "homePageURL",

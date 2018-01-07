@@ -40,70 +40,102 @@ class MyWebView : WKWebView {
         }
     }
     
+    func loadNext(url: URL) {
+        let doc = self.window?.windowController?.document as? Document
+        let newWindows = UserSettings.createNewWindows.value
+        let appDelegate = NSApp.delegate as! AppDelegate
+        var fileURL = url
+
+        //  Pick off request (non-file) urls first
+        if !url.isFileURL {
+            if newWindows && doc != nil {
+                do
+                {
+                    let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+                    let oldWindow = self.window
+                    let newWindow = next.windowControllers.first?.window
+                    (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: url))
+                    newWindow?.offsetFromWindow(oldWindow!)
+                }
+                catch let error {
+                    NSApp.presentError(error)
+                    Swift.print("Yoink, unable to create new url doc for (\(url))")
+                    return
+                }
+            }
+            else
+            {
+                self.load(URLRequest(url: url))
+            }
+            return
+        }
+        
+        //  Resolve alias before bookmarking
+        if let origURL = (fileURL as NSURL).resolvedFinderAlias() {
+            fileURL = origURL
+        }
+
+        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL) {
+            Swift.print("Yoink, unable to sandbox \(fileURL)")
+            return
+        }
+        
+        //  Wait unti we're running before window instantiation support
+        if !(self.url?.isFileURL)! && NSApp.isRunning {
+            self.loadFileURL(fileURL, allowingReadAccessTo: fileURL)
+            doc?.update(to: fileURL, ofType: fileURL.pathExtension)
+            return
+        }
+
+        //  We need or want a new window; if need, remove the old afterward
+        do {
+            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            let oldWindow = doc?.windowControllers.first?.window
+            let newWindow = next.windowControllers.first?.window
+            (newWindow?.contentView?.subviews.first as! MyWebView).loadFileURL(fileURL, allowingReadAccessTo: fileURL)
+            if newWindows {
+                newWindow?.offsetFromWindow(oldWindow!)
+            }
+            else
+            {
+                newWindow?.overlayWindow(oldWindow!)
+                oldWindow?.performClose(self)
+            }
+            next.update(to: fileURL, ofType: fileURL.pathExtension)
+        }
+        catch let error
+        {
+            NSApp.presentError(error)
+            Swift.print("Yoink, unable to new doc (\(fileURL))")
+        }
+    }
+    
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        let doc = self.window?.windowController?.document as! Document
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
         
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
                 if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.load(URLRequest(url: URL(string: urlString)!))
+                    self.loadNext(url: URL(string: urlString)!)
+                    continue
                 }
-                else
+                
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    guard var itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
-                        self.load(URLRequest(url: URL(string: urlString)!))
-                        return true
-                    }
-                    //  Resolve alias before storing bookmark
-                    if let origURL = (itemURL as NSURL).resolvedFinderAlias() {
-                        itemURL = origURL
-                    }
-
-                    if appDelegate.storeBookmark(url: itemURL as URL) {
-                        // MARK:- only initial url loads; subsequent ignored.
-                        // The app historically has the ability to drop new assets, links
-                        // etc to supersede what went before but this functionality
-                        // is lost in a sandbox enviornment.
-                        if doc.fileURL == nil {
-                            self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
-                            doc.update(to: itemURL, ofType: itemURL.pathExtension)
-                            return true
-                        }
-                        else
-                        {
-                            do {
-                                let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-                                let oldWindow = doc.windowControllers.first?.window
-                                let newWindow = next.windowControllers.first?.window
-                                (newWindow?.contentView?.subviews.first as! MyWebView).loadFileURL(itemURL, allowingReadAccessTo: itemURL)
-                                newWindow?.offsetFromWindow(oldWindow!)
-                                next.update(to: itemURL, ofType: itemURL.pathExtension)
-                                return true
-                            }
-                            catch let error
-                            {
-                                NSApp.presentError(error)
-                                Swift.print("Yoink, unable to create new doc for (\(itemURL))")
-                                return false
-                            }
-                        }
-                    }
-                    Swift.print("Yoink, storeBookmark(\(itemURL)) failed?")
-                    return false
+                    self.loadNext(url: URL(string: urlString)!)
+                    continue
                 }
                 else
                 {
                     Swift.print("items has \(item.types)")
-                    return false
+                    continue
                 }
             }
         }
         else
         if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
             Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
-            //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
+//          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
         }
         return true
     }
@@ -114,6 +146,13 @@ class MyWebView : WKWebView {
         let dc = NSDocumentController.shared()
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
+        
+        //  Remove item(s) we do not or cannot support
+        for title in ["Enter Full Screen", "Enter Picture in Picture"] {
+            if let item = menu.item(withTitle: title) {
+                menu.removeItem(item)
+            }
+        }
         
         var item: NSMenuItem
 
@@ -148,8 +187,13 @@ class MyWebView : WKWebView {
         item.target = hwc
         subPref.addItem(item)
 
+        item = NSMenuItem(title: "Create New Windows", action: #selector(AppDelegate.createNewWindowPress(_:)), keyEquivalent: "")
+        item.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
+        item.target = appDelegate
+        subPref.addItem(item)
+        
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
-        item.state = (doc.settings.disabledFullScreenFloat.value == true) ? NSOffState : NSOnState
+        item.state = doc.settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
         item.target = hwc
         subPref.addItem(item)
         
@@ -158,7 +202,7 @@ class MyWebView : WKWebView {
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Magic URL Redirects", action: #selector(AppDelegate.magicURLRedirectPress(_:)), keyEquivalent: "")
-        item.state = (UserSettings.disabledMagicURLs.value == true) ? NSOffState : NSOnState
+        item.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
         item.target = appDelegate
         subPref.addItem(item)
 
@@ -444,29 +488,13 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
 
     internal func loadURL(url: URL) {
-        var loadURL: URL = url
-        if appDelegate.isSandboxed() && loadURL.isFileURL {
-            //  Resolve alias before storing bookmark
-            if let origURL = (loadURL as NSURL).resolvedFinderAlias() {
-                loadURL = origURL
-            }
-
-            //  Store and fetch our url security scope url
-            _ = appDelegate.storeBookmark(url: loadURL)
-        }
-        if loadURL.isFileURL {
-            webView.loadFileURL(loadURL, allowingReadAccessTo: loadURL)
-        }
-        else
-        {
-            webView.load(URLRequest(url: loadURL))
-        }
+        webView.loadNext(url: url)
     }
 
     internal func loadURL(urlFileURL: Notification) {
         if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
             if info["hwc"] as? NSWindowController == self.view.window?.windowController {
-                webView.load(URLRequest(url: fileURL as! URL))
+                webView.loadNext(url: fileURL as! URL)
             }
         }
     }
@@ -627,12 +655,12 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
                     // Remember for later restoration
                     if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
-                        self.view.window?.representedURL = url
                         (doc as! Document).update(to: url, ofType: url.pathExtension)
+                        self.view.window?.representedURL = url
                         (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
-                        NSApp.addWindowsItem(self.view.window!, title: (doc as! Document).displayName, filename: false)
+                        NSApp.addWindowsItem(self.view.window!, title: url.lastPathComponent, filename: false)
                     }
-                 }
+                }
             }
         }
     }

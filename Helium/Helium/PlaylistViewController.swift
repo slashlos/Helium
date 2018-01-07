@@ -655,16 +655,23 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 for item in items! {
                     if (item as! URL).isFileURL {
                         let fileURL : NSURL? = (item as AnyObject).filePathURL!! as NSURL
-                        
+
+                        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL! as URL) {
+                            Swift.print("Yoink, unable to sandbox \(String(describing: fileURL)))")
+                        }
+
                         //    if it's a video file, get and set window content size to its dimentions
                         let track0 = AVURLAsset(url:fileURL! as URL, options:nil).tracks[0]
                         if track0.mediaType != AVMediaTypeVideo
                         {
-                            return NSDragOperation()
+                            Swift.print("Yoink, unknown media:\(track0.mediaType) in \(String(describing: fileURL)))")
                         }
                     } else {
                         print("validate item -> \(item)")
                     }
+                }
+                if appDelegate.isSandboxed() {
+                    _ = appDelegate.saveBookmarks()
                 }
             }
             return .copy
@@ -803,6 +810,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
                 else
                 {
+                    if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL! as URL) {
+                        Swift.print("Yoink, unable to sandbox \(String(describing: fileURL)))")
+                    }
+
                     let path = fileURL!.absoluteString//.stringByRemovingPercentEncoding
                     let attr = appDelegate.metadataDictionaryForFileAt((fileURL?.path)!)
                     let time = attr?[kMDItemDurationSeconds] as! Double
@@ -831,6 +842,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 newIndexOffset += 1
             }
             
+            if appDelegate.isSandboxed() {
+                _ = appDelegate.saveBookmarks()
+            }
+
             // Try to pick off whatever they sent us
             if items.count == 0 {
                 for element in pasteboard.pasteboardItems! {
@@ -858,6 +873,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         
                         //  Resolve finder alias
                         if let original = (url! as NSURL).resolvedFinderAlias() { url = original }
+                        
+                        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: url!) {
+                            Swift.print("Yoink, unable to sandbox \(String(describing: url)))")
+                        }
                         
                         //  If item is in our playitems cache use it
                         if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
@@ -893,12 +912,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         newIndexOffset += 1
                     }
                 }
-                return false
             }
             
             DispatchQueue.main.async {
                 let rows = IndexSet.init(integersIn: NSMakeRange(row, newIndexOffset).toRange() ?? 0..<0)
                 self.playitemTableView.selectRowIndexes(rows, byExtendingSelection: false)
+            }
+            if appDelegate.isSandboxed() {
+                _ = appDelegate.saveBookmarks()
             }
         }
         else

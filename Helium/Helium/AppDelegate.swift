@@ -83,6 +83,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
     }
 
+	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
+        UserSettings.createNewWindows.value = (sender.state == NSOffState)
+    }
+    
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
@@ -242,6 +246,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
+            break
+        case "Create New Windows":
+            menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
             break
         case "Hide Helium in menu bar":
             menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
@@ -724,8 +731,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func storeBookmark(url: URL) -> Bool
     {
+        var itemURL = url
+
+        //  Resolve alias before storing bookmark
+        if let origURL = (url as NSURL).resolvedFinderAlias() {
+            itemURL = origURL
+        }
+
         //  Peek to see if we've seen this key before
-        if let data = bookmarks[url] {
+        if let data = bookmarks[itemURL] {
             if self.fetchBookmark(key: url, value: data) {
                 Swift.print ("= \(url.absoluteString)")
                 return true
@@ -733,8 +747,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         do
         {
-            let options:NSURL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
-            let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
+            let options:URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
+            let data = try itemURL.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
             bookmarks[url] = data
             return self.fetchBookmark(key: url, value: data)
         }
@@ -753,7 +767,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         do
         {
-            restoredUrl = try URL.init(resolvingBookmarkData: bookmark.value, options: NSURL.BookmarkResolutionOptions.withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+            restoredUrl = try URL.init(resolvingBookmarkData: bookmark.value, options: URL.BookmarkResolutionOptions.withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
         }
         catch
         {

@@ -310,9 +310,7 @@ class Document : NSDocument {
     
     func update(with item: PlayItem, ofType typeName: String) {
         self.restoreSettings(with: item.dictionary())
-
-        fileType = typeName
-        fileURL = item.link
+        self.update(to: item.link, ofType: typeName)
         self.save(self)
     }
     
@@ -429,6 +427,10 @@ class Document : NSDocument {
         //  Relocate to origin if any
         if self.settings.rect.value != NSZeroRect, let window = controller.window {
             window.setFrameOrigin(self.settings.rect.value.origin)
+        }
+        else
+        {
+            controller.window?.offsetFromKeyWindow()
         }
         self.save(self)
     }

@@ -71,6 +71,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
 
+    func windowWillClose(_ notification: Notification) {
+        self.webViewController.webView.stopLoading()
+    }
+    
     // MARK:- Mouse events
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard()
@@ -246,6 +250,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             break
         case "Mouse Outside":
             menuItem.state = settings.translucencyPreference.value == .mouseOutside ? NSOnState : NSOffState
+            break
+        case "Create New Windows":
+            menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
             break
         case "Float Above All Spaces":
             menuItem.state = settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
