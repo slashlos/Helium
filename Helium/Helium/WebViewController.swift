@@ -496,6 +496,11 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             if info["hwc"] as? NSWindowController == self.view.window?.windowController {
                 webView.loadNext(url: fileURL as! URL)
             }
+            else
+            {
+                //  load new window with URL
+                webView.loadNext(url: urlFileURL.object as! URL)
+            }
         }
     }
     

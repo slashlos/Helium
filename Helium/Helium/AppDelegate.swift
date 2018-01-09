@@ -604,32 +604,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        let hwc = NSApp.keyWindow?.windowController
-
+        
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
-            let urlString = keyDirectObject.stringValue else {
+            let rawString = keyDirectObject.stringValue else {
                 return print("No valid URL to handle")
         }
 
         //  strip helium://
-        let index = urlString.index(urlString.startIndex, offsetBy: 9)
-        let url = urlString.substring(from: index)
+        let index = rawString.index(rawString.startIndex, offsetBy: 9)
+        let urlString = rawString.substring(from: index)
 
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
-                                        object: url,
-                                        userInfo: ["hwc" : hwc as Any])
+
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: urlString)
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {
         if let selection = pboard.string(forType: NSPasteboardTypeString) {
-            let hwc = NSApp.keyWindow?.windowController
 
             // Notice: string will contain whole selection, not just the urls
             // So this may (and will) fail. It should instead find url in whole
             // Text somehow
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
-                                            object: selection,
-                                            userInfo: ["hwc" : hwc as Any])
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: selection)
         }
     }
     // MARK: Finder drops
