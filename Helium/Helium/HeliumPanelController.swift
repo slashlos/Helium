@@ -84,32 +84,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         return .copy
     }
+    
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
-        let pboard = sender.draggingPasteboard()
-        let items = pboard.pasteboardItems
-
-        if (pboard.types?.contains(NSURLPboardType))! {
-            for item in items! {
-                if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.webViewController.loadURL(text: urlString)
-                }
-                else
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    let fileURL = NSURL.init(string: urlString)?.filePathURL
-                    self.webViewController.loadURL(url: fileURL!)
-                }
-                else
-                {
-                    Swift.print("items has \(item.types)")
-                }
-            }
-        }
-        else
-        if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
-            Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
-//            NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
-        }
-        return true
+        let webView = self.window?.contentView?.subviews.first as! MyWebView
+        
+        return webView.performDragOperation(sender)
     }
         
     override func mouseEntered(with theEvent: NSEvent) {
