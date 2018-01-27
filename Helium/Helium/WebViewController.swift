@@ -14,6 +14,11 @@ import Carbon.HIToolbox
 
 class MyWebView : WKWebView {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+    override class func handlesURLScheme(_ urlScheme: String) -> Bool {
+        Swift.print("handleURLScheme: \(urlScheme)")
+        return true
+    }
+
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
@@ -110,6 +115,32 @@ class MyWebView : WKWebView {
         }
     }
     
+    // MARK: Drag and Drop - Before Release
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        Swift.print("draggingEntered -> .copy")
+        return .copy
+    }
+    override func wantsPeriodicDraggingUpdates() -> Bool {
+        Swift.print("wantsPeriodicDraggingUpdates -> true")
+        return true
+    }
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        Swift.print("draggingUpdated -> .copy")
+        return .copy
+    }
+    override func draggingEnded(_ sender: NSDraggingInfo?) {
+        Swift.print("draggingEnded")
+    }
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        Swift.print("draggingExited")
+    }
+    
+    // MARK: Drag and Drop - After Release
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        Swift.print("prepareForDragOperation -> true")
+        return true
+    }
+
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
@@ -140,7 +171,12 @@ class MyWebView : WKWebView {
         return true
     }
     
-    //    Either by contextual menu, or status item, populate our app menu
+    override func concludeDragOperation(_ sender: NSDraggingInfo?) {
+        Swift.print("concludeDragOperation")
+    }
+    
+    //  MARK: Context Menu
+    //  Either by contextual menu, or status item, populate our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
         let dc = NSDocumentController.shared()
@@ -362,7 +398,17 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: NSKeyValueObservingOptions.new, context: nil)
 
         //  Intercept Finder drags
-        webView.register(forDraggedTypes: [NSURLPboardType])
+        let types = [kUTTypeData as String,
+                     kUTTypeURL as String,
+                     NSDictionaryControllerKeyValuePair.className(),
+                     PlayItem.className(),
+                     NSFilenamesPboardType,
+                     NSFilesPromisePboardType,
+                     NSURLPboardType]
+
+        webView.register(forDraggedTypes: types)
+        self.view.register(forDraggedTypes: types)
+        
 
         clear()
     }

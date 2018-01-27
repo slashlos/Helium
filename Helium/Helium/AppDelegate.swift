@@ -348,6 +348,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 histories.append(temp)
             }
         }
+        
+        //  Register our URL protocol(s)
+        URLProtocol.registerClass(HeliumURLProtocol.self)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
