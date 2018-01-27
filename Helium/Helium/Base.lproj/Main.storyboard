@@ -156,7 +156,7 @@
                 <customObject id="L5Y-eG-1ih" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="7hN-84-z2t"/>
             </objects>
-            <point key="canvasLocation" x="326" y="-1029"/>
+            <point key="canvasLocation" x="308" y="-1079"/>
         </scene>
         <!--Application-->
         <scene sceneID="JPo-4y-FX3">
@@ -698,7 +698,7 @@ CA
                     </items>
                 </menu>
             </objects>
-            <point key="canvasLocation" x="33" y="-414"/>
+            <point key="canvasLocation" x="-158" y="-1376"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="3rF-Wl-9by">
@@ -760,7 +760,7 @@ CA
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn width="121.04746736703925" minWidth="40" maxWidth="1000" id="zpc-Ad-MEK">
+                                                        <tableColumn identifier="" width="121.04746736703925" minWidth="40" maxWidth="1000" id="zpc-Ad-MEK">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Playlist">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1234,7 +1234,7 @@ Gw
                     </connections>
                 </arrayController>
             </objects>
-            <point key="canvasLocation" x="612" y="406"/>
+            <point key="canvasLocation" x="720" y="455"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
@@ -1256,7 +1256,7 @@ Gw
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="66" y="356"/>
+            <point key="canvasLocation" x="75" y="-32"/>
         </scene>
         <!--Web View Controller-->
         <scene sceneID="hIz-AP-VOD">
@@ -1269,7 +1269,7 @@ Gw
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="80" y="751"/>
+            <point key="canvasLocation" x="75" y="454"/>
         </scene>
     </scenes>
     <resources>
