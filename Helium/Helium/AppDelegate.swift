@@ -42,6 +42,23 @@ fileprivate class URLField: NSTextField {
         self.usesSingleLineMode = true
     }
 }
+// MARK: HeliumURLProtocol (NYI)
+/*
+var requestCount = 0
+class HeliumURLProtocol : URLProtocol {
+    class func canInit(with request: NSURLRequest) -> Bool {
+        requestCount += 1
+        Swift.print("#\(requestCount): URL = \(String(describing: request.url?.absoluteString))")
+        return false
+    }
+    
+    func canInitWithRequest(request: NSURLRequest) -> Bool {
+        requestCount += 1
+        Swift.print("#\(requestCount): URL = \(String(describing: request.url?.absoluteString))")
+        return false
+    }
+}
+*/
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -348,9 +365,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 histories.append(temp)
             }
         }
-        
-        //  Register our URL protocol(s)
-        URLProtocol.registerClass(HeliumURLProtocol.self)
+/* NYI  //  Register our URL protocol(s)
+        URLProtocol.registerClass(HeliumURLProtocol.self) */
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
