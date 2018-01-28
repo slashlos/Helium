@@ -623,7 +623,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        
+        let newWindows = UserSettings.createNewWindows.value
+
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
             let rawString = keyDirectObject.stringValue else {
                 return print("No valid URL to handle")
@@ -632,9 +633,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  strip helium://
         let index = rawString.index(rawString.startIndex, offsetBy: 9)
         let urlString = rawString.substring(from: index)
-
-
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: urlString)
+        
+        //  Handle new window here to narrow cast to new or current hwc
+        if !newWindows, let wc = NSApp.keyWindow?.windowController {
+            if let hwc : HeliumPanelController = wc as? HeliumPanelController {
+                (hwc.contentViewController as! WebViewController).loadURL(text: urlString)
+                return
+            }
+        }
+        //  Temporarily disable new windows as we'll create one now
+        UserSettings.createNewWindows.value = false
+        do
+        {
+            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            let hwc = next.windowControllers.first?.window?.windowController
+            (hwc?.contentViewController as! WebViewController).loadURL(text: urlString)
+        }
+        catch let error {
+            NSApp.presentError(error)
+            Swift.print("Yoink, unable to create new url doc for (\(urlString))")
+        }
+        UserSettings.createNewWindows.value = newWindows
+        return
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {
