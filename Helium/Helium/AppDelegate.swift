@@ -329,8 +329,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             name: NSNotification.Name(rawValue: "HeliumNewURL"),
             object: nil)
 
-        //  Load sandbox bookmark url
-        if self.isSandboxed() { _ = self.loadBookmarks() }
+        //  Load sandbox bookmark url when necessary
+        if self.isSandboxed() != self.loadBookmarks() {
+            Swift.print("Yoink, unable to load bookmarks")
+        }
     }
 
     var histories = Array<PlayItem>()
@@ -370,8 +372,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        //  Save sandbox bookmark url
-        if self.isSandboxed() { _ = self.saveBookmarks() }
+        
+        //  Save sandbox bookmark urls when necessary
+        if isSandboxed() != saveBookmarks() {
+            Swift.print("Yoink, unable to save booksmarks")
+        }
 
         // Save histories to defaults
         var temp = Array<AnyObject>()
@@ -737,8 +742,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func loadBookmarks() -> Bool
     {
-        let fm = FileManager.default
+        //  Ignore loading unless configured
+        guard isSandboxed() else
+        {
+            return false
+        }
 
+        let fm = FileManager.default
+        
         guard let path = bookmarkPath(), fm.fileExists(atPath: path) else {
             return saveBookmarks()
         }
@@ -750,11 +761,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             restored += (true == fetchBookmark(bookmark) ? 1 : 0)
         }
         return restored == bookmarks.count
-    }
+     }
     
     func saveBookmarks() -> Bool
     {
-        if let path = bookmarkPath() {
+        //  Ignore saving unless configured
+        if let path = bookmarkPath(), isSandboxed() {
             return NSKeyedArchiver.archiveRootObject(bookmarks, toFile: path)
         }
         else
