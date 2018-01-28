@@ -87,8 +87,8 @@ class MyWebView : WKWebView {
         
         //  Wait unti we're running before window instantiation support
         if !(self.url?.isFileURL)! && NSApp.isRunning {
-            self.loadFileURL(fileURL, allowingReadAccessTo: fileURL)
             doc?.update(to: fileURL, ofType: fileURL.pathExtension)
+            self.loadFileURL(fileURL, allowingReadAccessTo: fileURL)
             return
         }
 
@@ -121,11 +121,11 @@ class MyWebView : WKWebView {
         return .copy
     }
     override func wantsPeriodicDraggingUpdates() -> Bool {
-        Swift.print("wantsPeriodicDraggingUpdates -> true")
+        Swift.print("wantsPeriodicDraggingUpdates -> false")
         return true
     }
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        Swift.print("draggingUpdated -> .copy")
+//        Swift.print("draggingUpdated -> .copy")
         return .copy
     }
     override func draggingEnded(_ sender: NSDraggingInfo?) {
@@ -142,24 +142,35 @@ class MyWebView : WKWebView {
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let doc = self.window?.windowController?.document as! Document
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
-        
+        Swift.print("performDragOperation -> true")
+
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
                 if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.loadNext(url: URL(string: urlString)!)
-                    continue
+                    self.load(URLRequest(url: URL(string: urlString)!))
                 }
-                
+                else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    self.loadNext(url: URL(string: urlString)!)
-                    continue
+                    guard let itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
+                        self.load(URLRequest(url: URL(string: urlString)!))
+                        return true
+                    }
+                    if appDelegate.storeBookmark(url: itemURL as URL) {
+                        doc.update(to: itemURL, ofType: itemURL.lastPathComponent)
+                        self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
+                        return true
+                    }
+                    Swift.print("Yoink, storeBookmark(\(itemURL)) failed?")
+                    self.load(URLRequest(url: URL(string: urlString)!))
+                    return false
                 }
                 else
                 {
                     Swift.print("items has \(item.types)")
-                    continue
+                    return false
                 }
             }
         }
@@ -176,7 +187,7 @@ class MyWebView : WKWebView {
     }
     
     //  MARK: Context Menu
-    //  Either by contextual menu, or status item, populate our app menu
+    //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
         let dc = NSDocumentController.shared()
@@ -372,11 +383,14 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
 
+        // Initialize
+        let configiuration = WKWebViewConfiguration.init()
+        webView = MyWebView.init(frame: view.bounds, configuration: configiuration)
+
         // Layout webview
         view.addSubview(webView)
         fit(webView, parentView: view)
-
-        webView.frame = view.bounds
+        
         webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
         
         // Allow plug-ins such as silverlight
@@ -404,11 +418,20 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                      PlayItem.className(),
                      NSFilenamesPboardType,
                      NSFilesPromisePboardType,
-                     NSURLPboardType]
+                     NSURLPboardType,
+                     NSStringPboardType,
+                     NSPDFPboardType,
+                     NSTIFFPboardType,
+                     NSRTFPboardType,
+                     NSRTFDPboardType,
+                     NSHTMLPboardType,
+                     NSTabularTextPboardType,
+                     NSFontPboardType,
+                     NSRulerPboardType,
+                     NSMultipleTextSelectionPboardType,
+                     NSPasteboardTypeFindPanelSearchOptions]
 
         webView.register(forDraggedTypes: types)
-        self.view.register(forDraggedTypes: types)
-        
 
         clear()
     }
@@ -430,15 +453,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             (hwc as! HeliumPanelController).documentViewDidLoad()
         }
         
-        if videoFileReferencedURL {
+/*        if videoFileReferencedURL {
             let newSize = webView.bounds.size
             let aspect = webSize.height / webSize.width
-            let magnify = newSize.width / webSize.width
+//            let magnify = newSize.width / webSize.width
             let newHeight = newSize.width * aspect
             let adjSize = NSMakeSize(newSize.width-1,newHeight-1)
-            webView.setMagnification((magnify > 1 ? magnify : 1), centeredAt: NSMakePoint(adjSize.width/2.0, adjSize.height/2.0))
+//            webView.setMagnification((magnify > 1 ? magnify : 1), centeredAt: NSMakePoint(adjSize.width/2.0, adjSize.height/2.0))
             view.setBoundsSize(adjSize)
-        }
+        }*/
         updateTrackingAreas()
     }
 
@@ -578,7 +601,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         loadURL(text: UserSettings.homePageURL.value)
     }
 
-    var webView = MyWebView()
+    var webView : MyWebView!
     var webSize = CGSize(width: 0,height: 0)
     var shouldRedirect: Bool {
         get {
@@ -657,7 +680,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
                             //    if it's a video file, get and set window content size to its dimentions
                             if track.mediaType == AVMediaTypeVideo {
-                                let oldSize = webView.window?.contentView?.bounds.size
+/*                                let oldSize = webView.window?.contentView?.bounds.size
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
                                 if oldSize != webSize, var origin = self.webView.window?.frame.origin {
@@ -665,7 +688,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                     webView.window?.setContentSize(webSize)
                                     webView.window?.setFrameOrigin(origin)
                                     webView.bounds.size = webSize
-                                }
+                                }*/
                                 videoFileReferencedURL = true
                             }
                             //  If we have save attributes restore them
