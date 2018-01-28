@@ -765,15 +765,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func storeBookmark(url: URL) -> Bool
     {
-        var itemURL = url
-
-        //  Resolve alias before storing bookmark
-        if let origURL = (url as NSURL).resolvedFinderAlias() {
-            itemURL = origURL
-        }
-
         //  Peek to see if we've seen this key before
-        if let data = bookmarks[itemURL] {
+        if let data = bookmarks[url] {
             if self.fetchBookmark(key: url, value: data) {
                 Swift.print ("= \(url.absoluteString)")
                 return true
@@ -782,7 +775,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do
         {
             let options:URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
-            let data = try itemURL.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
+            let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
             bookmarks[url] = data
             return self.fetchBookmark(key: url, value: data)
         }
