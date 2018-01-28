@@ -76,9 +76,7 @@ class MyWebView : WKWebView {
         }
         
         //  Resolve alias before bookmarking
-        if let origURL = (fileURL as NSURL).resolvedFinderAlias() {
-            fileURL = origURL
-        }
+        if let original = (fileURL as NSURL).resolvedFinderAlias() { fileURL = original }
 
         if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL) {
             Swift.print("Yoink, unable to sandbox \(fileURL)")
@@ -142,7 +140,7 @@ class MyWebView : WKWebView {
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        let doc = self.window?.windowController?.document as! Document
+        let wvc = self.navigationDelegate as! WebViewController
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
         Swift.print("performDragOperation -> true")
@@ -150,22 +148,11 @@ class MyWebView : WKWebView {
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
                 if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.load(URLRequest(url: URL(string: urlString)!))
+                    wvc.loadURL(text: urlString)
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    guard let itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
-                        self.load(URLRequest(url: URL(string: urlString)!))
-                        return true
-                    }
-                    if appDelegate.storeBookmark(url: itemURL as URL) {
-                        doc.update(to: itemURL, ofType: itemURL.lastPathComponent)
-                        self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
-                        return true
-                    }
-                    Swift.print("Yoink, storeBookmark(\(itemURL)) failed?")
-                    self.load(URLRequest(url: URL(string: urlString)!))
-                    return false
+                    wvc.loadURL(text: urlString)
                 }
                 else
                 {
@@ -661,13 +648,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                 var title = NSString(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
                     videoFileReferencedURL = false
-
-                    if (url.isFileURL) {
-                        if let original = (url as NSURL).resolvedFinderAlias() {
-                            self.loadURL(url: original)
-                            return
-                        }
-                    }
 
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
