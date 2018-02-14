@@ -338,27 +338,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     fileprivate func didRequestFile() {
         
         let open = NSOpenPanel()
-        open.allowsMultipleSelection = false
+        open.allowsMultipleSelection = true
         open.canChooseDirectories = false
         open.resolvesAliases = true
         open.canChooseFiles = true
         open.worksWhenModal = true
         open.beginSheetModal(for: self.window!, completionHandler: { (response: NSModalResponse) in
             if response == NSModalResponseOK {
-                if let url = open.url {
-                    Swift.print("Opening \(open.url!)")
+                let urls = open.urls
+                for url in urls {
                     self.webViewController.loadURL(url: url)
-/*                    do {
-                        let doc = try Document.init(contentsOf: url, ofType: url.pathExtension)
-                        
-                        if let hwc = (doc as NSDocument).windowControllers.first {
-                            hwc.window?.orderFront(self)
-                            (hwc.contentViewController as! WebViewController).loadURL(url: url)
-                        }
-                    } catch let error {
-                        print("*** Error open file: \(error.localizedDescription)")
-                    }
-*/
                 }
             }
         })
