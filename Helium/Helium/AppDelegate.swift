@@ -130,6 +130,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         else
         {
+            let newWindows = UserSettings.createNewWindows.value
+            UserSettings.createNewWindows.value = false
+            var status = false
+            
             //  This could be anything so add/if a doc and initialize
             do {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
@@ -137,43 +141,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 if let hwc = (doc as NSDocument).windowControllers.first {
                     hwc.window?.orderFront(self)
                     (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
-                    
-                    return true
-                }
-                else
-                {
-                    return false
+                    status = true
                 }
             } catch let error {
                 print("*** Error open file: \(error.localizedDescription)")
                 return false
             }
+            UserSettings.createNewWindows.value = newWindows
+            return status
         }
     }
 	@IBAction func openDocument(_ sender: Any) {
 		self.openFilePress(sender as AnyObject)
 	}
     @IBAction func openFilePress(_ sender: AnyObject) {
-        let app: AppDelegate = NSApp.delegate as! AppDelegate
         let open = NSOpenPanel()
-        open.allowsMultipleSelection = false
-        open.canChooseFiles = true
+        open.allowsMultipleSelection = true
         open.canChooseDirectories = false
+        open.resolvesAliases = true
+        open.canChooseFiles = true
         open.orderFront(sender)
         
         if open.runModal() == NSModalResponseOK {
-            if let url = open.url {
-                open.orderOut(sender)
-                guard isSandboxed(), url.isFileURL else {
-                    let fileURL = URL(string: url.absoluteString.removingPercentEncoding!)
-
-                    _ = self.doOpenFile(fileURL: fileURL!)
-                    return
-                }
-                guard app.storeBookmark(url: url) else {
-                    return
-                }
-                _ = self.doOpenFile(fileURL: open.url!)
+            open.orderOut(sender)
+            let urls = open.urls
+            for url in urls {
+                _ = self.doOpenFile(fileURL: url)
             }
         }
     }
@@ -195,6 +188,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                 }
                                 else
                                 {
+                                    let newWindows = UserSettings.createNewWindows.value
+                                    UserSettings.createNewWindows.value = false
                                     do {
                                         let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
                                         if let hpc = doc.windowControllers.first as? HeliumPanelController {
@@ -203,6 +198,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                     } catch let error {
                                         NSApp.presentError(error)
                                     }
+                                    UserSettings.createNewWindows.value = newWindows
                                 }
                             }
         })
@@ -756,9 +752,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         var restored = 0
         bookmarks = NSKeyedUnarchiver.unarchiveObject(withFile: path) as! [URL: Data]
-        for bookmark in bookmarks
+        var iterator = bookmarks.makeIterator()
+
+        while let bookmark = iterator.next()
         {
-            restored += (true == fetchBookmark(bookmark) ? 1 : 0)
+            //  stale bookmarks get dropped
+            if !fetchBookmark(bookmark) {
+                bookmarks.removeValue(forKey: bookmark.key)
+            }
+            else
+            {
+                restored += 1
+            }
         }
         return restored == bookmarks.count
      }
@@ -780,7 +785,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
             if self.fetchBookmark(key: url, value: data) {
-                Swift.print ("= \(url.absoluteString)")
+//                Swift.print ("= \(url.absoluteString)")
                 return true
             }
         }
@@ -802,7 +807,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool
     {
         let restoredUrl: URL?
-        var isStale = false
+        var isStale = true
         
         do
         {
@@ -822,13 +827,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             else
             {
-                if !url.startAccessingSecurityScopedResource()
+                if url.startAccessingSecurityScopedResource()
                 {
-                    Swift.print ("- \(url.path)")
-                }
-                else
-                {
-                    Swift.print ("+ \(bookmark.key)")
                     isStale = false
                 }
             }
