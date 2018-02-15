@@ -590,11 +590,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
     var webView : MyWebView!
     var webSize = CGSize(width: 0,height: 0)
-    var shouldRedirect: Bool {
-        get {
-            return !UserSettings.disabledMagicURLs.value
-        }
-    }
     
     // Redirect Hulu and YouTube to pop-out videos
     func webView(_ webView: WKWebView,
