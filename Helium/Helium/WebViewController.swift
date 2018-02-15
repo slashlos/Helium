@@ -589,13 +589,10 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if (navigationAction.request.url?.absoluteString.hasPrefix("file://"))! {
-            decisionHandler(WKNavigationActionPolicy.allow)
-            return
-        }
         
         guard !UserSettings.disabledMagicURLs.value,
-            let url = navigationAction.request.url else {
+            let url = navigationAction.request.url,
+            !((navigationAction.request.url?.absoluteString.hasPrefix("file://"))!) else {
                 decisionHandler(WKNavigationActionPolicy.allow)
                 return
         }
