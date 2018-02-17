@@ -42,23 +42,6 @@ fileprivate class URLField: NSTextField {
         self.usesSingleLineMode = true
     }
 }
-// MARK: HeliumURLProtocol (NYI)
-/*
-var requestCount = 0
-class HeliumURLProtocol : URLProtocol {
-    class func canInit(with request: NSURLRequest) -> Bool {
-        requestCount += 1
-        Swift.print("#\(requestCount): URL = \(String(describing: request.url?.absoluteString))")
-        return false
-    }
-    
-    func canInitWithRequest(request: NSURLRequest) -> Bool {
-        requestCount += 1
-        Swift.print("#\(requestCount): URL = \(String(describing: request.url?.absoluteString))")
-        return false
-    }
-}
-*/
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -813,27 +796,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             restoredUrl = try URL.init(resolvingBookmarkData: bookmark.value, options: URL.BookmarkResolutionOptions.withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
         }
-        catch
+        catch let error
         {
+            NSApp.presentError(error)
             Swift.print ("! \(bookmark.key)")
-            restoredUrl = nil
+            return false
         }
         
-        if let url = restoredUrl
-        {
-            if isStale
-            {
-                Swift.print ("? \(bookmark.key)")
-            }
-            else
-            {
-                if url.startAccessingSecurityScopedResource()
-                {
-                    isStale = false
-                }
-            }
+        guard !isStale, let url = restoredUrl, url.startAccessingSecurityScopedResource() else {
+            Swift.print ("? \(bookmark.key)")
+            return false
         }
-        return !isStale
+        Swift.print ("+ \(bookmark.key)")
+        return true
     }
 }
 
