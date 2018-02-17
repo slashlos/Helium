@@ -754,7 +754,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func saveBookmarks() -> Bool
     {
         //  Ignore saving unless configured
-        if let path = bookmarkPath(), isSandboxed() {
+        guard isSandboxed() else
+        {
+            return false
+        }
+
+        if let path = bookmarkPath() {
             return NSKeyedArchiver.archiveRootObject(bookmarks, toFile: path)
         }
         else
@@ -765,6 +770,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func storeBookmark(url: URL) -> Bool
     {
+        if url.isFileURL {
+            Swift.print("unable to storeBookmark: \(url)")
+        }
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
             if self.fetchBookmark(key: url, value: data) {
