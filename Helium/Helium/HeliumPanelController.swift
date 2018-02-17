@@ -30,7 +30,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     // MARK: Window lifecycle
     override func windowDidLoad() {
-        panel.standardWindowButton(.closeButton)?.image = NSApp.applicationIconImage
+        panel.standardWindowButton(.closeButton)?.image = NSImage.init()
         panel.isFloatingPanel = true
         
         NotificationCenter.default.addObserver(
