@@ -45,119 +45,58 @@ class MyWebView : WKWebView {
         }
     }
     
-    func loadNext(url: URL) {
+    func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
-        let newWindows = UserSettings.createNewWindows.value
         let appDelegate = NSApp.delegate as! AppDelegate
-        var fileURL = url
-
-        //  Pick off request (non-file) urls first
-        if !url.isFileURL {
-            if newWindows && doc != nil {
-                do
-                {
-                    let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-                    let oldWindow = self.window
-                    let newWindow = next.windowControllers.first?.window
-                    (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: url))
-                    newWindow?.offsetFromWindow(oldWindow!)
-                }
-                catch let error {
-                    NSApp.presentError(error)
-                    Swift.print("Yoink, unable to create new url doc for (\(url))")
-                    return
-                }
-            }
-            else
-            {
-                self.load(URLRequest(url: url))
-            }
-            return
-        }
+        var nextURL = url
         
         //  Resolve alias before bookmarking
-        if let original = (fileURL as NSURL).resolvedFinderAlias() { fileURL = original }
+        if let original = (nextURL as NSURL).resolvedFinderAlias() { nextURL = original }
 
-        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL) {
-            Swift.print("Yoink, unable to sandbox \(fileURL)")
+        if url.isFileURL, appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: nextURL) {
+            Swift.print("Yoink, unable to sandbox \(nextURL)")
             return
         }
         
-        //  Wait unti we're running before window instantiation support
-        if !(self.url?.isFileURL)! && NSApp.isRunning {
-            doc?.update(to: fileURL, ofType: fileURL.pathExtension)
-            self.loadFileURL(fileURL, allowingReadAccessTo: fileURL)
-            return
-        }
-
-        //  We need or want a new window; if need, remove the old afterward
-        do {
-            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-            let oldWindow = doc?.windowControllers.first?.window
-            let newWindow = next.windowControllers.first?.window
-            (newWindow?.contentView?.subviews.first as! MyWebView).loadFileURL(fileURL, allowingReadAccessTo: fileURL)
-            if newWindows {
-                newWindow?.offsetFromWindow(oldWindow!)
-            }
-            else
-            {
-                newWindow?.overlayWindow(oldWindow!)
-                oldWindow?.performClose(self)
-            }
-            next.update(to: fileURL, ofType: fileURL.pathExtension)
-        }
-        catch let error
-        {
-            NSApp.presentError(error)
-            Swift.print("Yoink, unable to new doc (\(fileURL))")
-        }
+        self.load(URLRequest(url: nextURL))
+        doc?.update(to: nextURL, ofType: nextURL.pathExtension)
     }
     
     // MARK: Drag and Drop - Before Release
-    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        Swift.print("draggingEntered -> .copy")
-        return .copy
-    }
-    override func wantsPeriodicDraggingUpdates() -> Bool {
-        Swift.print("wantsPeriodicDraggingUpdates -> false")
-        return true
-    }
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
 //        Swift.print("draggingUpdated -> .copy")
         return .copy
     }
-    override func draggingEnded(_ sender: NSDraggingInfo?) {
-        Swift.print("draggingEnded")
-    }
-    override func draggingExited(_ sender: NSDraggingInfo?) {
-        Swift.print("draggingExited")
-    }
-    
     // MARK: Drag and Drop - After Release
-    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        Swift.print("prepareForDragOperation -> true")
-        return true
-    }
-
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        let wvc = self.navigationDelegate as! WebViewController
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
-        Swift.print("performDragOperation -> true")
 
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
                 if let urlString = item.string(forType: kUTTypeURL as String) {
-                    wvc.loadURL(text: urlString)
+                    self.load(URLRequest(url: URL(string: urlString)!))
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    wvc.loadURL(text: urlString)
+                    guard var itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
+                        self.load(URLRequest(url: URL(string: urlString)!))
+                        continue
+                    }
+                    
+                    //  Resolve alias before bookmarking
+                    if let original = (itemURL as NSURL).resolvedFinderAlias() { itemURL = original }
+
+                    if appDelegate.storeBookmark(url: itemURL as URL) {
+                    // DON'T use self.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
+                    // instead we need to load requests *and* utilize the exception handler
+                        self.load(URLRequest(url: itemURL))
+                        (self.window?.windowController?.document as! Document).update(to: itemURL, ofType: itemURL.lastPathComponent)
+                     }
                 }
                 else
                 {
                     Swift.print("items has \(item.types)")
-                    return false
                 }
             }
         }
@@ -167,10 +106,6 @@ class MyWebView : WKWebView {
 //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
         }
         return true
-    }
-    
-    override func concludeDragOperation(_ sender: NSDraggingInfo?) {
-        Swift.print("concludeDragOperation")
     }
     
     //  MARK: Context Menu
@@ -371,12 +306,8 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             object: nil)
 
         // Initialize
-        let configiuration = WKWebViewConfiguration.init()
-        webView = MyWebView.init(frame: view.bounds, configuration: configiuration)
-
-        // Layout webview
-        view.addSubview(webView)
-        fit(webView, parentView: view)
+//        view.addSubview(webView)
+//        fit(webView, parentView: view)
         
         webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
         
@@ -399,26 +330,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: NSKeyValueObservingOptions.new, context: nil)
 
         //  Intercept Finder drags
-        let types = [kUTTypeData as String,
-                     kUTTypeURL as String,
-                     NSDictionaryControllerKeyValuePair.className(),
-                     PlayItem.className(),
-                     NSFilenamesPboardType,
-                     NSFilesPromisePboardType,
-                     NSURLPboardType,
-                     NSStringPboardType,
-                     NSPDFPboardType,
-                     NSTIFFPboardType,
-                     NSRTFPboardType,
-                     NSRTFDPboardType,
-                     NSHTMLPboardType,
-                     NSTabularTextPboardType,
-                     NSFontPboardType,
-                     NSRulerPboardType,
-                     NSMultipleTextSelectionPboardType,
-                     NSPasteboardTypeFindPanelSearchOptions]
-
-        webView.register(forDraggedTypes: types)
+        webView.register(forDraggedTypes: [NSURLPboardType])
 
         clear()
     }
@@ -440,15 +352,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             (hwc as! HeliumPanelController).documentViewDidLoad()
         }
         
-/*        if videoFileReferencedURL {
-            let newSize = webView.bounds.size
-            let aspect = webSize.height / webSize.width
-//            let magnify = newSize.width / webSize.width
-            let newHeight = newSize.width * aspect
-            let adjSize = NSMakeSize(newSize.width-1,newHeight-1)
-//            webView.setMagnification((magnify > 1 ? magnify : 1), centeredAt: NSMakePoint(adjSize.width/2.0, adjSize.height/2.0))
-            view.setBoundsSize(adjSize)
-        }*/
         updateTrackingAreas()
     }
 
@@ -538,18 +441,18 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
 
     internal func loadURL(url: URL) {
-        webView.loadNext(url: url)
+        webView.next(url: url)
     }
 
     internal func loadURL(urlFileURL: Notification) {
         if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
             if info["hwc"] as? NSWindowController == self.view.window?.windowController {
-                webView.loadNext(url: fileURL as! URL)
+                loadURL(url: fileURL as! URL)
             }
             else
             {
                 //  load new window with URL
-                webView.loadNext(url: urlFileURL.object as! URL)
+                loadURL(url: urlFileURL.object as! URL)
             }
         }
     }
@@ -582,8 +485,8 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         loadURL(text: UserSettings.homePageURL.value)
     }
 
-    var webView : MyWebView!
-    var webSize = CGSize(width: 0,height: 0)
+	@IBOutlet var webView: MyWebView!
+	var webSize = CGSize(width: 0,height: 0)
     
     // Redirect Hulu and YouTube to pop-out videos
     func webView(_ webView: WKWebView,
@@ -623,7 +526,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         Swift.print("webView:didFinishLoad:")
     }
     
-    var videoFileReferencedURL = false
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         if keyPath == "estimatedProgress",
@@ -633,7 +535,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                 let percent = progress * 100
                 var title = NSString(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
-                    videoFileReferencedURL = false
 
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
@@ -646,16 +547,22 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
                             //    if it's a video file, get and set window content size to its dimentions
                             if track.mediaType == AVMediaTypeVideo {
-/*                                let oldSize = webView.window?.contentView?.bounds.size
+                                let oldSize = webView.window?.contentView?.bounds.size
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
-                                if oldSize != webSize, var origin = self.webView.window?.frame.origin {
-                                    origin.y += ((oldSize?.height)! - webSize.height)
+                                if oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
+                                    var iterator = theme.constraints.makeIterator()
+                                    
+                                    while let constraint = iterator.next()
+                                    {
+                                        Swift.print("\(constraint.priority) \(constraint)")
+                                    }
+                                    
+                                    origin.y += ((oldSize?.height)! - webSize.height)/*
                                     webView.window?.setContentSize(webSize)
                                     webView.window?.setFrameOrigin(origin)
-                                    webView.bounds.size = webSize
-                                }*/
-                                videoFileReferencedURL = true
+                                    webView.bounds.size = webSize*/
+                                }
                             }
                             //  If we have save attributes restore them
                             self.restoreSettings(title as String)
