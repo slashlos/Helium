@@ -277,7 +277,7 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Open" id="wjR-Gf-o9v">
                                                 <items>
-                                                    <menuItem title="Window" keyEquivalent="n" id="DR8-hJ-Dgj">
+                                                    <menuItem title="New Window" keyEquivalent="n" id="DR8-hJ-Dgj">
                                                         <connections>
                                                             <action selector="newDocument:" target="Ady-hI-5gd" id="uDc-Ar-nDl"/>
                                                         </connections>
