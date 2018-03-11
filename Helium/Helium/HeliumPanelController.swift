@@ -30,7 +30,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     // MARK: Window lifecycle
     override func windowDidLoad() {
-        panel.standardWindowButton(.closeButton)?.image = NSImage.init()
+        nullImage = NSImage.init()
+        closeButton = window?.standardWindowButton(.closeButton)
+        closeButtonImage = closeButton?.image
+        updateTrackingAreas(true)
+
+        panel.standardWindowButton(.closeButton)?.image = nullImage
         panel.isFloatingPanel = true
         
         NotificationCenter.default.addObserver(
@@ -73,9 +78,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         self.webViewController.webView.stopLoading()
+        updateTrackingAreas(false)
     }
     
     // MARK:- Mouse events
+    var closeButton : NSButton?
+    var closeButtonImage : NSImage?
+    var nullImage : NSImage?
+    var trackingTag: NSTrackingRectTag?
+    
+    func updateTrackingAreas(_ establish : Bool) {
+        if let tag = trackingTag {
+            closeButton?.removeTrackingRect(tag)
+        }
+        if establish {
+            trackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+        }
+    }
+
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard()
         
@@ -101,6 +121,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
             updateTitleBar(didChange: true)
         }
+        if trackingTag == theEvent.trackingNumber {
+            closeButton?.image = closeButtonImage
+        }
     }
     
     override func mouseExited(with theEvent: NSEvent) {
@@ -109,6 +132,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         updateTranslucency()
         if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
             updateTitleBar(didChange: true)
+        }
+        if trackingTag == theEvent.trackingNumber {
+            closeButton?.image = nullImage
         }
     }
     
