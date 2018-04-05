@@ -47,8 +47,33 @@ class MyWebView : WKWebView {
     
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
+        let newWindows = UserSettings.createNewWindows.value
         let appDelegate = NSApp.delegate as! AppDelegate
         var nextURL = url
+
+        //  Pick off request (non-file) urls first
+        if !url.isFileURL {
+            if newWindows && doc != nil {
+                do
+                {
+                    let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+                    let oldWindow = self.window
+                    let newWindow = next.windowControllers.first?.window
+                    (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: url))
+                    newWindow?.offsetFromWindow(oldWindow!)
+                }
+                catch let error {
+                    NSApp.presentError(error)
+                    Swift.print("Yoink, unable to create new url doc for (\(url))")
+                    return
+                }
+            }
+            else
+            {
+                self.load(URLRequest(url: url))
+            }
+            return
+        }
         
         //  Resolve alias before bookmarking
         if let original = (nextURL as NSURL).resolvedFinderAlias() { nextURL = original }
@@ -69,6 +94,8 @@ class MyWebView : WKWebView {
     }
     // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+//        let homeURL = FileManager.default.homeDirectoryForCurrentUser
+//        let rootURL = URL.init(string: "file:///")
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
 
@@ -90,7 +117,8 @@ class MyWebView : WKWebView {
                     if appDelegate.storeBookmark(url: itemURL as URL) {
                     // DON'T use self.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
                     // instead we need to load requests *and* utilize the exception handler
-                        self.load(URLRequest(url: itemURL))
+//                        self.load(URLRequest(url: itemURL))
+                        self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
                         (self.window?.windowController?.document as! Document).update(to: itemURL, ofType: itemURL.lastPathComponent)
                      }
                 }
