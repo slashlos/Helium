@@ -87,6 +87,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.createNewWindows.value = (sender.state == NSOffState)
     }
     
+    var fullScreen : NSRect? = nil
+    @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
+        if let keyWindow = NSApp.keyWindow {
+            if let last_rect = fullScreen {
+                keyWindow.setFrame(last_rect, display: true, animate: true)
+                fullScreen = nil;
+            }
+            else
+            {
+                fullScreen = keyWindow.frame
+                keyWindow.setFrame(NSScreen.main()!.visibleFrame, display: true, animate: true)
+            }
+        }
+    }
+
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
