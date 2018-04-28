@@ -331,6 +331,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     var histories = Array<PlayItem>()
     var defaults = UserDefaults.standard
+    var disableDocumentReOpening = false
+    var hiddenWindows = Dictionary<String, Any>()
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        let reopenMessage = disableDocumentReOpening ? "do not reopen doc(s)" : "reopen doc(s)"
+        let hasVisibleDocs = flag ? "has doc(s)" : "no doc(s)"
+        Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
+        return !disableDocumentReOpening
+    }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
 
