@@ -343,6 +343,49 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
 
+        //  OPTION at startup disables reopening documents
+        if let currentEvent = NSApp.currentEvent {
+            let flags = currentEvent.modifierFlags
+            disableDocumentReOpening = flags.contains(.option)
+        }
+
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        disableDocumentReOpening = flags.contains(.option)
+
+        // Monitor CTRL+OPTION+COMMAND + SPACE to toggle windows' alpha value
+        NSEvent.addLocalMonitorForEvents(matching: NSEventMask.keyDown) { (event) -> NSEvent? in
+            
+            if event.modifierFlags.contains([.command,.control,.option]) && event.charactersIgnoringModifiers?.compare(" ") == .orderedSame {
+                if self.hiddenWindows.count > 0 {
+                    Swift.print("show all windows")
+                    for name in self.hiddenWindows.keys {
+                        let dict = self.hiddenWindows[name] as! Dictionary<String,Any>
+                        let alpha = dict["alpha"]
+                        let win = dict["window"] as! NSWindow
+                        Swift.print("show \(name) to \(String(describing: alpha))")
+                        win.alphaValue = alpha as! CGFloat
+                    }
+                    self.hiddenWindows = Dictionary<String,Any>()
+                }
+                else
+                {
+                    Swift.print("hide all windows")
+                    for win in NSApp.windows {
+                        let name = NSStringFromRect(win.frame)
+                        let alpha = win.alphaValue
+                        var dict = Dictionary <String,Any>()
+                        dict["alpha"] = alpha
+                        dict["window"] = win
+                        self.hiddenWindows[name] = dict
+                        Swift.print("hide \(name) to \(String(describing: alpha))")
+                        win.alphaValue = 0.01
+                    }
+                }
+                return nil
+            }
+            return event
+        }
+        
         // Restore history name change
         if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
             UserSettings.HistoryName.value = historyName as! String
