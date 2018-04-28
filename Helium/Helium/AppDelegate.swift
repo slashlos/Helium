@@ -235,7 +235,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         )
     }
-    internal func userAlertMessage(_ message: String, info: String?) {
+    func userAlertMessage(_ message: String, info: String?) {
         let alert = NSAlert()
         alert.messageText = message
         alert.addButton(withTitle: "OK")

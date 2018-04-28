@@ -437,7 +437,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             if list.count > 0 {
                 super.dismiss(sender)
-                //  Try to restore item at it's last known location
+                
+                //  Do not exceed program / user specified throttle
+                if list.count > UserSettings.playlistThrottle.value {
+                    let message = String(format: "Playlist's %ld items exceeds throttle.",
+                                         list.count)
+                    let infoMsg = String(format: "User defaults: %@ = %ld",
+                                         UserSettings.playlistThrottle.keyPath,
+                                         UserSettings.playlistThrottle.value)
+                    appDelegate.userAlertMessage(message, info: infoMsg)
+                    return
+                }
+                
+                //  Try to restore item at its last known location
                 print("play \(selectedPlaylist) \(list.count)")
                 for (i,item) in list.enumerated() {
                     do {
