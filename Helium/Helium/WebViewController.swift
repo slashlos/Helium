@@ -144,13 +144,39 @@ class MyWebView : WKWebView {
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
         
-        //  Remove item(s) we do not or cannot support
-        for title in ["Enter Full Screen", "Enter Picture in Picture"] {
+        //  Remove item(s) we cannot support
+        for title in ["Enter Picture in Picture", "Download Video"] {
             if let item = menu.item(withTitle: title) {
                 menu.removeItem(item)
             }
         }
-        
+        //  Alter item(s) we want to support
+        for title in ["Enter Full Screen", "Open Video in New Window"] {
+            if let item = menu.item(withTitle: title) {
+                if item.title == "Enter Full Screen" {
+                    item.target = appDelegate
+                    item.action = #selector(appDelegate.toggleFullScreen(_:))
+                    item.keyEquivalent = "f"
+                }
+                else
+                if self.url != nil {
+                    item.representedObject = self.url
+                    item.target = appDelegate
+                    item.action = #selector(appDelegate.openVideoInNewWindowPress(_:))
+                }
+                else
+                {
+                    item.isEnabled = false
+                }
+                Swift.print("target: \(title) -> \(String(describing: item.action)) tag:\(item.tag)")
+            }
+        }
+        for title in ["Play", "Pause", "Mute", "Loop"] {
+            if let item = menu.item(withTitle: title) {
+                let state = item.state == NSOnState ? "yes" : "no"
+                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
+            }
+        }
         var item: NSMenuItem
 
         item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
@@ -332,10 +358,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
-
-        // Initialize
-//        view.addSubview(webView)
-//        fit(webView, parentView: view)
         
         webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
         
@@ -580,16 +602,16 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                 webSize = track.naturalSize
                                 if oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
                                     var iterator = theme.constraints.makeIterator()
-                                    
+                                    Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
                                     while let constraint = iterator.next()
                                     {
                                         Swift.print("\(constraint.priority) \(constraint)")
                                     }
                                     
-                                    origin.y += ((oldSize?.height)! - webSize.height)/*
+                                    origin.y += ((oldSize?.height)! - webSize.height)
                                     webView.window?.setContentSize(webSize)
                                     webView.window?.setFrameOrigin(origin)
-                                    webView.bounds.size = webSize*/
+                                    webView.bounds.size = webSize
                                 }
                             }
                             //  If we have save attributes restore them

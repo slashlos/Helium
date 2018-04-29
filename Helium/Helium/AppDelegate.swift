@@ -168,7 +168,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
     }
-    
+    internal func openVideoInNewWindow(_ newURL: URL) {
+        let newWindows = UserSettings.createNewWindows.value
+        UserSettings.createNewWindows.value = false
+        do {
+            let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
+            if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                hpc.webViewController.loadURL(text: newURL.absoluteString)
+            }
+        } catch let error {
+            NSApp.presentError(error)
+        }
+        UserSettings.createNewWindows.value = newWindows
+    }
+    @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
+        if let newURL = sender.representedObject {
+            self.openVideoInNewWindow(newURL as! URL)
+        }
+    }
     @IBAction func openLocationPress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.homePageURL.value,
@@ -186,17 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                 }
                                 else
                                 {
-                                    let newWindows = UserSettings.createNewWindows.value
-                                    UserSettings.createNewWindows.value = false
-                                    do {
-                                        let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
-                                        if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                                            hpc.webViewController.loadURL(text: newUrl)
-                                        }
-                                    } catch let error {
-                                        NSApp.presentError(error)
-                                    }
-                                    UserSettings.createNewWindows.value = newWindows
+                                    self.openVideoInNewWindow(URL.init(string: newUrl)!)
                                 }
                             }
         })
@@ -341,6 +348,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return !disableDocumentReOpening
     }
 
+    //  Local/global event monitor: CTRL+OPTION+COMMAND to toggle windows' alpha / audio values
+    //  https://stackoverflow.com/questions/41927843/global-modifier-key-press-detection-in-swift/41929189#41929189
+    var localKeyDownMonitor : Any? = nil
+    var globalKeyDownMonitor : Any? = nil
+
+    func keyDownMonitor(event: NSEvent) -> Bool {
+        switch event.modifierFlags.intersection(.deviceIndependentFlagsMask) {
+        case [.control, .option, .command]:
+            print("control-option-command keys are pressed")
+            if self.hiddenWindows.count > 0 {
+                Swift.print("show all windows")
+                for name in self.hiddenWindows.keys {
+                    let dict = self.hiddenWindows[name] as! Dictionary<String,Any>
+                    let alpha = dict["alpha"]
+                    let win = dict["window"] as! NSWindow
+                    Swift.print("show \(name) to \(String(describing: alpha))")
+                    win.alphaValue = alpha as! CGFloat
+                }
+                self.hiddenWindows = Dictionary<String,Any>()
+            }
+            else
+            {
+                Swift.print("hide all windows")
+                for win in NSApp.windows {
+                    let name = NSStringFromRect(win.frame)
+                    let alpha = win.alphaValue
+                    var dict = Dictionary <String,Any>()
+                    dict["alpha"] = alpha
+                    dict["window"] = win
+                    self.hiddenWindows[name] = dict
+                    Swift.print("hide \(name) to \(String(describing: alpha))")
+                    win.alphaValue = 0.01
+                }
+            }
+            return true
+        default:
+            return false
+        }
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
 
         //  OPTION at startup disables reopening documents
@@ -352,40 +399,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
         disableDocumentReOpening = flags.contains(.option)
 
-        // Monitor CTRL+OPTION+COMMAND + SPACE to toggle windows' alpha value
-        NSEvent.addLocalMonitorForEvents(matching: NSEventMask.keyDown) { (event) -> NSEvent? in
-            
-            if event.modifierFlags.contains([.command,.control,.option]) && event.charactersIgnoringModifiers?.compare(" ") == .orderedSame {
-                if self.hiddenWindows.count > 0 {
-                    Swift.print("show all windows")
-                    for name in self.hiddenWindows.keys {
-                        let dict = self.hiddenWindows[name] as! Dictionary<String,Any>
-                        let alpha = dict["alpha"]
-                        let win = dict["window"] as! NSWindow
-                        Swift.print("show \(name) to \(String(describing: alpha))")
-                        win.alphaValue = alpha as! CGFloat
-                    }
-                    self.hiddenWindows = Dictionary<String,Any>()
-                }
-                else
-                {
-                    Swift.print("hide all windows")
-                    for win in NSApp.windows {
-                        let name = NSStringFromRect(win.frame)
-                        let alpha = win.alphaValue
-                        var dict = Dictionary <String,Any>()
-                        dict["alpha"] = alpha
-                        dict["window"] = win
-                        self.hiddenWindows[name] = dict
-                        Swift.print("hide \(name) to \(String(describing: alpha))")
-                        win.alphaValue = 0.01
-                    }
-                }
-                return nil
-            }
-            return event
+        // Local/Global Monitor
+        _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
+        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> Void in
+            _ = self.keyDownMonitor(event: event)
+        }
+        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> NSEvent? in
+            return self.keyDownMonitor(event: event) ? nil : event
+        }
+
+        // Restore history name change
+        if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
+            UserSettings.HistoryName.value = historyName as! String
         }
         
+        // Load histories from defaults
+        if let items = defaults.array(forKey: UserSettings.HistoryList.keyPath) {
+            for playitem in items {
+                let item = playitem as! Dictionary <String,AnyObject>
+                let name = item[k.name] as! String
+                let path = item[k.link] as! String
+                let time = item[k.time] as? TimeInterval
+                let link = URL.init(string: path)
+                let rank = item[k.rank] as! Int
+                let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                
+                // Non-visible (tableView) cells
+                temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                temp.label = item[k.label]?.boolValue ?? false
+                temp.hover = item[k.hover]?.boolValue ?? false
+                temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                temp.trans = item[k.trans]?.intValue ?? 0
+                temp.refresh()
+                
+                histories.append(temp)
+            }
+        }
+
         // Restore history name change
         if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
             UserSettings.HistoryName.value = historyName as! String
@@ -418,6 +468,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
+        
+        //  Forget key down monitoring
+        NSEvent.removeMonitor(localKeyDownMonitor!)
+        NSEvent.removeMonitor(globalKeyDownMonitor!)
         
         //  Save sandbox bookmark urls when necessary
         if isSandboxed() != saveBookmarks() {
@@ -879,7 +933,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Swift.print ("? \(bookmark.key)")
             return false
         }
-        Swift.print ("+ \(bookmark.key)")
+//        Swift.print ("+ \(bookmark.key)")
         return true
     }
 }
