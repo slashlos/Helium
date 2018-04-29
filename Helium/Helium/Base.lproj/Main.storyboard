@@ -457,17 +457,17 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Zoom" id="91W-6v-hBY">
                                                 <items>
-                                                    <menuItem title="Zoom In" keyEquivalent="+" id="x5u-Za-He5">
+                                                    <menuItem title="In" keyEquivalent="+" id="x5u-Za-He5">
                                                         <connections>
                                                             <action selector="zoomIn:" target="Ady-hI-5gd" id="8DU-pG-x48"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Zoom Out" keyEquivalent="-" id="oZd-ZE-I3d">
+                                                    <menuItem title="Out" keyEquivalent="-" id="oZd-ZE-I3d">
                                                         <connections>
                                                             <action selector="zoomOut:" target="Ady-hI-5gd" id="B27-BH-sc0"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Reset Zoom Level" keyEquivalent="=" id="CkG-jI-gbw">
+                                                    <menuItem title="Reset" keyEquivalent="=" id="CkG-jI-gbw">
                                                         <connections>
                                                             <action selector="resetZoomLevel:" target="Ady-hI-5gd" id="fjs-3Q-hPk"/>
                                                         </connections>
