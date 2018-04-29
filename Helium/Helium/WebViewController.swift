@@ -137,6 +137,29 @@ class MyWebView : WKWebView {
     }
     
     //  MARK: Context Menu
+    //
+    //  Intercepted actions; capture state needed for avToggle()
+    var playPressMenuItem = NSMenuItem()
+    @IBAction func playActionPress(_ sender: NSMenuItem) {
+//        Swift.print("\(playPressMenuItem.title) -> target:\(String(describing: playPressMenuItem.target)) action:\(String(describing: playPressMenuItem.action)) tag:\(playPressMenuItem.tag)")
+        _ = playPressMenuItem.target?.perform(playPressMenuItem.action, with: playPressMenuItem.representedObject)
+        //  this releases original menu item
+        sender.representedObject = self
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumItemAction"), object: sender)
+        NotificationCenter.default.post(notif)
+    }
+    
+    var mutePressMenuItem = NSMenuItem()
+    @IBAction func muteActionPress(_ sender: NSMenuItem) {
+//        Swift.print("\(mutePressMenuItem.title) -> target:\(String(describing: mutePressMenuItem.target)) action:\(String(describing: mutePressMenuItem.action)) tag:\(mutePressMenuItem.tag)")
+        _ = mutePressMenuItem.target?.perform(mutePressMenuItem.action, with: mutePressMenuItem.representedObject)
+        //  this releases original menu item
+        sender.representedObject = self
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumItemAction"), object: sender)
+        NotificationCenter.default.post(notif)
+    }
+    
+    //
     //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
@@ -153,6 +176,7 @@ class MyWebView : WKWebView {
         //  Alter item(s) we want to support
         for title in ["Enter Full Screen", "Open Video in New Window"] {
             if let item = menu.item(withTitle: title) {
+//                Swift.print("old: \(title) -> target:\(String(describing: item.target)) action:\(String(describing: item.action)) tag:\(item.tag)")
                 if item.title == "Enter Full Screen" {
                     item.target = appDelegate
                     item.action = #selector(appDelegate.toggleFullScreen(_:))
@@ -168,13 +192,37 @@ class MyWebView : WKWebView {
                 {
                     item.isEnabled = false
                 }
-                Swift.print("target: \(title) -> \(String(describing: item.action)) tag:\(item.tag)")
+//                Swift.print("new: \(title) -> target:\(String(describing: item.target)) action:\(String(describing: item.action)) tag:\(item.tag)")
             }
         }
-        for title in ["Play", "Pause", "Mute", "Loop"] {
+        
+        //  Intercept these actions so we can record them for later
+        //  NOTE: cache original menu item so it does not disappear
+        for title in ["Play", "Pause", "Mute"] {
             if let item = menu.item(withTitle: title) {
-                let state = item.state == NSOnState ? "yes" : "no"
-                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
+                if item.title == "Mute" {
+                    mutePressMenuItem.action = item.action
+                    mutePressMenuItem.target = item.target
+                    mutePressMenuItem.title = item.title
+                    mutePressMenuItem.state = item.state
+                    mutePressMenuItem.tag = item.tag
+                    mutePressMenuItem.representedObject = item
+                    item.action = #selector(self.muteActionPress(_:))
+                    item.target = self
+                }
+                else
+                {
+                    playPressMenuItem.action = item.action
+                    playPressMenuItem.target = item.target
+                    playPressMenuItem.title = item.title
+                    playPressMenuItem.state = item.state
+                    playPressMenuItem.tag = item.tag
+                    playPressMenuItem.representedObject = item
+                    item.action = #selector(self.playActionPress(_:))
+                    item.target = self
+                }
+//                let state = item.state == NSOnState ? "yes" : "no"
+//                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
             }
         }
         var item: NSMenuItem
