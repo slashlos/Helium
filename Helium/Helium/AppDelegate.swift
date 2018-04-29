@@ -336,6 +336,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    var itemActions = Dictionary<String, Any>()
     var histories = Array<PlayItem>()
     var defaults = UserDefaults.standard
     var disableDocumentReOpening = false
@@ -463,7 +464,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 histories.append(temp)
             }
         }
-/* NYI  //  Register our URL protocol(s)
+        
+        //  Remember item actions; use when toggle audio/video
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleItemAction(_:)),
+            name: NSNotification.Name(rawValue: "HeliumItemAction"),
+            object: nil)
+
+        /* NYI  //  Register our URL protocol(s)
         URLProtocol.registerClass(HeliumURLProtocol.self) */
     }
 
@@ -555,6 +564,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
+    @objc fileprivate func clearItemAction(_ notification: Notification) {
+        if let itemURL = notification.object as? URL {
+            itemActions[itemURL.absoluteString] = nil
+        }
+    }
+    @objc fileprivate func handleItemAction(_ notification: Notification) {
+        if let item = notification.object as? NSMenuItem {
+            let webView: MyWebView = item.representedObject as! MyWebView
+            let name = webView.url?.absoluteString
+            var dict : Dictionary<String,Any> = itemActions[name!] as? Dictionary<String,Any> ?? Dictionary<String,Any>()
+            itemActions[name!] = dict
+            if item.title == "Mute" {
+                dict["mute"] = item.state == NSOffState
+            }
+            else
+            {
+                dict["play"] = item.title == "Play"
+            }
+            //  Cache item for its target/action we use later
+            dict["item"] = item
+            Swift.print("action[\(String(describing: name))] -> \(dict)")
+        }
+    }
+
     /// Shows alert asking user to input user agent string
     /// Process response locally, validate, dispatch via supplied handler
     func didRequestUserAgent(_ strings: RequestUserStrings,
