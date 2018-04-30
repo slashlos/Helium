@@ -360,12 +360,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             print("control-option-command keys are pressed")
             if self.hiddenWindows.count > 0 {
                 Swift.print("show all windows")
-                for name in self.hiddenWindows.keys {
-                    let dict = self.hiddenWindows[name] as! Dictionary<String,Any>
+                for frame in self.hiddenWindows.keys {
+                    let dict = self.hiddenWindows[frame] as! Dictionary<String,Any>
                     let alpha = dict["alpha"]
                     let win = dict["window"] as! NSWindow
-                    Swift.print("show \(name) to \(String(describing: alpha))")
+                    Swift.print("show \(frame) to \(String(describing: alpha))")
                     win.alphaValue = alpha as! CGFloat
+                    if let path = dict["name"], let actions = itemActions[path as! String]
+                    {
+                        if let action = (actions as! Dictionary<String,Any>)["mute"] {
+                            let item = (action as! Dictionary<String,Any>)["item"] as! NSMenuItem
+                            Swift.print("action \(item)")
+                        }
+                        if let action = (actions as! Dictionary<String,Any>)["play"] {
+                            let item = (action as! Dictionary<String,Any>)["item"] as! NSMenuItem
+                            Swift.print("action \(item)")
+                        }
+                    }
                 }
                 self.hiddenWindows = Dictionary<String,Any>()
             }
@@ -373,13 +384,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             {
                 Swift.print("hide all windows")
                 for win in NSApp.windows {
-                    let name = NSStringFromRect(win.frame)
+                    let frame = NSStringFromRect(win.frame)
                     let alpha = win.alphaValue
                     var dict = Dictionary <String,Any>()
                     dict["alpha"] = alpha
                     dict["window"] = win
-                    self.hiddenWindows[name] = dict
-                    Swift.print("hide \(name) to \(String(describing: alpha))")
+                    if let wvc = win.contentView?.subviews.first as? MyWebView, let url = wvc.url {
+                        dict["name"] = url.absoluteString
+                    }
+                    self.hiddenWindows[frame] = dict
+                    Swift.print("hide \(frame) to \(String(describing: alpha))")
                     win.alphaValue = 0.01
                 }
             }
@@ -957,8 +971,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         catch let error
         {
-            NSApp.presentError(error)
-            Swift.print ("! \(bookmark.key)")
+            Swift.print("! \(bookmark.key) \n\(error.localizedDescription)")
             return false
         }
         
