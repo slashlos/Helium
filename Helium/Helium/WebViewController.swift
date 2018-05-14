@@ -105,8 +105,13 @@ class MyWebView : WKWebView {
                     self.load(URLRequest(url: URL(string: urlString)!))
                 }
                 else
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    guard var itemURL = URL.init(string: urlString), itemURL.isFileURL, appDelegate.isSandboxed() else {
+                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/), var itemURL = URL.init(string: urlString) {
+                    
+                    if UserSettings.createNewWindows.value {
+                        _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
+                        continue
+                    }
+                    guard itemURL.isFileURL, appDelegate.isSandboxed() else {
                         self.load(URLRequest(url: URL(string: urlString)!))
                         continue
                     }
