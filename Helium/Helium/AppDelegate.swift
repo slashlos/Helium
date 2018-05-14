@@ -106,7 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
     
-    fileprivate func doOpenFile(fileURL: URL) -> Bool {
+    func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
@@ -136,8 +136,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             do {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
 
-                if let hwc = (doc as NSDocument).windowControllers.first {
-                    hwc.window?.orderFront(self)
+                if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
+                    if fromWindow != nil { window.offsetFromWindow(fromWindow!) }
+                    window.orderFront(self)
                     (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
                     status = true
                 }
@@ -364,7 +365,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     let dict = self.hiddenWindows[frame] as! Dictionary<String,Any>
                     let alpha = dict["alpha"]
                     let win = dict["window"] as! NSWindow
-                    Swift.print("show \(frame) to \(String(describing: alpha))")
+//                    Swift.print("show \(frame) to \(String(describing: alpha))")
                     win.alphaValue = alpha as! CGFloat
                     if let path = dict["name"], let actions = itemActions[path as! String]
                     {
@@ -393,7 +394,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                         dict["name"] = url.absoluteString
                     }
                     self.hiddenWindows[frame] = dict
-                    Swift.print("hide \(frame) to \(String(describing: alpha))")
+//                    Swift.print("hide \(frame) to \(String(describing: alpha))")
                     win.alphaValue = 0.01
                 }
             }
