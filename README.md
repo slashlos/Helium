@@ -6,7 +6,7 @@ Helium 3 it's a forked project of the floating browser window by [Jaden Geller](
 
 Helium 3 supports multiple windows as documents, each with their own
 settings as well as global preferences such as playlists and history, and
-supporting multiple windows via a Finder status icon menu.
+supporting multiple windows via a Finder status and dock icon menus.
 
 Helium 3 allows you to watch media, browse the web and do much more while
 you stay productive. Your content will never fall behind your other
