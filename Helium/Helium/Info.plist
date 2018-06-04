@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20180124.081045</string>
+	<string>20180520.200630</string>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>1656</integer>
+	<integer>2017</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -35,7 +35,18 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>*</string>
+				<string>avi</string>
+				<string>mp4</string>
+				<string>png</string>
+				<string>m4v</string>
+				<string>mov</string>
+				<string>webloc</string>
+				<string>tiff</string>
+				<string>tif</string>
+				<string>gif</string>
+				<string>jpg</string>
+				<string>jpeg</string>
+				<string>url</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
@@ -70,6 +81,8 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>CFBundleURLIconFile</key>
+			<string>Helium</string>
 			<key>CFBundleURLName</key>
 			<string>helium</string>
 			<key>CFBundleURLSchemes</key>
@@ -79,7 +92,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.1656</string>
+	<string>3.0.2017</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
@@ -90,7 +103,7 @@
 		<true/>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2017 Carlos D Santiago. All rights reserved.|Copyright © 2015 Jaden Geller. All rights reserved.</string>
+	<string>Copyright © 2018 Carlos D Santiago. All rights reserved.|Copyright © 2015 Jaden Geller. All rights reserved.</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
