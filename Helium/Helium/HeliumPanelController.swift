@@ -30,7 +30,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     // MARK: Window lifecycle
     override func windowDidLoad() {
-        panel.standardWindowButton(.closeButton)?.image = NSApp.applicationIconImage
+        nullImage = NSImage.init()
+        closeButton = window?.standardWindowButton(.closeButton)
+        closeButtonImage = closeButton?.image
+        updateTrackingAreas(true)
+
+        panel.standardWindowButton(.closeButton)?.image = nullImage
         panel.isFloatingPanel = true
         
         NotificationCenter.default.addObserver(
@@ -73,9 +78,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         self.webViewController.webView.stopLoading()
+        updateTrackingAreas(false)
     }
     
     // MARK:- Mouse events
+    var closeButton : NSButton?
+    var closeButtonImage : NSImage?
+    var nullImage : NSImage?
+    var trackingTag: NSTrackingRectTag?
+    
+    func updateTrackingAreas(_ establish : Bool) {
+        if let tag = trackingTag {
+            closeButton?.removeTrackingRect(tag)
+        }
+        if establish {
+            trackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+        }
+    }
+
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard()
         
@@ -84,32 +104,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         return .copy
     }
+    
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
-        let pboard = sender.draggingPasteboard()
-        let items = pboard.pasteboardItems
-
-        if (pboard.types?.contains(NSURLPboardType))! {
-            for item in items! {
-                if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.webViewController.loadURL(text: urlString)
-                }
-                else
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    let fileURL = NSURL.init(string: urlString)?.filePathURL
-                    self.webViewController.loadURL(url: fileURL!)
-                }
-                else
-                {
-                    Swift.print("items has \(item.types)")
-                }
-            }
-        }
-        else
-        if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
-            Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
-//            NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
-        }
-        return true
+        let webView = self.window?.contentView?.subviews.first as! MyWebView
+        
+        return webView.performDragOperation(sender)
     }
         
     override func mouseEntered(with theEvent: NSEvent) {
@@ -122,6 +121,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
             updateTitleBar(didChange: true)
         }
+        if trackingTag == theEvent.trackingNumber {
+            closeButton?.image = closeButtonImage
+        }
     }
     
     override func mouseExited(with theEvent: NSEvent) {
@@ -130,6 +132,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         updateTranslucency()
         if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
             updateTitleBar(didChange: true)
+        }
+        if trackingTag == theEvent.trackingNumber {
+            closeButton?.image = nullImage
         }
     }
     
@@ -359,27 +364,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     fileprivate func didRequestFile() {
         
         let open = NSOpenPanel()
-        open.allowsMultipleSelection = false
+        open.allowsMultipleSelection = true
         open.canChooseDirectories = false
         open.resolvesAliases = true
         open.canChooseFiles = true
         open.worksWhenModal = true
         open.beginSheetModal(for: self.window!, completionHandler: { (response: NSModalResponse) in
             if response == NSModalResponseOK {
-                if let url = open.url {
-                    Swift.print("Opening \(open.url!)")
+                let urls = open.urls
+                for url in urls {
                     self.webViewController.loadURL(url: url)
-/*                    do {
-                        let doc = try Document.init(contentsOf: url, ofType: url.pathExtension)
-                        
-                        if let hwc = (doc as NSDocument).windowControllers.first {
-                            hwc.window?.orderFront(self)
-                            (hwc.contentViewController as! WebViewController).loadURL(url: url)
-                        }
-                    } catch let error {
-                        print("*** Error open file: \(error.localizedDescription)")
-                    }
-*/
                 }
             }
         })

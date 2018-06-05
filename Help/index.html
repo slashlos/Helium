@@ -81,6 +81,18 @@ can be local to the current space.&ebsp; Note that windows cannot be moved acros
 <h4>Opacity</h4>
 <p>Helium can vary a document window opacity value from 10 .. 100%.  
 &ensp; This preference is document specific.</p>
+<h4>Playlist Throttle</h4>
+<p>Helium will limit the size of a playlist "play" to reduce runaway sessions.</p>
+<p>Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
+<PRE>
+1% defaults read -app Helium playlistThrottle
+32
+1% defaults write -app Helium playlistThrottle 16
+1% defaults read -app Helium playlistThrottle
+16
+</PRE>
+<p>It is <b>not</b> advised to choose a value too large.</p>
+
 <h4>Translucency</h4>
 <p>Helium can vary a document window opacity display when moving the pointer inside or
 outside a document window, never, or always.&ensp; This preference is document specific.&ensp; This video shows from top left clockwise, an auto-hide title, an always transluency, a mouse over, a mouse outside, and a never translucency

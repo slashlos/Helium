@@ -67,6 +67,6 @@ Note that all playlists saved can be done by the playlist panel Save button
 and automatically when the app terminates.
 
 History catalogs in order of viewing, all loaded URLs be they local, remote
-or web sites. This history is itself a "playlist" who name can be tailored,
-by altering its name in the playlist editor.
+or web sites. History is itself a "playlist" whose name can be tailored by 
+altering its name in the playlist editor.
 

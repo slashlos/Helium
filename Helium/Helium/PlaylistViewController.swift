@@ -437,7 +437,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             if list.count > 0 {
                 super.dismiss(sender)
-                //  Try to restore item at it's last known location
+                
+                //  Do not exceed program / user specified throttle
+                if list.count > UserSettings.playlistThrottle.value {
+                    let message = String(format: "Playlist's %ld items exceeds throttle.",
+                                         list.count)
+                    let infoMsg = String(format: "User defaults: %@ = %ld",
+                                         UserSettings.playlistThrottle.keyPath,
+                                         UserSettings.playlistThrottle.value)
+                    appDelegate.userAlertMessage(message, info: infoMsg)
+                    return
+                }
+                
+                //  Try to restore item at its last known location
                 print("play \(selectedPlaylist) \(list.count)")
                 for (i,item) in list.enumerated() {
                     do {
@@ -651,12 +663,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let options = [NSPasteboardURLReadingFileURLsOnlyKey : true,
                            NSPasteboardURLReadingContentsConformToTypesKey : [kUTTypeMovie as String]] as [String : Any]
             let items = pboard.readObjects(forClasses: [NSURL.classForCoder()], options: options)
+            let isSandboxed = appDelegate.isSandboxed()
+            
             if items!.count > 0 {
                 for item in items! {
                     if (item as! URL).isFileURL {
-                        let fileURL : NSURL? = (item as AnyObject).filePathURL!! as NSURL
+                        var fileURL : NSURL? = (item as AnyObject).filePathURL!! as NSURL
 
-                        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL! as URL) {
+                        //  Resolve alias before storing bookmark
+                        if let original = fileURL?.resolvedFinderAlias() { fileURL = original as NSURL }
+                        
+                        if isSandboxed != appDelegate.storeBookmark(url: fileURL! as URL) {
                             Swift.print("Yoink, unable to sandbox \(String(describing: fileURL)))")
                         }
 
@@ -664,14 +681,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         let track0 = AVURLAsset(url:fileURL! as URL, options:nil).tracks[0]
                         if track0.mediaType != AVMediaTypeVideo
                         {
-                            Swift.print("Yoink, unknown media:\(track0.mediaType) in \(String(describing: fileURL)))")
+                            Swift.print("Yoink, unknown media type: \(track0.mediaType) in \(String(describing: fileURL)))")
                         }
                     } else {
                         print("validate item -> \(item)")
                     }
                 }
-                if appDelegate.isSandboxed() {
-                    _ = appDelegate.saveBookmarks()
+                
+                if isSandboxed != appDelegate.saveBookmarks() {
+                    Swift.print("Yoink, unable to save bookmarks")
                 }
             }
             return .copy
@@ -770,6 +788,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //    We have a Finder drag-n-drop of file or location URLs ?
         if let items: Array<AnyObject> = pasteboard.readObjects(forClasses: [NSURL.classForCoder()], options: options) as Array<AnyObject>? {
             var play = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair
+            let isSandboxed = appDelegate.isSandboxed()
             var okydoKey = false
             
             if (play == nil) {
@@ -788,10 +807,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             
             for itemURL in items {
-                let fileURL : URL? = (itemURL as AnyObject).filePathURL
+                var fileURL : URL? = (itemURL as AnyObject).filePathURL
                 let dc = NSDocumentController.shared()
                 var item: PlayItem?
 
+                //  Resolve alias before storing bookmark
+                if let original = (fileURL! as NSURL).resolvedFinderAlias() { fileURL = original }
+                
                 // Capture playlist name from origin folder of 1st item
                 if !okydoKey {
                     let spec = fileURL?.deletingLastPathComponent
@@ -810,7 +832,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
                 else
                 {
-                    if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL! as URL) {
+                    if isSandboxed != appDelegate.storeBookmark(url: fileURL! as URL) {
                         Swift.print("Yoink, unable to sandbox \(String(describing: fileURL)))")
                     }
 
@@ -842,10 +864,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 newIndexOffset += 1
             }
             
-            if appDelegate.isSandboxed() {
-                _ = appDelegate.saveBookmarks()
-            }
-
             // Try to pick off whatever they sent us
             if items.count == 0 {
                 for element in pasteboard.pasteboardItems! {
@@ -874,7 +892,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         //  Resolve finder alias
                         if let original = (url! as NSURL).resolvedFinderAlias() { url = original }
                         
-                        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: url!) {
+                        if isSandboxed != appDelegate.storeBookmark(url: url!) {
                             Swift.print("Yoink, unable to sandbox \(String(describing: url)))")
                         }
                         
@@ -918,13 +936,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 let rows = IndexSet.init(integersIn: NSMakeRange(row, newIndexOffset).toRange() ?? 0..<0)
                 self.playitemTableView.selectRowIndexes(rows, byExtendingSelection: false)
             }
-            if appDelegate.isSandboxed() {
-                _ = appDelegate.saveBookmarks()
+            
+            if isSandboxed != appDelegate.saveBookmarks() {
+                Swift.print("Yoink, unable to save bookmarks")
             }
         }
         else
         {
-            Swift.print("WTF \(info)")
+            Swift.print("acceptDrop? \(info)")
             return false
         }
         return true

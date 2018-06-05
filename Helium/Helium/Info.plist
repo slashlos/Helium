@@ -9,7 +9,7 @@
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>1635</integer>
+	<integer>2017</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -35,7 +35,18 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>*</string>
+				<string>avi</string>
+				<string>mp4</string>
+				<string>png</string>
+				<string>m4v</string>
+				<string>mov</string>
+				<string>webloc</string>
+				<string>tiff</string>
+				<string>tif</string>
+				<string>gif</string>
+				<string>jpg</string>
+				<string>jpeg</string>
+				<string>url</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
@@ -70,6 +81,8 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>CFBundleURLIconFile</key>
+			<string>Helium</string>
 			<key>CFBundleURLName</key>
 			<string>helium</string>
 			<key>CFBundleURLSchemes</key>
@@ -79,7 +92,11 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
+<<<<<<< HEAD
 	<string>3.0.1635</string>
+=======
+	<string>3.0.2017</string>
+>>>>>>> e37786dfff1f9ec07e38fd7089a95dfad97bb083
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

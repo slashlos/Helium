@@ -288,7 +288,9 @@ class Document : NSDocument {
         if self.settings.time.value == 0.0 {
             let appDelegate = NSApp.delegate as! AppDelegate
             let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
-            self.settings.time.value = attr?[kMDItemDurationSeconds] as! Double
+            if let secs = attr?[kMDItemDurationSeconds] {
+                self.settings.time.value = secs as! TimeInterval
+            }
         }
         if self.settings.rect.value == NSZeroRect,
             let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),

@@ -10,20 +10,20 @@ Contributors:
     shdwprince - Panel.swift
     Viktor Oreshkin - UrlHelpers.swift
     https://travis-ci.org/stek29/Helium - Swift3
-    Carlos D. Santiago (slashlos)
+    Carlos D. Santiago (slashlos) - Version 3
 
 History
 
-  3-21, Oct 7, 2017
+  3, Feb 27, 2018
     Carlos D Santiago
       document windows,
-      playlists - global / shared, savable
+      playlists - global / shared, savable items
       balloon images https://pixabay.com
-      Finder status menu,
+      Finder status and dock menus,
+      local, global preferences,
       value transformers,
       user agent editing,
       document history,
-      auto hide title,
       contextual menu,
       about box
  

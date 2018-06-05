@@ -87,11 +87,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.createNewWindows.value = (sender.state == NSOffState)
     }
     
+    var fullScreen : NSRect? = nil
+    @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
+        if let keyWindow = NSApp.keyWindow {
+            if let last_rect = fullScreen {
+                keyWindow.setFrame(last_rect, display: true, animate: true)
+                fullScreen = nil;
+            }
+            else
+            {
+                fullScreen = keyWindow.frame
+                keyWindow.setFrame(NSScreen.main()!.visibleFrame, display: true, animate: true)
+            }
+        }
+    }
+
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
     
-    fileprivate func doOpenFile(fileURL: URL) -> Bool {
+    func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
@@ -113,54 +128,65 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         else
         {
+            let newWindows = UserSettings.createNewWindows.value
+            UserSettings.createNewWindows.value = false
+            var status = false
+            
             //  This could be anything so add/if a doc and initialize
             do {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
 
-                if let hwc = (doc as NSDocument).windowControllers.first {
-                    hwc.window?.orderFront(self)
+                if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
+                    if fromWindow != nil { window.offsetFromWindow(fromWindow!) }
+                    window.orderFront(self)
                     (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
-                    
-                    return true
-                }
-                else
-                {
-                    return false
+                    status = true
                 }
             } catch let error {
                 print("*** Error open file: \(error.localizedDescription)")
                 return false
             }
+            UserSettings.createNewWindows.value = newWindows
+            return status
         }
     }
 	@IBAction func openDocument(_ sender: Any) {
 		self.openFilePress(sender as AnyObject)
 	}
     @IBAction func openFilePress(_ sender: AnyObject) {
-        let app: AppDelegate = NSApp.delegate as! AppDelegate
         let open = NSOpenPanel()
-        open.allowsMultipleSelection = false
-        open.canChooseFiles = true
+        open.allowsMultipleSelection = true
         open.canChooseDirectories = false
+        open.resolvesAliases = true
+        open.canChooseFiles = true
         open.orderFront(sender)
         
         if open.runModal() == NSModalResponseOK {
-            if let url = open.url {
-                open.orderOut(sender)
-                guard isSandboxed(), url.isFileURL else {
-                    let fileURL = URL(string: url.absoluteString.removingPercentEncoding!)
-
-                    _ = self.doOpenFile(fileURL: fileURL!)
-                    return
-                }
-                guard app.storeBookmark(url: url) else {
-                    return
-                }
-                _ = self.doOpenFile(fileURL: open.url!)
+            open.orderOut(sender)
+            let urls = open.urls
+            for url in urls {
+                _ = self.doOpenFile(fileURL: url)
             }
         }
     }
-    
+    internal func openVideoInNewWindow(_ newURL: URL) {
+        let newWindows = UserSettings.createNewWindows.value
+        UserSettings.createNewWindows.value = false
+        do {
+            let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
+            if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                hpc.webViewController.loadURL(text: newURL.absoluteString)
+            }
+        } catch let error {
+            NSApp.presentError(error)
+        }
+        UserSettings.createNewWindows.value = newWindows
+    }
+    @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
+        if let newURL = sender.representedObject {
+            self.openVideoInNewWindow(newURL as! URL)
+        }
+    }
     @IBAction func openLocationPress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.homePageURL.value,
@@ -178,14 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                 }
                                 else
                                 {
-                                    do {
-                                        let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
-                                        if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                                            hpc.webViewController.loadURL(text: newUrl)
-                                        }
-                                    } catch let error {
-                                        NSApp.presentError(error)
-                                    }
+                                    self.openVideoInNewWindow(URL.init(string: newUrl)!)
                                 }
                             }
         })
@@ -224,7 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         )
     }
-    internal func userAlertMessage(_ message: String, info: String?) {
+    func userAlertMessage(_ message: String, info: String?) {
         let alert = NSAlert()
         alert.messageText = message
         alert.addButton(withTitle: "OK")
@@ -312,14 +331,126 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             name: NSNotification.Name(rawValue: "HeliumNewURL"),
             object: nil)
 
-        //  Load sandbox bookmark url
-        if self.isSandboxed() { _ = self.loadBookmarks() }
+        //  Load sandbox bookmark url when necessary
+        if self.isSandboxed() != self.loadBookmarks() {
+            Swift.print("Yoink, unable to load bookmarks")
+        }
     }
 
+    var itemActions = Dictionary<String, Any>()
     var histories = Array<PlayItem>()
     var defaults = UserDefaults.standard
+    var disableDocumentReOpening = false
+    var hiddenWindows = Dictionary<String, Any>()
 
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        let reopenMessage = disableDocumentReOpening ? "do not reopen doc(s)" : "reopen doc(s)"
+        let hasVisibleDocs = flag ? "has doc(s)" : "no doc(s)"
+        Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
+        return !disableDocumentReOpening
+    }
+
+    //  Local/global event monitor: CTRL+OPTION+COMMAND to toggle windows' alpha / audio values
+    //  https://stackoverflow.com/questions/41927843/global-modifier-key-press-detection-in-swift/41929189#41929189
+    var localKeyDownMonitor : Any? = nil
+    var globalKeyDownMonitor : Any? = nil
+
+    func keyDownMonitor(event: NSEvent) -> Bool {
+        switch event.modifierFlags.intersection(.deviceIndependentFlagsMask) {
+        case [.control, .option, .command]:
+            print("control-option-command keys are pressed")
+            if self.hiddenWindows.count > 0 {
+                Swift.print("show all windows")
+                for frame in self.hiddenWindows.keys {
+                    let dict = self.hiddenWindows[frame] as! Dictionary<String,Any>
+                    let alpha = dict["alpha"]
+                    let win = dict["window"] as! NSWindow
+//                    Swift.print("show \(frame) to \(String(describing: alpha))")
+                    win.alphaValue = alpha as! CGFloat
+                    if let path = dict["name"], let actions = itemActions[path as! String]
+                    {
+                        if let action = (actions as! Dictionary<String,Any>)["mute"] {
+                            let item = (action as! Dictionary<String,Any>)["item"] as! NSMenuItem
+                            Swift.print("action \(item)")
+                        }
+                        if let action = (actions as! Dictionary<String,Any>)["play"] {
+                            let item = (action as! Dictionary<String,Any>)["item"] as! NSMenuItem
+                            Swift.print("action \(item)")
+                        }
+                    }
+                }
+                self.hiddenWindows = Dictionary<String,Any>()
+            }
+            else
+            {
+                Swift.print("hide all windows")
+                for win in NSApp.windows {
+                    let frame = NSStringFromRect(win.frame)
+                    let alpha = win.alphaValue
+                    var dict = Dictionary <String,Any>()
+                    dict["alpha"] = alpha
+                    dict["window"] = win
+                    if let wvc = win.contentView?.subviews.first as? MyWebView, let url = wvc.url {
+                        dict["name"] = url.absoluteString
+                    }
+                    self.hiddenWindows[frame] = dict
+//                    Swift.print("hide \(frame) to \(String(describing: alpha))")
+                    win.alphaValue = 0.01
+                }
+            }
+            return true
+        default:
+            return false
+        }
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+
+        //  OPTION at startup disables reopening documents
+        if let currentEvent = NSApp.currentEvent {
+            let flags = currentEvent.modifierFlags
+            disableDocumentReOpening = flags.contains(.option)
+        }
+
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        disableDocumentReOpening = flags.contains(.option)
+
+        // Local/Global Monitor
+        _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
+        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> Void in
+            _ = self.keyDownMonitor(event: event)
+        }
+        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> NSEvent? in
+            return self.keyDownMonitor(event: event) ? nil : event
+        }
+
+        // Restore history name change
+        if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
+            UserSettings.HistoryName.value = historyName as! String
+        }
+        
+        // Load histories from defaults
+        if let items = defaults.array(forKey: UserSettings.HistoryList.keyPath) {
+            for playitem in items {
+                let item = playitem as! Dictionary <String,AnyObject>
+                let name = item[k.name] as! String
+                let path = item[k.link] as! String
+                let time = item[k.time] as? TimeInterval
+                let link = URL.init(string: path)
+                let rank = item[k.rank] as! Int
+                let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                
+                // Non-visible (tableView) cells
+                temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                temp.label = item[k.label]?.boolValue ?? false
+                temp.hover = item[k.hover]?.boolValue ?? false
+                temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                temp.trans = item[k.trans]?.intValue ?? 0
+                temp.refresh()
+                
+                histories.append(temp)
+            }
+        }
 
         // Restore history name change
         if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
@@ -348,11 +479,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 histories.append(temp)
             }
         }
+        
+        //  Remember item actions; use when toggle audio/video
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleItemAction(_:)),
+            name: NSNotification.Name(rawValue: "HeliumItemAction"),
+            object: nil)
+
+        /* NYI  //  Register our URL protocol(s)
+        URLProtocol.registerClass(HeliumURLProtocol.self) */
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        //  Save sandbox bookmark url
-        if self.isSandboxed() { _ = self.saveBookmarks() }
+        
+        //  Forget key down monitoring
+        NSEvent.removeMonitor(localKeyDownMonitor!)
+        NSEvent.removeMonitor(globalKeyDownMonitor!)
+        
+        //  Save sandbox bookmark urls when necessary
+        if isSandboxed() != saveBookmarks() {
+            Swift.print("Yoink, unable to save booksmarks")
+        }
 
         // Save histories to defaults
         var temp = Array<AnyObject>()
@@ -431,6 +579,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
+    @objc fileprivate func clearItemAction(_ notification: Notification) {
+        if let itemURL = notification.object as? URL {
+            itemActions[itemURL.absoluteString] = nil
+        }
+    }
+    @objc fileprivate func handleItemAction(_ notification: Notification) {
+        if let item = notification.object as? NSMenuItem {
+            let webView: MyWebView = item.representedObject as! MyWebView
+            let name = webView.url?.absoluteString
+            var dict : Dictionary<String,Any> = itemActions[name!] as? Dictionary<String,Any> ?? Dictionary<String,Any>()
+            itemActions[name!] = dict
+            if item.title == "Mute" {
+                dict["mute"] = item.state == NSOffState
+            }
+            else
+            {
+                dict["play"] = item.title == "Play"
+            }
+            //  Cache item for its target/action we use later
+            dict["item"] = item
+            Swift.print("action[\(String(describing: name))] -> \(dict)")
+        }
+    }
+
     /// Shows alert asking user to input user agent string
     /// Process response locally, validate, dispatch via supplied handler
     func didRequestUserAgent(_ strings: RequestUserStrings,
@@ -604,32 +776,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        let hwc = NSApp.keyWindow?.windowController
+        let newWindows = UserSettings.createNewWindows.value
 
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
-            let urlString = keyDirectObject.stringValue else {
+            let rawString = keyDirectObject.stringValue else {
                 return print("No valid URL to handle")
         }
 
         //  strip helium://
-        let index = urlString.index(urlString.startIndex, offsetBy: 9)
-        let url = urlString.substring(from: index)
-
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
-                                        object: url,
-                                        userInfo: ["hwc" : hwc as Any])
+        let index = rawString.index(rawString.startIndex, offsetBy: 9)
+        let urlString = rawString.substring(from: index)
+        
+        //  Handle new window here to narrow cast to new or current hwc
+        if !newWindows, let wc = NSApp.keyWindow?.windowController {
+            if let hwc : HeliumPanelController = wc as? HeliumPanelController {
+                (hwc.contentViewController as! WebViewController).loadURL(text: urlString)
+                return
+            }
+        }
+        //  Temporarily disable new windows as we'll create one now
+        UserSettings.createNewWindows.value = false
+        do
+        {
+            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            let hwc = next.windowControllers.first?.window?.windowController
+            (hwc?.contentViewController as! WebViewController).loadURL(text: urlString)
+        }
+        catch let error {
+            NSApp.presentError(error)
+            Swift.print("Yoink, unable to create new url doc for (\(urlString))")
+        }
+        UserSettings.createNewWindows.value = newWindows
+        return
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {
         if let selection = pboard.string(forType: NSPasteboardTypeString) {
-            let hwc = NSApp.keyWindow?.windowController
 
             // Notice: string will contain whole selection, not just the urls
             // So this may (and will) fail. It should instead find url in whole
             // Text somehow
-            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURL"),
-                                            object: selection,
-                                            userInfo: ["hwc" : hwc as Any])
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: selection)
         }
     }
     // MARK: Finder drops
@@ -703,23 +890,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func loadBookmarks() -> Bool
     {
-        let fm = FileManager.default
+        //  Ignore loading unless configured
+        guard isSandboxed() else
+        {
+            return false
+        }
 
+        let fm = FileManager.default
+        
         guard let path = bookmarkPath(), fm.fileExists(atPath: path) else {
             return saveBookmarks()
         }
         
         var restored = 0
         bookmarks = NSKeyedUnarchiver.unarchiveObject(withFile: path) as! [URL: Data]
-        for bookmark in bookmarks
+        var iterator = bookmarks.makeIterator()
+
+        while let bookmark = iterator.next()
         {
-            restored += (true == fetchBookmark(bookmark) ? 1 : 0)
+            //  stale bookmarks get dropped
+            if !fetchBookmark(bookmark) {
+                bookmarks.removeValue(forKey: bookmark.key)
+            }
+            else
+            {
+                restored += 1
+            }
         }
         return restored == bookmarks.count
-    }
+     }
     
     func saveBookmarks() -> Bool
     {
+        //  Ignore saving unless configured
+        guard isSandboxed() else
+        {
+            return false
+        }
+
         if let path = bookmarkPath() {
             return NSKeyedArchiver.archiveRootObject(bookmarks, toFile: path)
         }
@@ -731,24 +939,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func storeBookmark(url: URL) -> Bool
     {
-        var itemURL = url
-
-        //  Resolve alias before storing bookmark
-        if let origURL = (url as NSURL).resolvedFinderAlias() {
-            itemURL = origURL
-        }
-
         //  Peek to see if we've seen this key before
-        if let data = bookmarks[itemURL] {
+        if let data = bookmarks[url] {
             if self.fetchBookmark(key: url, value: data) {
-                Swift.print ("= \(url.absoluteString)")
+//                Swift.print ("= \(url.absoluteString)")
                 return true
             }
         }
         do
         {
             let options:URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
-            let data = try itemURL.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
+            let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
             bookmarks[url] = data
             return self.fetchBookmark(key: url, value: data)
         }
@@ -763,38 +964,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool
     {
         let restoredUrl: URL?
-        var isStale = false
+        var isStale = true
         
         do
         {
             restoredUrl = try URL.init(resolvingBookmarkData: bookmark.value, options: URL.BookmarkResolutionOptions.withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
         }
-        catch
+        catch let error
         {
-            Swift.print ("! \(bookmark.key)")
-            restoredUrl = nil
+            Swift.print("! \(bookmark.key) \n\(error.localizedDescription)")
+            return false
         }
         
-        if let url = restoredUrl
-        {
-            if isStale
-            {
-                Swift.print ("? \(bookmark.key)")
-            }
-            else
-            {
-                if !url.startAccessingSecurityScopedResource()
-                {
-                    Swift.print ("- \(url.path)")
-                }
-                else
-                {
-                    Swift.print ("+ \(bookmark.key)")
-                    isStale = false
-                }
-            }
+        guard !isStale, let url = restoredUrl, url.startAccessingSecurityScopedResource() else {
+            Swift.print ("? \(bookmark.key)")
+            return false
         }
-        return !isStale
+//        Swift.print ("+ \(bookmark.key)")
+        return true
     }
 }
 

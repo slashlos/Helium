@@ -14,6 +14,11 @@ import Carbon.HIToolbox
 
 class MyWebView : WKWebView {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+    override class func handlesURLScheme(_ urlScheme: String) -> Bool {
+        Swift.print("handleURLScheme: \(urlScheme)")
+        return true
+    }
+
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
@@ -40,11 +45,11 @@ class MyWebView : WKWebView {
         }
     }
     
-    func loadNext(url: URL) {
+    func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
         let newWindows = UserSettings.createNewWindows.value
         let appDelegate = NSApp.delegate as! AppDelegate
-        var fileURL = url
+        var nextURL = url
 
         //  Pick off request (non-file) urls first
         if !url.isFileURL {
@@ -71,64 +76,60 @@ class MyWebView : WKWebView {
         }
         
         //  Resolve alias before bookmarking
-        if let origURL = (fileURL as NSURL).resolvedFinderAlias() {
-            fileURL = origURL
-        }
+        if let original = (nextURL as NSURL).resolvedFinderAlias() { nextURL = original }
 
-        if appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: fileURL) {
-            Swift.print("Yoink, unable to sandbox \(fileURL)")
+        if url.isFileURL, appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: nextURL) {
+            Swift.print("Yoink, unable to sandbox \(nextURL)")
             return
         }
         
-        //  Wait unti we're running before window instantiation support
-        if !(self.url?.isFileURL)! && NSApp.isRunning {
-            self.loadFileURL(fileURL, allowingReadAccessTo: fileURL)
-            doc?.update(to: fileURL, ofType: fileURL.pathExtension)
-            return
-        }
-
-        //  We need or want a new window; if need, remove the old afterward
-        do {
-            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-            let oldWindow = doc?.windowControllers.first?.window
-            let newWindow = next.windowControllers.first?.window
-            (newWindow?.contentView?.subviews.first as! MyWebView).loadFileURL(fileURL, allowingReadAccessTo: fileURL)
-            if newWindows {
-                newWindow?.offsetFromWindow(oldWindow!)
-            }
-            else
-            {
-                newWindow?.overlayWindow(oldWindow!)
-                oldWindow?.performClose(self)
-            }
-            next.update(to: fileURL, ofType: fileURL.pathExtension)
-        }
-        catch let error
-        {
-            NSApp.presentError(error)
-            Swift.print("Yoink, unable to new doc (\(fileURL))")
-        }
+        self.load(URLRequest(url: nextURL))
+        doc?.update(to: nextURL, ofType: nextURL.pathExtension)
     }
     
+    // MARK: Drag and Drop - Before Release
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+//        Swift.print("draggingUpdated -> .copy")
+        return .copy
+    }
+    // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+//        let homeURL = FileManager.default.homeDirectoryForCurrentUser
+//        let rootURL = URL.init(string: "file:///")
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
-        
+
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
                 if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.loadNext(url: URL(string: urlString)!)
-                    continue
+                    self.load(URLRequest(url: URL(string: urlString)!))
                 }
-                
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    self.loadNext(url: URL(string: urlString)!)
-                    continue
+                else
+                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/), var itemURL = URL.init(string: urlString) {
+                    
+                    if UserSettings.createNewWindows.value {
+                        _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
+                        continue
+                    }
+                    guard itemURL.isFileURL, appDelegate.isSandboxed() else {
+                        self.load(URLRequest(url: URL(string: urlString)!))
+                        continue
+                    }
+                    
+                    //  Resolve alias before bookmarking
+                    if let original = (itemURL as NSURL).resolvedFinderAlias() { itemURL = original }
+
+                    if appDelegate.storeBookmark(url: itemURL as URL) {
+                    // DON'T use self.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
+                    // instead we need to load requests *and* utilize the exception handler
+//                        self.load(URLRequest(url: itemURL))
+                        self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
+                        (self.window?.windowController?.document as! Document).update(to: itemURL, ofType: itemURL.lastPathComponent)
+                     }
                 }
                 else
                 {
                     Swift.print("items has \(item.types)")
-                    continue
                 }
             }
         }
@@ -140,20 +141,95 @@ class MyWebView : WKWebView {
         return true
     }
     
-    //    Either by contextual menu, or status item, populate our app menu
+    //  MARK: Context Menu
+    //
+    //  Intercepted actions; capture state needed for avToggle()
+    var playPressMenuItem = NSMenuItem()
+    @IBAction func playActionPress(_ sender: NSMenuItem) {
+//        Swift.print("\(playPressMenuItem.title) -> target:\(String(describing: playPressMenuItem.target)) action:\(String(describing: playPressMenuItem.action)) tag:\(playPressMenuItem.tag)")
+        _ = playPressMenuItem.target?.perform(playPressMenuItem.action, with: playPressMenuItem.representedObject)
+        //  this releases original menu item
+        sender.representedObject = self
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumItemAction"), object: sender)
+        NotificationCenter.default.post(notif)
+    }
+    
+    var mutePressMenuItem = NSMenuItem()
+    @IBAction func muteActionPress(_ sender: NSMenuItem) {
+//        Swift.print("\(mutePressMenuItem.title) -> target:\(String(describing: mutePressMenuItem.target)) action:\(String(describing: mutePressMenuItem.action)) tag:\(mutePressMenuItem.tag)")
+        _ = mutePressMenuItem.target?.perform(mutePressMenuItem.action, with: mutePressMenuItem.representedObject)
+        //  this releases original menu item
+        sender.representedObject = self
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumItemAction"), object: sender)
+        NotificationCenter.default.post(notif)
+    }
+    
+    //
+    //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
         let dc = NSDocumentController.shared()
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
         
-        //  Remove item(s) we do not or cannot support
-        for title in ["Enter Full Screen", "Enter Picture in Picture"] {
+        //  Remove item(s) we cannot support
+        for title in ["Enter Picture in Picture", "Download Video"] {
             if let item = menu.item(withTitle: title) {
                 menu.removeItem(item)
             }
         }
+        //  Alter item(s) we want to support
+        for title in ["Enter Full Screen", "Open Video in New Window"] {
+            if let item = menu.item(withTitle: title) {
+//                Swift.print("old: \(title) -> target:\(String(describing: item.target)) action:\(String(describing: item.action)) tag:\(item.tag)")
+                if item.title == "Enter Full Screen" {
+                    item.target = appDelegate
+                    item.action = #selector(appDelegate.toggleFullScreen(_:))
+                    item.keyEquivalent = "f"
+                }
+                else
+                if self.url != nil {
+                    item.representedObject = self.url
+                    item.target = appDelegate
+                    item.action = #selector(appDelegate.openVideoInNewWindowPress(_:))
+                }
+                else
+                {
+                    item.isEnabled = false
+                }
+//                Swift.print("new: \(title) -> target:\(String(describing: item.target)) action:\(String(describing: item.action)) tag:\(item.tag)")
+            }
+        }
         
+        //  Intercept these actions so we can record them for later
+        //  NOTE: cache original menu item so it does not disappear
+        for title in ["Play", "Pause", "Mute"] {
+            if let item = menu.item(withTitle: title) {
+                if item.title == "Mute" {
+                    mutePressMenuItem.action = item.action
+                    mutePressMenuItem.target = item.target
+                    mutePressMenuItem.title = item.title
+                    mutePressMenuItem.state = item.state
+                    mutePressMenuItem.tag = item.tag
+                    mutePressMenuItem.representedObject = item
+                    item.action = #selector(self.muteActionPress(_:))
+                    item.target = self
+                }
+                else
+                {
+                    playPressMenuItem.action = item.action
+                    playPressMenuItem.target = item.target
+                    playPressMenuItem.title = item.title
+                    playPressMenuItem.state = item.state
+                    playPressMenuItem.tag = item.tag
+                    playPressMenuItem.representedObject = item
+                    item.action = #selector(self.playActionPress(_:))
+                    item.target = self
+                }
+//                let state = item.state == NSOnState ? "yes" : "no"
+//                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
+            }
+        }
         var item: NSMenuItem
 
         item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
@@ -161,11 +237,11 @@ class MyWebView : WKWebView {
         let subOpen = NSMenu()
         item.submenu = subOpen
 
-        item = NSMenuItem(title: "File", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "")
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Location", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "")
         item.target = hwc
         subOpen.addItem(item)
 
@@ -335,12 +411,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
-
-        // Layout webview
-        view.addSubview(webView)
-        fit(webView, parentView: view)
-
-        webView.frame = view.bounds
+        
         webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
         
         // Allow plug-ins such as silverlight
@@ -384,15 +455,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             (hwc as! HeliumPanelController).documentViewDidLoad()
         }
         
-        if videoFileReferencedURL {
-            let newSize = webView.bounds.size
-            let aspect = webSize.height / webSize.width
-            let magnify = newSize.width / webSize.width
-            let newHeight = newSize.width * aspect
-            let adjSize = NSMakeSize(newSize.width-1,newHeight-1)
-            webView.setMagnification((magnify > 1 ? magnify : 1), centeredAt: NSMakePoint(adjSize.width/2.0, adjSize.height/2.0))
-            view.setBoundsSize(adjSize)
-        }
         updateTrackingAreas()
     }
 
@@ -417,21 +479,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
     
     fileprivate func zoomIn() {
-        if !videoFileReferencedURL {
-            webView.magnification += 0.1
-        }
+        webView.magnification += 0.1
      }
     
     fileprivate func zoomOut() {
-        if !videoFileReferencedURL {
-            webView.magnification -= 0.1
-        }
+        webView.magnification -= 0.1
     }
     
     fileprivate func resetZoom() {
-        if !videoFileReferencedURL {
-            webView.magnification = 1
-        }
+        webView.magnification = 1
     }
 
     @IBAction fileprivate func reloadPress(_ sender: AnyObject) {
@@ -488,13 +544,18 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
 
     internal func loadURL(url: URL) {
-        webView.loadNext(url: url)
+        webView.next(url: url)
     }
 
     internal func loadURL(urlFileURL: Notification) {
         if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
             if info["hwc"] as? NSWindowController == self.view.window?.windowController {
-                webView.loadNext(url: fileURL as! URL)
+                loadURL(url: fileURL as! URL)
+            }
+            else
+            {
+                //  load new window with URL
+                loadURL(url: urlFileURL.object as! URL)
             }
         }
     }
@@ -527,25 +588,17 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         loadURL(text: UserSettings.homePageURL.value)
     }
 
-    var webView = MyWebView()
-    var webSize = CGSize(width: 0,height: 0)
-    var shouldRedirect: Bool {
-        get {
-            return !UserSettings.disabledMagicURLs.value
-        }
-    }
+	@IBOutlet var webView: MyWebView!
+	var webSize = CGSize(width: 0,height: 0)
     
     // Redirect Hulu and YouTube to pop-out videos
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if (navigationAction.request.url?.absoluteString.hasPrefix("file://"))! {
-            decisionHandler(WKNavigationActionPolicy.allow)
-            return
-        }
         
         guard !UserSettings.disabledMagicURLs.value,
-            let url = navigationAction.request.url else {
+            let url = navigationAction.request.url,
+            !((navigationAction.request.url?.absoluteString.hasPrefix("file://"))!) else {
                 decisionHandler(WKNavigationActionPolicy.allow)
                 return
         }
@@ -576,7 +629,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         Swift.print("webView:didFinishLoad:")
     }
     
-    var videoFileReferencedURL = false
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         if keyPath == "estimatedProgress",
@@ -586,14 +638,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                 let percent = progress * 100
                 var title = NSString(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
-                    videoFileReferencedURL = false
-
-                    if (url.isFileURL) {
-                        if let original = (url as NSURL).resolvedFinderAlias() {
-                            self.loadURL(url: original)
-                            return
-                        }
-                    }
 
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
                     NotificationCenter.default.post(notif)
@@ -609,13 +653,19 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                 let oldSize = webView.window?.contentView?.bounds.size
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
-                                if oldSize != webSize, var origin = self.webView.window?.frame.origin {
+                                if oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
+                                    var iterator = theme.constraints.makeIterator()
+                                    Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
+                                    while let constraint = iterator.next()
+                                    {
+                                        Swift.print("\(constraint.priority) \(constraint)")
+                                    }
+                                    
                                     origin.y += ((oldSize?.height)! - webSize.height)
                                     webView.window?.setContentSize(webSize)
                                     webView.window?.setFrameOrigin(origin)
                                     webView.bounds.size = webSize
                                 }
-                                videoFileReferencedURL = true
                             }
                             //  If we have save attributes restore them
                             self.restoreSettings(title as String)
