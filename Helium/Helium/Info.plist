@@ -9,7 +9,7 @@
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>2017</integer>
+	<integer>2025</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -92,11 +92,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-<<<<<<< HEAD
-	<string>3.0.1635</string>
-=======
-	<string>3.0.2017</string>
->>>>>>> e37786dfff1f9ec07e38fd7089a95dfad97bb083
+	<string>3.0.2025</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

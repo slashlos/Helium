@@ -57,17 +57,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Swift.print("Menu '\(menuItem.title)' clicked")
         }
     }
+    internal func syncAppMenuVisibility() {
+        if UserSettings.HideAppMenu.value {
+            NSStatusBar.system().removeStatusItem(appStatusItem)
+        }
+        else
+        {
+            appStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
+            appStatusItem.image = NSImage.init(named: "statusIcon")
+            appStatusItem.menu = appMenu
+        }
+    }
 	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
 		UserSettings.HideAppMenu.value = (sender.state == NSOffState)
-		if UserSettings.HideAppMenu.value {
-			NSStatusBar.system().removeStatusItem(appStatusItem)
-		}
-		else
-		{
-			appStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
-			appStatusItem.image = NSImage.init(named: "statusIcon")
-			appStatusItem.menu = appMenu
-		}
+        self.syncAppMenuVisibility()
 	}
     @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
@@ -487,6 +490,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             name: NSNotification.Name(rawValue: "HeliumItemAction"),
             object: nil)
 
+        //  Synchronize our app menu visibility
+        self.syncAppMenuVisibility()
+        
         /* NYI  //  Register our URL protocol(s)
         URLProtocol.registerClass(HeliumURLProtocol.self) */
     }
