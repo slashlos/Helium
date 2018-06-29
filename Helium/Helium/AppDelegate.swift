@@ -426,60 +426,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> NSEvent? in
             return self.keyDownMonitor(event: event) ? nil : event
         }
-
-        // Restore history name change
-        if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
-            UserSettings.HistoryName.value = historyName as! String
-        }
         
+        // Asynchronous code running on the low priority queue
         // Load histories from defaults
-        if let items = defaults.array(forKey: UserSettings.HistoryList.keyPath) {
-            for playitem in items {
-                let item = playitem as! Dictionary <String,AnyObject>
-                let name = item[k.name] as! String
-                let path = item[k.link] as! String
-                let time = item[k.time] as? TimeInterval
-                let link = URL.init(string: path)
-                let rank = item[k.rank] as! Int
-                let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                
-                // Non-visible (tableView) cells
-                temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                temp.label = item[k.label]?.boolValue ?? false
-                temp.hover = item[k.hover]?.boolValue ?? false
-                temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                temp.trans = item[k.trans]?.intValue ?? 0
-                temp.refresh()
-                
-                histories.append(temp)
+        DispatchQueue.global(qos: .utility).async {
+
+            // Restore history name change
+            if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
+                UserSettings.HistoryName.value = historyName as! String
             }
-        }
-
-        // Restore history name change
-        if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
-            UserSettings.HistoryName.value = historyName as! String
-        }
-        
-        // Load histories from defaults
-        if let items = defaults.array(forKey: UserSettings.HistoryList.keyPath) {
-            for playitem in items {
-                let item = playitem as! Dictionary <String,AnyObject>
-                let name = item[k.name] as! String
-                let path = item[k.link] as! String
-                let time = item[k.time] as? TimeInterval
-                let link = URL.init(string: path)
-                let rank = item[k.rank] as! Int
-                let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                
-                // Non-visible (tableView) cells
-                temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                temp.label = item[k.label]?.boolValue ?? false
-                temp.hover = item[k.hover]?.boolValue ?? false
-                temp.alpha = item[k.alpha]?.floatValue ?? 0.6
-                temp.trans = item[k.trans]?.intValue ?? 0
-                temp.refresh()
-
-                histories.append(temp)
+            
+            if let items = self.defaults.array(forKey: UserSettings.HistoryList.keyPath) {
+                for playitem in items {
+                    let item = playitem as! Dictionary <String,AnyObject>
+                    let name = item[k.name] as! String
+                    let path = item[k.link] as! String
+                    let time = item[k.time] as? TimeInterval
+                    let link = URL.init(string: path)
+                    let rank = item[k.rank] as! Int
+                    let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                    
+                    // Non-visible (tableView) cells
+                    temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                    temp.label = item[k.label]?.boolValue ?? false
+                    temp.hover = item[k.hover]?.boolValue ?? false
+                    temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                    temp.trans = item[k.trans]?.intValue ?? 0
+                    temp.refresh()
+                    
+                    self.histories.append(temp)
+                }
             }
         }
         
