@@ -117,9 +117,8 @@ class PlayItem : NSObject, NSCoding {
         self.refresh()
     }
     func refresh() {
-        if time == 0.0 {
-            let appDelegate = NSApp.delegate as! AppDelegate
-            if let attr = appDelegate.metadataDictionaryForFileAt(link.path) {
+        if time == 0.0, let appDelegate = NSApp.delegate {
+            if let attr = (appDelegate as! AppDelegate).metadataDictionaryForFileAt(link.path) {
                 time = attr[kMDItemDurationSeconds] as? Double ?? 0.0
             }
         }
