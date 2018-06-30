@@ -428,7 +428,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         
         // Asynchronous code running on the low priority queue
-        // Load histories from defaults
         DispatchQueue.global(qos: .utility).async {
 
             // Restore history name change
@@ -437,7 +436,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             
             if let items = self.defaults.array(forKey: UserSettings.HistoryList.keyPath) {
-                for playitem in items {
+                let keep = UserSettings.HistoryKeep.value
+
+                // Load histories from defaults up to their maximum
+                for playitem in items.suffix(keep) {
                     let item = playitem as! Dictionary <String,AnyObject>
                     let name = item[k.name] as! String
                     let path = item[k.link] as! String
@@ -484,9 +486,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Swift.print("Yoink, unable to save booksmarks")
         }
 
-        // Save histories to defaults
+        // Save histories to defaults up to their maxiumum
+        let keep = UserSettings.HistoryKeep.value
         var temp = Array<AnyObject>()
-        for playitem in histories {
+        for playitem in histories.suffix(keep) {
             //  Capture latest rect if this item's is zero and one is available
             playitem.refresh()
 
