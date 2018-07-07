@@ -110,11 +110,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
+        let newWindows = UserSettings.createNewWindows.value
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        if let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
+        if !newWindows, let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
 
             //  If it's a "h3w" type read it and load it into defaults
             if fileType == "h3w" {
@@ -131,7 +132,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         else
         {
-            let newWindows = UserSettings.createNewWindows.value
             UserSettings.createNewWindows.value = false
             var status = false
             
@@ -140,8 +140,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
 
                 if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
-                    if fromWindow != nil { window.offsetFromWindow(fromWindow!) }
-                    window.orderFront(self)
+                    window.offsetFromKeyWindow()
+                    window.makeKey()
                     (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
                     status = true
                 }
