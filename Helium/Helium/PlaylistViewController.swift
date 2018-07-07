@@ -385,6 +385,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     @IBAction func playPlaylist(_ sender: AnyObject) {
+        //  first window might be reused, others no
+        let newWindows = UserSettings.createNewWindows.value
+        
+        //  first responder tells us who called so dispatch
+        let whoAmI = self.view.window?.firstResponder
+
         //  Quietly, do not exceed program / user specified throttle
         let throttle = UserSettings.playlistThrottle.value
 
@@ -397,44 +403,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 NSApp.abortModal()
             }
         }
-
-        //  first responder tells us who called so dispatch
-        let whoAmI = self.view.window?.firstResponder
         
         switch whoAmI {
         case playitemTableView:
             Swift.print("We are in playitemTableView")
             for selectedPlayItem in (playitemArrayController.selectedObjects as! [PlayItem]).suffix(throttle) {
-                if (webViewController != nil) {
-                    webViewController?.loadURL(url: selectedPlayItem.link)
-                }
-                else
-                {
-                    //  if we have a panel send it there, else create new doc window
-                    if let first = NSApp.windows.first {
-                        if let hpc = first.windowController as? HeliumPanelController {
-                            hpc.webViewController.loadURL(url: selectedPlayItem.link)
-                            return
-                        }
-                    }
-                    
-                    //  This could be anything so add/if a doc and initialize
-                    do {
-                        let dc = NSDocumentController.shared()
-                        let fileURL = selectedPlayItem.link
-                        let fileType = fileURL.pathExtension
-                        
-                        let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
-                        doc.makeWindowControllers()
-                        dc.addDocument(doc)
-                        
-                        if let hwc = (doc as NSDocument).windowControllers.first {
-                            (hwc.contentViewController as! WebViewController).loadURL(url: (doc as Document).fileURL!)
-                            hwc.window?.orderFront(self)
-                        }
-                    } catch let error {
-                        print("*** Error open file: \(error.localizedDescription)")
-                    }
+                if appDelegate.doOpenFile(fileURL: selectedPlayItem.link) && !newWindows {
+                    UserSettings.createNewWindows.value = true
                 }
             }
             break
@@ -442,19 +417,25 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         case playlistTableView:
             Swift.print("We are in playlistTableView")
             for selectedPlaylist in (playlistArrayController.selectedObjects.first as? [NSDictionaryControllerKeyValuePair])! {
-                let list: Array<PlayItem> = ((selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
+                let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
                     return lhs.rank < rhs.rank
-                })).suffix(throttle)
+                })
+                
+                //  Do not exceed program / user specified throttle
+                if list.count > throttle {
+                    let message = String(format: "Limiting playlist's %ld items to throttle.", list.count)
+                    let infoMsg = String(format: "User defaults: %@ = %ld",
+                                         UserSettings.playlistThrottle.keyPath,
+                                         throttle)
+                    appDelegate.userAlertMessage(message, info: infoMsg)
+                }
                 
                 //  Try to restore item at its last known location
-                print("play \(selectedPlaylist) \(list.count)")
-                for (i,item) in list.enumerated() {
-                    do {
-                        _ = try Document.init(withPlayitem: item)
-                        print(String(format: "%3d %3d %@", i, item.rank, item.name))
-                    } catch let error {
-                        NSApp.presentError(error)
+                for (i,item) in (list.enumerated()).suffix(throttle) {
+                    if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
+                        UserSettings.createNewWindows.value = true
                     }
+                    print(String(format: "%3d %3d %@", i, item.rank, item.name))
                 }
             }
             break
@@ -462,6 +443,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         default:
             Swift.print("firstResponder: \(String(describing: whoAmI))")
             AudioServicesPlaySystemSound(1051);
+        }
+        
+        //  Restore user settings
+        if UserSettings.createNewWindows.value != newWindows {
+            UserSettings.createNewWindows.value = newWindows
         }
     }
     
