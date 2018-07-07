@@ -1088,5 +1088,20 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         return true
     }
+    
+    //  We cannot alter play time once time is entered; just set to zero to alter the rest
+    func tableView(_ tableView: NSTableView, shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
+        if tableView == playlistTableView {
+            return true
+        }
+        else
+        if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
+            return tableColumn?.identifier == "time" || (item as! PlayItem).time == 0
+        }
+        else
+        {
+            return false
+        }
+    }
 
 }
