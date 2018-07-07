@@ -230,7 +230,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-    @IBAction func userAgentPress(_ sender: AnyObject) {
+    var canRedo : Bool {
+        if let redo = NSApp.keyWindow?.undoManager  {
+            return redo.canRedo
+        }
+        else
+        {
+            return false
+        }
+    }
+	@IBAction func redo(_ sender: Any) {
+		if let window = NSApp.keyWindow, let undo = window.undoManager, undo.canRedo {
+            Swift.print("redo:");
+		}
+	}
+    
+    var canUndo : Bool {
+        if let undo = NSApp.keyWindow?.undoManager  {
+            return undo.canUndo
+        }
+        else
+        {
+            return false
+        }
+    }
+
+    @IBAction func undo(_ sender: Any) {
+        if let window = NSApp.keyWindow, let undo = window.undoManager, undo.canUndo {
+            Swift.print("undo:");
+        }
+	}
+    
+	@IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
             currentURL: UserSettings.userAgent.value,
             alertMessageText: "Enter new user agent",
@@ -266,27 +297,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        switch menuItem.title {
-        case "Preferences":
-            break
-        case "Create New Windows":
-            menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
-            break
-        case "Hide Helium in menu bar":
-            menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
-            break
-        case "Home Page":
-            break
-        case "Magic URL Redirects":
-            menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
-            break
-        case "User Agent":
-            break
-        case "Quit":
-            break
+        if menuItem.title.hasPrefix("Redo") {
+            menuItem.isEnabled = self.canRedo
+        }
+        else
+        if menuItem.title.hasPrefix("Undo") {
+            menuItem.isEnabled = self.canUndo
+        }
+        else
+        {
+            switch menuItem.title {
+            case "Preferences":
+                break
+            case "Create New Windows":
+                menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
+                break
+            case "Hide Helium in menu bar":
+                menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
+                break
+            case "Home Page":
+                break
+            case "Magic URL Redirects":
+                menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+                break
+            case "User Agent":
+                break
+            case "Quit":
+                break
 
-        default:
-            break
+            default:
+                break
+            }
         }
         return true;
     }

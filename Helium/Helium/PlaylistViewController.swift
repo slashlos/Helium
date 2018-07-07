@@ -231,7 +231,7 @@ extension NSURL {
     }
 }
 
-class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate {
+class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate,NSMenuDelegate {
 
     @IBOutlet var playlistArrayController: NSDictionaryController!
     @IBOutlet var playitemArrayController: NSArrayController!
@@ -317,22 +317,104 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         self.playlistSplitView.setPosition(120, ofDividerAt: 0)
         NSApp.activate(ignoringOtherApps: true)
         self.view.window?.makeKeyAndOrderFront(self)
+
+        //  Start undo managet clean
+        if let undo = self.undoManager {
+            undo.removeAllActions()
+        }
     }
 
-    @IBAction func addPlaylist(_ sender: NSButton) {
+    //  MARK:- IBActions
+    //
+    //  internal are also used by undo manager callback and by IBActions
+    //
+    //  Since we do *not* undo movements, we remove object *not* by their index
+    //  but use their index to update the controller scrolling only initially.
+
+    //  "Play" items are individual PlayItem items, part of a playlist
+    internal func addPlay(_ item: PlayItem, atIndex index: Int) {
+        if let undo = self.undoManager {
+            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                self.removePlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                if !undo.isUndoing {
+                    undo.setActionName("Add PlayItem")
+                }
+            })
+        }
+        playitemArrayController.insert(item, atArrangedObjectIndex: index)
+        
+        DispatchQueue.main.async {
+            self.playitemTableView.scrollRowToVisible(index)
+        }
+    }
+    internal func removePlay(_ item: PlayItem, atIndex index: Int) {
+        if let undo = self.undoManager {
+            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                self.addPlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                if !undo.isUndoing {
+                    undo.setActionName("Remove PlayItem")
+                }
+            })
+        }
+        playitemArrayController.removeObject(item)
+        
+        DispatchQueue.main.async {
+            self.playitemTableView.scrollRowToVisible(index)
+        }
+    }
+
+    //  "List" items are controller objects - NSDictionaryControllerKeyValuePair
+    internal func addList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+        if let undo = self.undoManager {
+            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                self.removeList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                if !undo.isUndoing {
+                    undo.setActionName("Add PlayList")
+                }
+            })
+        }
+        playlistArrayController.removeObject(item)
+        
+        DispatchQueue.main.async {
+            self.playlistTableView.scrollRowToVisible(index)
+        }
+    }
+    internal func removeList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+        if let undo = self.undoManager {
+            undo.prepare(withInvocationTarget: self.addList(item, atIndex: index))
+            if !undo.isUndoing {
+                undo.setActionName("Remove PlayList")
+            }
+        }
+        if let undo = self.undoManager {
+            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                self.addList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                if !undo.isUndoing {
+                    undo.setActionName("Remove PlayList")
+                }
+            })
+        }
+        playlistArrayController.removeObject(item)
+        
+        DispatchQueue.main.async {
+            self.playlistTableView.scrollRowToVisible(index)
+        }
+    }
+
+    //  published actions - first responder tells us who called
+    @IBAction func addPlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
+        //  We want to add to existing play item list
         if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
-            let list: Array<PlayItem> = selectedPlaylist.value as! Array
-            let item = PlayItem(name:"item#",link:URL.init(string: "http://")!,time:0.0,rank:list.count + 1);
+            let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
+                return lhs.rank < rhs.rank
+            })
+            let item = PlayItem(name:"item#",link:URL.init(string: "http://")!,time:0.0,rank:(list.last?.rank)! + 1);
             let temp = NSString(format:"%p",item) as String
             item.name += String(temp.suffix(3))
 
-            playitemArrayController.addObject(item)
-
-            DispatchQueue.main.async {
-                self.playitemTableView.scrollRowToVisible(list.count - 1)
-            }
+            self.addPlay(item, atIndex: list.count - 1)
         }
         else
         if whoAmI == playlistTableView {
@@ -343,12 +425,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let name = "play#" + String(temp.suffix(3))
             item.key = name
             item.value = list
-            
-            playlistArrayController.addObject(item)
 
-            DispatchQueue.main.async {
-                self.playlistTableView.scrollRowToVisible(self.playlists.count - 1)
-            }
+            self.addList(item, atIndex: playlists.count - 1)
         }
         else
         {
@@ -359,25 +437,41 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBAction func removePlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
 
-        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
-            playlistArrayController.removeObject(selectedPlaylist)
-        }
-        else
-        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
-            playitemArrayController.removeObject(selectedPlayItem)
-        }
-        else
-        if let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
-            playitemArrayController.removeObject(selectedPlayItem)
-        }
-        else
-        if let selectedPlaylist = playlistArrayController.selectedObjects.first as? Dictionary<String,AnyObject> {
-            playlistArrayController.removeObject(selectedPlaylist)
-        }
-        else
-        {
-            Swift.print("firstResponder: \(String(describing: whoAmI))")
-            AudioServicesPlaySystemSound(1051);
+        switch whoAmI {
+            
+        case playlistTableView:
+            for item in (playlistArrayController.selectedObjects as! [NSDictionaryControllerKeyValuePair]) {
+                let index = (playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]).index(of: item)
+                self.removeList(item, atIndex: index!)
+            }
+            break
+            
+        case playitemTableView:
+            for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
+                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
+                self.removePlay(item, atIndex: index!)
+            }
+            break
+        
+        default:
+            if playitemArrayController.selectedObjects.count > 0 {
+                for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
+                    let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
+                    self.removePlay(item, atIndex: index!)
+                }
+            }
+            else
+            if playlistArrayController.selectedObjects.count > 0 {
+                for item in (playlistArrayController.selectedObjects as! [NSDictionaryControllerKeyValuePair]) {
+                    let index = (playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]).index(of: item)
+                    self.removeList(item, atIndex: index!)
+                }
+            }
+            else
+            {
+                Swift.print("firstResponder: \(String(describing: whoAmI))")
+                AudioServicesPlaySystemSound(1051);
+            }
         }
     }
 
@@ -478,6 +572,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 playlists[name] = list
             }
         }
+        
+        //  Either way, flush redo
+        if let undo = self.undoManager {
+            undo.removeAllActions()
+        }
     }
 
     @IBOutlet weak var saveButton: NSButton!
@@ -524,6 +623,44 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 // Restore from cache
                 playlists = playCache
         }
+        
+        //  Either way, flush redo
+        if let undo = self.undoManager {
+            undo.removeAllActions()
+        }
+    }
+
+    var canRedo : Bool {
+        if let redo = self.undoManager  {
+            return redo.canRedo
+        }
+        else
+        {
+            return false
+        }
+    }
+    @IBAction func redo(_ sender: Any) {
+        if let undo = self.undoManager, undo.canRedo {
+            undo.redo()
+            Swift.print("redo:");
+        }
+    }
+    
+    var canUndo : Bool {
+        if let undo = self.undoManager  {
+            return undo.canUndo
+        }
+        else
+        {
+            return false
+        }
+    }
+    
+    @IBAction func undo(_ sender: Any) {
+        if let undo = self.undoManager, undo.canUndo {
+            undo.undo()
+            Swift.print("undo:");
+        }
     }
 
     dynamic var hiddenColumns = Dictionary<String, Any>()
@@ -537,6 +674,26 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         defaults.set(isHidden, forKey: pref)
         col.isHidden = isHidden
      }
+
+    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.title.hasPrefix("Redo") {
+            menuItem.isEnabled = self.canRedo
+        }
+        else
+            if menuItem.title.hasPrefix("Undo") {
+                menuItem.isEnabled = self.canUndo
+        }
+        else
+        {
+            switch menuItem.title {
+                
+            default:
+                menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+                break
+            }
+        }
+        return true;
+    }
 
     // MARK:- Drag-n-Drop
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
