@@ -385,69 +385,66 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     @IBAction func playPlaylist(_ sender: AnyObject) {
-        let whoAmI = self.view.window?.firstResponder
+        //  Quietly, do not exceed program / user specified throttle
+        let throttle = UserSettings.playlistThrottle.value
 
-        if whoAmI == playitemTableView, let selectedPlayItem = playitemArrayController.selectedObjects.first as? PlayItem {
-            super.dismiss(sender)
-
-            //  If we were run modally as a window, close it
-            if let ppc = self.view.window?.windowController {
-                if ppc.isKind(of: PlaylistPanelController.self) {
-                    NSApp.abortModal()
-                }
+        //  Close down whatever led us here
+        super.dismiss(sender)
+        
+        //  If we were run modally as a window, close it
+        if let ppc = self.view.window?.windowController {
+            if ppc.isKind(of: PlaylistPanelController.self) {
+                NSApp.abortModal()
             }
-            
-            if (webViewController != nil) {
-                webViewController?.loadURL(url: selectedPlayItem.link)
-            }
-            else
-            {
-                //  if we have a panel send it there, else create new doc window
-                if let first = NSApp.windows.first {
-                    if let hpc = first.windowController as? HeliumPanelController {
-                        hpc.webViewController.loadURL(url: selectedPlayItem.link)
-                        return
-                    }
-                }
-                
-                //  This could be anything so add/if a doc and initialize
-                do {
-                    let dc = NSDocumentController.shared()
-                    let fileURL = selectedPlayItem.link
-                    let fileType = fileURL.pathExtension
-                    
-                    let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
-                    doc.makeWindowControllers()
-                    dc.addDocument(doc)
-                    
-                    if let hwc = (doc as NSDocument).windowControllers.first {
-                        (hwc.contentViewController as! WebViewController).loadURL(url: (doc as Document).fileURL!)
-                        hwc.window?.orderFront(self)
-                    }
-                } catch let error {
-                    print("*** Error open file: \(error.localizedDescription)")
-                }
-             }
         }
-        else
-        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
-            let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
-                return lhs.rank < rhs.rank
-                })
-            
-            if list.count > 0 {
-                super.dismiss(sender)
-                
-                //  Do not exceed program / user specified throttle
-                if list.count > UserSettings.playlistThrottle.value {
-                    let message = String(format: "Playlist's %ld items exceeds throttle.",
-                                         list.count)
-                    let infoMsg = String(format: "User defaults: %@ = %ld",
-                                         UserSettings.playlistThrottle.keyPath,
-                                         UserSettings.playlistThrottle.value)
-                    appDelegate.userAlertMessage(message, info: infoMsg)
-                    return
+
+        //  first responder tells us who called so dispatch
+        let whoAmI = self.view.window?.firstResponder
+        
+        switch whoAmI {
+        case playitemTableView:
+            Swift.print("We are in playitemTableView")
+            for selectedPlayItem in (playitemArrayController.selectedObjects as! [PlayItem]).suffix(throttle) {
+                if (webViewController != nil) {
+                    webViewController?.loadURL(url: selectedPlayItem.link)
                 }
+                else
+                {
+                    //  if we have a panel send it there, else create new doc window
+                    if let first = NSApp.windows.first {
+                        if let hpc = first.windowController as? HeliumPanelController {
+                            hpc.webViewController.loadURL(url: selectedPlayItem.link)
+                            return
+                        }
+                    }
+                    
+                    //  This could be anything so add/if a doc and initialize
+                    do {
+                        let dc = NSDocumentController.shared()
+                        let fileURL = selectedPlayItem.link
+                        let fileType = fileURL.pathExtension
+                        
+                        let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
+                        doc.makeWindowControllers()
+                        dc.addDocument(doc)
+                        
+                        if let hwc = (doc as NSDocument).windowControllers.first {
+                            (hwc.contentViewController as! WebViewController).loadURL(url: (doc as Document).fileURL!)
+                            hwc.window?.orderFront(self)
+                        }
+                    } catch let error {
+                        print("*** Error open file: \(error.localizedDescription)")
+                    }
+                }
+            }
+            break
+            
+        case playlistTableView:
+            Swift.print("We are in playlistTableView")
+            for selectedPlaylist in (playlistArrayController.selectedObjects.first as? [NSDictionaryControllerKeyValuePair])! {
+                let list: Array<PlayItem> = ((selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
+                    return lhs.rank < rhs.rank
+                })).suffix(throttle)
                 
                 //  Try to restore item at its last known location
                 print("play \(selectedPlaylist) \(list.count)")
@@ -460,9 +457,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     }
                 }
             }
-        }
-        else
-        {
+            break
+            
+        default:
             Swift.print("firstResponder: \(String(describing: whoAmI))")
             AudioServicesPlaySystemSound(1051);
         }
@@ -526,7 +523,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
         }
         
-        //    Save or go
+        //  Save or go
         switch (sender! as AnyObject).tag == 0 {
             case true:
                 // Save history info which might have changed
