@@ -65,6 +65,14 @@ class PlayItem : NSObject, NSCoding {
     var hover: Bool
     var alpha: Float
     var trans: Int
+    var temp : String {
+        get {
+            return link.absoluteString
+        }
+        set (value) {
+            link = URL.init(string: value)!
+        }
+    }
     
     override init() {
         name = k.item
