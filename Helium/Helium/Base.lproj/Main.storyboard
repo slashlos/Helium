@@ -222,8 +222,7 @@
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="agM-n6-9Km"/>
-                                                    <menuItem title="Playlists" id="ddP-BI-eP5">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <menuItem title="Playlists" keyEquivalent="p" id="ddP-BI-eP5">
                                                         <connections>
                                                             <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="ySE-xa-5KO"/>
                                                         </connections>
@@ -584,8 +583,7 @@ CA
                                 </items>
                             </menu>
                         </menuItem>
-                        <menuItem title="Playlists" id="14E-f1-zMF" userLabel="Playlists">
-                            <modifierMask key="keyEquivalentModifierMask"/>
+                        <menuItem title="Playlists" keyEquivalent="p" id="14E-f1-zMF" userLabel="Playlists">
                             <connections>
                                 <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="daN-bM-r7D"/>
                             </connections>

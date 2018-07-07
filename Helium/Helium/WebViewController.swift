@@ -249,7 +249,7 @@ class MyWebView : WKWebView {
         item.target = dc.currentDocument
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "p")
         item.target = self.uiDelegate
         menu.addItem(item)
 
