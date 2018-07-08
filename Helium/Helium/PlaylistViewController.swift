@@ -578,7 +578,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         case playlistTableView:
             Swift.print("We are in playlistTableView")
-            for selectedPlaylist in (playlistArrayController.selectedObjects.first as? [NSDictionaryControllerKeyValuePair])! {
+            for selectedPlaylist in (playlistArrayController.selectedObjects as? [NSDictionaryControllerKeyValuePair])! {
                 let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
                     return lhs.rank < rhs.rank
                 })
