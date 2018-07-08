@@ -240,12 +240,66 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBOutlet var playitemTableView: PlayTableView!
     @IBOutlet var playlistSplitView: NSSplitView!
 
-    //    cache playlists read and saved to defaults
+    //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
     dynamic var playlists = Dictionary<String, Any>()
     dynamic var playCache = Dictionary<String, Any>()
     
+    //  MARK:- Undo keys to watch for undo: PlayList and PlayItem
+    var listIvars : [String] {
+        get {
+            return ["key", "value"]
+        }
+    }
+    var itemIvars : [String] {
+        get {
+            return ["name", "link", "time", "rank", "rect", "label", "hover", "alpha", "trans", "temp"]
+        }
+    }
+
+    internal func observe(_ item: AnyObject, keyArray keys: [String], observing state: Bool) {
+        switch state {
+        case true:
+            for keyPath in keys {
+                item.addObserver(self, forKeyPath: keyPath, options: [.old,.new], context: nil)
+            }
+            break
+        case false:
+            for keyPath in keys {
+                item.removeObserver(self, forKeyPath: keyPath)
+            }
+        }
+    }
+    
+    //  Start or forget observing any changes
+    internal func observing(_ state: Bool) {
+        for dict in playlists {
+            let items: [PlayItem] = dict.value as! [PlayItem]
+            self.observe(dict as AnyObject, keyArray: listIvars, observing: state)
+            for item in items {
+                self.observe(item, keyArray: itemIvars, observing: state)
+            }
+        }
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if let undo = self.undoManager {
+            let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
+            let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
+            
+            undo.registerUndo(withTarget: self, handler: {[oldVals = ["key": keyPath!, "old": oldValue as Any] as [String : Any]] (PlaylistViewController) -> () in
+
+                (object as AnyObject).setValue(oldVals["old"], forKey: oldVals["key"] as! String)
+                if !undo.isUndoing {
+                    undo.setActionName(String.init(format: "Edit %@", keyPath!))
+                }
+            })
+            Swift.print(String.init(format: "%@ %@ -> %@", keyPath!, oldValue as! CVarArg, newValue as! CVarArg))
+        }
+    }
+    
+    //  MARK:- View lifecycle
     override func viewDidLoad() {
         let types = [kUTTypeData as String,
                      kUTTypeURL as String,
@@ -322,9 +376,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if let undo = self.undoManager {
             undo.removeAllActions()
         }
+        
+        //  Start observing any changes
+        observing(true)
     }
 
-    //  MARK:- IBActions
+    override func viewDidDisappear() {
+        //  Stop observing any changes
+        observing(false)
+    }
+    
+    //  MARK:- Playlist Actions
     //
     //  internal are also used by undo manager callback and by IBActions
     //
@@ -341,6 +403,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
             })
         }
+        observe(item, keyArray: itemIvars, observing: true)
         playitemArrayController.insert(item, atArrangedObjectIndex: index)
         
         DispatchQueue.main.async {
@@ -356,50 +419,54 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
             })
         }
+        observe(item, keyArray: itemIvars, observing: false)
         playitemArrayController.removeObject(item)
-        
+
         DispatchQueue.main.async {
             self.playitemTableView.scrollRowToVisible(index)
         }
     }
 
-    //  "List" items are controller objects - NSDictionaryControllerKeyValuePair
-    internal func addList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
-        if let undo = self.undoManager {
-            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.removeList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
-                if !undo.isUndoing {
-                    undo.setActionName("Add PlayList")
-                }
-            })
-        }
-        playlistArrayController.removeObject(item)
-        
-        DispatchQueue.main.async {
-            self.playlistTableView.scrollRowToVisible(index)
-        }
-    }
-    internal func removeList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
-        if let undo = self.undoManager {
-            undo.prepare(withInvocationTarget: self.addList(item, atIndex: index))
-            if !undo.isUndoing {
-                undo.setActionName("Remove PlayList")
+        //  "List" items are controller objects - NSDictionaryControllerKeyValuePair
+        internal func addList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+            if let undo = self.undoManager {
+                undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                    self.removeList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                    if !undo.isUndoing {
+                        undo.setActionName("Add PlayList")
+                    }
+                })
+            }
+            observe(item, keyArray: listIvars, observing: true)
+            playlistArrayController.insert(item, atArrangedObjectIndex: index)
+
+
+            DispatchQueue.main.async {
+                self.playlistTableView.scrollRowToVisible(index)
             }
         }
-        if let undo = self.undoManager {
-            undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.addList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+        internal func removeList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+            if let undo = self.undoManager {
+                undo.prepare(withInvocationTarget: self.addList(item, atIndex: index))
                 if !undo.isUndoing {
                     undo.setActionName("Remove PlayList")
                 }
-            })
+            }
+            if let undo = self.undoManager {
+                undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
+                    self.addList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                    if !undo.isUndoing {
+                        undo.setActionName("Remove PlayList")
+                    }
+                })
+            }
+            observe(item, keyArray: listIvars, observing: false)
+            playlistArrayController.removeObject(item)
+            
+            DispatchQueue.main.async {
+                self.playlistTableView.scrollRowToVisible(index)
+            }
         }
-        playlistArrayController.removeObject(item)
-        
-        DispatchQueue.main.async {
-            self.playlistTableView.scrollRowToVisible(index)
-        }
-    }
 
     //  published actions - first responder tells us who called
     @IBAction func addPlaylist(_ sender: AnyObject) {
@@ -478,6 +545,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     // Our playlist panel return point if any
     var webViewController: WebViewController? = nil
     
+    //  MARK:- IBActions
     @IBAction func playPlaylist(_ sender: AnyObject) {
         //  first window might be reused, others no
         let newWindows = UserSettings.createNewWindows.value
