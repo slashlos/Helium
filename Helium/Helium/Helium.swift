@@ -444,18 +444,4 @@ class Document : NSDocument {
         self.save(self)
     }
 
-    @IBAction func newDocument(_ sender: AnyObject) {
-        let dc = NSDocumentController.shared()
-        let doc = Document.init()
-        doc.makeWindowControllers()
-        dc.addDocument(doc)
-        let wc = doc.windowControllers.first
-        let window : NSPanel = wc!.window as! NSPanel as NSPanel
-
-        //  Close down any observations before closure
-        window.delegate = wc as? NSWindowDelegate
-        self.settings.rect.value = window.frame
-        window.makeKeyAndOrderFront(sender)
-    }
-    
 }

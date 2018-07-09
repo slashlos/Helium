@@ -153,6 +153,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return status
         }
     }
+    
+    @IBAction func newDocument(_ sender: AnyObject) {
+        let dc = NSDocumentController.shared()
+        let doc = Document.init()
+        doc.makeWindowControllers()
+        dc.addDocument(doc)
+        let wc = doc.windowControllers.first
+        let window : NSPanel = wc!.window as! NSPanel as NSPanel
+        
+        //  Close down any observations before closure
+        window.delegate = wc as? NSWindowDelegate
+        doc.settings.rect.value = window.frame
+        window.makeKeyAndOrderFront(sender)
+    }
+    
+
 	@IBAction func openDocument(_ sender: Any) {
 		self.openFilePress(sender as AnyObject)
 	}
