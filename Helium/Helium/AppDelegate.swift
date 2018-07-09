@@ -277,6 +277,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         )
     }
+    
+    func modalOKCancel(_ message: String, info: String?) -> Bool {
+        let alert: NSAlert = NSAlert()
+        alert.messageText = message
+        if info != nil {
+            alert.informativeText = info!
+        }
+        alert.alertStyle = NSAlertStyle.warning
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        let response = alert.runModal()
+        switch response {
+        case NSAlertFirstButtonReturn:
+            return true
+        default:
+            return false
+        }
+    }
+
+    func sheetOKCancel(_ message: String, info: String?,
+                       acceptHandler: @escaping (NSModalResponse) -> Void) {
+        let alert = NSAlert()
+        alert.alertStyle = NSAlertStyle.informational
+        alert.messageText = message
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        if info != nil {
+            alert.informativeText = info!
+        }
+        if let window = NSApp.keyWindow {
+            alert.beginSheetModal(for: window, completionHandler: { response in
+                acceptHandler(response)
+            })
+        }
+        else
+        {
+            acceptHandler(alert.runModal())
+        }
+        alert.buttons.first!.becomeFirstResponder()
+    }
+    
     func userAlertMessage(_ message: String, info: String?) {
         let alert = NSAlert()
         alert.messageText = message
