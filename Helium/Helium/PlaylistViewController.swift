@@ -545,16 +545,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     // Our playlist panel return point if any
     var webViewController: WebViewController? = nil
     
-    //  MARK:- IBActions
-    @IBAction func playPlaylist(_ sender: AnyObject) {
+    internal func play(_ sender: Any, items: Array<PlayItem>, maxSize: Int) {
         //  first window might be reused, others no
         let newWindows = UserSettings.createNewWindows.value
-        
-        //  first responder tells us who called so dispatch
-        let whoAmI = self.view.window?.firstResponder
-
-        //  Quietly, do not exceed program / user specified throttle
-        let throttle = UserSettings.playlistThrottle.value
 
         //  Close down whatever led us here
         super.dismiss(sender)
@@ -565,51 +558,69 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 NSApp.abortModal()
             }
         }
+
+        //  Try to restore item at its last known location
+        for (i,item) in (items.enumerated()).suffix(maxSize) {
+            if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
+                UserSettings.createNewWindows.value = true
+            }
+            print(String(format: "%3d %3d %@", i, item.rank, item.name))
+        }
         
+        //  Restore user settings
+        if UserSettings.createNewWindows.value != newWindows {
+            UserSettings.createNewWindows.value = newWindows
+        }
+    }
+    
+    //  MARK:- IBActions
+    @IBAction func playPlaylist(_ sender: AnyObject) {
+        //  first responder tells us who called so dispatch
+        let whoAmI = self.view.window?.firstResponder
+
+        //  Quietly, do not exceed program / user specified throttle
+        let throttle = UserSettings.playlistThrottle.value
+
+        //  Our rank sorted list from which we'll take last 'throttle' to play
+        var list = Array<PlayItem>()
+
         switch whoAmI {
         case playitemTableView:
             Swift.print("We are in playitemTableView")
-            for selectedPlayItem in (playitemArrayController.selectedObjects as! [PlayItem]).suffix(throttle) {
-                if appDelegate.doOpenFile(fileURL: selectedPlayItem.link) && !newWindows {
-                    UserSettings.createNewWindows.value = true
-                }
-            }
+            list.append(contentsOf: playitemArrayController.selectedObjects as! Array<PlayItem>)
             break
             
         case playlistTableView:
             Swift.print("We are in playlistTableView")
             for selectedPlaylist in (playlistArrayController.selectedObjects as? [NSDictionaryControllerKeyValuePair])! {
-                let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
-                    return lhs.rank < rhs.rank
-                })
-                
-                //  Do not exceed program / user specified throttle
-                if list.count > throttle {
-                    let message = String(format: "Limiting playlist's %ld items to throttle.", list.count)
-                    let infoMsg = String(format: "User defaults: %@ = %ld",
-                                         UserSettings.playlistThrottle.keyPath,
-                                         throttle)
-                    appDelegate.userAlertMessage(message, info: infoMsg)
-                }
-                
-                //  Try to restore item at its last known location
-                for (i,item) in (list.enumerated()).suffix(throttle) {
-                    if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
-                        UserSettings.createNewWindows.value = true
-                    }
-                    print(String(format: "%3d %3d %@", i, item.rank, item.name))
-                }
+                list.append(contentsOf: selectedPlaylist.value as! Array)
             }
             break
             
         default:
             Swift.print("firstResponder: \(String(describing: whoAmI))")
             AudioServicesPlaySystemSound(1051);
+            return
         }
         
-        //  Restore user settings
-        if UserSettings.createNewWindows.value != newWindows {
-            UserSettings.createNewWindows.value = newWindows
+        //  Do not exceed program / user specified throttle
+        if list.count > throttle {
+            let message = String(format: "Limiting playlist(s) %ld items to throttle?", list.count)
+            let infoMsg = String(format: "User defaults: %@ = %ld",
+                                 UserSettings.playlistThrottle.keyPath,
+                                 throttle)
+            
+//            if !appDelegate.dialogOKCancel(message, info: infoMsg) { return }
+            appDelegate.sheetOKCancel(message, info: infoMsg,
+                                      acceptHandler: { (button) in
+                                        if button == NSAlertFirstButtonReturn {
+                                            self.play(sender, items:list, maxSize: throttle)
+                                        }
+            })
+        }
+        else
+        {
+            play(sender, items:list, maxSize: list.count)
         }
     }
     
