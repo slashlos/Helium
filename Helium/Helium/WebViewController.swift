@@ -168,7 +168,6 @@ class MyWebView : WKWebView {
     //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let hwc = self.window?.windowController as! HeliumPanelController
-        let dc = NSDocumentController.shared()
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
         
@@ -237,16 +236,16 @@ class MyWebView : WKWebView {
         let subOpen = NSMenu()
         item.submenu = subOpen
 
-        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "o")
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "l")
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(dc.newDocument(_:)), keyEquivalent: "")
-        item.target = dc.currentDocument
+        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "n")
+        item.target = appDelegate
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "p")

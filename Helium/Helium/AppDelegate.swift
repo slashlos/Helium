@@ -154,7 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-    @IBAction func newDocument(_ sender: AnyObject) {
+    @IBAction func newDocument(_ sender: Any) {
         let dc = NSDocumentController.shared()
         let doc = Document.init()
         doc.makeWindowControllers()

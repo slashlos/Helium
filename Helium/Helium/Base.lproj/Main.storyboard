@@ -583,7 +583,8 @@ CA
                                 </items>
                             </menu>
                         </menuItem>
-                        <menuItem title="Playlists" keyEquivalent="p" id="14E-f1-zMF" userLabel="Playlists">
+                        <menuItem title="Playlists" id="14E-f1-zMF" userLabel="Playlists">
+                            <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="daN-bM-r7D"/>
                             </connections>
