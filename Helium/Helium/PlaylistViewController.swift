@@ -549,16 +549,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  first window might be reused, others no
         let newWindows = UserSettings.createNewWindows.value
 
-        //  Close down whatever led us here
+        /// dismiss whatever got us here
         super.dismiss(sender)
         
         //  If we were run modally as a window, close it
-        if let ppc = self.view.window?.windowController {
-            if ppc.isKind(of: PlaylistPanelController.self) {
-                NSApp.abortModal()
-            }
+        if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
+            NSApp.abortModal()
+            ppc.window?.orderOut(sender)
         }
-
+        
         //  Try to restore item at its last known location
         for (i,item) in (items.enumerated()).suffix(maxSize) {
             if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
@@ -681,10 +680,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         super.dismiss(sender)
         
         //  If we were run modally as a window, close it
-        if let ppc = self.view.window?.windowController {
-            if ppc.isKind(of: PlaylistPanelController.self) {
-                NSApp.abortModal()
-            }
+        if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
+            NSApp.abortModal()
+            ppc.window?.orderOut(sender)
         }
         
         //  Save or go
@@ -1091,22 +1089,30 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         var item: PlayItem?
                         var url: URL?
                         
-                        //  Use first playlist name 
+                        //  Use first playlist name
+                        if elementItem?.count == 0 { continue }
                         if !okydoKey { play?.key = elementType }
 
                         switch (elementType) {
                         case "public.url"://kUTTypeURL
-                            url = URL(string: elementItem!)
+                            if let testURL = URL(string: elementItem!) {
+                                url = testURL
+                            }
                             break
-                        case "public.file-url"://kUTTypeFileURL
-                            url = URL(string: elementItem!)?.standardizedFileURL
+                        case "public.file-url", "public.utf8-plain-text"://kUTTypeFileURL
+                            if let testURL = URL(string: elementItem!)?.standardizedFileURL {
+                                url = testURL
+                            }
                             break
                         case "com.apple.finder.node":
                             continue // handled as public.file-url
+                        case "com.apple.pasteboard.promised-file-content-type":
+                            continue
                         default:
                             Swift.print("type \(elementType) \(elementItem!)")
                             continue
                         }
+                        if url == nil { continue }
                         
                         //  Resolve finder alias
                         if let original = (url! as NSURL).resolvedFinderAlias() { url = original }

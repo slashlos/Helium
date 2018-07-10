@@ -236,20 +236,20 @@ class MyWebView : WKWebView {
         let subOpen = NSMenu()
         item.submenu = subOpen
 
-        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "o")
+        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "")
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "l")
+        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "")
         item.target = hwc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "n")
+        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Playlists", action: #selector(WebViewController.presentPlaylistSheet(_:)), keyEquivalent: "p")
-        item.target = self.uiDelegate
+        item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")
+        item.target = appDelegate
         menu.addItem(item)
 
         item = NSMenuItem(title: "Preferences", action: #selector(menuClicked(_:)), keyEquivalent: "")
@@ -507,18 +507,6 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         zoomOut()
     }
     
-    //  MARK: Playlists
-    lazy var playlistViewController: PlaylistViewController = {
-        return self.storyboard!.instantiateController(withIdentifier: "PlaylistViewController")
-            as! PlaylistViewController
-    }()
-    
-    @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
-        let pvc = self.playlistViewController
-        pvc.webViewController = self
-        self.presentViewControllerAsSheet(pvc)
-    }
-
     override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.

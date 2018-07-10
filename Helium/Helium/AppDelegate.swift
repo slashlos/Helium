@@ -228,22 +228,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                             }
         })
     }
-    
-    @IBAction func presentPlaylistSheet(_ sender: AnyObject) {
+
+    @IBAction func presentPlaylistSheet(_ sender: Any) {
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+
+        //  We have no window, so create one and load playlists there
         if let window = NSApp.mainWindow {
-            let storyboard = NSStoryboard(name: "Main", bundle: nil)
-            let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
-            let wvc = window.windowController?.contentViewController
-            wvc?.presentViewControllerAsSheet(pvc)
-        }
-        else
-        {
-            let storyboard = NSStoryboard(name: "Main", bundle: nil)
-            let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
-            ppc.window?.center()
+            if (window.windowController?.contentViewController?.isKind(of: PlaylistViewController.self))! {
+                return
+            }
             
-            NSApp.runModal(for: ppc.window!)
+            //  If currently a web view controller, fetch and present playlist here
+            if let wvc: WebViewController = window.windowController?.contentViewController as? WebViewController {
+                if wvc.presentedViewControllers?.count == 0 {
+                    let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
+                    
+                    pvc.webViewController = wvc
+                    wvc.presentViewControllerAsSheet(pvc)
+                }
+                return
+            }
+            Swift.print("who are we? \(String(describing: window.contentViewController))")
         }
+                
+        //  No window, load window and a playlist controller
+        let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
+        ppc.window?.title = "Helium Playlists"
+        ppc.window?.center()
+        
+        NSApp.runModal(for: ppc.window!)
     }
     
     var canRedo : Bool {
