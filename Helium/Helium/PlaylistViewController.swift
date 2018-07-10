@@ -288,9 +288,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
             let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
             
-            undo.registerUndo(withTarget: self, handler: {[oldVals = ["key": keyPath!, "old": oldValue as Any] as [String : Any]] (PlaylistViewController) -> () in
+            undo.registerUndo(withTarget: self, handler: { [oldValue] (PlaylistViewController) -> () in
 
-                (object as AnyObject).setValue(oldVals["old"], forKey: oldVals["key"] as! String)
+                (object as AnyObject).setValue(oldValue, forKey: keyPath!)
                 if !undo.isUndoing {
                     undo.setActionName(String.init(format: "Edit %@", keyPath!))
                 }
