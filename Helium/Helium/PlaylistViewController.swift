@@ -273,7 +273,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     //  Start or forget observing any changes
-    internal func observing(_ state: Bool) {
+    internal func setObserving(_ state: Bool) {
         for dict in playlists {
             let items: [PlayItem] = dict.value as! [PlayItem]
             self.observe(dict as AnyObject, keyArray: listIvars, observing: state)
@@ -378,12 +378,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         
         //  Start observing any changes
-        observing(true)
+        setObserving(true)
     }
 
     override func viewDidDisappear() {
         //  Stop observing any changes
-        observing(false)
+        setObserving(false)
     }
     
     //  MARK:- Playlist Actions
