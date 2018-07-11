@@ -168,6 +168,14 @@ class PlayItemCornerView : NSView {
         // Renumber playlist items via array controller
         playitemTableView.beginUpdates()
         for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
+            if let undo = self.undoManager {
+                undo.registerUndo(withTarget: self, handler: { [oldValue = item.rank] (PlaylistViewController) -> () in
+                    (item as AnyObject).setValue(oldValue, forKey: "rank")
+                    if !undo.isUndoing {
+                        undo.setActionName(String.init(format: "Reseq %@", "rank"))
+                    }
+                })
+            }
             item.rank = row + 1
         }
         playitemTableView.endUpdates()
