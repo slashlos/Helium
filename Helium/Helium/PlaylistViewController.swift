@@ -380,11 +380,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         NSApp.activate(ignoringOtherApps: true)
         self.view.window?.makeKeyAndOrderFront(self)
 
-        //  Start undo managet clean
-        if let undo = self.undoManager {
-            undo.removeAllActions()
-        }
-        
         //  Start observing any changes
         setObserving(true)
     }
@@ -657,11 +652,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 playlists[name] = list
             }
         }
-        
-        //  Either way, flush redo
-        if let undo = self.undoManager {
-            undo.removeAllActions()
-        }
     }
 
     @IBOutlet weak var saveButton: NSButton!
@@ -706,11 +696,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             case false:
                 // Restore from cache
                 playlists = playCache
-        }
-        
-        //  Either way, flush redo
-        if let undo = self.undoManager {
-            undo.removeAllActions()
         }
     }
 
