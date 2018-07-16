@@ -790,7 +790,7 @@ CA
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                 <connections>
-                                                                                    <binding destination="VKZ-FT-GNh" name="value" keyPath="objectValue.key" id="Nxc-Nb-IfQ"/>
+                                                                                    <binding destination="VKZ-FT-GNh" name="value" keyPath="objectValue.name" id="cjV-Mu-vOG"/>
                                                                                 </connections>
                                                                             </textFieldCell>
                                                                         </textField>
@@ -806,7 +806,7 @@ CA
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                             <connections>
-                                                                <binding destination="9J8-mw-mAx" name="value" keyPath="arrangedObjects.key" id="bkN-QL-PNa">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="ftH-A8-ZDs">
                                                                     <dictionary key="options">
                                                                         <bool key="NSValidatesImmediately" value="YES"/>
                                                                     </dictionary>
@@ -971,10 +971,10 @@ Gw
                                             <real value="3.4028234663852886e+38"/>
                                         </customSpacing>
                                     </stackView>
-                                    <scrollView horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
                                         <rect key="frame" x="0.0" y="39" width="314" height="233"/>
                                         <clipView key="contentView" id="Ix6-nN-7A8">
-                                            <rect key="frame" x="1" y="0.0" width="297" height="217"/>
+                                            <rect key="frame" x="1" y="0.0" width="312" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
@@ -1173,10 +1173,10 @@ Gw
                                             </subviews>
                                         </clipView>
                                         <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="1e4-tR-Cc8">
-                                            <rect key="frame" x="1" y="217" width="297" height="15"/>
+                                            <rect key="frame" x="1" y="217" width="312" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
-                                        <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="aSB-Wi-46z">
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="aSB-Wi-46z">
                                             <rect key="frame" x="298" y="23" width="15" height="194"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
@@ -1207,7 +1207,7 @@ Gw
                     <connections>
                         <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="pJ4-3Y-cGG"/>
                         <outlet property="playitemTableView" destination="IBh-ZH-TR3" id="bkT-Zc-tEa"/>
-                        <outlet property="playlistArrayController" destination="9J8-mw-mAx" id="aLZ-iX-mMT"/>
+                        <outlet property="playlistArrayController" destination="Vul-U2-GKW" id="E5T-QI-zZZ"/>
                         <outlet property="playlistSplitView" destination="1fw-gA-tie" id="qsH-X3-vUD"/>
                         <outlet property="playlistTableView" destination="PML-r0-Bx7" id="8A5-Ov-NRE"/>
                         <outlet property="restoreButton" destination="DNq-eF-IsJ" id="cg5-Uu-58n"/>
@@ -1219,16 +1219,16 @@ Gw
                     <rect key="frame" x="0.0" y="0.0" width="163" height="96"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <connections>
-                        <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="Zv8-fp-ZHp"/>
+                        <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="cpI-yi-sQl"/>
                         <outlet property="playitemTableView" destination="IBh-ZH-TR3" id="LPo-ZJ-0YM"/>
-                        <outlet property="playlistArrayController" destination="9J8-mw-mAx" id="c8O-Hm-ZLN"/>
+                        <outlet property="playlistArrayController" destination="Vul-U2-GKW" id="cVX-IY-Jme"/>
                     </connections>
                 </customView>
-                <dictionaryController objectClassName="_NSDictionaryControllerKeyValuePair" id="9J8-mw-mAx">
+                <arrayController id="Vul-U2-GKW">
                     <connections>
-                        <binding destination="YAy-lX-dae" name="contentDictionary" keyPath="playlists" id="HkP-di-YXh"/>
+                        <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="C8x-qa-7XA"/>
                     </connections>
-                </dictionaryController>
+                </arrayController>
                 <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9">
                     <declaredKeys>
                         <string>rank</string>
@@ -1236,7 +1236,7 @@ Gw
                         <string>link</string>
                     </declaredKeys>
                     <connections>
-                        <binding destination="9J8-mw-mAx" name="contentArray" keyPath="selection.value" id="QBu-bs-1zI"/>
+                        <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.list" id="u0L-KW-nSp"/>
                     </connections>
                 </arrayController>
             </objects>
