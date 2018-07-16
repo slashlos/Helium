@@ -10,19 +10,47 @@ import Foundation
 import QuickLook
 
 class PlayList : NSObject {
-    var name : String = k.list
+    //  Keep playlist names unique
+    var name : String = k.list {
+        didSet {
+            if let appDelegate: AppDelegate = NSApp.delegate as? AppDelegate {
+                //  Do not allow duplicate
+                if appDelegate.playdicts[name] != nil {
+                    name = oldValue
+
+                    //  tell controller we have reverted this edit
+                    let notif = Notification(name: Notification.Name(rawValue: "BadPlayListName"), object: self)
+                    NotificationCenter.default.post(notif)
+                }
+                else
+                {
+                    appDelegate.playdicts[oldValue] = nil
+                    appDelegate.playdicts[name] = list
+                }
+            }
+        }
+    }
     var list : Array <PlayItem> = Array()
     
     override init() {
-        name = k.list
-        list = Array <PlayItem> ()
         super.init()
+
+        list = Array <PlayItem> ()
+        let temp = NSString(format:"%p",self) as String
+        self.name = "play#" + String(temp.suffix(3))
+        if let appDelegate = NSApp.delegate {
+            (appDelegate as! AppDelegate).playdicts[name] = list
+        }
     }
     
     init(name:String, list:Array <PlayItem>) {
-        self.name = name
-        self.list = list
         super.init()
+
+        self.list = list
+        self.name = name
+        if let appDelegate = NSApp.delegate {
+            (appDelegate as! AppDelegate).playdicts[name] = list
+        }
     }
     
     func listCount() -> Int {
