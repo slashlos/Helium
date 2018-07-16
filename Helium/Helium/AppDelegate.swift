@@ -517,7 +517,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             }
             return true
+            
         default:
+            guard let pvc: PlaylistViewController = NSApp.keyWindow?.contentViewController as? PlaylistViewController else { return true }
+            guard let pcv: PlayItemCornerView = pvc.playitemTableView.cornerView as? PlayItemCornerView else { return true }
+            pcv.menuIconState = ([.shift] == event.modifierFlags.intersection(.deviceIndependentFlagsMask))
+            pcv.setNeedsDisplay(pcv.frame)
             return false
         }
     }
