@@ -8,6 +8,7 @@
 
 import Foundation
 import AVFoundation
+import AudioToolbox
 
 struct k {
     static let play = "play"
@@ -152,11 +153,23 @@ class PlayTableView : NSTableView {
 }
 
 class PlayItemCornerView : NSView {
-    @IBOutlet weak var playlistArrayController: NSDictionaryController!
+    @IBOutlet weak var playlistArrayController: NSArrayController!
 	@IBOutlet weak var playitemArrayController: NSArrayController!
     @IBOutlet weak var playitemTableView: PlayTableView!
+    var menuIconState: Bool = false
+    var menuIconName: String {
+        get {
+            if menuIconState {
+                return "NSTouchBarSearchTemplate"
+            }
+            else
+            {
+                return "NSRefreshTemplate"
+            }
+        }
+    }
     override func draw(_ dirtyRect: NSRect) {
-        let tote = NSImage.init(imageLiteralResourceName: "NSRefreshTemplate")
+        let tote = NSImage.init(imageLiteralResourceName: self.menuIconName)
         let alignRect = tote.alignmentRect
         
         NSGraphicsContext.saveGraphicsState()
@@ -167,16 +180,35 @@ class PlayItemCornerView : NSView {
     override func mouseDown(with event: NSEvent) {
         // Renumber playlist items via array controller
         playitemTableView.beginUpdates()
-        for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
-            if let undo = self.undoManager {
-                undo.registerUndo(withTarget: self, handler: { [oldValue = item.rank] (PlaylistViewController) -> () in
-                    (item as AnyObject).setValue(oldValue, forKey: "rank")
-                    if !undo.isUndoing {
-                        undo.setActionName(String.init(format: "Reseq %@", "rank"))
-                    }
-                })
+
+        //  True - prune duplicates, false resequence
+        switch menuIconState {
+        case true:
+            var seen = [String:PlayItem]()
+            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated().reversed() {
+                if seen[item.name] == nil {
+                    seen[item.name] = item
+                }
+                else
+                {
+                    (self.window?.contentViewController as! PlaylistViewController).removePlay(item, atIndex: row)
+                }
             }
-            item.rank = row + 1
+            self.setNeedsDisplay(self.frame)
+            break
+            
+        case false:
+            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
+                if let undo = self.undoManager {
+                    undo.registerUndo(withTarget: self, handler: { [oldValue = item.rank] (PlaylistViewController) -> () in
+                        (item as AnyObject).setValue(oldValue, forKey: "rank")
+                        if !undo.isUndoing {
+                            undo.setActionName(String.init(format: "Reseq %@", "rank"))
+                        }
+                    })
+                }
+                item.rank = row + 1
+            }
         }
         playitemTableView.endUpdates()
     }
@@ -241,7 +273,7 @@ extension NSURL {
 
 class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate,NSMenuDelegate {
 
-    @IBOutlet var playlistArrayController: NSDictionaryController!
+    @IBOutlet var playlistArrayController: NSArrayController!
     @IBOutlet var playitemArrayController: NSArrayController!
 
     @IBOutlet var playlistTableView: PlayTableView!
@@ -251,13 +283,22 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
-    dynamic var playlists = Dictionary<String, Any>()
-    dynamic var playCache = Dictionary<String, Any>()
+    
+    //  delegate keeps our parsing dict to keeps names unique
+    //  PlayList.name.willSet will track changes in playdicts
+    var playdicts: Dictionary<String,Any> {
+        get {
+            return appDelegate.playdicts
+        }
+    }
+
+    dynamic var playlists = [PlayList]()
+    dynamic var playCache = [PlayList]()
     
     //  MARK:- Undo keys to watch for undo: PlayList and PlayItem
     var listIvars : [String] {
         get {
-            return ["key", "value"]
+            return ["name", "list"]
         }
     }
     var itemIvars : [String] {
@@ -282,36 +323,65 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  Start or forget observing any changes
     internal func setObserving(_ state: Bool) {
-        for dict in playlists {
-            let items: [PlayItem] = dict.value as! [PlayItem]
-            self.observe(dict as AnyObject, keyArray: listIvars, observing: state)
-            for item in items {
+        for playlist in playlists {
+            self.observe(playlist, keyArray: listIvars, observing: state)
+            for item in playlist.list {
                 self.observe(item, keyArray: itemIvars, observing: state)
             }
         }
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if let undo = self.undoManager {
+        switch keyPath {
+        case k.list:
+            //  handled by [add,remove]<List,Play> methods
             let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
             let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
-            
-            undo.registerUndo(withTarget: self, handler: { [oldValue] (PlaylistViewController) -> () in
 
-                (object as AnyObject).setValue(oldValue, forKey: keyPath!)
-                if !undo.isUndoing {
-                    undo.setActionName(String.init(format: "Edit %@", keyPath!))
-                }
-            })
-            Swift.print(String.init(format: "%@ %@ -> %@", keyPath!, oldValue as! CVarArg, newValue as! CVarArg))
+            if (newValue != nil) {
+                Swift.print(String.init(format: "%p:%@ + %@", object! as! CVarArg, keyPath!, newValue as! CVarArg))
+            }
+            else
+            if (oldValue != nil) {
+                Swift.print(String.init(format: "%p:%@ - %@", object! as! CVarArg, keyPath!, oldValue as! CVarArg))
+            }
+            else
+            {
+                Swift.print(String.init(format: "%p:%@ ? %@", object! as! CVarArg, keyPath!, "*no* values?"))
+            }
+            break
+            
+        default:
+            if let undo = self.undoManager {
+                let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
+                let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
+                
+                undo.registerUndo(withTarget: self, handler: { [oldValue] (PlaylistViewController) -> () in
+                    
+                    (object as AnyObject).setValue(oldValue, forKey: keyPath!)
+                    if !undo.isUndoing {
+                        undo.setActionName(String.init(format: "Edit %@", keyPath!))
+                    }
+                })
+                Swift.print(String.init(format: "%@ %@ -> %@", keyPath!, oldValue as! CVarArg, newValue as! CVarArg))
+            }
+            break
         }
+    }
+    
+    //  A bad (duplicate) value was attempted
+    @objc fileprivate func badPlayLitName(_ notification: Notification) {
+        DispatchQueue.main.async {
+            self.playlistTableView.reloadData()
+            NSSound(named: "Purr")?.play()
+         }
     }
     
     //  MARK:- View lifecycle
     override func viewDidLoad() {
         let types = [kUTTypeData as String,
                      kUTTypeURL as String,
-                     NSDictionaryControllerKeyValuePair.className(),
+                     PlayList.className(),
                      PlayItem.className(),
                      NSFilenamesPboardType,
                      NSFilesPromisePboardType,
@@ -324,7 +394,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
         
         //  Load playlists shared by all document; our delegate maintains history
-        self.restorePlaylists(restoreButton)
+        self.restorePlaylists(nil)
 
         NotificationCenter.default.addObserver(
             self,
@@ -354,24 +424,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    var historyCache: NSDictionaryControllerKeyValuePair? = nil
+    var historyCache: PlayList? = nil
     override func viewWillAppear() {
-        // add existing history entry if any AVQueuePlayer
-        if historyCache == nil {
-            historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
-            historyCache!.key = UserSettings.HistoryName.value
-            historyCache!.value = [PlayItem]()
-        }
         
-        if appDelegate.histories.count > 0 {
-            playlists[UserSettings.HistoryName.value] = nil
-            
-            // overlay in history using NSDictionaryControllerKeyValuePair Protocol setKey
-            historyCache = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
-            historyCache!.key = UserSettings.HistoryName.value
-            historyCache!.value = appDelegate.histories
+        // add existing history entry if any AVQueuePlayer
+        if playdicts[UserSettings.HistoryName.value] == nil {
+            if historyCache == nil {
+                historyCache = PlayList()
+                historyCache!.name = UserSettings.HistoryName.value
+                historyCache!.list = appDelegate.histories
+            }
+            playlistArrayController.addObject(historyCache!)
         }
-        playlistArrayController.addObject(historyCache!)
         
         // cache our list before editing
         playCache = playlists
@@ -380,15 +444,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         NSApp.activate(ignoringOtherApps: true)
         self.view.window?.makeKeyAndOrderFront(self)
 
+        //  Watch for bad (duplicate) playlist names
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(badPlayLitName(_:)),
+            name: NSNotification.Name(rawValue: "BadPlayListName"),
+            object: nil)
+
         //  Start observing any changes
         setObserving(true)
     }
 
-    override func viewDidDisappear() {
-        //  Stop observing any changes
-        setObserving(false)
-    }
-    
     //  MARK:- Playlist Actions
     //
     //  internal are also used by undo manager callback and by IBActions
@@ -397,7 +463,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     //  but use their index to update the controller scrolling only initially.
 
     //  "Play" items are individual PlayItem items, part of a playlist
-    internal func addPlay(_ item: PlayItem, atIndex index: Int) {
+    internal func addPlay(_ item: PlayItem, atIndex p_index: Int) {
+        var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
                 self.removePlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
@@ -407,8 +474,21 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             })
         }
         observe(item, keyArray: itemIvars, observing: true)
-        playitemArrayController.insert(item, atArrangedObjectIndex: index)
-        
+        if index > 0 && index < (playitemArrayController.arrangedObjects as! [PlayItem]).count {
+            playitemArrayController.insert(item, atArrangedObjectIndex: index)
+        }
+        else
+        {
+            playitemArrayController.addObject(item)
+            let row = playitemTableView.selectedRow
+            if row >= 0 {
+                index = row
+            }
+            else
+            {
+                index = (playitemArrayController.arrangedObjects as! [PlayItem]).count
+            }
+        }
         DispatchQueue.main.async {
             self.playitemTableView.scrollRowToVisible(index)
         }
@@ -430,24 +510,31 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    //  "List" items are controller objects - NSDictionaryControllerKeyValuePair
-    internal func addList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+    //  "List" items are controller objects
+    internal func addList(_ item: PlayList, atIndex p_index: Int) {
+        var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.removeList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                self.removeList(oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Add PlayList")
                 }
             })
         }
         observe(item, keyArray: listIvars, observing: true)
-        playlistArrayController.insert(item, atArrangedObjectIndex: index)
-
+        if index > 0 && index < (playlistArrayController.arrangedObjects as! [PlayItem]).count {
+            playlistArrayController.insert(item, atArrangedObjectIndex: index)
+        }
+        else
+        {
+            playlistArrayController.addObject(item)
+            index = (playlistArrayController.arrangedObjects as! [PlayItem]).count
+        }
         DispatchQueue.main.async {
             self.playlistTableView.scrollRowToVisible(index)
         }
     }
-    internal func removeList(_ item: NSDictionaryControllerKeyValuePair, atIndex index: Int) {
+    internal func removeList(_ item: PlayList, atIndex index: Int) {
         if let undo = self.undoManager {
             undo.prepare(withInvocationTarget: self.addList(item, atIndex: index))
             if !undo.isUndoing {
@@ -456,7 +543,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.addList(oldVals["item"] as! NSDictionaryControllerKeyValuePair, atIndex: oldVals["index"] as! Int)
+                self.addList(oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Remove PlayList")
                 }
@@ -475,27 +562,22 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to add to existing play item list
-        if whoAmI == playlistTableView, let selectedPlaylist = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair {
-            let list: Array<PlayItem> = (selectedPlaylist.value as! Array).sorted(by: { (lhs, rhs) -> Bool in
-                return lhs.rank < rhs.rank
-            })
-            let item = PlayItem(name:"item#",link:URL.init(string: "http://")!,time:0.0,rank:(list.last?.rank)! + 1);
-            let temp = NSString(format:"%p",item) as String
-            item.name += String(temp.suffix(3))
-
-            self.addPlay(item, atIndex: list.count - 1)
+        if whoAmI == playlistTableView {
+            let item = PlayList()
+            
+            self.addList(item, atIndex: -1)
         }
         else
-        if whoAmI == playlistTableView {
-            let item = playlistArrayController.newObject()
-            let list = Array <PlayItem>()
+        if let selectedPlaylist = playlistArrayController.selectedObjects.first as? PlayList {
+            let list: Array<PlayItem> = selectedPlaylist.list.sorted(by: { (lhs, rhs) -> Bool in
+                return lhs.rank < rhs.rank
+            })
+            let item = PlayItem(name:"item#",
+                                link:URL.init(string: "http://")!,
+                                time:0.0,
+                                rank:(list.count > 0) ? (list.last?.rank)! + 1 : 1);
 
-            let temp = NSString(format:"%p",list) as String
-            let name = "play#" + String(temp.suffix(3))
-            item.key = name
-            item.value = list
-
-            self.addList(item, atIndex: playlists.count - 1)
+            self.addPlay(item, atIndex: -1)
         }
         else
         {
@@ -509,14 +591,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         switch whoAmI {
             
         case playlistTableView:
-            for item in (playlistArrayController.selectedObjects as! [NSDictionaryControllerKeyValuePair]) {
-                let index = (playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]).index(of: item)
+            for item in (playlistArrayController.selectedObjects as! [PlayList]).reversed() {
+                let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
                 self.removeList(item, atIndex: index!)
             }
             break
             
         case playitemTableView:
-            for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
+            for item in (playitemArrayController.selectedObjects as! [PlayItem]).reversed() {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
                 self.removePlay(item, atIndex: index!)
             }
@@ -531,15 +613,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             else
             if playlistArrayController.selectedObjects.count > 0 {
-                for item in (playlistArrayController.selectedObjects as! [NSDictionaryControllerKeyValuePair]) {
-                    let index = (playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]).index(of: item)
+                for item in (playlistArrayController.selectedObjects as! [PlayList]) {
+                    let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
                     self.removeList(item, atIndex: index!)
                 }
             }
             else
             {
                 Swift.print("firstResponder: \(String(describing: whoAmI))")
-                AudioServicesPlaySystemSound(1051);
+                NSSound(named: "Purr")?.play()
             }
         }
     }
@@ -561,7 +643,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         
         //  Try to restore item at its last known location
-        for (i,item) in (items.enumerated()).suffix(maxSize) {
+        for (i,item) in (items.enumerated()).prefix(maxSize) {
             if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
                 UserSettings.createNewWindows.value = true
             }
@@ -593,14 +675,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         case playlistTableView:
             Swift.print("We are in playlistTableView")
-            for selectedPlaylist in (playlistArrayController.selectedObjects as? [NSDictionaryControllerKeyValuePair])! {
-                list.append(contentsOf: selectedPlaylist.value as! Array)
+            for selectedPlaylist in (playlistArrayController.selectedObjects as? [PlayList])! {
+                list.append(contentsOf: selectedPlaylist.list )
             }
             break
             
         default:
             Swift.print("firstResponder: \(String(describing: whoAmI))")
-            AudioServicesPlaySystemSound(1051);
+            NSSound(named: "Purr")?.play()
             return
         }
         
@@ -611,7 +693,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                  UserSettings.playlistThrottle.keyPath,
                                  throttle)
             
-//            if !appDelegate.dialogOKCancel(message, info: infoMsg) { return }
             appDelegate.sheetOKCancel(message, info: infoMsg,
                                       acceptHandler: { (button) in
                                         if button == NSAlertFirstButtonReturn {
@@ -627,20 +708,24 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     // Return notification from webView controller
     @objc func gotNewHistoryItem(_ note: Notification) {
-        historyCache!.value = appDelegate.histories
+        historyCache!.list = appDelegate.histories
     }
 
     @IBOutlet weak var restoreButton: NSButton!
-    @IBAction func restorePlaylists(_ sender: NSButton) {
+    @IBAction func restorePlaylists(_ sender: NSButton?) {
+        if sender != nil { setObserving(false) }
         if playCache.count > 0 {
             playlists = playCache
         }
         else
         if let playArray = defaults.dictionary(forKey: UserSettings.Playlists.keyPath) {
+            playlists = [PlayList]()
             for (name,plist) in playArray {
                 guard let items = plist as? [Dictionary<String,Any>] else {
                     let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
-                    playlists[name] = [item]
+                    let playlist = PlayList()
+                    playlist.list.append(item)
+                    playlists.append(playlist)
                     continue
                 }
                 var list : [PlayItem] = [PlayItem]()
@@ -649,25 +734,26 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     
                     list.append(item)
                 }
-                playlists[name] = list
+                let playlist = PlayList.init(name: name, list: list)
+                playlistArrayController.addObject(playlist)
             }
         }
+        if sender != nil { setObserving(true) }
     }
 
     @IBOutlet weak var saveButton: NSButton!
     @IBAction func savePlaylists(_ sender: AnyObject) {
-        let playArray = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
+        let playArray = playlistArrayController.arrangedObjects as! [PlayList]
         var temp = Dictionary<String,Any>()
         for playlist in playArray {
             var list = Array<Any>()
-            for playitem in playlist.value as! [PlayItem] {
+            for playitem in playlist.list {
                 //  Capture latest rect if this item's is zero and one is available
                 playitem.refresh()
 
-                let dict = playitem.dictionary()
-                list.append(dict)
+                list.append(playitem.dictionary())
             }
-            temp[playlist.key!] = list
+            temp[playlist.name] = list
         }
         defaults.set(temp, forKey: UserSettings.Playlists.keyPath)
         defaults.synchronize()
@@ -676,6 +762,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBAction override func dismiss(_ sender: Any?) {
         super.dismiss(sender)
         
+        //  Stop observing any changes
+        setObserving(false)
+
         //  If we were run modally as a window, close it
         if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
             NSApp.abortModal()
@@ -686,9 +775,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         switch (sender! as AnyObject).tag == 0 {
             case true:
                 // Save history info which might have changed
-                if historyCache != nil {
-                    appDelegate.histories = historyCache?.value as! Array<PlayItem>
-                    UserSettings.HistoryName.value = (historyCache?.key)!
+                if historyCache != nil, let cache = historyCache {
+                    appDelegate.histories = cache.list
+                    UserSettings.HistoryName.value = cache.name
                 }
                 // Save to the cache
                 playCache = playlists
@@ -768,15 +857,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
         if tableView == playlistTableView {
-            let objects: [NSDictionaryControllerKeyValuePair] = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
-            var items: [NSDictionaryControllerKeyValuePair] = [NSDictionaryControllerKeyValuePair]()
+            let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
+            var items: [PlayList] = [PlayList]()
             var promises = [String]()
             for index in rowIndexes {
                 let listitem = objects[index]
-                promises.append(listitem.key!)
+                promises.append(listitem.name)
                 items.append(listitem)
             }
-            pboard.setPropertyList(items, forType: NSDictionaryControllerKeyValuePair.className())
+            pboard.setPropertyList(items, forType: PlayList.className())
             pboard.setPropertyList(promises, forType:NSFilesPromisePboardType)
             pboard.writeObjects(promises as [NSPasteboardWriting])
         }
@@ -820,12 +909,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         var names: [String] = [String]()
         //	Always marshall an array of items regardless of item count
         if tableView == playlistTableView {
-            let objects: [NSDictionaryControllerKeyValuePair] = playlistArrayController.arrangedObjects as! [NSDictionaryControllerKeyValuePair]
+            let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
             for index in indexSet {
-                let dictKV = objects[index]
+                let playlist = objects[index]
                 var items: [Any] = [Any]()
-                let name = dictKV.key!
-                for item in dictKV.value as! [PlayItem] {
+                let name = playlist.name
+                for item in playlist.list {
                     let dict = item.dictionary()
                     items.append(dict)
                 }
@@ -842,9 +931,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         {
-            let selection = playlistArrayController.selectedObjects.first as! NSDictionaryControllerKeyValuePair
+            let selection = playlistArrayController.selectedObjects.first as! PlayList
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
-            let name = String(format: "%@+%ld", selection.key!, indexSet.count)
+            let name = String(format: "%@+%ld", selection.name, indexSet.count)
             var items: [AnyObject] = [AnyObject]()
 
             for index in indexSet {
@@ -950,11 +1039,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             tableView.beginUpdates()
             for index in selectedRowIndexes! {
-                let source = (playlistArrayController.arrangedObjects as! [Any])[index] as! NSDictionaryControllerKeyValuePair
-                for playItem in source.value as! [PlayItem] {
-                    
+                let playlist = (playlistArrayController.arrangedObjects as! [PlayList])[index]
+                for playItem in playlist.list {
                     playitemArrayController.addObject(playItem)
-
                 }
             }
             tableView.endUpdates()
@@ -964,47 +1051,35 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if sourceTableView == playitemTableView {
             // These playitems get dropped into a new or append a playlist
             let items: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
-            var selectedPlaylist: NSDictionaryControllerKeyValuePair? = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair
+            var selectedPlaylist: PlayList? = playlistArrayController.selectedObjects.first as? PlayList
             let selectedRowIndexes = sourceTableView?.selectedRowIndexes
-            var list: [PlayItem]? = nil
 
             tableView.beginUpdates()
             if selectedPlaylist != nil && row < tableView.numberOfRows {
-                selectedPlaylist = (playlistArrayController.arrangedObjects as! Array)[row]
-                list = (selectedPlaylist?.value as! [PlayItem])
+                selectedPlaylist = (playlistArrayController.arrangedObjects as! [PlayList])[row]
+                for index in selectedRowIndexes! {
+                    selectedPlaylist?.list.append(items[index])
+                }
             }
             else
             {
-                selectedPlaylist = playlistArrayController.newObject()
-                list = [PlayItem]()
-                let temp = NSString(format:"%p",list!) as String
-                let name = "play#" + String(temp.suffix(3))
-                selectedPlaylist?.value = list
-                selectedPlaylist?.key = name
-                playlistArrayController.addObject(selectedPlaylist!)
+                playlistArrayController.addObject(PlayList())
                 tableView.scrollRowToVisible(row)
                 playlistTableView.reloadData()
             }
             tableView.selectRowIndexes(IndexSet.init(integer: row), byExtendingSelection: false)
-
-            for index in selectedRowIndexes! {
-                playitemArrayController.addObject(items[index])
-            }
             tableView.endUpdates()
         }
         else
 
         //    We have a Finder drag-n-drop of file or location URLs ?
         if let items: Array<AnyObject> = pasteboard.readObjects(forClasses: [NSURL.classForCoder()], options: options) as Array<AnyObject>? {
-            var play = playlistArrayController.selectedObjects.first as? NSDictionaryControllerKeyValuePair
+            let play = playlistArrayController.selectedObjects.first as? PlayList
             let isSandboxed = appDelegate.isSandboxed()
             var okydoKey = false
             
             if (play == nil) {
-                play = playlistArrayController.newObject() as NSDictionaryControllerKeyValuePair
-                play?.value = Array <PlayItem>()
-            
-                playlistArrayController.addObject(play!)
+                playlistArrayController.addObject(PlayList())
                 
                 DispatchQueue.main.async {
                     self.playlistTableView.scrollRowToVisible(self.playlists.count - 1)
@@ -1027,7 +1102,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 if !okydoKey {
                     let spec = fileURL?.deletingLastPathComponent
                     let head = spec!().absoluteString
-                    play?.key = head
+                    play?.name = head
                     okydoKey = true
                 }
                 //  If we already know this url use its settings
@@ -1083,7 +1158,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         
                         //  Use first playlist name
                         if elementItem?.count == 0 { continue }
-                        if !okydoKey { play?.key = elementType }
+                        if !okydoKey { play?.name = elementType }
 
                         switch (elementType) {
                         case "public.url"://kUTTypeURL
@@ -1166,7 +1241,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         return true
     }
     
-    //  We cannot alter play time once time is entered; just set to zero to alter the rest
+    //  We cannot alter a playitem once time is entered; just set to zero to alter the rest
     func tableView(_ tableView: NSTableView, shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
         if tableView == playlistTableView {
             return true
