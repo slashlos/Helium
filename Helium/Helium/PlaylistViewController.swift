@@ -706,7 +706,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     // Return notification from webView controller
     @objc func gotNewHistoryItem(_ note: Notification) {
-        historyCache!.list = appDelegate.histories
+        historyCache.list = appDelegate.histories
     }
 
     @IBOutlet weak var restoreButton: NSButton!
