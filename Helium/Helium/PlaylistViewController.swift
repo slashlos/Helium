@@ -545,12 +545,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     internal func removeList(_ item: PlayList, atIndex index: Int) {
         if let undo = self.undoManager {
-            undo.prepare(withInvocationTarget: self.addList(item, atIndex: index))
-            if !undo.isUndoing {
-                undo.setActionName("Remove PlayList")
-            }
-        }
-        if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
                 self.addList(oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
