@@ -773,10 +773,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         switch (sender! as AnyObject).tag == 0 {
             case true:
                 // Save history info which might have changed
-                if historyCache != nil, let cache = historyCache {
-                    appDelegate.histories = cache.list
-                    UserSettings.HistoryName.value = cache.name
-                }
+                appDelegate.histories = historyCache.list
+                UserSettings.HistoryName.value = historyCache.name
+                
                 // Save to the cache
                 playCache = playlists
                 break
