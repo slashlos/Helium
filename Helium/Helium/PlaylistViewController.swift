@@ -510,7 +510,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    //  "List" items are controller objects
+    //  "List" items are PlayList objects
     internal func addList(_ item: PlayList, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
