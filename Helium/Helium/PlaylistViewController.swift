@@ -373,7 +373,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc fileprivate func badPlayLitName(_ notification: Notification) {
         DispatchQueue.main.async {
             self.playlistTableView.reloadData()
-            NSSound(named: "Purr")?.play()
+            NSSound(named: "Sosumi")?.play()
          }
     }
     
@@ -621,7 +621,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             else
             {
                 Swift.print("firstResponder: \(String(describing: whoAmI))")
-                NSSound(named: "Purr")?.play()
+                NSSound(named: "Sosumi")?.play()
             }
         }
     }
@@ -682,7 +682,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         default:
             Swift.print("firstResponder: \(String(describing: whoAmI))")
-            NSSound(named: "Purr")?.play()
+            NSSound(named: "Sosumi")?.play()
             return
         }
         
