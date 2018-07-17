@@ -637,10 +637,13 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
                             //    if it's a video file, get and set window content size to its dimentions
                             if track.mediaType == AVMediaTypeVideo {
-                                let oldSize = webView.window?.contentView?.bounds.size
+                                
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
-                                if oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
+                                
+                                //  
+                                /*
+                                if let oldSize = webView.window?.contentView?.bounds.size, oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
                                     var iterator = theme.constraints.makeIterator()
                                     Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
                                     while let constraint = iterator.next()
@@ -652,7 +655,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                                     webView.window?.setContentSize(webSize)
                                     webView.window?.setFrameOrigin(origin)
                                     webView.bounds.size = webSize
-                                }
+                                }*/
                             }
                             //  If we have save attributes restore them
                             self.restoreSettings(title as String)
