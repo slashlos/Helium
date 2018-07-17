@@ -572,10 +572,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let list: Array<PlayItem> = selectedPlaylist.list.sorted(by: { (lhs, rhs) -> Bool in
                 return lhs.rank < rhs.rank
             })
-            let item = PlayItem(name:"item#",
-                                link:URL.init(string: "http://")!,
-                                time:0.0,
-                                rank:(list.count > 0) ? (list.last?.rank)! + 1 : 1);
+            let item = PlayItem()
+            item.rank = (list.count > 0) ? (list.last?.rank)! + 1 : 1
 
             self.addPlay(item, atIndex: -1)
         }
