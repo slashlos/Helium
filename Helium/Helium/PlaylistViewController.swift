@@ -493,7 +493,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.playitemTableView.scrollRowToVisible(index)
         }
     }
-    internal func removePlay(_ item: PlayItem, atIndex index: Int) {
+    internal func removePlay(_ item: PlayItem, atIndex p_index: Int) {
+        var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
                 self.addPlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
@@ -505,6 +506,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         observe(item, keyArray: itemIvars, observing: false)
         playitemArrayController.removeObject(item)
 
+        let row = playitemTableView.selectedRow
+        if row >= 0 {
+            index = row
+        }
+        else
+        {
+            index = max(0,min(index,(playitemArrayController.arrangedObjects as! [PlayItem]).count))
+        }
         DispatchQueue.main.async {
             self.playitemTableView.scrollRowToVisible(index)
         }
@@ -528,7 +537,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             playlistArrayController.addObject(item)
-            index = (playlistArrayController.arrangedObjects as! [PlayItem]).count
+            index = (playlistArrayController.arrangedObjects as! [PlayItem]).count - 1
         }
         DispatchQueue.main.async {
             self.playlistTableView.scrollRowToVisible(index)
