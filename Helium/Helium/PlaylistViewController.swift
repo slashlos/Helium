@@ -424,18 +424,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    var historyCache: PlayList? = nil
+    var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
+                                               list: [PlayItem]())
     override func viewWillAppear() {
-        
         // add existing history entry if any AVQueuePlayer
-        if playdicts[UserSettings.HistoryName.value] == nil {
-            if historyCache == nil {
-                historyCache = PlayList()
-                historyCache!.name = UserSettings.HistoryName.value
-                historyCache!.list = appDelegate.histories
-            }
-            playlistArrayController.addObject(historyCache!)
+        if appDelegate.histories.count > 0 {
+            appDelegate.playdicts[UserSettings.HistoryName.value] = nil
+            
+            // overlay in history using NSDictionaryControllerKeyValuePair Protocol setKey
+            historyCache = PlayList.init(name: UserSettings.HistoryName.value,
+                                         list: appDelegate.histories)
         }
+        playlistArrayController.addObject(historyCache)
         
         // cache our list before editing
         playCache = playlists
