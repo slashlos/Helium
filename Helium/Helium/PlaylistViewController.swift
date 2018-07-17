@@ -323,6 +323,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  Start or forget observing any changes
     internal func setObserving(_ state: Bool) {
+        self.observe(self, keyArray: [UserSettings.Playlists.value], observing: state)
         for playlist in playlists {
             self.observe(playlist, keyArray: listIvars, observing: state)
             for item in playlist.list {
@@ -332,11 +333,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
+        let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
+
         switch keyPath {
-        case k.list:
-            //  handled by [add,remove]<List,Play> methods
-            let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
-            let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
+        
+        case UserSettings.Playlists.value, k.list:
+            //  arrays handled by [add,remove]<List,Play> callback closure block
 
             if (newValue != nil) {
                 Swift.print(String.init(format: "%p:%@ + %@", object! as! CVarArg, keyPath!, newValue as! CVarArg))
@@ -353,9 +356,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         default:
             if let undo = self.undoManager {
-                let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
-                let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
                 
+                //  scalars handled here with its matching closure block
                 undo.registerUndo(withTarget: self, handler: { [oldValue] (PlaylistViewController) -> () in
                     
                     (object as AnyObject).setValue(oldValue, forKey: keyPath!)
