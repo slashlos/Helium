@@ -639,10 +639,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                             if track.mediaType == AVMediaTypeVideo {
                                 
                                 title = url.lastPathComponent as NSString
-                                webSize = track.naturalSize
-                                
-                                //  
-                                /*
+                                webSize = track.naturalSize/*
                                 if let oldSize = webView.window?.contentView?.bounds.size, oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
                                     var iterator = theme.constraints.makeIterator()
                                     Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
