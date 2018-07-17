@@ -9,7 +9,7 @@
 import Foundation
 import QuickLook
 
-class PlayList : NSObject {
+class PlayList : NSObject,NSCoding {
     //  Keep playlist names unique
     var name : String = k.list {
         didSet {
@@ -35,9 +35,10 @@ class PlayList : NSObject {
     override init() {
         super.init()
 
-        list = Array <PlayItem> ()
         let temp = NSString(format:"%p",self) as String
-        self.name = "play#" + String(temp.suffix(3))
+        name = "play#" + String(temp.suffix(4))
+        list = Array <PlayItem> ()
+
         if let appDelegate = NSApp.delegate {
             (appDelegate as! AppDelegate).playdicts[name] = list
         }
@@ -81,6 +82,17 @@ class PlayList : NSObject {
         plist[name] = items
         return plist
     }
+    
+    required convenience init(coder: NSCoder) {
+        let name = coder.decodeObject(forKey: k.name) as! String
+        let list = coder.decodeObject(forKey: k.list) as! [PlayItem]
+        self.init(name: name, list: list)
+    }
+    
+    func encode(with coder: NSCoder) {
+        coder.encode(name, forKey: k.name)
+        coder.encode(list, forKey: k.list)
+    }
 }
 
 class PlayItem : NSObject, NSCoding {
@@ -103,7 +115,7 @@ class PlayItem : NSObject, NSCoding {
     }
     
     override init() {
-        name = k.item
+        name = k.item + "#"
         link = URL.init(string: "http://")!
         time = 0.0
         rank = 0
@@ -113,6 +125,9 @@ class PlayItem : NSObject, NSCoding {
         alpha = 0.6
         trans = 0
         super.init()
+        
+        let temp = NSString(format:"%p",self) as String
+        name += String(temp.suffix(4))
     }
     init(name:String, link:URL, time:TimeInterval, rank:Int) {
         self.name = name
