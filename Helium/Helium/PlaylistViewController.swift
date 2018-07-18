@@ -483,6 +483,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             playitemArrayController.addObject(item)
+            playitemArrayController.rearrangeObjects()
             let row = playitemTableView.selectedRow
             if row >= 0 {
                 index = row
@@ -540,6 +541,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             playlistArrayController.addObject(item)
+            playlistArrayController.rearrangeObjects()
             index = (playlistArrayController.arrangedObjects as! [PlayItem]).count - 1
         }
         DispatchQueue.main.async {
@@ -715,7 +717,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     // Return notification from webView controller
     @objc func gotNewHistoryItem(_ note: Notification) {
-        historyCache.list = appDelegate.histories
+        //  If history is current playplist, add to the history
+        if historyCache.name == (playlistArrayController.selectedObjects.first as! PlayList).name {
+            self.addPlay(note.object as! PlayItem, atIndex: -1)
+        }
     }
 
     @IBOutlet weak var restoreButton: NSButton!
