@@ -970,6 +970,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // MARK:- Sandbox Support
     var bookmarks = [URL: Data]()
+    var os = ProcessInfo().operatingSystemVersion
 
     func isSandboxed() -> Bool {
         let bundleURL = Bundle.main.bundleURL
