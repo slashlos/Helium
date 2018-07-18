@@ -710,20 +710,31 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                             if track.mediaType == AVMediaTypeVideo {
                                 
                                 title = url.lastPathComponent as NSString
-                                webSize = track.naturalSize/*
-                                if let oldSize = webView.window?.contentView?.bounds.size, oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
-                                    var iterator = theme.constraints.makeIterator()
-                                    Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
-                                    while let constraint = iterator.next()
-                                    {
-                                        Swift.print("\(constraint.priority) \(constraint)")
+                                webSize = track.naturalSize
+                                
+                                //  Try to adjust initial sizee if possible
+                                let os = appDelegate.os
+                                switch (os.majorVersion, os.minorVersion, os.patchVersion) {
+                                case (10, 10, _), (10, 11, _), (10, 12, _):
+                                    if let oldSize = webView.window?.contentView?.bounds.size, oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
+                                        var iterator = theme.constraints.makeIterator()
+                                        Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
+                                        while let constraint = iterator.next()
+                                        {
+                                            Swift.print("\(constraint.priority) \(constraint)")
+                                        }
+                                        
+                                        origin.y += (oldSize.height - webSize.height)
+                                        webView.window?.setContentSize(webSize)
+                                        webView.window?.setFrameOrigin(origin)
+                                        webView.bounds.size = webSize
                                     }
+                                    break
                                     
-                                    origin.y += ((oldSize?.height)! - webSize.height)
-                                    webView.window?.setContentSize(webSize)
-                                    webView.window?.setFrameOrigin(origin)
-                                    webView.bounds.size = webSize
-                                }*/
+                               default:
+                                    //  Issue still to be resolved so leave as-is for now
+                                    Swift.print("os \(os)")
+                                }
                             }
                             //  If we have save attributes restore them
                             self.restoreSettings(title as String)
