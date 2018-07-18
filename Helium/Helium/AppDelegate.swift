@@ -235,14 +235,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
-        //  We have no window, so create one and load playlists there
-        if let window = NSApp.mainWindow {
-            if (window.windowController?.contentViewController?.isKind(of: PlaylistViewController.self))! {
+        //  We have a window, create as sheet and load playlists there
+        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
+            //  No window, load panel and its playlist controller
+            let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
+            ppc.window?.center()
+            ppc.window?.makeKeyAndOrderFront(sender)
+            return
+        }
+        
+        if let wvc = window.windowController?.contentViewController {
+
+            //  We're already here so exit
+            if wvc.isKind(of: PlaylistViewController.self) {
                 return
             }
             
-            //  If currently a web view controller, fetch and present playlist here
-            if let wvc: WebViewController = window.windowController?.contentViewController as? WebViewController {
+            //  If a web view controller, fetch and present playlist here
+            if let wvc: WebViewController = wvc as? WebViewController {
                 if wvc.presentedViewControllers?.count == 0 {
                     let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
                     
@@ -253,11 +263,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             Swift.print("who are we? \(String(describing: window.contentViewController))")
         }
-                
-        //  No window, load window and a playlist controller
-        let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
-        ppc.window?.center()
-        ppc.window?.makeKeyAndOrderFront(sender)
     }
     
     var canRedo : Bool {

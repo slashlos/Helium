@@ -187,6 +187,7 @@ class MyWebView : WKWebView {
                         let data = item.data(forType: type)
                         let text = item.string(forType: type)
                         let list = item.propertyList(forType: type)
+                        
                         Swift.print("data \(String(describing: data))")
                         Swift.print("text \(String(describing: text))")
                         Swift.print("list \(String(describing: list))")
@@ -318,6 +319,7 @@ class MyWebView : WKWebView {
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")
+        item.representedObject = self.window
         item.target = appDelegate
         menu.addItem(item)
 
