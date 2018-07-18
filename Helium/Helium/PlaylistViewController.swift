@@ -383,6 +383,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     override func viewDidLoad() {
         let types = [kUTTypeData as String,
                      kUTTypeURL as String,
+                     kUTTypeFileURL as String,
                      PlayList.className(),
                      PlayItem.className(),
                      NSFilenamesPboardType,
@@ -636,13 +637,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  first window might be reused, others no
         let newWindows = UserSettings.createNewWindows.value
 
-        /// dismiss whatever got us here
-        super.dismiss(sender)
-        
-        //  If we were run modally as a window, close it
-        if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
-            NSApp.abortModal()
-            ppc.window?.orderOut(sender)
+        //  Unless we're the standalone helium playlist window dismiss all
+        if !(self.view.window?.isKind(of: HeliumPanel.self))! {
+            /// dismiss whatever got us here
+            super.dismiss(sender)
+            
+            //  If we were run modally as a window, close it
+            if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
+                NSApp.abortModal()
+                ppc.window?.orderOut(sender)
+            }
         }
         
         //  Try to restore item at its last known location

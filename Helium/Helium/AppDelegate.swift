@@ -86,6 +86,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
     }
 
+    //  Complimented with createNewWindows to hold until really open
+    var openForBusiness = false
+    
 	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
         UserSettings.createNewWindows.value = (sender.state == NSOffState)
     }
@@ -115,7 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        if !newWindows, let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
+        if (!newWindows || !openForBusiness), let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
 
             //  If it's a "h3w" type read it and load it into defaults
             if fileType == "h3w" {
@@ -253,10 +256,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 
         //  No window, load window and a playlist controller
         let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
-        ppc.window?.title = "Helium Playlists"
         ppc.window?.center()
-        
-        NSApp.runModal(for: ppc.window!)
+        ppc.window?.makeKeyAndOrderFront(sender)
     }
     
     var canRedo : Bool {
@@ -405,6 +406,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  MARK:- Lifecyle
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
+        //  Now we're open for business
+        self.openForBusiness = true
+
         let dc = NSDocumentController.shared()
         return dc.documents.count == 0
      }
@@ -412,6 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
     func applicationWillFinishLaunching(_ notification: Notification) {
+
         //  We need our own to reopen our "document" urls
         _ = HeliumDocumentController.init()
         
@@ -620,6 +625,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
             temp.append(item as AnyObject)
         }
+        
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
         defaults.synchronize()
     }
@@ -893,12 +899,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let urlString = rawString.substring(from: index)
         
         //  Handle new window here to narrow cast to new or current hwc
-        if !newWindows, let wc = NSApp.keyWindow?.windowController {
+        if (!newWindows || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
             if let hwc : HeliumPanelController = wc as? HeliumPanelController {
                 (hwc.contentViewController as! WebViewController).loadURL(text: urlString)
                 return
             }
         }
+        
         //  Temporarily disable new windows as we'll create one now
         UserSettings.createNewWindows.value = false
         do

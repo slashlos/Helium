@@ -53,7 +53,7 @@ class MyWebView : WKWebView {
 
         //  Pick off request (non-file) urls first
         if !url.isFileURL {
-            if newWindows && doc != nil {
+            if appDelegate.openForBusiness && newWindows && doc != nil {
                 do
                 {
                     let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
@@ -83,7 +83,25 @@ class MyWebView : WKWebView {
             return
         }
         
-        self.load(URLRequest(url: nextURL))
+        if appDelegate.openForBusiness && newWindows && doc != nil {
+            do
+            {
+                let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+                let oldWindow = self.window
+                let newWindow = next.windowControllers.first?.window
+                (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: nextURL))
+                newWindow?.offsetFromWindow(oldWindow!)
+            }
+            catch let error {
+                NSApp.presentError(error)
+                Swift.print("Yoink, unable to create new url doc for (\(url))")
+                return
+            }
+        }
+        else
+        {
+            self.load(URLRequest(url: nextURL))
+        }
         doc?.update(to: nextURL, ofType: nextURL.pathExtension)
     }
     
@@ -99,20 +117,27 @@ class MyWebView : WKWebView {
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
 
+        //  Open subsequent items in new windows
+        let createNewWindows = UserSettings.createNewWindows.value
+        
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
-                if let urlString = item.string(forType: kUTTypeURL as String) {
-                    self.load(URLRequest(url: URL(string: urlString)!))
+
+                if let urlString = item.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/) {
+                    self.next(url: URL(string: urlString)!)
+                }
+                else
+                if let urlString = item.string(forType: kUTTypeURL as String/*"public.url"*/) {
+                    self.next(url: URL(string: urlString)!)
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/), var itemURL = URL.init(string: urlString) {
-                    
-                    if UserSettings.createNewWindows.value {
+                    if appDelegate.openForBusiness && UserSettings.createNewWindows.value {
                         _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
                         continue
                     }
                     guard itemURL.isFileURL, appDelegate.isSandboxed() else {
-                        self.load(URLRequest(url: URL(string: urlString)!))
+                        self.next(url: URL(string: urlString)!)
                         continue
                     }
                     
@@ -122,14 +147,54 @@ class MyWebView : WKWebView {
                     if appDelegate.storeBookmark(url: itemURL as URL) {
                     // DON'T use self.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
                     // instead we need to load requests *and* utilize the exception handler
-//                        self.load(URLRequest(url: itemURL))
+//                      self.next(url: URL(string: urlString)!)
                         self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
                         (self.window?.windowController?.document as! Document).update(to: itemURL, ofType: itemURL.lastPathComponent)
                      }
                 }
                 else
+/*
+                kUTTypeData as String,
+                kUTTypeURL as String,
+                PlayList.className(),
+                PlayItem.className(),
+                NSFilenamesPboardType,
+                NSFilesPromisePboardType,
+                NSURLPboardType
+*/
+                if let text = item.string(forType: "com.apple.pasteboard.promised-file-url") {
+                    let data = item.data(forType: "com.apple.pasteboard.promised-file-url")
+                    let list = item.propertyList(forType: "com.apple.pasteboard.promised-file-url")
+
+                    Swift.print("data \(String(describing: data))")
+                    Swift.print("text \(String(describing: text))")
+                    Swift.print("list \(String(describing: list))")
+                    continue
+                }
+                else
+                if let text = item.string(forType: "com.apple.pasteboard.promised-file-content-type") {
+                    let data = item.data(forType: "com.apple.pasteboard.promised-file-content-type")
+                    let list = item.propertyList(forType: "com.apple.pasteboard.promised-file-content-type")
+
+                    Swift.print("data \(String(describing: data))")
+                    Swift.print("text \(String(describing: text))")
+                    Swift.print("list \(String(describing: list))")
+                    continue
+                }
+                else
                 {
-                    Swift.print("items has \(item.types)")
+                    for type in item.types {
+                        let data = item.data(forType: type)
+                        let text = item.string(forType: type)
+                        let list = item.propertyList(forType: type)
+                        Swift.print("data \(String(describing: data))")
+                        Swift.print("text \(String(describing: text))")
+                        Swift.print("list \(String(describing: list))")
+                    }
+                    continue
+                }
+                if !UserSettings.createNewWindows.value {
+                    UserSettings.createNewWindows.value = true
                 }
             }
         }
@@ -137,6 +202,10 @@ class MyWebView : WKWebView {
         if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
             Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
 //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
+        }
+        
+        if UserSettings.createNewWindows.value != createNewWindows {
+            UserSettings.createNewWindows.value = createNewWindows
         }
         return true
     }
