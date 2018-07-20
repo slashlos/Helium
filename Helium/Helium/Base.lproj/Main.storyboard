@@ -50,7 +50,7 @@
                                     <action selector="toggleVersion:" target="umu-a0-Tfe" id="JDc-1p-1EL"/>
                                 </connections>
                             </button>
-                            <box verticalHuggingPriority="750" ambiguous="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ApO-5O-qon">
+                            <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ApO-5O-qon">
                                 <rect key="frame" x="12" y="84" width="259" height="5"/>
                             </box>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IV0-Ql-nbs">
@@ -88,13 +88,13 @@
                                     <action selector="cycleCredits:" target="umu-a0-Tfe" id="Xzu-1S-bZs"/>
                                 </connections>
                             </button>
-                            <scrollView hidden="YES" ambiguous="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OZR-xn-j0b">
+                            <scrollView hidden="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OZR-xn-j0b">
                                 <rect key="frame" x="12" y="6" width="259" height="75"/>
-                                <clipView key="contentView" ambiguous="YES" id="6A6-Eg-DDC">
+                                <clipView key="contentView" id="6A6-Eg-DDC">
                                     <rect key="frame" x="1" y="1" width="257" height="73"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <textView ambiguous="YES" editable="NO" importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4IG-nm-Y5X">
+                                        <textView editable="NO" importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4IG-nm-Y5X">
                                             <rect key="frame" x="0.0" y="0.0" width="257" height="73"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -133,6 +133,7 @@
                             <constraint firstItem="0C4-5f-uW8" firstAttribute="top" secondItem="kg1-aS-nIq" secondAttribute="top" constant="-1" id="KCm-hN-11F"/>
                             <constraint firstItem="ApO-5O-qon" firstAttribute="leading" secondItem="OZR-xn-j0b" secondAttribute="leading" id="OeC-qj-voD"/>
                             <constraint firstItem="IV0-Ql-nbs" firstAttribute="leading" relation="lessThanOrEqual" secondItem="kg1-aS-nIq" secondAttribute="leading" constant="64" id="Ouj-bR-WKP"/>
+                            <constraint firstItem="ApO-5O-qon" firstAttribute="trailing" secondItem="rKn-5s-fYK" secondAttribute="trailing" id="VhN-BH-V88"/>
                             <constraint firstItem="0C4-5f-uW8" firstAttribute="leading" secondItem="kg1-aS-nIq" secondAttribute="leading" id="XWU-AF-ZzI"/>
                             <constraint firstItem="ApO-5O-qon" firstAttribute="top" secondItem="0NX-wg-Xfe" secondAttribute="bottom" constant="7" id="dzT-hq-Tjr"/>
                             <constraint firstItem="rKn-5s-fYK" firstAttribute="leading" secondItem="0NX-wg-Xfe" secondAttribute="leading" id="eLl-jS-mAK"/>
@@ -534,6 +535,12 @@ CA
                                                 <action selector="showHelp:" target="Ady-hI-5gd" id="y7X-2Q-9no"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Release Info" id="jCx-kC-uHJ">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="showReleaseInfo:" target="Voe-Tx-rLC" id="vww-tX-KDW"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                     <connections>
                                         <outlet property="delegate" destination="Voe-Tx-rLC" id="1xk-tl-j5O"/>
@@ -710,14 +717,14 @@ CA
         <scene sceneID="3rF-Wl-9by">
             <objects>
                 <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="9Nm-Xe-vMy" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="425" y="461" width="480" height="270"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
                         <connections>
-                            <outlet property="delegate" destination="o3w-13-r8w" id="w6E-II-T7k"/>
+                            <outlet property="delegate" destination="o3w-13-r8w" id="EUd-Nj-IoH"/>
                         </connections>
                     </window>
                     <connections>
@@ -759,7 +766,7 @@ CA
                                             <rect key="frame" x="1" y="0.0" width="124" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="124" height="209"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -817,6 +824,7 @@ CA
                                                     <connections>
                                                         <outlet property="dataSource" destination="YAy-lX-dae" id="khl-A5-RrM"/>
                                                         <outlet property="delegate" destination="YAy-lX-dae" id="9Ke-15-NRs"/>
+                                                        <outlet property="nextKeyView" destination="IBh-ZH-TR3" id="ek1-Wu-p5t"/>
                                                     </connections>
                                                 </tableView>
                                             </subviews>
@@ -1168,6 +1176,7 @@ Gw
                                                         <outlet property="cornerView" destination="sMV-Oo-qve" id="Cf2-dM-Lol"/>
                                                         <outlet property="dataSource" destination="YAy-lX-dae" id="lVh-zQ-0l9"/>
                                                         <outlet property="delegate" destination="YAy-lX-dae" id="IZJ-Ly-FFW"/>
+                                                        <outlet property="nextKeyView" destination="PML-r0-Bx7" id="vDQ-Zl-vd8"/>
                                                     </connections>
                                                 </tableView>
                                             </subviews>
@@ -1246,7 +1255,7 @@ Gw
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController storyboardIdentifier="HeliumController" id="B8D-0N-5wS" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingIdentifier="webView" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>

@@ -58,6 +58,10 @@ class HeliumPanel: NSPanel {
     }
 }
 
+class PlaylistsPanel : HeliumPanel {
+    
+}
+
 //  Offset a window from the current app key window
 extension NSWindow {
     func offsetFromKeyWindow() {
