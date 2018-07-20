@@ -851,26 +851,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         col.isHidden = isHidden
      }
 
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        if menuItem.title.hasPrefix("Redo") {
-            menuItem.isEnabled = self.canRedo
-        }
-        else
-            if menuItem.title.hasPrefix("Undo") {
-                menuItem.isEnabled = self.canUndo
-        }
-        else
-        {
-            switch menuItem.title {
-                
-            default:
-                menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
-                break
-            }
-        }
-        return true;
-    }
-
     // MARK:- Drag-n-Drop
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
