@@ -444,13 +444,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
-/*      let defaults = UserDefaults.standard
-        let dictionary = defaults.dictionaryRepresentation()
-        dictionary.keys.forEach { key in
-            defaults.removeObject(forKey: key)
-            Swift.print("\(key) removed")
-        }
-*/
     }
     
     let toHMS = hmsTransformer()
