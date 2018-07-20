@@ -46,6 +46,7 @@ fileprivate class URLField: NSTextField {
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
+    var os = ProcessInfo().operatingSystemVersion
     @IBOutlet weak var magicURLMenu: NSMenuItem!
 
     //  MARK:- Global IBAction, but ship to keyWindow when able
@@ -264,8 +265,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Swift.print("who are we? \(String(describing: window.contentViewController))")
         }
     }
-    
-    var canRedo : Bool {
+	
+	@IBAction func showReleaseInfo(_ sender: Any) {
+        //  Temporarily disable new windows as we'll create one now
+        let newWindows = UserSettings.createNewWindows.value
+        let urlString = UserSettings.releaseNotesURL.value
+        UserSettings.createNewWindows.value = false
+
+        do
+        {
+            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            let hwc = next.windowControllers.first?.window?.windowController
+            (hwc?.contentViewController as! WebViewController).loadURL(text: urlString)
+        }
+        catch let error {
+            NSApp.presentError(error)
+            Swift.print("Yoink, unable to load url (\(urlString))")
+        }
+        
+        UserSettings.createNewWindows.value = newWindows
+        return
+	}
+	
+	var canRedo : Bool {
         if let redo = NSApp.keyWindow?.undoManager  {
             return redo.canRedo
         }
@@ -970,7 +992,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // MARK:- Sandbox Support
     var bookmarks = [URL: Data]()
-    var os = ProcessInfo().operatingSystemVersion
 
     func isSandboxed() -> Bool {
         let bundleURL = Bundle.main.bundleURL
