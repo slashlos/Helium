@@ -438,11 +438,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let dc = NSDocumentController.shared()
         return dc.documents.count == 0
-     }
-
+    }
+    
+    func resetDefaults() {
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
+/*      let defaults = UserDefaults.standard
+        let dictionary = defaults.dictionaryRepresentation()
+        dictionary.keys.forEach { key in
+            defaults.removeObject(forKey: key)
+            Swift.print("\(key) removed")
+        }
+*/
+    }
+    
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
     func applicationWillFinishLaunching(_ notification: Notification) {
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+
+        //  Wipe out defaults when OPTION+SHIFT is held down at startup
+        if flags.contains([.shift,.option]) {
+            Swift.print("shift+option at start")
+            resetDefaults()
+            NSSound(named: "Purr")?.play()
+        }
+/*      TODO: - login item startup save this for future need?
+        let launchedAsLogInItem =
+            event?.eventID == kAEOpenApplication &&
+                event?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
+*/
 
         //  We need our own to reopen our "document" urls
         _ = HeliumDocumentController.init()
