@@ -78,6 +78,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         self.webViewController.webView.stopLoading()
+        
+        if let hvc: WebViewController = window?.contentViewController as? WebViewController {
+            hvc.updateTrackingAreas(false)
+        }
         updateTrackingAreas(false)
     }
     
