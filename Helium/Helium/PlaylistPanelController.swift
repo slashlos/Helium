@@ -8,7 +8,7 @@
 
 import Foundation
 
-class PlaylistPanelController : NSWindowController {
+class PlaylistPanelController : NSWindowController,NSWindowDelegate {
     
     fileprivate var panel: NSPanel! {
         get {
@@ -16,4 +16,11 @@ class PlaylistPanelController : NSWindowController {
         }
     }
 
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        if let window = self.window, let pvc = window.contentViewController {
+            //  call playlist view windowShouldClose() on close
+            window.delegate = (pvc as! PlaylistViewController)
+        }
+    }
 }

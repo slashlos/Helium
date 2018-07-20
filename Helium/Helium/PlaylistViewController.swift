@@ -271,7 +271,7 @@ extension NSURL {
     }
 }
 
-class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate,NSMenuDelegate {
+class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate,NSMenuDelegate,NSWindowDelegate {
 
     @IBOutlet var playlistArrayController: NSArrayController!
     @IBOutlet var playitemArrayController: NSArrayController!
@@ -319,6 +319,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 item.removeObserver(self, forKeyPath: keyPath)
             }
         }
+//      Swift.print("%@ -> %@", item.className, (state ? "YES" : "NO"))
     }
     
     //  Start or forget observing any changes
@@ -407,6 +408,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         //  Restore hidden columns in playitems using defaults
         let hideit = ["link","rect","label","hover","alpha","trans"]
+        
         for col in playitemTableView.tableColumns {
             let identifier = col.identifier
             let pref = String(format: "hide.%@", identifier)
@@ -456,6 +458,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         //  Start observing any changes
         setObserving(true)
+    }
+    
+    func windowShouldClose(_ sender: Any) -> Bool {
+        //  We didn't dismiss but so undo observing now
+        setObserving(false)
+        return true
     }
 
     //  MARK:- Playlist Actions
@@ -777,10 +785,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  Stop observing any changes
         setObserving(false)
 
-        //  If we were run modally as a window, close it
-        if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
-            NSApp.abortModal()
-            ppc.window?.orderOut(sender)
+        //  If we were run as a window, close it
+        if let plw = self.view.window, plw.isKind(of: PlaylistsPanel.self) {
+            plw.orderOut(sender)
         }
         
         //  Save or go
