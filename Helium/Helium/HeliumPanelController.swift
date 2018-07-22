@@ -220,15 +220,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
         setFloatOverFullScreenApps()
-    }
-    @IBAction func openLocationPress(_ sender: AnyObject) {
-        didRequestLocation()
-    }
-    
-    @IBAction func openFilePress(_ sender: AnyObject) {
-        didRequestFile()
-    }
-    
+    }    
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
@@ -365,40 +357,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
    
-    fileprivate func didRequestFile() {
-        
-        let open = NSOpenPanel()
-        open.allowsMultipleSelection = true
-        open.canChooseDirectories = false
-        open.resolvesAliases = true
-        open.canChooseFiles = true
-        open.worksWhenModal = true
-        open.beginSheetModal(for: self.window!, completionHandler: { (response: NSModalResponse) in
-            if response == NSModalResponseOK {
-                let urls = open.urls
-                for url in urls {
-                    self.webViewController.loadURL(url: url)
-                }
-            }
-        })
-    }
-    
-    fileprivate func didRequestLocation() {
-        let appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
-        
-        appDelegate.didRequestUserUrl(RequestUserStrings (
-            currentURL: self.webViewController.currentURL,
-            alertMessageText: "Enter new home Page URL",
-            alertButton1stText: "Load",     alertButton1stInfo: nil,
-            alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
-                          onWindow: self.window as? HeliumPanel,
-                          acceptHandler: { (newUrl: String) in
-                            self.webViewController.loadURL(text: newUrl)
-        }
-        )
-    }
-
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
         if let playlist = notification.object {
             let playlistURL = playlist as! URL

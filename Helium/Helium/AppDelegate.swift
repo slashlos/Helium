@@ -176,23 +176,40 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	@IBAction func openDocument(_ sender: Any) {
 		self.openFilePress(sender as AnyObject)
 	}
+    
     @IBAction func openFilePress(_ sender: AnyObject) {
         let open = NSOpenPanel()
         open.allowsMultipleSelection = true
         open.canChooseDirectories = false
         open.resolvesAliases = true
         open.canChooseFiles = true
-        open.orderFront(sender)
-        
-        if open.runModal() == NSModalResponseOK {
-            open.orderOut(sender)
-            let urls = open.urls
-            for url in urls {
-                _ = self.doOpenFile(fileURL: url)
+
+        //  We have a window, create as sheet and load playlists there
+        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
+            //  No window, so load panel modally
+            
+            if open.runModal() == NSModalResponseOK {
+                open.orderOut(sender)
+                let urls = open.urls
+                for url in urls {
+                    _ = self.doOpenFile(fileURL: url)
+                }
             }
+            return
         }
+
+        open.worksWhenModal = true
+        open.beginSheetModal(for: window, completionHandler: { (response: NSModalResponse) in
+            if response == NSModalResponseOK {
+                let urls = open.urls
+                for url in urls {
+                    _ = self.doOpenFile(fileURL: url)
+                }
+            }
+        })
     }
-    internal func openVideoInNewWindow(_ newURL: URL) {
+    
+    internal func openURLStringInNewWindow(_ newURL: URL) {
         let newWindows = UserSettings.createNewWindows.value
         UserSettings.createNewWindows.value = false
         do {
@@ -205,31 +222,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         UserSettings.createNewWindows.value = newWindows
     }
-    @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
+    @IBAction func openURLStringInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
-            self.openVideoInNewWindow(newURL as! URL)
+            self.openURLStringInNewWindow(newURL as! URL)
         }
     }
     @IBAction func openLocationPress(_ sender: AnyObject) {
+        //  We have a window, create as sheet and load playlists there
+        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
+            //  No window, so load alert modally
+            
+            didRequestUserUrl(RequestUserStrings (
+                currentURL: UserSettings.homePageURL.value,
+                alertMessageText: "Enter URL",
+                alertButton1stText: "Load",     alertButton1stInfo: nil,
+                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+                alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
+                              onWindow: nil,
+                              acceptHandler: { (newUrl: String) in
+                                self.openURLStringInNewWindow(URL.init(string: newUrl)!)
+            })
+            return
+        }
+
+        let wvc = window.contentViewController as! WebViewController
         didRequestUserUrl(RequestUserStrings (
-            currentURL: UserSettings.homePageURL.value,
-            alertMessageText: "Enter Destination URL",
+            currentURL: wvc.currentURL,
+            alertMessageText: "Enter URL",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
-                          onWindow: NSApp.keyWindow as? HeliumPanel,
-                          acceptHandler: { (newUrl: String) in
-                            do {
-                                if let panel = NSApp.keyWindow as? HeliumPanel {
-                                    if let hpc = panel.windowController as? HeliumPanelController {
-                                        hpc.webViewController.loadURL(text: newUrl)
-                                    }
-                                }
-                                else
-                                {
-                                    self.openVideoInNewWindow(URL.init(string: newUrl)!)
-                                }
-                            }
+                          onWindow: window as? HeliumPanel,
+                                      acceptHandler: { (newUrl: String) in
+                                        wvc.loadURL(text: newUrl)
         })
     }
 

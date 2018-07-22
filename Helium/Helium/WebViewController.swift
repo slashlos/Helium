@@ -260,7 +260,7 @@ class MyWebView : WKWebView {
                 if self.url != nil {
                     item.representedObject = self.url
                     item.target = appDelegate
-                    item.action = #selector(appDelegate.openVideoInNewWindowPress(_:))
+                    item.action = #selector(appDelegate.openURLStringInNewWindowPress(_:))
                 }
                 else
                 {
@@ -306,12 +306,14 @@ class MyWebView : WKWebView {
         let subOpen = NSMenu()
         item.submenu = subOpen
 
-        item = NSMenuItem(title: "File…", action: #selector(HeliumPanelController.openFilePress(_:)), keyEquivalent: "")
-        item.target = hwc
+        item = NSMenuItem(title: "File…", action: #selector(AppDelegate.openFilePress(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = appDelegate
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "URL…", action: #selector(HeliumPanelController.openLocationPress(_:)), keyEquivalent: "")
-        item.target = hwc
+        item = NSMenuItem(title: "URL…", action: #selector(AppDelegate.openLocationPress(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = appDelegate
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
