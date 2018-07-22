@@ -119,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        if (!newWindows || !openForBusiness), let hwc = NSApp.keyWindow?.windowController, let doc = NSApp.keyWindow?.windowController?.document {
+        if (!newWindows || !openForBusiness), let hwc = fromWindow?.windowController, let doc = hwc.document {
 
             //  If it's a "h3w" type read it and load it into defaults
             if fileType == "h3w" {
@@ -203,7 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if response == NSModalResponseOK {
                 let urls = open.urls
                 for url in urls {
-                    _ = self.doOpenFile(fileURL: url)
+                    _ = self.doOpenFile(fileURL: url, fromWindow: window)
                 }
             }
         })
