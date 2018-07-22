@@ -889,9 +889,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Create urlField
         let urlField = URLField(withValue: strings.currentURL)
         urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
-        
-        // Add urlField and buttons to alert
         alert.accessoryView = urlField
+
+        // Add urlField and buttons to alert
         let alert1stButton = alert.addButton(withTitle: strings.alertButton1stText)
         if let alert1stToolTip = strings.alertButton1stInfo {
             alert1stButton.toolTip = alert1stToolTip
