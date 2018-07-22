@@ -41,6 +41,10 @@ fileprivate class URLField: NSTextField {
         self.lineBreakMode = NSLineBreakMode.byTruncatingHead
         self.usesSingleLineMode = true
     }
+    override func viewDidMoveToWindow() {
+        // MARK: this gets us focus even when modal
+        self.becomeFirstResponder()
+    }
 }
 
 @NSApplicationMain
