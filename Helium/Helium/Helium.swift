@@ -25,7 +25,7 @@ class PlayList : NSObject,NSCoding {
                 else
                 {
                     appDelegate.playdicts[oldValue] = nil
-                    appDelegate.playdicts[name] = list
+                    appDelegate.playdicts[name] = self
                 }
             }
         }
@@ -40,7 +40,7 @@ class PlayList : NSObject,NSCoding {
         list = Array <PlayItem> ()
 
         if let appDelegate = NSApp.delegate {
-            (appDelegate as! AppDelegate).playdicts[name] = list
+            (appDelegate as! AppDelegate).playdicts[name] = self
         }
     }
     
@@ -50,7 +50,7 @@ class PlayList : NSObject,NSCoding {
         self.list = list
         self.name = name
         if let appDelegate = NSApp.delegate {
-            (appDelegate as! AppDelegate).playdicts[name] = list
+            (appDelegate as! AppDelegate).playdicts[name] = self
         }
     }
     

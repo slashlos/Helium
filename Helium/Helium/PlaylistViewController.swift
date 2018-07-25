@@ -468,7 +468,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     override func viewWillAppear() {
         // add existing history entry if any AVQueuePlayer
         if appDelegate.histories.count > 0 {
-            appDelegate.playdicts[UserSettings.HistoryName.value] = nil
+
+            //  Do not allow duplicate history
+            if let oldHistory = appDelegate.playdicts[UserSettings.HistoryName.value] {
+                if let index = playlists.index(of: oldHistory) {
+                    playlists.remove(at: index)
+                }
+                appDelegate.playdicts[UserSettings.HistoryName.value] = nil
+            }
             
             // overlay in history using NSDictionaryControllerKeyValuePair Protocol setKey
             historyCache = PlayList.init(name: UserSettings.HistoryName.value,
