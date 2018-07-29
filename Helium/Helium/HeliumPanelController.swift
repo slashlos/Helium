@@ -72,7 +72,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         if (notification.object as! NSWindow) == self.window {
             self.doc?.settings.rect.value = (self.window?.frame)!
-            self.doc?.save(self)
         }
     }
 
