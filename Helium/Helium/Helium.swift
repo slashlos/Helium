@@ -165,19 +165,6 @@ class PlayItem : NSObject, NSCoding {
         self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
         self.trans = (plist[k.trans] as AnyObject).intValue ?? 0
         super.init()
-        self.refresh()
-    }
-    func refresh() {
-        if time == 0.0, let appDelegate = NSApp.delegate {
-            if let attr = (appDelegate as! AppDelegate).metadataDictionaryForFileAt(link.path) {
-                time = attr[kMDItemDurationSeconds] as? Double ?? 0.0
-            }
-        }
-        if rect == NSZeroRect,
-            let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
-            let plist: Dictionary<String,Any> = lists[link.absoluteString] as? Dictionary<String, Any> {
-            self.rect = NSRectFromString(plist[k.rect] as! String) 
-        }
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
@@ -319,7 +306,6 @@ class Document : NSDocument {
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = Float(self.settings.opacityPercentage.value)
         item.trans = self.settings.translucencyPreference.value.rawValue
-        item.refresh()
         return item
     }
     
