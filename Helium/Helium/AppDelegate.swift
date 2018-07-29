@@ -533,9 +533,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     var itemActions = Dictionary<String, Any>()
 
-    //  Keep playlist names unique
-    var playdicts = Dictionary<String, PlayList>()
-
+    //  Keep playlist names unique by Array entension checking name
+    var playlists = Array<PlayList>()
     var histories = Array<PlayItem>()
     var defaults = UserDefaults.standard
     var disableDocumentReOpening = false
