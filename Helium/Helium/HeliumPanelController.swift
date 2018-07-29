@@ -33,7 +33,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         nullImage = NSImage.init()
         closeButton = window?.standardWindowButton(.closeButton)
         closeButtonImage = closeButton?.image
-        updateTrackingAreas(true)
+        setupTrackingAreas(true)
 
         panel.standardWindowButton(.closeButton)?.image = nullImage
         panel.isFloatingPanel = true
@@ -80,9 +80,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         self.webViewController.webView.stopLoading()
         
         if let hvc: WebViewController = window?.contentViewController as? WebViewController {
-            hvc.updateTrackingAreas(false)
+            hvc.setupTrackingAreas(false)
         }
-        updateTrackingAreas(false)
+        setupTrackingAreas(false)
     }
     
     // MARK:- Mouse events
@@ -91,7 +91,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     var nullImage : NSImage?
     var trackingTag: NSTrackingRectTag?
     
-    func updateTrackingAreas(_ establish : Bool) {
+    func setupTrackingAreas(_ establish : Bool) {
         if let tag = trackingTag {
             closeButton?.removeTrackingRect(tag)
         }
@@ -301,7 +301,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         panel.ignoresMouseEvents = true
         
         //  Halt anything in progress
-        (contentViewController as! WebViewController).webView.loadHTMLString("Yoink://", baseURL: nil)
+        if let wvc: WebViewController = self.contentViewController as? WebViewController {
+            wvc.webView.stopLoading()
+            wvc.setupTrackingAreas(false)
+       }
         
         // Wind down all observations
         webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
