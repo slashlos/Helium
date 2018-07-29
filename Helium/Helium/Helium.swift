@@ -9,23 +9,32 @@
 import Foundation
 import QuickLook
 
+extension Array where Element:PlayList {
+    func has(_ name: String) -> Bool {
+        return self.item(name) != nil
+    }
+    func item(_ name: String) -> PlayList? {
+        for play in self {
+            if play.name == name {
+                return play
+            }
+        }
+        return nil
+    }
+}
+
 class PlayList : NSObject,NSCoding {
     //  Keep playlist names unique
     var name : String = k.list {
         didSet {
             if let appDelegate: AppDelegate = NSApp.delegate as? AppDelegate {
                 //  Do not allow duplicate
-                if appDelegate.playdicts[name] != nil {
+                if appDelegate.playlists.item(name) != self {
                     name = oldValue
 
                     //  tell controller we have reverted this edit
                     let notif = Notification(name: Notification.Name(rawValue: "BadPlayListName"), object: self)
                     NotificationCenter.default.post(notif)
-                }
-                else
-                {
-                    appDelegate.playdicts[oldValue] = nil
-                    appDelegate.playdicts[name] = self
                 }
             }
         }
@@ -35,12 +44,17 @@ class PlayList : NSObject,NSCoding {
     override init() {
         super.init()
 
-        let temp = NSString(format:"%p",self) as String
-        name = "play#" + String(temp.suffix(4))
+        var suffix = 0
         list = Array <PlayItem> ()
-
-        if let appDelegate = NSApp.delegate {
-            (appDelegate as! AppDelegate).playdicts[name] = self
+        let temp = NSString(format:"%p",self) as String
+        name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
+ 
+        //  Make sure new items have unique name
+        if let appDelegate: AppDelegate = NSApp.delegate as? AppDelegate {
+            while appDelegate.playlists.has(name) {
+                suffix += 1
+                name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
+            }
         }
     }
     
@@ -49,9 +63,6 @@ class PlayList : NSObject,NSCoding {
 
         self.list = list
         self.name = name
-        if let appDelegate = NSApp.delegate {
-            (appDelegate as! AppDelegate).playdicts[name] = self
-        }
     }
     
     func listCount() -> Int {
