@@ -512,13 +512,14 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     
-    func updateTrackingAreas(_ establish: Bool) {
+    func setupTrackingAreas(_ establish: Bool) {
         if let tag = trackingTag {
             view.removeTrackingRect(tag)
         }
         if establish {
             trackingTag = view.addTrackingRect(view.bounds, owner: self, userData: nil, assumeInside: false)
         }
+        webView.updateTrackingAreas()
     }
     override func viewDidLayout() {
         super.viewDidLayout()
@@ -528,7 +529,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
             (hwc as! HeliumPanelController).documentViewDidLoad()
         }
         
-        updateTrackingAreas(true)
+        setupTrackingAreas(true)
     }
 
     // MARK: Actions
