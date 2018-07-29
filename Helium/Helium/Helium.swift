@@ -41,6 +41,12 @@ class PlayList : NSObject,NSCoding {
     }
     var list : Array <PlayItem> = Array()
     
+    override var description: String {
+        get {
+            return String(format: "<%@: %p '%@' %ld item(s)", self.className, self, self.name, list.count)
+        }
+    }
+    
     override init() {
         super.init()
 
