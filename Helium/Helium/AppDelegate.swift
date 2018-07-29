@@ -653,7 +653,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     temp.hover = item[k.hover]?.boolValue ?? false
                     temp.alpha = item[k.alpha]?.floatValue ?? 0.6
                     temp.trans = item[k.trans]?.intValue ?? 0
-                    temp.refresh()
                     
                     self.histories.append(temp)
                 }
