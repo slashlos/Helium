@@ -180,26 +180,7 @@ extension Dictionary {
             }
             else
             {
-                xml.append(String(format: "<%@>", node as! CVarArg))/*
-                if let booleanValue = (value as? Bool) {
-                    xml.append(String(format: (booleanValue ? "true" : "false")))
-                }
-                else
-                if let intValue = (value as? Int) {
-                    xml.append(String(format: "%d", intValue))
-                }
-                else
-                if let floatValue = (value as? Float) {
-                    xml.append(String(format: "%f", floatValue))
-                }
-                else
-                if let doubleValue = (value as? Double) {
-                    xml.append(String(format: "%f", doubleValue))
-                }
-                else
-                {
-                    xml.append(String(format: "<%@>", value as! CVarArg))
-                }*/
+                xml.append(String(format: "<%@>", node as! CVarArg))
                 xml.append(toLiteral(value as Any))
                 xml.append(String(format: "</%@>\n", node as! CVarArg))
             }
