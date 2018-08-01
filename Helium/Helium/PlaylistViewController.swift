@@ -11,6 +11,8 @@ import AVFoundation
 import AudioToolbox
 
 struct k {
+    static let Playlists = "playlists"
+    static let Playitems = "playitems"
     static let play = "play"
     static let item = "item"
     static let name = "name"
@@ -286,13 +288,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  delegate keeps our parsing dict to keeps names unique
     //  PlayList.name.willSet will track changes in playdicts
-    var playdicts: Dictionary<String,Any> {
+    dynamic var playlists : [PlayList] {
         get {
-            return appDelegate.playdicts
+            return appDelegate.playlists
+        }
+        set (array) {
+            appDelegate.playlists = array
         }
     }
 
-    dynamic var playlists = [PlayList]()
     dynamic var playCache = [PlayList]()
     
     //  MARK:- Undo
@@ -325,7 +329,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  Start or forget observing any changes
     internal func setObserving(_ state: Bool) {
-        self.observe(self, keyArray: [UserSettings.Playlists.value], observing: state)
+        self.observe(self, keyArray: [k.Playlists], observing: state)
         for playlist in playlists {
             self.observe(playlist, keyArray: listIvars, observing: state)
             for item in playlist.list {
@@ -340,7 +344,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         switch keyPath {
         
-        case UserSettings.Playlists.value, k.list:
+        case k.Playlists, k.list:
             //  arrays handled by [add,remove]<List,Play> callback closure block
 
             if (newValue != nil) {
@@ -466,21 +470,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
                                                list: [PlayItem]())
     override func viewWillAppear() {
-        // add existing history entry if any AVQueuePlayer
-        if appDelegate.histories.count > 0 {
+        // update existing history entry if any AVQueuePlayer
 
-            //  Do not allow duplicate history
-            if let oldHistory = appDelegate.playdicts[UserSettings.HistoryName.value] {
-                if let index = playlists.index(of: oldHistory) {
-                    playlists.remove(at: index)
-                }
-                appDelegate.playdicts[UserSettings.HistoryName.value] = nil
-            }
-            
-            // overlay in history using NSDictionaryControllerKeyValuePair Protocol setKey
-            historyCache = PlayList.init(name: UserSettings.HistoryName.value,
-                                         list: appDelegate.histories)
+        //  Do not allow duplicate history entries
+        while let oldHistory = appDelegate.playlists.item(UserSettings.HistoryName.value)
+        {
+             playlistArrayController.removeObject(oldHistory)
         }
+        historyCache = PlayList.init(name: UserSettings.HistoryName.value,
+                                     list: appDelegate.histories)
+
         playlistArrayController.addObject(historyCache)
         
         // cache our list before editing
@@ -781,7 +780,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             playlists = playCache
         }
         else
-        if let playArray = defaults.dictionary(forKey: UserSettings.Playlists.keyPath) {
+        if let playArray = defaults.dictionary(forKey: k.Playlists) {
             playlists = [PlayList]()
             for (name,plist) in playArray {
                 guard let items = plist as? [Dictionary<String,Any>] else {
@@ -811,14 +810,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         for playlist in playArray {
             var list = Array<Any>()
             for playitem in playlist.list {
-                //  Capture latest rect if this item's is zero and one is available
-                playitem.refresh()
-
-                list.append(playitem.dictionary())
+                let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
+                list.append(item as AnyObject)/*
+                list.append(playitem.dictionary() as AnyObject)*/
             }
             temp[playlist.name] = list
         }
-        defaults.set(temp, forKey: UserSettings.Playlists.keyPath)
+        defaults.set(temp, forKey: k.Playlists)
         defaults.synchronize()
     }
     
@@ -902,7 +900,22 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 return false
         }
     }
-    
+    func tableView(_ tableView: NSTableView, toolTipFor cell: NSCell, rect: NSRectPointer, tableColumn: NSTableColumn?, row: Int, mouseLocation: NSPoint) -> String {
+        if tableView == playlistTableView
+        {
+            let play = (playlistArrayController.arrangedObjects as! [PlayList])[row]
+
+            return String(format: "%ld item(s)", play.list.count)
+        }
+        else
+        if tableView == playitemTableView
+        {
+            let item = (playitemArrayController.arrangedObjects as! [PlayItem])[row]
+
+            return item.link.absoluteString
+        }
+        return "no tip for you"
+    }
     // MARK:- Drag-n-Drop
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
@@ -910,13 +923,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
             var items: [PlayList] = [PlayList]()
             var promises = [String]()
+ 
             for index in rowIndexes {
-                let listitem = objects[index]
-                for item in listitem.list {
-                    promises.append(String(format:"\"%@\",\"%@\"",listitem.name,item.link.absoluteString))
-                }
-                items.append(listitem)
+                let item = objects[index]
+                let dict = item.dictionary()
+                let promise = dict.xmlString(withElement: item.className, isFirstElement: true)
+                promises.append(promise)
+                items.append(item)
             }
+            
             let data = NSKeyedArchiver.archivedData(withRootObject: items)
             pboard.setPropertyList(data, forType: PlayList.className())
             pboard.setPropertyList(promises, forType:NSFilesPromisePboardType)
@@ -927,11 +942,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
             var items: [PlayItem] = [PlayItem]()
             var promises = [String]()
+            
             for index in rowIndexes {
-                let playitem = objects[index]
-                promises.append(playitem.link.absoluteString)
-                items.append(playitem)
+                let item = objects[index]
+                let dict = item.dictionary()
+                let promise = dict.xmlString(withElement: item.className, isFirstElement: true)
+                promises.append(promise)
+                items.append(item)
             }
+            
             let data = NSKeyedArchiver.archivedData(withRootObject: items)
             pboard.setPropertyList(data, forType: PlayList.className())
             pboard.setPropertyList(promises, forType:NSFilesPromisePboardType)
@@ -975,8 +994,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
                 if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
                     var dict = Dictionary<String,[Any]>()
-                    dict[UserSettings.Playitems.default] = items
-                    dict[UserSettings.Playlists.default] = [name as AnyObject]
+                    dict[k.Playitems] = items
+                    dict[k.Playlists] = [name as AnyObject]
                     dict[name] = items
                     (dict as NSDictionary).write(to: fileURL, atomically: true)
                     names.append(fileURL.absoluteString)
@@ -998,8 +1017,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
                 var dict = Dictionary<String,[AnyObject]>()
-                dict[UserSettings.Playitems.default] = items
-                dict[UserSettings.Playlists.default] = [name as AnyObject]
+                dict[k.Playitems] = items
+                dict[k.Playlists] = [name as AnyObject]
                 dict[name] = items
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
             }
@@ -1166,15 +1185,23 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             case playlistTableView:
                 switch dropOperation {
                 case .on:
+                    //  selected playlist is already set
                     play = (playlistArrayController.arrangedObjects as! Array)[row]
+                    playlistArrayController.setSelectionIndex(row)
                     break
                 default:
                     play = PlayList()
-                    addList(play!, atIndex: (dropOperation == .above ? (row - 1) : -1))
+                    addList(play!, atIndex: -1)
+                    playlistTableView.reloadData()
+                    
+                    //  Pick our seleced playlist
+                    let index = playlistArrayController.selectionIndexes.first
+                    let selectionRow = index! + 1
+                    tableView.selectRowIndexes(IndexSet.init(integer: selectionRow), byExtendingSelection: false)
+                    newIndexOffset = -row
+                    Swift.print("selection \(String(describing: playlistArrayController.selectedObjects.first))")
+                    Swift.print("     play \(String(describing: play))")
                 }
-                let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: play!)
-                tableView.selectRowIndexes(IndexSet.init(integer: index!), byExtendingSelection: false)
-                newIndexOffset = -row
                 break
                 
             default: // playitemTableView:
@@ -1195,7 +1222,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     item = (doc as! Document).playitem()
                 }
                 else
-                if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+                if let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
                     let playitem: PlayItem = lists[(fileURL?.absoluteString)!] as? PlayItem {
                     item = playitem
                 }
@@ -1211,14 +1238,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     let time = attr?[kMDItemDurationSeconds] as! Double
                     let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
                     let name = fuzz.removingPercentEncoding
+                    let list: Array<PlayItem> = play!.list.sorted(by: { (lhs, rhs) -> Bool in
+                        return lhs.rank < rhs.rank
+                    })
+
                     item = PlayItem(name:name!,
                                     link:URL.init(string: path)!,
                                     time:time,
-                                    rank:(playitemArrayController.arrangedObjects as AnyObject).count + 1)
+                                    rank:(list.count > 0) ? (list.last?.rank)! + 1 : 1)
                 }
-                
-                //  Refresh time,rect as needed
-                item?.refresh()
                 
                 //  Insert item at valid offset, else append
                 if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
@@ -1286,7 +1314,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     } else { sandboxed += 1 }
                     
                     //  If item is in our playitems cache use it
-                    if let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+                    if let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
                         let playitem: PlayItem = lists[(url?.absoluteString)!] as? PlayItem {
                         item = playitem
                     }
@@ -1296,15 +1324,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         let time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0.0
                         let fuzz = url?.deletingPathExtension().lastPathComponent
                         let name = fuzz?.removingPercentEncoding
+                        //  TODO: we should probably set selection to where row here is as above
+                        let selectedPlaylist = playlistArrayController.selectedObjects.first as? PlayList
+                        let list: Array<PlayItem> = selectedPlaylist!.list.sorted(by: { (lhs, rhs) -> Bool in
+                            return lhs.rank < rhs.rank
+                        })
+                        
                         item = PlayItem(name: name!,
                                         link: url!,
                                         time: time,
-                                        rank: (playitemArrayController.arrangedObjects as AnyObject).count + 1)
+                                        rank: (list.count > 0) ? (list.last?.rank)! + 1 : 1)
                     }
                     
-                    //  Refresh time,rect as needed
-                    item?.refresh()
-
                     if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
                         addPlay(item!, atIndex: row + newIndexOffset)
 

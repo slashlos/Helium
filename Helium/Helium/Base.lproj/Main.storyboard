@@ -766,7 +766,7 @@ CA
                                             <rect key="frame" x="1" y="0.0" width="124" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="124" height="209"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -785,33 +785,6 @@ CA
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <prototypeCellViews>
-                                                                <tableCellView id="VKZ-FT-GNh">
-                                                                    <rect key="frame" x="1" y="1" width="121" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="BrQ-Pp-qVX">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="121" height="17"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="ZpT-QX-dKC">
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                                <connections>
-                                                                                    <binding destination="VKZ-FT-GNh" name="value" keyPath="objectValue.name" id="cjV-Mu-vOG"/>
-                                                                                </connections>
-                                                                            </textFieldCell>
-                                                                        </textField>
-                                                                    </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="BrQ-Pp-qVX" firstAttribute="centerY" secondItem="VKZ-FT-GNh" secondAttribute="centerY" id="Wfv-lw-c5s"/>
-                                                                        <constraint firstItem="BrQ-Pp-qVX" firstAttribute="centerX" secondItem="VKZ-FT-GNh" secondAttribute="centerX" id="jYj-Z8-UuH"/>
-                                                                        <constraint firstItem="BrQ-Pp-qVX" firstAttribute="leading" secondItem="VKZ-FT-GNh" secondAttribute="leading" constant="2" id="voG-eB-LK6"/>
-                                                                    </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="BrQ-Pp-qVX" id="sES-Jf-MDk"/>
-                                                                    </connections>
-                                                                </tableCellView>
-                                                            </prototypeCellViews>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="ftH-A8-ZDs">
                                                                     <dictionary key="options">
@@ -823,7 +796,7 @@ CA
                                                     </tableColumns>
                                                     <connections>
                                                         <outlet property="dataSource" destination="YAy-lX-dae" id="khl-A5-RrM"/>
-                                                        <outlet property="delegate" destination="YAy-lX-dae" id="9Ke-15-NRs"/>
+                                                        <outlet property="delegate" destination="YAy-lX-dae" id="SNy-zj-Srg"/>
                                                         <outlet property="nextKeyView" destination="IBh-ZH-TR3" id="ek1-Wu-p5t"/>
                                                     </connections>
                                                 </tableView>
@@ -985,7 +958,7 @@ Gw
                                             <rect key="frame" x="1" y="0.0" width="297" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playitems" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="731" height="209"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
