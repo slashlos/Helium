@@ -59,6 +59,163 @@ extension String {
     }
 }
 
+// From https://stackoverflow.com/questions/12837965/converting-nsdictionary-to-xml
+/*
+extension Any {
+    func xmlString() -> String {
+        if let booleanValue = (self as? Bool) {
+            return String(format: (booleanValue ? "true" : "false"))
+        }
+        else
+        if let intValue = (self as? Int) {
+            return String(format: "%d", intValue)
+        }
+        else
+        if let floatValue = (self as? Float) {
+            return String(format: "%f", floatValue)
+        }
+        else
+        if let doubleValue = (self as? Double) {
+            return String(format: "%f", doubleValue)
+        }
+        else
+        {
+            return String(format: "<%@>", self)
+        }
+    }
+}
+*/
+func toLiteral(_ value: Any) -> String {
+    if let booleanValue = (value as? Bool) {
+        return String(format: (booleanValue ? "1" : "0"))
+    }
+    else
+    if let intValue = (value as? Int) {
+        return String(format: "%d", intValue)
+    }
+    else
+    if let floatValue = (value as? Float) {
+        return String(format: "%f", floatValue)
+    }
+    else
+    if let doubleValue = (value as? Double) {
+        return String(format: "%f", doubleValue)
+    }
+    else
+    if let stringValue = (value as? String) {
+        return stringValue
+    }
+    else
+    if let dictValue: Dictionary<AnyHashable,Any> = (value as? Dictionary<AnyHashable,Any>)
+    {
+        return dictValue.xmlString(withElement: "Dictionary", isFirstElement: false)
+    }
+    else
+    {
+        return ((value as AnyObject).description)
+    }
+}
+
+extension Array {
+    func xmlString(withElement element: String, isFirstElemenet: Bool) -> String {
+        var xml = String.init()
+
+        xml.append(String(format: "<%@>\n", element))
+        self.forEach { (value) in
+            if let array: Array<Any> = (value as? Array<Any>) {
+                xml.append(array.xmlString(withElement: "Array", isFirstElemenet: false))
+            }
+            else
+            if let dict: Dictionary<AnyHashable,Any> = (value as? Dictionary<AnyHashable,Any>) {
+                xml.append(dict.xmlString(withElement: "Dictionary", isFirstElement: false))
+            }
+            else
+            {/*
+                if let booleanValue = (value as? Bool) {
+                    xml.append(String(format: (booleanValue ? "true" : "false")))
+                }
+                else
+                if let intValue = (value as? Int) {
+                    xml.append(String(format: "%d", intValue))
+                }
+                else
+                if let floatValue = (value as? Float) {
+                    xml.append(String(format: "%f", floatValue))
+                }
+                else
+                if let doubleValue = (value as? Double) {
+                    xml.append(String(format: "%f", doubleValue))
+                }
+                else
+                {
+                    xml.append(String(format: "<%@>", value as! CVarArg))
+                }*/
+                Swift.print("value: \(value)")
+                xml.append(toLiteral(value))
+            }
+        }
+        xml.append(String(format: "<%@>\n", element))
+
+        return xml
+    }
+}
+    
+extension Dictionary {
+    //  Return an XML string from the dictionary
+    func xmlString(withElement element: String, isFirstElement: Bool) -> String {
+        var xml = String.init()
+        
+        if isFirstElement { xml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n") }
+        
+        xml.append(String(format: "<%@>\n", element))
+        for node in self.keys {
+            let value = self[node]
+            
+            if let array: Array<Any> = (value as? Array<Any>) {
+                xml.append(array.xmlString(withElement: node as! String, isFirstElemenet: false))
+            }
+            else
+            if let dict: Dictionary<AnyHashable,Any> = (value as? Dictionary<AnyHashable,Any>) {
+                xml.append(dict.xmlString(withElement: node as! String, isFirstElement: false))
+            }
+            else
+            {
+                xml.append(String(format: "<%@>", node as! CVarArg))/*
+                if let booleanValue = (value as? Bool) {
+                    xml.append(String(format: (booleanValue ? "true" : "false")))
+                }
+                else
+                if let intValue = (value as? Int) {
+                    xml.append(String(format: "%d", intValue))
+                }
+                else
+                if let floatValue = (value as? Float) {
+                    xml.append(String(format: "%f", floatValue))
+                }
+                else
+                if let doubleValue = (value as? Double) {
+                    xml.append(String(format: "%f", doubleValue))
+                }
+                else
+                {
+                    xml.append(String(format: "<%@>", value as! CVarArg))
+                }*/
+                xml.append(toLiteral(value as Any))
+                xml.append(String(format: "</%@>\n", node as! CVarArg))
+            }
+        }
+                
+        xml.append(String(format: "</%@>\n", element))
+
+        return xml
+    }
+    func xmlHTMLString(withElement element: String, isFirstElement: Bool) -> String {
+        let xml = self.xmlString(withElement: element, isFirstElement: isFirstElement)
+        
+        return xml.replacingOccurrences(of: "&", with: "&amp", options: .literal, range: nil)
+    }
+}
+
 extension NSAttributedString {
     class func string(fromAsset: String) -> String {
         let asset = NSDataAsset.init(name: fromAsset)
