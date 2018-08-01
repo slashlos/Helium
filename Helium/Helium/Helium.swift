@@ -90,14 +90,15 @@ class PlayList : NSObject,NSCoding {
         }
     }
     
-    func dictionary() -> Dictionary<String,[Any]> {
-        var plist: Dictionary<String,[Any]> = Dictionary()
+    func dictionary() -> Dictionary<String,Any> {
+        var dict = Dictionary<String,Any>()
         var items: [Any] = Array()
         for item in list {
-            items.append(item.dictionary)
+            items.append(item.dictionary())
         }
-        plist[name] = items
-        return plist
+        dict[k.name] = name
+        dict[k.list] = items
+        return dict
     }
     
     required convenience init(coder: NSCoder) {
@@ -214,14 +215,14 @@ class PlayItem : NSObject, NSCoding {
     }
     
     func dictionary() -> Dictionary<String,Any> {
-        var dict: Dictionary<String,Any> = Dictionary()
+        var dict = Dictionary<String,Any>()
         dict[k.name] = name
         dict[k.link] = link.absoluteString
         dict[k.time] = time
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
-        dict[k.label] = label
-        dict[k.hover] = hover
+        dict[k.label] = label ? 1 : 0
+        dict[k.hover] = hover ? 1 : 0
         dict[k.alpha] = alpha
         dict[k.trans] = trans
         return dict
@@ -346,7 +347,7 @@ class Document : NSDocument {
             }
         }
         if self.settings.rect.value == NSZeroRect,
-            let lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default),
+            let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
             let playitem: PlayItem = lists[(self.fileURL?.absoluteString)!] as? PlayItem {
             self.settings.rect.value = playitem.rect
         }
@@ -456,9 +457,9 @@ class Document : NSDocument {
     
     override func write(to url: URL, ofType typeName: String) throws {
         //  When a document is written, update in global play items
-        if var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) {
+        if var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) {
             lists[url.absoluteString] = self.dictionary()
-            UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.set(lists, forKey: k.Playitems)
             UserDefaults.standard.synchronize()
             self.updateChangeCount(.changeCleared)
         }

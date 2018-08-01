@@ -789,7 +789,7 @@ class WebViewController: NSViewController, WKNavigationDelegate {
     }
     
     fileprivate func restoreSettings(_ title: String) {
-        if let playitems = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) {
+        if let playitems = UserDefaults.standard.dictionary(forKey: k.Playitems) {
             if let playitem = playitems[title] as? PlayItem {
                 let hwc = self.view.window?.windowController as! HeliumPanelController
                 let doc = hwc.document as! Document

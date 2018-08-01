@@ -123,43 +123,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        if (!newWindows || !openForBusiness), let hwc = fromWindow?.windowController, let doc = hwc.document {
-
+        guard (newWindows && openForBusiness) else {
+            let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow
+            let hwc = fromWindow?.windowController
+            let doc = hwc?.document
+            
             //  If it's a "h3w" type read it and load it into defaults
-            if fileType == "h3w" {
-                (doc as! Document).update(to: fileURL, ofType: fileType)
-                
-                (hwc.contentViewController as! WebViewController).loadURL(url: (doc as! Document).fileURL!)
+            if thisWindow != nil, let wvc = thisWindow!.contentViewController as? WebViewController {
+
+                if fileType == "h3w" {
+                    (doc as! Document).update(to: fileURL, ofType: fileType)
+                    
+                    wvc.loadURL(url: (doc as! Document).fileURL!)
+                }
+                else
+                {
+                    wvc.loadURL(url: fileURL)
+                }
+                return true
             }
             else
             {
-                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
-            }
-            
-            return true
-        }
-        else
-        {
-            UserSettings.createNewWindows.value = false
-            var status = false
-            
-            //  This could be anything so add/if a doc and initialize
-            do {
-                let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
-
-                if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
-                    window.offsetFromKeyWindow()
-                    window.makeKey()
-                    (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
-                    status = true
-                }
-            } catch let error {
-                print("*** Error open file: \(error.localizedDescription)")
                 return false
             }
-            UserSettings.createNewWindows.value = newWindows
-            return status
         }
+        
+        //  Open a new window
+        UserSettings.createNewWindows.value = false
+        var status = false
+        
+        //  This could be anything so add/if a doc and initialize
+        do {
+            let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
+            
+            if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
+                window.offsetFromKeyWindow()
+                window.makeKey()
+                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
+                status = true
+            }
+        } catch let error {
+            print("*** Error open file: \(error.localizedDescription)")
+            status = false
+        }
+        UserSettings.createNewWindows.value = newWindows
+
+        return status
     }
     
     @IBAction func newDocument(_ sender: Any) {
@@ -507,9 +516,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appStatusItem.menu = appMenu
 
         //  Prime user globals playitems dictionary
-        if UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) == nil {
+        if UserDefaults.standard.dictionary(forKey: k.Playitems) == nil {
             let playitems: Dictionary<String,AnyObject> = Dictionary()
-            UserDefaults.standard.set(playitems, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.set(playitems, forKey: k.Playitems)
         }
         
         //  Initialize our h:m:s transformer
@@ -534,8 +543,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var itemActions = Dictionary<String, Any>()
 
     //  Keep playlist names unique by Array entension checking name
-    var playlists = Array<PlayList>()
-    var histories = Array<PlayItem>()
+    dynamic var playlists = [PlayList]()
+    dynamic var histories = [PlayItem]()
     var defaults = UserDefaults.standard
     var disableDocumentReOpening = false
     var hiddenWindows = Dictionary<String, Any>()
@@ -686,17 +695,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // Save histories to defaults up to their maxiumum
         let keep = UserSettings.HistoryKeep.value
-        var temp = Array<AnyObject>()
-        for playitem in histories.suffix(keep) {
-            //  Capture latest rect if this item's is zero and one is available
-            playitem.refresh()
-
-            let item : [String:AnyObject] = [k.name:playitem.name as AnyObject,
-                                             k.link:playitem.link.absoluteString as AnyObject,
-                                             k.time:playitem.time as AnyObject,
-                                             k.rank:playitem.rank as AnyObject]
-
-            temp.append(item as AnyObject)
+        var temp = Array<Any>()
+        for item in histories.sorted(by: { (lhs, rhs) -> Bool in return lhs.rank < rhs.rank}).suffix(keep) {
+            let test = item.dictionary()
+            temp.append(test)/*
+            let dict : [String:AnyObject] = [k.name:item.name as AnyObject,
+                                             k.link:item.link.absoluteString as AnyObject,
+                                             k.time:item.time as AnyObject,
+                                             k.rank:item.rank as AnyObject]
+            temp.append(dict as AnyObject)*/
         }
         
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
@@ -751,10 +758,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item.rank = histories.count
             
             //  keep a global play items list used to restore settings
-            var lists = UserDefaults.standard.dictionary(forKey: UserSettings.Playitems.default) ?? NSDictionary.init() as! [String : Any]
+            var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) ?? NSDictionary.init() as! [String : Any]
             lists[item.link.absoluteString] = item.dictionary()
             
-            UserDefaults.standard.set(lists, forKey: UserSettings.Playitems.default)
+            UserDefaults.standard.set(lists, forKey: k.Playitems)
             UserDefaults.standard.synchronize()
             
             //  tell any playlist controller we have updated history

@@ -65,6 +65,10 @@ internal struct UserSettings {
 //      defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
         defaultValue: "https://cdn.rawgit.com/slashlos/Helium/master/helium_start.html"
     )
+    static let releaseNotesURL = Setting<String>(
+        "releaseNotesURL",
+        defaultValue: "https://slashlos.github.io/Helium/"
+    )
     static let homePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
     static let userAgent = Setting<String>(
@@ -77,8 +81,6 @@ internal struct UserSettings {
     )
 
     //  User Defaults keys
-    static let Playlists = Setting<String>("playlists", defaultValue:"playlists")
-    static let Playitems = Setting<String>("playitems", defaultValue:"playitems")
     static let HistoryName = Setting<String>("historyName", defaultValue:"History")
     static let HistoryKeep = Setting<Int>("historyKeep", defaultValue:255)
     static let HistoryList = Setting<String>("historyList", defaultValue:"histories")
