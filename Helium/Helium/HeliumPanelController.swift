@@ -298,10 +298,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         let delegate = webView.navigationDelegate as! NSObject
         panel.ignoresMouseEvents = true
+        webView.stopLoading()
         
         //  Halt anything in progress
         if let wvc: WebViewController = self.contentViewController as? WebViewController {
-            wvc.webView.stopLoading()
             wvc.setupTrackingAreas(false)
        }
         
