@@ -42,7 +42,7 @@ key window, use the contextual menu, or "SHIFT" into the target window.
 
 ### Contextual Menu
 
-![Contextual](contextual.png)
+![Contextual](/images/contextual.png)
 
 Each Helium window provides a contextual menu, which varies based on type of
 content being displayed.

@@ -14,7 +14,7 @@ Contributors:
 
 History
 
-  3, Feb 27, 2018
+  4, August, 2018
     Carlos D Santiago
       document windows,
       playlists - global / shared, savable items
@@ -25,6 +25,7 @@ History
       user agent editing,
       document history,
       contextual menu,
+      release notes
       about box
  
   2.0-20, Nov 10, 2015
