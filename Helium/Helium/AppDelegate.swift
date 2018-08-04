@@ -118,13 +118,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
+        let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow
         let newWindows = UserSettings.createNewWindows.value
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        guard (newWindows && openForBusiness) else {
-            let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow
+        guard (newWindows && openForBusiness) || (thisWindow?.contentViewController?.isKind(of: PlaylistViewController.self))! else {
             let hwc = fromWindow?.windowController
             let doc = hwc?.document
             
