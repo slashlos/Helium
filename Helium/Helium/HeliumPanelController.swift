@@ -295,19 +295,25 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
-        let webView = self.window?.contentView?.subviews.first as! MyWebView
-        let delegate = webView.navigationDelegate as! NSObject
         panel.ignoresMouseEvents = true
-        webView.stopLoading()
         
         //  Halt anything in progress
-        if let wvc: WebViewController = self.contentViewController as? WebViewController {
-            wvc.setupTrackingAreas(false)
+        if let wvc: WebViewController = self.contentViewController as? WebViewController,  let webView = wvc.webView {
+            let delegate = webView.navigationDelegate as! NSObject
+
+            //  Stop whatever is going on by brute force
+            webView.stopLoading()
+            webView.load(URLRequest.init(url: URL.init(string: "about:blank")!))
+            
+            //  Remove view tracking, observations
+            webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
+            NotificationCenter.default.removeObserver(delegate)
+
+            //  Propagate to super after removal
+//            wvc.setupTrackingAreas(false)
        }
         
         // Wind down all observations
-        webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
-        NotificationCenter.default.removeObserver(delegate)
         NotificationCenter.default.removeObserver(self)
         
         return true
