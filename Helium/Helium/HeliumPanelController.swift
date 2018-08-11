@@ -50,7 +50,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             object: nil)
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(HeliumPanelController.didUpdateUpdateURL(note:)),
+            selector: #selector(HeliumPanelController.didUpdateURL(note:)),
             name: NSNotification.Name(rawValue: "HeliumDidUpdateURL"),
             object: nil)
 
@@ -321,7 +321,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     //MARK:- Actual functionality
     
-    @objc func didUpdateUpdateURL(note: Notification) {
+    @objc func didUpdateURL(note: Notification) {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
 
         if note.object as? URL == webView.url {
