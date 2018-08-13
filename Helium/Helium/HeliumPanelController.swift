@@ -129,14 +129,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
         switch theEvent.trackingNumber {
         case closeTrackingTag:
-            //Swift.print("close entered")
             closeButton?.image = closeButtonImage
             break
         
-        default:/*
-            Swift.print(String(format: "%@ entered",
-                               (theEvent.trackingNumber == titleTrackingTag
-                                ? "title" : "view")))*/
+        default:
             let lastMouseOver = mouseOver
             mouseOver = true
             updateTranslucency()
@@ -154,7 +150,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
         switch theEvent.trackingNumber {
         case closeTrackingTag:
-            //Swift.print("close exited")
             closeButton?.image = nullImage
             break
             
@@ -164,14 +159,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             //  If we exit to the title bar area we're still in side
             if theEvent.trackingNumber == titleTrackingTag, let tSize = titleView?.bounds.size {
                 if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y < ((vSize?.height)! + tSize.height) {
-                    //Swift.print("title -> view")
-                    return
                 }
             }
             else
             if theEvent.trackingNumber == viewTrackingTag {
                 if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y > (vSize?.height)! {
-                    //Swift.print("view -> title")
                     return
                 }
             }
@@ -182,10 +174,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             if hideTitle {
                 updateTitleBar(didChange: lastMouseOver != mouseOver)
             }
-            /*
-            Swift.print(String(format: "%@ exited",
-                               (theEvent.trackingNumber == titleTrackingTag
-                                ? "title" : "view")))*/
         }
     }
     
@@ -398,7 +386,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     @objc func updateTitleBar(didChange: Bool) {
         if didChange {
-            //Swift.print("updateTitleBar")
             if settings.autoHideTitle.value == true && !mouseOver {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.2
