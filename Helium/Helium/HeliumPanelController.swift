@@ -88,14 +88,21 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     var closeButton : NSButton?
     var closeButtonImage : NSImage?
     var nullImage : NSImage?
-    var trackingTag: NSTrackingRectTag?
-    
+    var closeTrackingTag: NSTrackingRectTag?
+    var viewTrackingTag: NSTrackingRectTag?
+    var titleTrackingTag: NSTrackingRectTag?
+    var titleView : NSView? {
+        get {
+            return self.window?.standardWindowButton(.closeButton)?.superview
+        }
+    }
     func setupTrackingAreas(_ establish : Bool) {
-        if let tag = trackingTag {
+        if let tag = closeTrackingTag {
             closeButton?.removeTrackingRect(tag)
         }
         if establish {
-            trackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            closeTrackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            titleTrackingTag = titleView?.addTrackingRect((titleView?.bounds)!, owner: self, userData: nil, assumeInside: false)
         }
     }
 
@@ -115,29 +122,70 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
         
     override func mouseEntered(with theEvent: NSEvent) {
+        let hideTitle = (doc?.settings.autoHideTitle.value == true)
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)
         }
-        let lastMouseOver = mouseOver
-        mouseOver = true
-        updateTranslucency()
-        if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
-            updateTitleBar(didChange: true)
-        }
-        if trackingTag == theEvent.trackingNumber {
+
+        switch theEvent.trackingNumber {
+        case closeTrackingTag:
+            //Swift.print("close entered")
             closeButton?.image = closeButtonImage
+            break
+        
+        default:/*
+            Swift.print(String(format: "%@ entered",
+                               (theEvent.trackingNumber == titleTrackingTag
+                                ? "title" : "view")))*/
+            let lastMouseOver = mouseOver
+            mouseOver = true
+            updateTranslucency()
+
+            //  view or title entered
+            if hideTitle && (lastMouseOver != mouseOver) {
+                updateTitleBar(didChange: lastMouseOver != mouseOver)
+            }
         }
     }
     
     override func mouseExited(with theEvent: NSEvent) {
-        let lastMouseOver = mouseOver
-        mouseOver = false
-        updateTranslucency()
-        if doc?.settings.autoHideTitle.value == true && lastMouseOver != mouseOver {
-            updateTitleBar(didChange: true)
-        }
-        if trackingTag == theEvent.trackingNumber {
+        let hideTitle = (doc?.settings.autoHideTitle.value == true)
+        let location : NSPoint = theEvent.locationInWindow
+
+        switch theEvent.trackingNumber {
+        case closeTrackingTag:
+            //Swift.print("close exited")
             closeButton?.image = nullImage
+            break
+            
+        default:
+            let vSize = self.window?.contentView?.bounds.size
+            
+            //  If we exit to the title bar area we're still in side
+            if theEvent.trackingNumber == titleTrackingTag, let tSize = titleView?.bounds.size {
+                if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y < ((vSize?.height)! + tSize.height) {
+                    //Swift.print("title -> view")
+                    return
+                }
+            }
+            else
+            if theEvent.trackingNumber == viewTrackingTag {
+                if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y > (vSize?.height)! {
+                    //Swift.print("view -> title")
+                    return
+                }
+            }
+            let lastMouseOver = mouseOver
+            mouseOver = false
+            updateTranslucency()
+            
+            if hideTitle {
+                updateTitleBar(didChange: lastMouseOver != mouseOver)
+            }
+            /*
+            Swift.print(String(format: "%@ exited",
+                               (theEvent.trackingNumber == titleTrackingTag
+                                ? "title" : "view")))*/
         }
     }
     
@@ -214,7 +262,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
-        updateTitleBar(didChange: !mouseOver)
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
@@ -310,7 +357,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             NotificationCenter.default.removeObserver(delegate)
 
             //  Propagate to super after removal
-//            wvc.setupTrackingAreas(false)
+            wvc.setupTrackingAreas(false)
        }
         
         // Wind down all observations
@@ -329,21 +376,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
-    @objc func updateTitleBar(didChange: Bool) {
+    fileprivate func docIconToggle() {
         let docIconButton = panel.standardWindowButton(.documentIconButton)
 
-        if didChange {
-            if settings.autoHideTitle.value == true && !mouseOver {
-                panel.titleVisibility = NSWindowTitleVisibility.hidden
-                panel.titlebarAppearsTransparent = true
-                self.window!.styleMask.formUnion(.fullSizeContentView)
-                docIconButton?.isHidden = true
-            } else {
-                panel.titleVisibility = NSWindowTitleVisibility.visible
-                panel.titlebarAppearsTransparent = false
-                self.window!.styleMask.formSymmetricDifference(.fullSizeContentView)
-            }
-        }
         if settings.autoHideTitle.value == false || mouseOver {
             if let doc = self.document {
                 docIconButton?.image = (doc as! Document).displayImage
@@ -355,6 +390,32 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             docIconButton?.isHidden = false
             self.synchronizeWindowTitleWithDocumentName()
         }
+        else
+        {
+            docIconButton?.isHidden = true
+        }
+    }
+    
+    @objc func updateTitleBar(didChange: Bool) {
+        if didChange {
+            //Swift.print("updateTitleBar")
+            if settings.autoHideTitle.value == true && !mouseOver {
+                NSAnimationContext.runAnimationGroup({ (context) -> Void in
+                    context.duration = 0.2
+                    panel.animator().titleVisibility = NSWindowTitleVisibility.hidden
+                    panel.animator().titlebarAppearsTransparent = true
+                    panel.animator().styleMask.formUnion(.fullSizeContentView)
+                }, completionHandler: nil)
+            } else {
+                NSAnimationContext.runAnimationGroup({ (context) -> Void in
+                    context.duration = 0.2
+                    panel.animator().titleVisibility = NSWindowTitleVisibility.visible
+                    panel.animator().titlebarAppearsTransparent = false
+                    panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
+                }, completionHandler: nil)
+            }
+        }
+        docIconToggle()
     }
     
     @objc fileprivate func setFloatOverFullScreenApps() {

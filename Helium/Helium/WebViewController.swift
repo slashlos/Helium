@@ -454,7 +454,14 @@ class MyWebView : WKWebView {
 
 class WebViewController: NSViewController, WKNavigationDelegate {
 
-    var trackingTag: NSTrackingRectTag?
+    var trackingTag: NSTrackingRectTag? {
+        get {
+            return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
+        }
+        set (value) {
+            (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag = value!
+        }
+    }
 
     // MARK: View lifecycle
     func fit(_ childView: NSView, parentView: NSView) {
