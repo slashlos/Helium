@@ -167,13 +167,23 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                     return
                 }
             }
-            let lastMouseOver = mouseOver
+            var lastMouseOver = mouseOver
             mouseOver = false
             updateTranslucency()
             
+            if ((titleView?.hitTest(theEvent.locationInWindow)) != nil) ||
+                ((self.window?.contentView?.hitTest(theEvent.locationInWindow)) != nil) {
+                //Swift.print("still here")
+                lastMouseOver = true
+                mouseOver = true
+            }
             if hideTitle {
                 updateTitleBar(didChange: lastMouseOver != mouseOver)
             }
+            /*
+            Swift.print(String(format: "%@ exited",
+                               (theEvent.trackingNumber == titleTrackingTag
+                                ? "title" : "view")))*/
         }
     }
     
@@ -225,7 +235,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
          */
         
         switch translucencyPreference {
-        case .never:
+        case .never, .offOver, .offOutside:
             return false
         case .always:
             return true
