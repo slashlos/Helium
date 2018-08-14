@@ -118,33 +118,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
-        let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow
         let newWindows = UserSettings.createNewWindows.value
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
 
-        guard (newWindows && openForBusiness) || (thisWindow?.contentViewController?.isKind(of: PlaylistViewController.self))! else {
-            let hwc = fromWindow?.windowController
-            let doc = hwc?.document
-            
-            //  If it's a "h3w" type read it and load it into defaults
-            if thisWindow != nil, let wvc = thisWindow!.contentViewController as? WebViewController {
-
-                if fileType == "h3w" {
-                    (doc as! Document).update(to: fileURL, ofType: fileType)
+        if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
+            guard (newWindows && openForBusiness) || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
+                let hwc = fromWindow?.windowController
+                let doc = hwc?.document
+                
+                //  If it's a "h3w" type read it and load it into defaults
+                if let wvc = thisWindow.contentViewController as? WebViewController {
                     
-                    wvc.loadURL(url: (doc as! Document).fileURL!)
+                    if fileType == "h3w" {
+                        (doc as! Document).update(to: fileURL, ofType: fileType)
+                        
+                        wvc.loadURL(url: (doc as! Document).fileURL!)
+                    }
+                    else
+                    {
+                        wvc.loadURL(url: fileURL)
+                    }
+                    return true
                 }
                 else
                 {
-                    wvc.loadURL(url: fileURL)
+                    return false
                 }
-                return true
-            }
-            else
-            {
-                return false
             }
         }
         
