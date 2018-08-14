@@ -365,6 +365,11 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Translucency" systemMenu="window" id="fPu-ZA-vuX">
                                                 <items>
+                                                    <menuItem title="Enabled" keyEquivalent="t" id="p0U-Pp-s8F">
+                                                        <connections>
+                                                            <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="K1s-hD-jeV"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="Opacity" id="wlj-XI-Lng">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <menu key="submenu" title="Opacity" systemMenu="window" id="5ao-Bb-P10">

@@ -207,6 +207,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case always = 1
         case mouseOver = 2
         case mouseOutside = 3
+        case offOver = -2
+        case offOutside = -3
     }
 
     @objc fileprivate func updateTranslucency() {
@@ -245,6 +247,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             return !mouseOver
         }
     }
+    fileprivate func canBeTranslucent() -> Bool {
+        switch translucencyPreference {
+        case .never, .offOver, .offOutside:
+            return false
+        case .always, .mouseOver, .mouseOutside:
+            return true
+        }
+    }
     
     //MARK:- IBActions
     
@@ -269,6 +279,30 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
     }
+    
+    @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
+        switch translucencyPreference {
+        case .never:
+            translucencyPreference = .always
+            break
+        case .always:
+            translucencyPreference = .never
+            break
+        case .mouseOver:
+            translucencyPreference = .offOver
+            break
+        case .mouseOutside:
+            translucencyPreference = .offOutside
+            break
+        case .offOver:
+            translucencyPreference = .mouseOver
+            break
+        case .offOutside:
+            translucencyPreference = .mouseOutside
+        }
+        settings.translucencyPreference.value = translucencyPreference
+        willUpdateTranslucency()
+    }
 
     @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
@@ -284,6 +318,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             menuItem.state = settings.autoHideTitle.value ? NSOnState : NSOffState
             break
         //Transluceny Menu
+        case "Enabled":
+            menuItem.state = canBeTranslucent() ? NSOnState : NSOffState
+            break
         case "Never":
             menuItem.state = settings.translucencyPreference.value == .never ? NSOnState : NSOffState
             break
@@ -291,10 +328,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             menuItem.state = settings.translucencyPreference.value == .always ? NSOnState : NSOffState
             break
         case "Mouse Over":
-            menuItem.state = settings.translucencyPreference.value == .mouseOver ? NSOnState : NSOffState
+            let value = settings.translucencyPreference.value
+            menuItem.state = value == .offOver
+                ? NSMixedState
+                : value == .mouseOver ? NSOnState : NSOffState
             break
         case "Mouse Outside":
-            menuItem.state = settings.translucencyPreference.value == .mouseOutside ? NSOnState : NSOffState
+            let value = settings.translucencyPreference.value
+            menuItem.state = value == .offOutside
+                ? NSMixedState
+                : value == .mouseOutside ? NSOnState : NSOffState
             break
         case "Create New Windows":
             menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
