@@ -341,6 +341,13 @@ CA
                                                 <action selector="forwardPress:" target="Ady-hI-5gd" id="WVi-G0-CqM"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="fCx-MI-3W9"/>
+                                        <menuItem title="Search…" keyEquivalent="?" id="OfQ-sB-vjX">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="openSearchPress:" target="Voe-Tx-rLC" id="ULN-mA-ikl"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                     <connections>
                                         <outlet property="delegate" destination="Voe-Tx-rLC" id="VbI-6E-D40"/>
@@ -706,6 +713,12 @@ CA
                                     </menuItem>
                                 </items>
                             </menu>
+                        </menuItem>
+                        <menuItem title="Search…" id="H50-eU-quB">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="openSearchPress:" target="Voe-Tx-rLC" id="suN-CM-xtA"/>
+                            </connections>
                         </menuItem>
                         <menuItem title="Quit" id="tq3-QX-UdL">
                             <modifierMask key="keyEquivalentModifierMask"/>
