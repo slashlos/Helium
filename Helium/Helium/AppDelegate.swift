@@ -25,6 +25,8 @@ struct RequestUserStrings {
 }
 
 fileprivate class URLField: NSTextField {
+    var title : String?
+
     override func mouseDown(with event: NSEvent) {
         super.mouseDown(with: event)
         if let textEditor = currentEditor() {
@@ -32,16 +34,35 @@ fileprivate class URLField: NSTextField {
         }
     }
     
-    convenience init(withValue: String?) {
+    convenience init(withValue: String?, modalTitle: String?) {
         self.init()
         
         if let string = withValue {
             self.stringValue = string
         }
+        if let title = modalTitle {
+            self.title = title
+        }
+        else
+        {
+            let infoDictionary = (Bundle.main.infoDictionary)!
+            
+            //    Get the app name field
+            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
+            
+            //    Setup the version to one we constrict
+            self.title = String(format:"%@ %@", appName,
+                               infoDictionary["CFBundleVersion"] as! CVarArg)
+        }
         self.lineBreakMode = NSLineBreakMode.byTruncatingHead
         self.usesSingleLineMode = true
     }
+    
     override func viewDidMoveToWindow() {
+        if let title = self.title {
+            self.window?.title = title
+        }
+
         // MARK: this gets us focus even when modal
         self.becomeFirstResponder()
     }
@@ -80,11 +101,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.homePageURL.value,
-            alertMessageText: "Enter new home Page URL",
+            alertMessageText:   "New home page",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.homePageURL.default),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
+                          title: "Enter URL",
                           acceptHandler: { (newUrl: String) in
                             UserSettings.homePageURL.value = newUrl
         }
@@ -248,11 +270,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             
             didRequestUserUrl(RequestUserStrings (
                 currentURL: UserSettings.homePageURL.value,
-                alertMessageText: "Enter URL",
+                alertMessageText:   "URL to load",
                 alertButton1stText: "Load",     alertButton1stInfo: nil,
                 alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
                 alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
                               onWindow: nil,
+                              title: "Enter URL",
                               acceptHandler: { (newUrl: String) in
                                 self.openURLStringInNewWindow(URL.init(string: newUrl)!)
             })
@@ -262,16 +285,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let wvc = window.contentViewController as! WebViewController
         didRequestUserUrl(RequestUserStrings (
             currentURL: wvc.currentURL,
-            alertMessageText: "Enter URL",
+            alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
                           onWindow: window as? HeliumPanel,
+                          title: "Enter URL",
                                       acceptHandler: { (newUrl: String) in
                                         wvc.loadURL(text: newUrl)
         })
     }
 
+    @IBAction func openSearchPress(_ sender: AnyObject) {
+        //  We have a window, create as sheet and load playlists there
+        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
+            //  No window, so load alert modally
+            
+            didRequestSearch(RequestUserStrings (
+                currentURL: nil,
+                alertMessageText:   "Search",
+                alertButton1stText: "Search",   alertButton1stInfo: "https://www.google.com/search?q=%@",
+                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+                alertButton3rdText: "Yahoo",    alertButton3rdInfo: "https://www.yahoo.com/search?q=%@"),
+                              onWindow: nil,
+                              title: "Web Search",
+                              acceptHandler: { (searchURL: URL) in
+                                self.openURLStringInNewWindow(searchURL)
+            })
+            return
+        }
+        
+        if let wvc : WebViewController = window.contentViewController as? WebViewController {
+            didRequestSearch(RequestUserStrings (
+                currentURL: nil,
+                alertMessageText:   "Search",
+                alertButton1stText: "Search",   alertButton1stInfo: "https://www.google.com/search?q=%@",
+                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+                alertButton3rdText: "Yahoo",    alertButton3rdInfo: "https://www.yahoo.com/search?q=%@"),
+                              onWindow: window as? HeliumPanel,
+                              title: "Web Search",
+                              acceptHandler: { (searchURL: URL) in
+                                wvc.loadURL(url: searchURL)
+            })
+        }
+    }
+    
     @IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
@@ -361,11 +419,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	@IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
             currentURL: UserSettings.userAgent.value,
-            alertMessageText: "Enter new user agent",
+            alertMessageText:   "New user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.userAgent.default),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
+                          title: "User Agent",
                           acceptHandler: { (newUserAgent: String) in
                             UserSettings.userAgent.value = newUserAgent
                             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewUserAgentString"),
@@ -800,6 +859,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Process response locally, validate, dispatch via supplied handler
     func didRequestUserAgent(_ strings: RequestUserStrings,
                              onWindow: HeliumPanel?,
+                             title: String?,
                              acceptHandler: @escaping (String) -> Void) {
         
         // Create alert
@@ -808,7 +868,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.messageText = strings.alertMessageText
         
         // Create urlField
-        let urlField = URLField(withValue: strings.currentURL)
+        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
         urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         
         // Add urlField and buttons to alert
@@ -887,9 +947,89 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Set focus on urlField
         alert.accessoryView!.becomeFirstResponder()
     }
+    
+    func didRequestSearch(_ strings: RequestUserStrings,
+                          onWindow: HeliumPanel?,
+                          title: String?,
+                          acceptHandler: @escaping (URL) -> Void) {
+        
+        // Create alert
+        let alert = NSAlert()
+        alert.alertStyle = NSAlertStyle.informational
+        alert.messageText = strings.alertMessageText
+        
+        // Create urlField
+        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
+        urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
+        alert.accessoryView = urlField
+        
+        // Add urlField and buttons to alert
+        let alert1stButton = alert.addButton(withTitle: strings.alertButton1stText)
+        if let alert1stToolTip = strings.alertButton1stInfo {
+            alert1stButton.toolTip = alert1stToolTip
+        }
+        let alert2ndButton = alert.addButton(withTitle: strings.alertButton2ndText)
+        if let alert2ndtToolTip = strings.alertButton2ndInfo {
+            alert2ndButton.toolTip = alert2ndtToolTip
+        }
+        if let alert3rdText = strings.alertButton3rdText {
+            let alert3rdButton = alert.addButton(withTitle: alert3rdText)
+            if let alert3rdtToolTip = strings.alertButton3rdInfo {
+                alert3rdButton.toolTip = alert3rdtToolTip
+            }
+        }
+        
+        if let urlWindow = onWindow {
+            alert.beginSheetModal(for: urlWindow, completionHandler: { response in
+                // buttons are user-search-url, cancel, google-search
+                switch response {
+                case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
+                    let newUrlFormat = response == NSAlertThirdButtonReturn
+                        ? (alert.buttons[2] as NSButton).toolTip
+                        : (alert.buttons[0] as NSButton).toolTip
+                    let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
+                    var urlString = String(format: newUrlFormat!, newUrlString!)
+                    
+                    urlString = UrlHelpers.ensureScheme(urlString)
+                    if UrlHelpers.isValid(urlString: urlString) {
+                        acceptHandler(URL.init(string: urlString)!)
+                    }
+
+                default:
+                    return
+                }
+            })
+        }
+        else
+        {
+            let response = alert.runModal()
+            switch response {
+            case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
+                let newUrlFormat = response == NSAlertThirdButtonReturn
+                    ? (alert.buttons[2] as NSButton).toolTip
+                    : (alert.buttons[0] as NSButton).toolTip
+                let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
+                var urlString = String(format: newUrlFormat!, newUrlString!)
+                
+                urlString = UrlHelpers.ensureScheme(urlString)
+                guard UrlHelpers.isValid(urlString: urlString), let searchURL = URL.init(string: urlString) else {
+                    Swift.print("invalid: \(urlString)")
+                    return
+                }
+                acceptHandler(searchURL)
+
+            default:// NSAlertSecondButtonReturn:
+                return
+            }
+        }
+        
+        // Set focus on urlField
+        alert.accessoryView!.becomeFirstResponder()
+    }
 
     func didRequestUserUrl(_ strings: RequestUserStrings,
                            onWindow: HeliumPanel?,
+                           title: String?,
                            acceptHandler: @escaping (String) -> Void) {
         
         // Create alert
@@ -898,7 +1038,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.messageText = strings.alertMessageText
         
         // Create urlField
-        let urlField = URLField(withValue: strings.currentURL)
+        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
         urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         alert.accessoryView = urlField
 
