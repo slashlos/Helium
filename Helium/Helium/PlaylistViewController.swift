@@ -911,8 +911,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if tableView == playitemTableView
         {
             let item = (playitemArrayController.arrangedObjects as! [PlayItem])[row]
+            let temp = item.link.absoluteString
 
-            return item.link.absoluteString
+            if item.name == "search", let args = temp.split(separator: "=").last?.removingPercentEncoding
+            {
+                return args
+            }
+            else
+            {
+                return temp
+            }
         }
         return "no tip for you"
     }
