@@ -442,6 +442,11 @@ class MyWebView : WKWebView {
         item.target = hwc
         subTranslucency.addItem(item)
 
+        item = NSMenuItem(title: "Search…", action: #selector(AppDelegate.openSearchPress(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = appDelegate
+        menu.addItem(item)
+        
         item = NSMenuItem(title: "Close", action: #selector(NSApp.keyWindow?.performClose(_:)), keyEquivalent: "")
         item.target = NSApp.keyWindow
         menu.addItem(item)
