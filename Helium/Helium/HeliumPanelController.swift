@@ -16,7 +16,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             return self.window?.contentViewController as! WebViewController
         }
     }
-
+    var webView: MyWebView {
+        get {
+            return self.webViewController.webView
+        }
+    }
     fileprivate var panel: HeliumPanel! {
         get {
             return (self.window as! HeliumPanel)
