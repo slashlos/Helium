@@ -621,6 +621,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  https://stackoverflow.com/questions/41927843/global-modifier-key-press-detection-in-swift/41929189#41929189
     var localKeyDownMonitor : Any? = nil
     var globalKeyDownMonitor : Any? = nil
+    var shiftKeyDown : Bool = false {
+        didSet {
+            let notif = Notification(name: Notification.Name(rawValue: "shiftKeyDown"),
+                                     object: shiftKeyDown);
+            NotificationCenter.default.post(notif)
+        }
+    }
 
     func keyDownMonitor(event: NSEvent) -> Bool {
         switch event.modifierFlags.intersection(.deviceIndependentFlagsMask) {
@@ -667,11 +674,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             return true
             
+        case [.shift]:
+            self.shiftKeyDown = true
+            //Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
+            return true
+            
         default:
-            guard let pvc: PlaylistViewController = NSApp.keyWindow?.contentViewController as? PlaylistViewController else { return true }
-            guard let pcv: PlayItemCornerView = pvc.playitemTableView.cornerView as? PlayItemCornerView else { return true }
-            pcv.menuIconState = ([.shift] == event.modifierFlags.intersection(.deviceIndependentFlagsMask))
-            pcv.setNeedsDisplay(pcv.frame)
+            //let wasDown = shiftKeyDown
+            self.shiftKeyDown = false/*
+            if wasDown {
+                Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
+            }*/
             return false
         }
     }
