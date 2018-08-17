@@ -18,7 +18,9 @@ class MyWebView : WKWebView {
         Swift.print("handleURLScheme: \(urlScheme)")
         return true
     }
-
+    var selectedText : String?
+    var selectedURL : URL?
+    
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
@@ -26,6 +28,28 @@ class MyWebView : WKWebView {
     }
 
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
+
+        //  Pick off javascript items we want to ignore or handle
+        for title in ["Open Link", "Open Link in New Window", "Download Linked File"] {
+            if let item = menu.item(withTitle: title) {
+                if title == "Download Linked File" {
+                    menu.removeItem(item)
+                }
+                else
+                if title == "Open Link"
+                {
+                    item.representedObject = self.window
+                    item.action = #selector(MyWebView.openLinkInWindow(_:))
+                    item.target = self
+                }
+                else
+                {
+                    item.action = #selector(MyWebView.openLinkNewWindow(_:))
+                    item.target = self
+                }
+            }
+        }
+
         publishApplicationMenu(menu);
     }
 
@@ -41,6 +65,24 @@ class MyWebView : WKWebView {
         }
     }
     
+    func openLinkInWindow(_ item: NSMenuItem) {
+        if let urlString = self.selectedText, let url = URL.init(string: urlString) {
+            load(URLRequest.init(url: url))
+        }
+        if let url = self.selectedURL {
+            appDelegate.openURLStringInNewWindow(url)
+        }
+      }
+    
+    func openLinkNewWindow(_ item: NSMenuItem) {
+        if let urlString = self.selectedText, let url = URL.init(string: urlString) {
+            appDelegate.openURLStringInNewWindow(url)
+        }
+        if let url = self.selectedURL {
+            appDelegate.openURLStringInNewWindow(url)
+        }
+     }
+
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
         let newWindows = UserSettings.createNewWindows.value
@@ -453,7 +495,7 @@ class MyWebView : WKWebView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate {
+class WebViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHandler {
 
     var trackingTag: NSTrackingRectTag? {
         get {
@@ -514,7 +556,37 @@ class WebViewController: NSViewController, WKNavigationDelegate {
 
         //  Intercept Finder drags
         webView.register(forDraggedTypes: [NSURLPboardType])
+        
+        //  Watch javascript selection messages
+        let controller = webView.configuration.userContentController
+        controller.add(self, name: "newSelectionDetected")
+        controller.add(self, name: "newUrlDetected")
 
+        let js = """
+//  https://stackoverflow.com/questions/50846404/how-do-i-get-the-selected-text-from-a-wkwebview-from-objective-c
+function getSelectionAndSendMessage()
+{
+    var txt = document.getSelection().toString() ;
+    window.webkit.messageHandlers.newSelectionDetected.postMessage(txt) ;
+}
+document.onmouseup   = getSelectionAndSendMessage ;
+document.onkeyup     = getSelectionAndSendMessage ;
+
+//  https://stackoverflow.com/questions/51894733/how-to-get-mouse-over-urls-into-wkwebview-with-swift/51899392#51899392
+function sendLink()
+{
+    window.webkit.messageHandlers.newUrlDetected.postMessage(this.href) ;
+}
+
+var allLinks = document.links;
+for(var i=0; i< allLinks.length; i++)
+{
+    allLinks[i].onmouseover = sendLink ;
+}
+"""
+        let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        controller.addUserScript(script)
+        
         clear()
     }
     
@@ -724,7 +796,15 @@ class WebViewController: NSViewController, WKNavigationDelegate {
                 NotificationCenter.default.post(notif)
                 Swift.print("webView:didFinish: \(title)")
             }
-        }
+        }/*
+        let html = """
+<html>
+<body>
+<h1>Hello, Swift!</h1>
+</body>
+</html>
+"""
+        webView.loadHTMLString(html, baseURL: nil)*/
     }
     
     func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {
