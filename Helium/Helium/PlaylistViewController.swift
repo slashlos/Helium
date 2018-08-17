@@ -158,10 +158,14 @@ class PlayItemCornerView : NSView {
     @IBOutlet weak var playlistArrayController: NSArrayController!
 	@IBOutlet weak var playitemArrayController: NSArrayController!
     @IBOutlet weak var playitemTableView: PlayTableView!
-    var menuIconState: Bool = false
+    var shiftKeyDown: Bool {
+        get {
+            return (NSApp.delegate as! AppDelegate).shiftKeyDown
+        }
+    }
     var menuIconName: String {
         get {
-            if menuIconState {
+            if shiftKeyDown {
                 return "NSTouchBarSearchTemplate"
             }
             else
@@ -184,7 +188,7 @@ class PlayItemCornerView : NSView {
         playitemTableView.beginUpdates()
 
         //  True - prune duplicates, false resequence
-        switch menuIconState {
+        switch shiftKeyDown {
         case true:
             var seen = [String:PlayItem]()
             for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated().reversed() {
@@ -329,6 +333,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  Start or forget observing any changes
     internal func setObserving(_ state: Bool) {
+        if state {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(PlaylistViewController.shiftKeyDown(_:)),
+                name: NSNotification.Name(rawValue: "shiftKeyDown"),
+                object: nil)
+        }
+        else
+        {
+            NotificationCenter.default.removeObserver(self)
+        }
+        
         self.observe(self, keyArray: [k.Playlists], observing: state)
         for playlist in playlists {
             self.observe(playlist, keyArray: listIvars, observing: state)
@@ -338,6 +354,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
+    internal func shiftKeyDown(_ note: Notification) {
+        if let pcv : PlayItemCornerView = playitemTableView.cornerView as? PlayItemCornerView {
+            DispatchQueue.main.async {
+                pcv.setNeedsDisplay(pcv.bounds)
+            }
+        }
+    }
+
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         let oldValue = change?[NSKeyValueChangeKey(rawValue: "old")]
         let newValue = change?[NSKeyValueChangeKey(rawValue: "new")]
