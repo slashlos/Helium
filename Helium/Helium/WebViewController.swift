@@ -25,10 +25,6 @@ class MyWebView : WKWebView {
         }
     }
 
-    override var mouseDownCanMoveWindow: Bool {
-        return true
-    }
-    
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
         publishApplicationMenu(menu);
     }
@@ -656,6 +652,38 @@ class WebViewController: NSViewController, WKNavigationDelegate {
         webView.reload()
     }
     
+    fileprivate func shiftKeyDown(_ note: Notification) {
+        webView.willChangeValue(forKey: "mouseDownCanMoveWindow")
+        ;
+        webView.didChangeValue(forKey: "mouseDownCanMoveWindow")
+    }
+    
+    // MARK: Javascript
+    
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        Swift.print("userContentController")
+        
+        switch message.name {
+        case "newSelectionDetected":
+            if let urlString : String = message.body as? String
+            {
+                webView.selectedText = urlString
+                Swift.print("ucc: str -> \(urlString)")
+            }
+            break
+            
+        case "newUrlDetected":
+            if let url = URL.init(string: message.body as! String) {
+                webView.selectedURL = url
+                Swift.print("ucc: url -> \(url.absoluteString)")
+            }
+            break
+            
+        default:
+            Swift.print("ucc: unknown \(message.name)")
+        }
+    }
+
     // MARK: Webview functions
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
