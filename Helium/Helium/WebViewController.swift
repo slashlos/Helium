@@ -733,21 +733,21 @@ for(var i=0; i< allLinks.length; i++)
     // MARK: Javascript
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        Swift.print("userContentController")
+        //Swift.print("userContentController")
         
         switch message.name {
         case "newSelectionDetected":
             if let urlString : String = message.body as? String
             {
                 webView.selectedText = urlString
-                Swift.print("ucc: str -> \(urlString)")
+                //Swift.print("ucc: str -> \(urlString)")
             }
             break
             
         case "newUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
-                Swift.print("ucc: url -> \(url.absoluteString)")
+                //Swift.print("ucc: url -> \(url.absoluteString)")
             }
             break
             
