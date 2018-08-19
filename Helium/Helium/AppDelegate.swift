@@ -59,6 +59,8 @@ fileprivate class URLField: NSTextField {
     }
     
     override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        
         if let title = self.title {
             self.window?.title = title
         }
@@ -981,9 +983,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.messageText = strings.alertMessageText
         
         // Create urlField
-        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
-        urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
-        alert.accessoryView = urlField
+        let search = SearchField(withValue: strings.currentURL, modalTitle: title)
+        search.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
+        (search.cell as! NSSearchFieldCell).maximumRecents = 254
+        search.recentSearches = searchArray
+        alert.accessoryView = search
         
         // Add urlField and buttons to alert
         let alert1stButton = alert.addButton(withTitle: strings.alertButton1stText)
