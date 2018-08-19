@@ -44,7 +44,7 @@ class MyWebView : WKWebView {
                 }
                 else
                 {
-                    item.action = #selector(MyWebView.openLinkNewWindow(_:))
+                    item.action = #selector(MyWebView.openLinkInNewWindow(_:))
                     item.target = self
                 }
             }
@@ -59,6 +59,11 @@ class MyWebView : WKWebView {
             self.window?.performClose(event)
         }
         else
+        if let chr = event.charactersIgnoringModifiers, chr.starts(with: "?")
+        {
+            (self.window?.contentViewController as! WebViewController).openSearchPress(event)
+        }
+        else
         {
             // still here?
             super.keyDown(with: event)
@@ -70,18 +75,18 @@ class MyWebView : WKWebView {
             load(URLRequest.init(url: url))
         }
         if let url = self.selectedURL {
-            appDelegate.openURLStringInNewWindow(url)
+            load(URLRequest.init(url: url))
         }
       }
     
-    func openLinkNewWindow(_ item: NSMenuItem) {
+    func openLinkInNewWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
-            appDelegate.openURLStringInNewWindow(url)
+            appDelegate.openURLInNewWindow(url)
         }
         if let url = self.selectedURL {
-            appDelegate.openURLStringInNewWindow(url)
+            appDelegate.openURLInNewWindow(url)
         }
-     }
+    }
 
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
@@ -298,7 +303,7 @@ class MyWebView : WKWebView {
                 if self.url != nil {
                     item.representedObject = self.url
                     item.target = appDelegate
-                    item.action = #selector(appDelegate.openURLStringInNewWindowPress(_:))
+                    item.action = #selector(appDelegate.openURLInNewWindowPress(_:))
                 }
                 else
                 {
@@ -559,6 +564,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKScriptMessage
         
         //  Watch javascript selection messages
         let controller = webView.configuration.userContentController
+        controller.add(self, name: "newWindowWithUrlDetected")
         controller.add(self, name: "newSelectionDetected")
         controller.add(self, name: "newUrlDetected")
 
@@ -571,6 +577,19 @@ function getSelectionAndSendMessage()
 }
 document.onmouseup   = getSelectionAndSendMessage ;
 document.onkeyup     = getSelectionAndSendMessage ;
+
+//  https://stackoverflow.com/questions/21224327/how-to-detect-middle-mouse-button-click/21224428
+/*
+document.body.onclick = function (e) {
+  if (e && (e.which == 2 || e.button == 4 )) {
+    middleLink;
+  }
+}
+function middleLink()
+{
+    window.webkit.messageHandlers.newWindowWithUrlDetected.postMessage(this.href) ;
+}
+*/
 
 //  https://stackoverflow.com/questions/51894733/how-to-get-mouse-over-urls-into-wkwebview-with-swift/51899392#51899392
 function sendLink()
@@ -642,6 +661,42 @@ for(var i=0; i< allLinks.length; i++)
     
     fileprivate func resetZoom() {
         webView.magnification = 1
+    }
+
+    @IBAction func openLocationPress(_ sender: AnyObject) {
+        appDelegate.didRequestUserUrl(RequestUserStrings (
+            currentURL:         self.currentURL,
+            alertMessageText:   "URL to load",
+            alertButton1stText: "Load",     alertButton1stInfo: nil,
+            alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
+                                      onWindow: self.view.window as? HeliumPanel,
+                                      title: "Enter URL",
+                                      acceptHandler: { (newUrl: String) in
+                                        self.loadURL(text: newUrl)
+        })
+    }
+    @IBAction func openSearchPress(_ sender: AnyObject) {
+        let name = k.searchNames[ UserSettings.Search.value ]
+        let info = k.searchInfos[ UserSettings.Search.value ]
+
+        appDelegate.didRequestSearch(RequestUserStrings (
+            currentURL:         nil,
+            alertMessageText:   "Search",
+            alertButton1stText: name,         alertButton1stInfo: info,
+            alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
+            alertButton3rdText: "New Window", alertButton3rdInfo: "Results in new window"),
+                                     onWindow: self.view.window as? HeliumPanel,
+                                     title: "Web Search",
+                                     acceptHandler: { (newWindow: Bool, searchURL: URL) in
+                                        if newWindow {
+                                            self.appDelegate.openURLInNewWindow(searchURL)
+                                        }
+                                        else
+                                        {
+                                            self.loadURL(url: searchURL)
+                                        }
+        })
     }
 
     @IBAction fileprivate func reloadPress(_ sender: AnyObject) {
@@ -736,6 +791,13 @@ for(var i=0; i< allLinks.length; i++)
         //Swift.print("userContentController")
         
         switch message.name {
+        case "newWindowWithUrlDetected":
+            if let url = URL.init(string: message.body as! String) {
+                webView.selectedURL = url
+                //Swift.print("ucc: url -> \(url.absoluteString)")
+            }
+            break
+            
         case "newSelectionDetected":
             if let urlString : String = message.body as? String
             {

@@ -245,7 +245,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         })
     }
     
-    internal func openURLStringInNewWindow(_ newURL: URL) {
+    internal func openURLInNewWindow(_ newURL: URL) {
         let newWindows = UserSettings.createNewWindows.value
         UserSettings.createNewWindows.value = false
         do {
@@ -258,45 +258,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         UserSettings.createNewWindows.value = newWindows
     }
-    @IBAction func openURLStringInNewWindowPress(_ sender: NSMenuItem) {
+    @IBAction func openURLInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
-            self.openURLStringInNewWindow(newURL as! URL)
+            self.openURLInNewWindow(newURL as! URL)
         }
     }
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        //  We have a window, create as sheet and load playlists there
-        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
-            //  No window, so load alert modally
-            
-            didRequestUserUrl(RequestUserStrings (
-                currentURL: UserSettings.homePageURL.value,
-                alertMessageText:   "URL to load",
-                alertButton1stText: "Load",     alertButton1stInfo: nil,
-                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-                alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
-                              onWindow: nil,
-                              title: "Enter URL",
-                              acceptHandler: { (newUrl: String) in
-                                self.openURLStringInNewWindow(URL.init(string: newUrl)!)
-            })
-            return
-        }
-
-        let wvc = window.contentViewController as! WebViewController
+        //  No window, so load alert modally
         didRequestUserUrl(RequestUserStrings (
-            currentURL: wvc.currentURL,
+            currentURL:         UserSettings.homePageURL.value,
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
-                          onWindow: window as? HeliumPanel,
+                          onWindow: nil,
                           title: "Enter URL",
-                                      acceptHandler: { (newUrl: String) in
-                                        wvc.loadURL(text: newUrl)
+                          acceptHandler: { (newUrl: String) in
+                            self.openURLInNewWindow(URL.init(string: newUrl)!)
         })
     }
 
     @IBAction func openSearchPress(_ sender: AnyObject) {
+        let name = k.searchNames[ UserSettings.Search.value ]
+        let info = k.searchInfos[ UserSettings.Search.value ]
+
         //  We have a window, create as sheet and load playlists there
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No window, so load alert modally
@@ -304,13 +289,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             didRequestSearch(RequestUserStrings (
                 currentURL: nil,
                 alertMessageText:   "Search",
-                alertButton1stText: "Search",   alertButton1stInfo: "https://www.google.com/search?q=%@",
-                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-                alertButton3rdText: "Yahoo",    alertButton3rdInfo: "https://www.yahoo.com/search?q=%@"),
+                alertButton1stText: name,         alertButton1stInfo: info,
+                alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
+                alertButton3rdText: nil,          alertButton3rdInfo: nil),
                               onWindow: nil,
                               title: "Web Search",
-                              acceptHandler: { (searchURL: URL) in
-                                self.openURLStringInNewWindow(searchURL)
+                              acceptHandler: { (newWindow,searchURL: URL) in
+                                self.openURLInNewWindow(searchURL)
             })
             return
         }
@@ -319,18 +304,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             didRequestSearch(RequestUserStrings (
                 currentURL: nil,
                 alertMessageText:   "Search",
-                alertButton1stText: "Search",   alertButton1stInfo: "https://www.google.com/search?q=%@",
-                alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-                alertButton3rdText: "Yahoo",    alertButton3rdInfo: "https://www.yahoo.com/search?q=%@"),
+                alertButton1stText: name,         alertButton1stInfo: info,
+                alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
+                alertButton3rdText: "New Window", alertButton3rdInfo: "Results in new window"),
                               onWindow: window as? HeliumPanel,
                               title: "Web Search",
-                              acceptHandler: { (searchURL: URL) in
-                                wvc.loadURL(url: searchURL)
+                              acceptHandler: { (newWindow: Bool, searchURL: URL) in
+                                if newWindow {
+                                    self.openURLInNewWindow(searchURL)
+                                }
+                                else
+                                {
+                                    wvc.loadURL(url: searchURL)
+                                }
             })
         }
     }
     
-    @IBAction func presentPlaylistSheet(_ sender: Any) {
+	@IBAction func pickSearchPress(_ sender: NSMenuItem) {
+        //  This needs to match validateMenuItem below
+		let group = sender.tag / 100
+		let index = (sender.tag - (group * 100)) % 3
+		let key = String(format: "search%d", group)
+
+		UserDefaults.standard.set(index as Any, forKey: key)
+        Swift.print("\(key) -> \(index)")
+	}
+	
+	@IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
         //  We have a window, create as sheet and load playlists there
@@ -504,6 +505,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         else
         {
             switch menuItem.title {
+            case k.bingName, k.googleName, k.yahooName:
+                let group = menuItem.tag / 100
+                let index = (menuItem.tag - (group * 100)) % 3
+                let key = String(format: "search%d", group)
+                
+                menuItem.state = UserDefaults.standard.value(forKey: key) as! Int == index ? NSOnState : NSOffState
+                break
+
             case "Preferences":
                 break
             case "Create New Windows":
@@ -964,7 +973,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func didRequestSearch(_ strings: RequestUserStrings,
                           onWindow: HeliumPanel?,
                           title: String?,
-                          acceptHandler: @escaping (URL) -> Void) {
+                          acceptHandler: @escaping (Bool,URL) -> Void) {
         
         // Create alert
         let alert = NSAlert()
@@ -997,15 +1006,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 // buttons are user-search-url, cancel, google-search
                 switch response {
                 case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
-                    let newUrlFormat = response == NSAlertThirdButtonReturn
-                        ? (alert.buttons[2] as NSButton).toolTip
-                        : (alert.buttons[0] as NSButton).toolTip
+                    let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
                     let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
-                    var urlString = String(format: newUrlFormat!, newUrlString!)
+                    var urlString = String(format: newUrlFormat, newUrlString!)
+                    let newWindow = (response == NSAlertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
                     if UrlHelpers.isValid(urlString: urlString) {
-                        acceptHandler(URL.init(string: urlString)!)
+                        acceptHandler(newWindow,URL.init(string: urlString)!)
                     }
 
                 default:
@@ -1018,18 +1026,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let response = alert.runModal()
             switch response {
             case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
-                let newUrlFormat = response == NSAlertThirdButtonReturn
-                    ? (alert.buttons[2] as NSButton).toolTip
-                    : (alert.buttons[0] as NSButton).toolTip
+                let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
                 let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
-                var urlString = String(format: newUrlFormat!, newUrlString!)
-                
+                var urlString = String(format: newUrlFormat, newUrlString!)
+                let newWindow = (response == NSAlertThirdButtonReturn)
+
                 urlString = UrlHelpers.ensureScheme(urlString)
                 guard UrlHelpers.isValid(urlString: urlString), let searchURL = URL.init(string: urlString) else {
                     Swift.print("invalid: \(urlString)")
                     return
                 }
-                acceptHandler(searchURL)
+                acceptHandler(newWindow,searchURL)
 
             default:// NSAlertSecondButtonReturn:
                 return
