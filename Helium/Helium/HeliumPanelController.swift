@@ -278,7 +278,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
         setFloatOverFullScreenApps()
-    }    
+    }
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
