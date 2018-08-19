@@ -121,7 +121,7 @@ class PlayItemCornerView : NSView {
     }
 }
 
-class PlayItemHeaderView : NSTableHeaderView {
+class PlayHeaderView : NSTableHeaderView {
     override func menu(for event: NSEvent) -> NSMenu? {
         let action = #selector(PlaylistViewController.toggleColumnVisiblity(_ :))
         let target = self.tableView?.delegate
@@ -344,6 +344,28 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     //  MARK:- View lifecycle
+    fileprivate func setupHiddenColumns(_ tableView: NSTableView, hideit: [String]) {
+        let table : String = tableView.identifier!
+        for col in tableView.tableColumns {
+            let column = col.identifier
+            let pref = String(format: "hide.%@.%@", table, column)
+            var isHidden = false
+            
+            //    If have a preference, honor it, else apply hidden default
+            if defaults.value(forKey: pref) != nil
+            {
+                isHidden = defaults.bool(forKey: pref)
+                hiddenColumns[pref] = String(isHidden)
+            }
+            else
+            if hideit.contains(column)
+            {
+                isHidden = true
+            }
+            col.isHidden = isHidden
+        }
+    }
+    
     override func viewDidLoad() {
         let types = [kUTTypeData as String,
                      kUTTypeURL as String,
@@ -369,27 +391,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
             object: nil)
 
-        //  Restore hidden columns in playitems using defaults
-        let hideit = ["link","rect","label","hover","alpha","trans"]
-        
-        for col in playitemTableView.tableColumns {
-            let identifier = col.identifier
-            let pref = String(format: "hide.%@", identifier)
-            var isHidden = false
-            
-            //	If have a preference, honor it, else apply hidden default
-            if defaults.value(forKey: pref) != nil
-            {
-                isHidden = defaults.bool(forKey: pref)
-                hiddenColumns[pref] = String(isHidden)
-            }
-            else
-            if hideit.contains(identifier)
-            {
-                isHidden = true
-            }
-            col.isHidden = isHidden
-        }
+        //  Restore hidden columns in tableviews using defaults
+        setupHiddenColumns(playlistTableView, hideit: ["date"])
+        setupHiddenColumns(playitemTableView, hideit: ["date","link","rect","label","hover","alpha","trans"])
     }
 
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
@@ -775,8 +779,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     dynamic var hiddenColumns = Dictionary<String, Any>()
     @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
         let col = sender.representedObject as! NSTableColumn
-        let identifier = col.identifier
-        let pref = String(format: "hide.%@", identifier)
+        let table : String = (col.tableView?.identifier)!
+        let column = col.identifier
+        let pref = String(format: "hide.%@.%@", table, column)
         let isHidden = !col.isHidden
         
         hiddenColumns.updateValue(String(isHidden), forKey: pref)
