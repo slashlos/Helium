@@ -870,8 +870,8 @@ CA
                                             <rect key="frame" x="224" y="17" width="15" height="102"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
-                                        <tableHeaderView key="headerView" id="tha-4C-kVE">
-                                            <rect key="frame" x="0.0" y="0.0" width="124" height="23"/>
+                                        <tableHeaderView key="headerView" id="tha-4C-kVE" customClass="PlayHeaderView" customModule="Helium" customModuleProvider="target">
+                                            <rect key="frame" x="0.0" y="0.0" width="167" height="23"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1064,13 +1064,30 @@ Gw
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                             </tableHeaderCell>
                                                             <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="no6-ng-UoI">
+                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="MMM.d''yy hh:m:s" id="iy3-Gu-PRa"/>
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.time" id="kgg-Pd-3Uk">
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="kqd-vc-zDo"/>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="time" width="89" minWidth="40" maxWidth="120" id="3W1-zN-OJV">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="pBO-sM-nTp">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.time" id="Bzh-BE-DNP">
                                                                     <dictionary key="options">
                                                                         <string key="NSValueTransformerName">hmsTransformer</string>
                                                                     </dictionary>
@@ -1222,8 +1239,8 @@ Gw
                                             <rect key="frame" x="298" y="23" width="15" height="209"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
-                                        <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayItemHeaderView" customModule="Helium" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="731" height="23"/>
+                                        <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
+                                            <rect key="frame" x="0.0" y="0.0" width="823" height="23"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
