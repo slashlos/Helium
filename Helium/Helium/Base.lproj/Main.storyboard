@@ -114,7 +114,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0C4-5f-uW8">
+                            <customView hidden="YES" toolTip="Yahoo! Search" translatesAutoresizingMaskIntoConstraints="NO" id="0C4-5f-uW8">
                                 <rect key="frame" x="0.0" y="77" width="283" height="164"/>
                             </customView>
                         </subviews>
@@ -158,7 +158,7 @@
                 <customObject id="L5Y-eG-1ih" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="7hN-84-z2t"/>
             </objects>
-            <point key="canvasLocation" x="308" y="-1079"/>
+            <point key="canvasLocation" x="307.5" y="-1079"/>
         </scene>
         <!--Application-->
         <scene sceneID="JPo-4y-FX3">
@@ -227,6 +227,31 @@
                                                         <connections>
                                                             <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="ySE-xa-5KO"/>
                                                         </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Search" toolTip="1st, 2nd, 3rd search providers" id="x9s-yo-mri">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Search" id="WHy-7i-1xT">
+                                                            <items>
+                                                                <menuItem title="Bing" toolTip="Microsoft Bing" id="qYf-Hb-DiR">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="pickSearchPress:" target="Ady-hI-5gd" id="dox-YD-5qy"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Google" tag="1" toolTip="Google Search" id="0w0-XT-GX9">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="pickSearchPress:" target="Ady-hI-5gd" id="zON-bf-SrK"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Yahoo" tag="2" id="6qZ-vy-kwm">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="pickSearchPress:" target="Ady-hI-5gd" id="78i-gW-ojv"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
                                                     </menuItem>
                                                 </items>
                                                 <connections>
@@ -714,10 +739,10 @@ CA
                                 </items>
                             </menu>
                         </menuItem>
-                        <menuItem title="Search…" id="H50-eU-quB">
+                        <menuItem title="Search…" keyEquivalent="?" id="H50-eU-quB">
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
-                                <action selector="openSearchPress:" target="Voe-Tx-rLC" id="suN-CM-xtA"/>
+                                <action selector="openSearchPress:" target="Ady-hI-5gd" id="EfB-1z-b8h"/>
                             </connections>
                         </menuItem>
                         <menuItem title="Quit" id="tq3-QX-UdL">
@@ -781,11 +806,11 @@ CA
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KRs-AT-9D8">
                                         <rect key="frame" x="0.0" y="39" width="126" height="233"/>
                                         <clipView key="contentView" id="Noe-Za-eMO">
-                                            <rect key="frame" x="1" y="0.0" width="124" height="232"/>
+                                            <rect key="frame" x="1" y="0.0" width="124" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="124" height="209"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="167" height="194"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -811,6 +836,23 @@ CA
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
+                                                        <tableColumn identifier="date" width="40" minWidth="40" maxWidth="120" id="i0k-lz-NaQ">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Created">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="FFi-KL-M68">
+                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="MMM.d''yy hh:m:s" id="iWk-07-iUl"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="b0P-yv-XZJ"/>
+                                                            </connections>
+                                                        </tableColumn>
                                                     </tableColumns>
                                                     <connections>
                                                         <outlet property="dataSource" destination="YAy-lX-dae" id="khl-A5-RrM"/>
@@ -820,7 +862,7 @@ CA
                                                 </tableView>
                                             </subviews>
                                         </clipView>
-                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="atn-XO-QDu">
+                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="atn-XO-QDu">
                                             <rect key="frame" x="1" y="217" width="124" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
@@ -977,7 +1019,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="731" height="209"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="823" height="209"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1015,8 +1057,8 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.name" id="sW1-1k-zdk"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="time" width="89" minWidth="40" maxWidth="120" id="1Xm-xK-1Dz">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                        <tableColumn identifier="date" width="89" minWidth="40" maxWidth="120" id="1Xm-xK-1Dz">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Created">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>

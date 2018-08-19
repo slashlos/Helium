@@ -18,6 +18,7 @@ struct k {
     static let name = "name"
     static let list = "list"
     static let link = "link"
+    static let date = "date"
     static let time = "time"
     static let rank = "rank"
     static let rect = "rect"
@@ -31,6 +32,18 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 4.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let ToolbarlessSpacer: CGFloat = 4.0
+    static let bingInfo = "Microsoft Bing Search"
+    static let bingName = "Bing"
+    static let bingLink = "https://search.bing.com/search?Q=%@"
+    static let googleInfo = "Google Search"
+    static let googleName = "Google"
+    static let googleLink = "https://www.google.com/search?q=%@"
+    static let yahooName = "Yahoo"
+    static let yahooInfo = "Yahoo! Search"
+    static let yahooLink = "https://search.yahoo.com/search?q=%@"
+    static let searchInfos = [k.bingInfo, k.googleInfo, k.yahooInfo]
+    static let searchNames = [k.bingName, k.googleName, k.yahooName]
+    static let searchLinks = [k.bingLink, k.googleLink, k.yahooLink]
 }
 
 extension NSImage {
@@ -140,6 +153,7 @@ class PlayList : NSObject,NSCoding {
         }
     }
     var list : Array <PlayItem> = Array()
+    var date : TimeInterval
     
     override var description: String {
         get {
@@ -148,6 +162,7 @@ class PlayList : NSObject,NSCoding {
     }
     
     override init() {
+        date = Date().timeIntervalSinceReferenceDate
         super.init()
 
         var suffix = 0
@@ -165,6 +180,7 @@ class PlayList : NSObject,NSCoding {
     }
     
     init(name:String, list:Array <PlayItem>) {
+        self.date = Date().timeIntervalSinceReferenceDate
         super.init()
 
         self.list = list
@@ -181,7 +197,7 @@ class PlayList : NSObject,NSCoding {
     
     func pasteboardPropertyList(forType type: String) -> Any? {
         if type == "com.helium.playlist" {
-            return [name, list]
+            return [name, list, date]
         }
         else
         {
@@ -198,18 +214,22 @@ class PlayList : NSObject,NSCoding {
         }
         dict[k.name] = name
         dict[k.list] = items
+        dict[k.date] = date
         return dict
     }
     
     required convenience init(coder: NSCoder) {
         let name = coder.decodeObject(forKey: k.name) as! String
         let list = coder.decodeObject(forKey: k.list) as! [PlayItem]
+        let date = coder.decodeDouble(forKey: k.date)
         self.init(name: name, list: list)
+        self.date = date
     }
     
     func encode(with coder: NSCoder) {
         coder.encode(name, forKey: k.name)
         coder.encode(list, forKey: k.list)
+        coder.encode(date, forKey: k.date)
     }
 }
 
@@ -217,6 +237,7 @@ class PlayItem : NSObject, NSCoding {
     var name : String = k.item
     var link : URL = URL.init(string: "http://")!
     var time : TimeInterval
+    var date : TimeInterval
     var rank : Int
     var rect : NSRect
     var label: Bool
@@ -236,6 +257,7 @@ class PlayItem : NSObject, NSCoding {
         name = k.item + "#"
         link = URL.init(string: "http://")!
         time = 0.0
+        date = Date().timeIntervalSinceReferenceDate
         rank = 0
         rect = NSZeroRect
         label = false
@@ -250,6 +272,7 @@ class PlayItem : NSObject, NSCoding {
     init(name:String, link:URL, time:TimeInterval, rank:Int) {
         self.name = name
         self.link = link
+        self.date = Date().timeIntervalSinceReferenceDate
         self.time = time
         self.rank = rank
         self.rect = NSZeroRect
@@ -259,9 +282,10 @@ class PlayItem : NSObject, NSCoding {
         self.trans = 0
         super.init()
     }
-    init(name:String, link:URL, time:TimeInterval, rank:Int, rect:NSRect, label:Bool, hover:Bool, alpha:Float, trans: Int) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, label:Bool, hover:Bool, alpha:Float, trans: Int) {
         self.name = name
         self.link = link
+        self.date = date
         self.time = time
         self.rank = rank
         self.rect = rect
@@ -272,12 +296,13 @@ class PlayItem : NSObject, NSCoding {
         super.init()
     }
     init(with dictionary: Dictionary<String,Any>) {
-        let plist = dictionary as NSDictionary
-        self.name = plist[k.name] as! String
-        self.link = URL.init(string: plist[k.link] as! String)!
-        self.time = (plist[k.time] as AnyObject).doubleValue ?? 0.0
-        self.rank = (plist[k.rank] as AnyObject).intValue ?? 0
-        self.rect = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
+        let plist  = dictionary as NSDictionary
+        self.name  = plist[k.name] as! String
+        self.link  = URL.init(string: plist[k.link] as! String)!
+        self.date  = (plist[k.date] as AnyObject).doubleValue ?? 0.0
+        self.time  = (plist[k.time] as AnyObject).doubleValue ?? 0.0
+        self.rank  = (plist[k.rank] as AnyObject).intValue ?? 0
+        self.rect  = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
         self.label = (plist[k.label] as AnyObject).boolValue ?? false
         self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
         self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
@@ -291,6 +316,7 @@ class PlayItem : NSObject, NSCoding {
     required convenience init(coder: NSCoder) {
         let name = coder.decodeObject(forKey: k.name) as! String
         let link = URL.init(string: coder.decodeObject(forKey: k.link) as! String)
+        let date = coder.decodeDouble(forKey: k.date)
         let time = coder.decodeDouble(forKey: k.time)
         let rank = coder.decodeInteger(forKey: k.rank)
         let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
@@ -298,13 +324,14 @@ class PlayItem : NSObject, NSCoding {
         let hover = coder.decodeBool(forKey: k.hover)
         let alpha = coder.decodeFloat(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
-        self.init(name: name, link: link!, time: time, rank: rank, rect: rect,
+        self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
                   label: label, hover: hover, alpha: alpha, trans: trans)
     }
     
     func encode(with coder: NSCoder) {
         coder.encode(name, forKey: k.name)
         coder.encode(link, forKey: k.link)
+        coder.encode(date, forKey: k.date)
         coder.encode(time, forKey: k.time)
         coder.encode(rank, forKey: k.rank)
         coder.encode(NSStringFromRect(rect), forKey: k.rect)
@@ -318,6 +345,7 @@ class PlayItem : NSObject, NSCoding {
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
         dict[k.link] = link.absoluteString
+        dict[k.date] = date
         dict[k.time] = time
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
@@ -371,6 +399,7 @@ internal struct Settings {
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let windowURL = Setup<URL>("windowURL", value: URL.init(string: "http://")!)
     let rank = Setup<Int>("rank", value: 0)
+    let date = Setup<TimeInterval>("date", value: Date().timeIntervalSinceReferenceDate)
     let time = Setup<TimeInterval>("time", value: 0.0)
     let rect = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
     
@@ -403,6 +432,7 @@ class Document : NSDocument {
         var dict: Dictionary<String,Any> = Dictionary()
         dict[k.name] = self.displayName
         dict[k.link] = self.fileURL?.absoluteString
+        dict[k.date] = settings.date.value
         dict[k.time] = settings.time.value
         dict[k.rank] = settings.rank.value
         dict[k.rect] = NSStringFromRect(settings.rect.value)
@@ -417,6 +447,7 @@ class Document : NSDocument {
         let item = PlayItem.init()
         item.name = self.displayName
         item.link = self.fileURL!
+        item.date = self.settings.date.value
         item.time = self.settings.time.value
         item.rank = self.settings.rank.value
         item.rect = self.settings.rect.value
@@ -431,6 +462,7 @@ class Document : NSDocument {
         let plist = dictionary as NSDictionary
         self.displayName = dictionary[k.name] as! String
         self.fileURL = URL.init(string: plist[k.link] as! String)!
+        self.settings.date.value = (plist[k.date] as AnyObject).timeInterval ?? 0.0
         self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
         self.settings.rank.value = (plist[k.rank] as AnyObject).intValue ?? 0
         self.settings.rect.value = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
@@ -454,7 +486,7 @@ class Document : NSDocument {
     }
     
     func update(to url: URL, ofType typeName: String) {
-        if let dict = NSDictionary(contentsOf: url) {
+        if url.lastPathComponent == "h3w", let dict = NSDictionary(contentsOf: url) {
             if let item = dict.value(forKey: "settings") {
                 self.restoreSettings(with: item as! Dictionary<String,Any> )
             }

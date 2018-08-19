@@ -85,4 +85,7 @@ internal struct UserSettings {
     static let HistoryKeep = Setting<Int>("historyKeep", defaultValue:255)
     static let HistoryList = Setting<String>("historyList", defaultValue:"histories")
     static let HideAppMenu = Setting<Bool>("hideAppMenu", defaultValue: false)
+    
+    //  Search provider - must match k struct, menu item tags
+    static let Search = Setting<Int>("search", defaultValue: 1) // Google
 }
