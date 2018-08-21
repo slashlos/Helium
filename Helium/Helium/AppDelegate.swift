@@ -24,6 +24,86 @@ struct RequestUserStrings {
     let alertButton3rdInfo: String?
 }
 
+fileprivate class SearchField : NSSearchField {
+    var title : String?
+    
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
+        if let textEditor = currentEditor() {
+            textEditor.selectAll(self)
+        }
+    }
+    
+    convenience init(withValue: String?, modalTitle: String?) {
+        self.init()
+        
+        if let string = withValue {
+            self.stringValue = string
+        }
+        if let title = modalTitle {
+            self.title = title
+        }
+        else
+        {
+            let infoDictionary = (Bundle.main.infoDictionary)!
+            
+            //    Get the app name field
+            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
+            
+            //    Setup the version to one we constrict
+            self.title = String(format:"%@ %@", appName,
+                                infoDictionary["CFBundleVersion"] as! CVarArg)
+        }
+        if let cell : NSSearchFieldCell = self.cell as? NSSearchFieldCell {
+            cell.searchMenuTemplate = searchMenu()
+            cell.usesSingleLineMode = false
+            cell.wraps = true
+            cell.lineBreakMode = .byWordWrapping
+            cell.formatter = nil
+            cell.allowsEditingTextAttributes = false
+        }
+        (self.cell as! NSSearchFieldCell).searchMenuTemplate = searchMenu()
+    }
+    
+    fileprivate func searchMenu() -> NSMenu {
+        let menu = NSMenu.init(title: "Search Menu")
+        var item : NSMenuItem
+        
+        item = NSMenuItem.init(title: "Clear", action: nil, keyEquivalent: "")
+        item.tag = NSSearchFieldClearRecentsMenuItemTag
+        menu.addItem(item)
+        
+        item = NSMenuItem.separator()
+        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        menu.addItem(item)
+        
+        item = NSMenuItem.init(title: "Recent Searches", action: nil, keyEquivalent: "")
+        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        menu.addItem(item)
+        
+        item = NSMenuItem.init(title: "Recent", action: nil, keyEquivalent: "")
+        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        menu.addItem(item)
+        
+        item = NSMenuItem.init(title: "Recent Searches", action: nil, keyEquivalent: "")
+        item.tag = NSSearchFieldRecentsMenuItemTag
+        menu.addItem(item)
+        
+        return menu
+    }
+    
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        
+        if let title = self.title {
+            self.window?.title = title
+        }
+        
+        // MARK: this gets us focus even when modal
+        self.becomeFirstResponder()
+    }
+}
+
 fileprivate class URLField: NSTextField {
     var title : String?
 
@@ -79,6 +159,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  MARK:- Global IBAction, but ship to keyWindow when able
     @IBOutlet weak var appMenu: NSMenu!
 	var appStatusItem:NSStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
+    fileprivate var searchField : SearchField = SearchField.init(withValue: "Helium", modalTitle: "Search")
+    fileprivate var recentSearches = Array<String>()
     
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
@@ -222,29 +304,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         open.resolvesAliases = true
         open.canChooseFiles = true
 
-        //  We have a window, create as sheet and load playlists there
-        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
-            //  No window, so load panel modally
-            
-            if open.runModal() == NSModalResponseOK {
-                open.orderOut(sender)
-                let urls = open.urls
-                for url in urls {
-                    _ = self.doOpenFile(fileURL: url)
-                }
+        //  No window, so load panel modally
+        
+        if open.runModal() == NSModalResponseOK {
+            open.orderOut(sender)
+            let urls = open.urls
+            for url in urls {
+                _ = self.doOpenFile(fileURL: url)
             }
-            return
         }
-
-        open.worksWhenModal = true
-        open.beginSheetModal(for: window, completionHandler: { (response: NSModalResponse) in
-            if response == NSModalResponseOK {
-                let urls = open.urls
-                for url in urls {
-                    _ = self.doOpenFile(fileURL: url, fromWindow: window)
-                }
-            }
-        })
+        return
     }
     
     internal func openURLInNewWindow(_ newURL: URL) {
@@ -330,7 +399,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 		let key = String(format: "search%d", group)
 
 		UserDefaults.standard.set(index as Any, forKey: key)
-        Swift.print("\(key) -> \(index)")
+//        Swift.print("\(key) -> \(index)")
 	}
 	
 	@IBAction func presentPlaylistSheet(_ sender: Any) {
@@ -645,7 +714,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case [.control, .option, .command]:
             print("control-option-command keys are pressed")
             if self.hiddenWindows.count > 0 {
-                Swift.print("show all windows")
+//                Swift.print("show all windows")
                 for frame in self.hiddenWindows.keys {
                     let dict = self.hiddenWindows[frame] as! Dictionary<String,Any>
                     let alpha = dict["alpha"]
@@ -668,7 +737,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             else
             {
-                Swift.print("hide all windows")
+//                Swift.print("hide all windows")
                 for win in NSApp.windows {
                     let frame = NSStringFromRect(win.frame)
                     let alpha = win.alphaValue
@@ -687,7 +756,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             
         case [.shift]:
             self.shiftKeyDown = true
-            //Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
+//            Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
             return true
             
         default:
@@ -750,6 +819,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     
                     self.histories.append(temp)
                 }
+//                Swift.print("histories restored")
+            }
+            
+            if let items = self.defaults.array(forKey: UserSettings.Searches.keyPath) {
+                for search in items {
+                    self.recentSearches.append(search as! String)
+                }
+//                Swift.print("searches restored")
             }
         }
         
@@ -783,15 +860,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var temp = Array<Any>()
         for item in histories.sorted(by: { (lhs, rhs) -> Bool in return lhs.rank < rhs.rank}).suffix(keep) {
             let test = item.dictionary()
-            temp.append(test)/*
-            let dict : [String:AnyObject] = [k.name:item.name as AnyObject,
-                                             k.link:item.link.absoluteString as AnyObject,
-                                             k.time:item.time as AnyObject,
-                                             k.rank:item.rank as AnyObject]
-            temp.append(dict as AnyObject)*/
+            temp.append(test)
         }
-        
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
+
+        //  Save searches to defaults up to their maximum
+        temp = Array<String>()
+        for item in recentSearches.suffix(254) {
+            temp.append(item as String)
+        }
+        defaults.set(temp, forKey: UserSettings.Searches.keyPath)
+        
         defaults.synchronize()
     }
 
@@ -982,11 +1061,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.alertStyle = NSAlertStyle.informational
         alert.messageText = strings.alertMessageText
         
-        // Create urlField
+        // Create our search field with recent searches
         let search = SearchField(withValue: strings.currentURL, modalTitle: title)
         search.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         (search.cell as! NSSearchFieldCell).maximumRecents = 254
-        search.recentSearches = searchArray
+        search.recentSearches = recentSearches
         alert.accessoryView = search
         
         // Add urlField and buttons to alert
@@ -1011,13 +1090,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 switch response {
                 case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
                     let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
-                    let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
+                    let rawString = (alert.accessoryView as! NSTextField).stringValue
+                    let newUrlString = rawString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
                     var urlString = String(format: newUrlFormat, newUrlString!)
                     let newWindow = (response == NSAlertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
                     if UrlHelpers.isValid(urlString: urlString) {
                         acceptHandler(newWindow,URL.init(string: urlString)!)
+                        self.recentSearches.append(rawString)
                     }
 
                 default:
@@ -1031,7 +1112,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             switch response {
             case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
                 let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
-                let newUrlString = (alert.accessoryView as! NSTextField).stringValue.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
+                let rawString = (alert.accessoryView as! NSTextField).stringValue
+                let newUrlString = rawString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
                 var urlString = String(format: newUrlFormat, newUrlString!)
                 let newWindow = (response == NSAlertThirdButtonReturn)
 
@@ -1041,6 +1123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     return
                 }
                 acceptHandler(newWindow,searchURL)
+                self.recentSearches.append(rawString)
 
             default:// NSAlertSecondButtonReturn:
                 return
