@@ -87,7 +87,12 @@ class MyWebView : WKWebView {
             appDelegate.openURLInNewWindow(url)
         }
     }
-
+/*
+    override func load(_ request: URLRequest) -> WKNavigation? {
+        Swift.print("we got \(request)")
+        return super.load(request)
+    }
+*/
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
         let newWindows = UserSettings.createNewWindows.value
@@ -280,6 +285,7 @@ class MyWebView : WKWebView {
     //
     //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
+        let wvc = self.window?.contentViewController as! WebViewController
         let hwc = self.window?.windowController as! HeliumPanelController
         let doc = hwc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
@@ -349,14 +355,14 @@ class MyWebView : WKWebView {
         let subOpen = NSMenu()
         item.submenu = subOpen
 
-        item = NSMenuItem(title: "File…", action: #selector(AppDelegate.openFilePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "File…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
         item.representedObject = self.window
-        item.target = appDelegate
+        item.target = wvc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "URL…", action: #selector(AppDelegate.openLocationPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "URL…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
-        item.target = appDelegate
+        item.target = wvc
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
@@ -500,7 +506,7 @@ class MyWebView : WKWebView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHandler {
+class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
 
     var trackingTag: NSTrackingRectTag? {
         get {
@@ -579,17 +585,15 @@ document.onmouseup   = getSelectionAndSendMessage ;
 document.onkeyup     = getSelectionAndSendMessage ;
 
 //  https://stackoverflow.com/questions/21224327/how-to-detect-middle-mouse-button-click/21224428
-/*
 document.body.onclick = function (e) {
   if (e && (e.which == 2 || e.button == 4 )) {
-    middleLink;
+    sendLink;
   }
 }
 function middleLink()
 {
     window.webkit.messageHandlers.newWindowWithUrlDetected.postMessage(this.href) ;
 }
-*/
 
 //  https://stackoverflow.com/questions/51894733/how-to-get-mouse-over-urls-into-wkwebview-with-swift/51899392#51899392
 function sendLink()
@@ -663,6 +667,26 @@ for(var i=0; i< allLinks.length; i++)
         webView.magnification = 1
     }
 
+    @IBAction func openFilePress(_ sender: AnyObject) {
+        let window = self.view.window
+        let open = NSOpenPanel()
+        
+        open.allowsMultipleSelection = true
+        open.canChooseDirectories = false
+        open.resolvesAliases = true
+        open.canChooseFiles = true
+        
+        open.worksWhenModal = true
+        open.beginSheetModal(for: window!, completionHandler: { (response: NSModalResponse) in
+            if response == NSModalResponseOK {
+                let urls = open.urls
+                for url in urls {
+                    _ = self.appDelegate.doOpenFile(fileURL: url, fromWindow: window)
+                }
+            }
+        })
+    }
+    
     @IBAction func openLocationPress(_ sender: AnyObject) {
         appDelegate.didRequestUserUrl(RequestUserStrings (
             currentURL:         self.currentURL,
@@ -794,7 +818,7 @@ for(var i=0; i< allLinks.length; i++)
         case "newWindowWithUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
-                //Swift.print("ucc: url -> \(url.absoluteString)")
+                Swift.print("ucc: new -> \(url.absoluteString)")
             }
             break
             
@@ -802,14 +826,14 @@ for(var i=0; i< allLinks.length; i++)
             if let urlString : String = message.body as? String
             {
                 webView.selectedText = urlString
-                //Swift.print("ucc: str -> \(urlString)")
+                Swift.print("ucc: str -> \(urlString)")
             }
             break
             
         case "newUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
-                //Swift.print("ucc: url -> \(url.absoluteString)")
+                Swift.print("ucc: url -> \(url.absoluteString)")
             }
             break
             
@@ -827,64 +851,14 @@ for(var i=0; i< allLinks.length; i++)
 	@IBOutlet var webView: MyWebView!
 	var webSize = CGSize(width: 0,height: 0)
     
-    // Redirect Hulu and YouTube to pop-out videos
-    func webView(_ webView: WKWebView,
-                 decidePolicyFor navigationAction: WKNavigationAction,
-                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        
-        guard !UserSettings.disabledMagicURLs.value,
-            let url = navigationAction.request.url,
-            !((navigationAction.request.url?.absoluteString.hasPrefix("file://"))!) else {
-                decisionHandler(WKNavigationActionPolicy.allow)
-                return
-        }
-
-        if let newUrl = UrlHelpers.doMagic(url) {
-            decisionHandler(WKNavigationActionPolicy.cancel)
-            loadURL(url: newUrl)
-        } else {
-            decisionHandler(WKNavigationActionPolicy.allow)
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-        if let pageTitle = webView.title {
-            if let hwc = self.view.window?.windowController {
-                let doc = hwc.document as! Document
-                var title = pageTitle;
-                if title.isEmpty { title = doc.displayName }
-                let notif = Notification(name: Notification.Name(rawValue: "HeliumNextTitle"),
-                                         object: title, userInfo: ["hwc":hwc]);
-                NotificationCenter.default.post(notif)
-                Swift.print("webView:didFinish: \(title)")
-            }
-        }/*
-        let html = """
-<html>
-<body>
-<h1>Hello, Swift!</h1>
-</body>
-</html>
-"""
-        webView.loadHTMLString(html, baseURL: nil)*/
-    }
-    
-    func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {
-        Swift.print("webView:didFinishLoad:")
-    }
-    
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
-        if keyPath == "estimatedProgress",
-            let view = object as? WKWebView, view == webView {
+        if keyPath == "estimatedProgress", let view = object as? MyWebView, view == webView {
 
             if let progress = change?[NSKeyValueChangeKey(rawValue: "new")] as? Float {
                 let percent = progress * 100
                 var title = NSString(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
-
-                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
-                    NotificationCenter.default.post(notif)
 
                     // once loaded update window title,size with video name,dimension
                     if let urlTitle = (self.webView.url?.absoluteString) {
@@ -917,7 +891,7 @@ for(var i=0; i< allLinks.length; i++)
                                     }
                                     break
                                     
-                               default:
+                                default:
                                     //  Issue still to be resolved so leave as-is for now
                                     Swift.print("os \(os)")
                                 }
@@ -1051,7 +1025,121 @@ for(var i=0; i< allLinks.length; i++)
         let startOfHash = url.indexOf(".be/")
         let endOfHash = url.indexOf("?t")
         let hash = url.substring(with: url.index(url.startIndex, offsetBy: startOfHash+4) ..<
-                                                        (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
+            (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
         return hash
     }
+
+    // MARK: Navigation Delegate
+
+    // Redirect Hulu and YouTube to pop-out videos
+    func webView(_ webView: WKWebView,
+                 decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        
+        guard navigationAction.buttonNumber <= 1 else {
+            if let url = navigationAction.request.url {
+                Swift.print("newWindow with url:\(String(describing: url))")
+                self.appDelegate.openURLInNewWindow(url)
+            }
+            decisionHandler(WKNavigationActionPolicy.cancel)
+            return
+        }
+        
+        guard !UserSettings.disabledMagicURLs.value,
+            let url = navigationAction.request.url,
+            !((navigationAction.request.url?.absoluteString.hasPrefix("file://"))!) else {
+                if let myWebView: MyWebView = webView as? MyWebView, NSApp.currentEvent?.buttonNumber == 2, let url = myWebView.selectedURL {
+                    Swift.print("newWindow with url:\(url)")
+                    appDelegate.openURLInNewWindow(url)
+                    webView.goBack()
+                    decisionHandler(WKNavigationActionPolicy.cancel)
+                }
+                else
+                {
+                    decisionHandler(WKNavigationActionPolicy.allow)
+                }
+                return
+        }
+
+        if let newUrl = UrlHelpers.doMagic(url) {
+            decisionHandler(WKNavigationActionPolicy.cancel)
+            loadURL(url: newUrl)
+        } else {
+            decisionHandler(WKNavigationActionPolicy.allow)
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        Swift.print("didStartProvisionalNavigation - 1st")
+    }
+    
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        Swift.print("didCommit - 2nd")
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        Swift.print("didFail")
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        Swift.print("didFailProvisionalNavigation")
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
+        guard let url = webView.url else {
+            return
+        }
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
+        NotificationCenter.default.post(notif)
+        
+        Swift.print("webView:didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
+/*
+        let html = """
+<html>
+<body>
+<h1>Hello, Swift!</h1>
+</body>
+</html>
+"""
+        webView.loadHTMLString(html, baseURL: nil)*/
+
+    }
+    
+    func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {
+        guard let title = webView.title, let urlString : String = webView.url?.absoluteString else {
+            return
+        }
+        Swift.print("webView:didFinishLoad: '\(title)' => \(urlString)")
+    }
+    
+    //  MARK: UI Delegate
+    
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction,
+                 windowFeatures: WKWindowFeatures) -> WKWebView? {
+        Swift.print("createWebViewWith")
+        return webView
+    }
+    
+    func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping ([URL]?) -> Void) {
+        Swift.print("runOpenPanelWith")
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+                 initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        Swift.print("runJavaScriptAlertPanelWithMessage")
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping (Bool) -> Void) {
+        Swift.print("runJavaScriptConfirmPanelWithMessage")
+    }
+    
+    func webViewDidClose(_ webView: WKWebView) {
+        Swift.print("webViewDidClose")
+    }
+    
 }
