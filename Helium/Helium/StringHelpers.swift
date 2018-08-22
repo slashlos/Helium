@@ -197,6 +197,16 @@ extension Dictionary {
     }
 }
 
+extension NSString {
+    class func string(fromAsset: String) -> String {
+        let asset = NSDataAsset.init(name: fromAsset)
+        let data = NSData.init(data: (asset?.data)!)
+        let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
+        
+        return text!
+    }
+}
+
 extension NSAttributedString {
     class func string(fromAsset: String) -> String {
         let asset = NSDataAsset.init(name: fromAsset)

@@ -445,7 +445,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
             let hwc = next.windowControllers.first?.window?.windowController
-            (hwc?.contentViewController as! WebViewController).loadURL(text: urlString)
+            let relnotes = NSString.string(fromAsset: "RELEASE")
+
+            (hwc?.contentViewController as! WebViewController).webView.loadHTMLString(relnotes, baseURL: nil)
             hwc?.window?.center()
         }
         catch let error {
