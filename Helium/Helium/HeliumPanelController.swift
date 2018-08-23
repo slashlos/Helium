@@ -389,6 +389,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowShouldClose(_ sender: Any) -> Bool {
         panel.ignoresMouseEvents = true
         
+        self.setupTrackingAreas(false)
+        
         //  Halt anything in progress
         if let wvc: WebViewController = self.contentViewController as? WebViewController,  let webView = wvc.webView {
             let delegate = webView.navigationDelegate as! NSObject
