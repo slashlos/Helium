@@ -336,8 +336,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     @IBAction func openLocationPress(_ sender: AnyObject) {
         //  No window, so load alert modally
+        let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString)
+        let urlString = URL.init(string: rawString!)?.absoluteString ?? UserSettings.homePageURL.value
         didRequestUserUrl(RequestUserStrings (
-            currentURL:         UserSettings.homePageURL.value,
+            currentURL:         urlString,
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,

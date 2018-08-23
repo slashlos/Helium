@@ -688,8 +688,11 @@ for(var i=0; i< allLinks.length; i++)
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
+        let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString)
+        let urlString = URL.init(string: rawString!)?.absoluteString ?? currentURL
+
         appDelegate.didRequestUserUrl(RequestUserStrings (
-            currentURL:         self.currentURL,
+            currentURL:         urlString,
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
