@@ -67,7 +67,7 @@
                                     <constraint firstAttribute="width" constant="63" id="7Uk-vG-vC2"/>
                                     <constraint firstAttribute="height" constant="63" id="QHL-Z2-r2I"/>
                                 </constraints>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="AppIcon" imagePosition="only" alignment="center" focusRingType="none" imageScaling="proportionallyUpOrDown" inset="2" id="yuU-sy-pjW">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="Helium" imagePosition="only" alignment="center" focusRingType="none" imageScaling="proportionallyUpOrDown" inset="2" id="yuU-sy-pjW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -1352,7 +1352,7 @@ Gw
         </scene>
     </scenes>
     <resources>
-        <image name="AppIcon" width="128" height="128"/>
+        <image name="Helium" width="512" height="512"/>
         <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
     </resources>
