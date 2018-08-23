@@ -22,8 +22,9 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release history of commit changes:</h4>
 
-<h2>Build 3155</h2>
+<h2>Build 3172</h2>
 <p class="block">
+8bf766d|18/08/23 build 3155 commit release notes<br>
 ae5032e|18/08/22 added preliminary commit release notes<br>
 4d5009b|18/08/20 search, MP2, UI enhancements
 aba356f|18/08/20 search field support<br>
