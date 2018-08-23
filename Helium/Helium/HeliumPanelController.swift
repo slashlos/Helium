@@ -464,6 +464,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         docIconToggle()
     }
     
+    override func windowTitle(forDocumentDisplayName displayName: String) -> String {
+        switch (self.document as! Document).docType {
+        case k.docRelease:
+            return String(format: "%@ Release Notes", (NSApp.delegate as! AppDelegate).title)
+        default:
+            return displayName
+        }
+    }
     @objc fileprivate func setFloatOverFullScreenApps() {
         if settings.disabledFullScreenFloat.value {
             panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
@@ -471,7 +479,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
     }
-   
+    
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
         if let playlist = notification.object {
             let playlistURL = playlist as! URL

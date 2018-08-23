@@ -45,14 +45,7 @@ fileprivate class SearchField : NSSearchField {
         }
         else
         {
-            let infoDictionary = (Bundle.main.infoDictionary)!
-            
-            //    Get the app name field
-            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
-            
-            //    Setup the version to one we constrict
-            self.title = String(format:"%@ %@", appName,
-                                infoDictionary["CFBundleVersion"] as! CVarArg)
+            self.title = (NSApp.delegate as! AppDelegate).title
         }
         if let cell : NSSearchFieldCell = self.cell as? NSSearchFieldCell {
             cell.searchMenuTemplate = searchMenu()
@@ -162,6 +155,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     fileprivate var searchField : SearchField = SearchField.init(withValue: "Helium", modalTitle: "Search")
     fileprivate var recentSearches = Array<String>()
     
+    var title : String {
+        get {
+            let infoDictionary = (Bundle.main.infoDictionary)!
+            
+            //    Get the app name field
+            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
+            
+            //    Setup the version to one we constrict
+            let title = String(format:"%@ %@", appName,
+                               infoDictionary["CFBundleVersion"] as! CVarArg)
+
+            return title
+        }
+    }
     internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu '\(menuItem.title)' clicked")
@@ -453,6 +460,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do
         {
             let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            next.docType = k.docRelease
+            
             let hwc = next.windowControllers.first?.window?.windowController
             let relnotes = NSString.string(fromAsset: "RELEASE")
 

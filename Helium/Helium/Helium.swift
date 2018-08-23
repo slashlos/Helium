@@ -32,6 +32,7 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 4.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let ToolbarlessSpacer: CGFloat = 4.0
+    static let docRelease = 1
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
     static let bingLink = "https://search.bing.com/search?Q=%@"
@@ -427,6 +428,7 @@ class HeliumDocumentController : NSDocumentController {
 class Document : NSDocument {
 
     var settings: Settings
+    var docType : Int
     
     func dictionary() -> Dictionary<String,Any> {
         var dict: Dictionary<String,Any> = Dictionary()
@@ -492,7 +494,7 @@ class Document : NSDocument {
             }
         }
         fileType = typeName
-        fileURL = url
+        self.fileURL = url
         self.save(self)
     }
     
@@ -504,6 +506,7 @@ class Document : NSDocument {
     
     override init() {
         settings = Settings()
+        docType = 0
         super.init()
     }
     
@@ -513,18 +516,24 @@ class Document : NSDocument {
 
     var displayImage: NSImage? {
         get {
-            if (self.fileURL?.isFileURL) != nil {
-                let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
+            switch docType {
+            case k.docRelease:
+                return nil
                 
-                let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
-                if let tmpImage = tmp?.takeUnretainedValue() {
-                    let tmpIcon = NSImage(cgImage: tmpImage, size: size)
-                    return tmpIcon
+            default:
+                if (self.fileURL?.isFileURL) != nil {
+                    let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
+                    
+                    let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
+                    if let tmpImage = tmp?.takeUnretainedValue() {
+                        let tmpIcon = NSImage(cgImage: tmpImage, size: size)
+                        return tmpIcon
+                    }
                 }
+                let tmpImage = NSImage.init(named: "docIcon")
+                let docImage = tmpImage?.resize(w: 32, h: 32)
+                return docImage
             }
-            let tmpImage = NSImage.init(named: "docIcon")
-            let docImage = tmpImage?.resize(w: 32, h: 32)
-            return docImage
         }
     }
     override var displayName: String! {
@@ -578,12 +587,14 @@ class Document : NSDocument {
     }
     
     @IBAction override func save(_ sender: (Any)?) {
-        if fileURL != nil {
-            do {
-                try self.write(to: fileURL!, ofType: fileType!)
-            } catch let error {
-                NSApp.presentError(error)
-            }
+        guard fileURL != nil, fileURL?.scheme != "about" else {
+            return
+        }
+        
+        do {
+            try self.write(to: fileURL!, ofType: fileType!)
+        } catch let error {
+            NSApp.presentError(error)
         }
     }
     
