@@ -175,7 +175,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             appStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
             appStatusItem.image = NSImage.init(named: "statusIcon")
-            appStatusItem.menu = appMenu
+            let menu : NSMenu = appMenu.copy() as! NSMenu
+
+            //  add quit to status menu only - already is in dock
+            let item = NSMenuItem(title: "Quit", action: #selector(NSApp.terminate(_:)), keyEquivalent: "")
+            item.target = NSApp
+            menu.addItem(item)
+
+            appStatusItem.menu = menu
         }
     }
 	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
@@ -878,6 +885,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         defaults.synchronize()
     }
 
+    func applicationDockMenu(sender: NSApplication) -> NSMenu? {
+        let menu = NSMenu(title: "Helium")
+        var item: NSMenuItem
+
+        item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
+        menu.addItem(item)
+        let subOpen = NSMenu()
+        item.submenu = subOpen
+        
+        item = NSMenuItem(title: "File…", action: #selector(AppDelegate.openFilePress(_:)), keyEquivalent: "")
+        item.target = self
+        subOpen.addItem(item)
+        
+        item = NSMenuItem(title: "URL…", action: #selector(AppDelegate.openLocationPress(_:)), keyEquivalent: "")
+        item.target = self
+        subOpen.addItem(item)
+        
+        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item.target = self
+        subOpen.addItem(item)
+        return menu
+    }
+    
     //MARK: - handleURLEvent(s)
 
     func metadataDictionaryForFileAt(_ fileName: String) -> Dictionary<NSObject,AnyObject>? {

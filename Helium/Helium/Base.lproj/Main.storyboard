@@ -745,12 +745,6 @@ CA
                                 <action selector="openSearchPress:" target="Ady-hI-5gd" id="EfB-1z-b8h"/>
                             </connections>
                         </menuItem>
-                        <menuItem title="Quit" id="tq3-QX-UdL">
-                            <modifierMask key="keyEquivalentModifierMask"/>
-                            <connections>
-                                <action selector="terminate:" target="Ady-hI-5gd" id="LW8-as-Qb3"/>
-                            </connections>
-                        </menuItem>
                     </items>
                 </menu>
             </objects>
