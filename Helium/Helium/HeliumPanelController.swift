@@ -467,7 +467,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
         switch (self.document as! Document).docType {
         case k.docRelease:
-            return String(format: "%@ Release Notes", (NSApp.delegate as! AppDelegate).title)
+            return k.docReleaseName
         default:
             return displayName
         }

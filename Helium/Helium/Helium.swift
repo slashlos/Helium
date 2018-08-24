@@ -33,6 +33,7 @@ struct k {
     static let ToolbarTextHeight: CGFloat = 12.0
     static let ToolbarlessSpacer: CGFloat = 4.0
     static let docRelease = 1
+    static let docReleaseName = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
     static let bingLink = "https://search.bing.com/search?Q=%@"
