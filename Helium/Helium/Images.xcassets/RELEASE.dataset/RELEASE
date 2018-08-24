@@ -16,7 +16,7 @@ p.block {
 }
 </style>
 
-<title>Helium 3</title>
+<title>Helium 3 Release Notes</title>
 </head>
 <body style="color:black;font-size:12px">
 <h1>Release 3</h1>
@@ -24,6 +24,15 @@ p.block {
 
 <h2>Build 3172</h2>
 <p class="block">
+d7df374|18/08/23 show release notes as internal document<br>
+890ab93|18/08/23 use Helium icon in about window<br>
+96472b4|18/08/23 remove tracking areas before window close<br>
+e4ee7a0|18/08/23 remove duplicate item (Quit) from dock menu<br>
+0e52da4|18/08/23 default load url to pasteboard buffer when appropriate URL found<br>
+c461cb7|18/08/23 typo fix re: quotes<br>
+c11def9|18/08/23 build 3177 posted to github<br>
+f21673d|18/08/23 fix commit line wrapping<br>
+06df1e9|18/08/23 build 3172 - release notes, search, middle button actions<br>
 8bf766d|18/08/23 build 3155 commit release notes<br>
 ae5032e|18/08/22 added preliminary commit release notes<br>
 4d5009b|18/08/20 search, MP2, UI enhancements<br>
