@@ -553,8 +553,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         // Custom user agent string for Netflix HTML5 support
         webView._customUserAgent = UserSettings.userAgent.value
         
-        // Setup magic URLs
+        // Setup magic URLs and UI handling
         webView.navigationDelegate = self
+        webView.uiDelegate = self
         
         // Allow zooming
         webView.allowsMagnification = true
@@ -821,7 +822,7 @@ for(var i=0; i< allLinks.length; i++)
         case "newWindowWithUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
-                Swift.print("ucc: new -> \(url.absoluteString)")
+                //Swift.print("ucc: new -> \(url.absoluteString)")
             }
             break
             
@@ -829,14 +830,14 @@ for(var i=0; i< allLinks.length; i++)
             if let urlString : String = message.body as? String
             {
                 webView.selectedText = urlString
-                Swift.print("ucc: str -> \(urlString)")
+                //Swift.print("ucc: str -> \(urlString)")
             }
             break
             
         case "newUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
-                Swift.print("ucc: url -> \(url.absoluteString)")
+                //Swift.print("ucc: url -> \(url.absoluteString)")
             }
             break
             
@@ -1054,7 +1055,7 @@ for(var i=0; i< allLinks.length; i++)
                 if let myWebView: MyWebView = webView as? MyWebView, NSApp.currentEvent?.buttonNumber == 2, let url = myWebView.selectedURL {
                     Swift.print("newWindow with url:\(url)")
                     appDelegate.openURLInNewWindow(url)
-                    webView.goBack()
+ //                   webView.goBack()
                     decisionHandler(WKNavigationActionPolicy.cancel)
                 }
                 else
@@ -1120,9 +1121,29 @@ for(var i=0; i< allLinks.length; i++)
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
+        
+        let newWindows = UserSettings.createNewWindows.value
+        var newWebView : WKWebView?
         Swift.print("createWebViewWith")
-        return webView
-    }
+        
+        if let newURL = navigationAction.request.url {
+            UserSettings.createNewWindows.value = false
+            do {
+                let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
+                if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                    hpc.webViewController.loadURL(text: newURL.absoluteString)
+                    newWebView = hpc.webView
+                }
+            } catch let error {
+                NSApp.presentError(error)
+            }
+        }
+        if UserSettings.createNewWindows.value != newWindows {
+            UserSettings.createNewWindows.value = newWindows
+        }
+
+        return newWebView
+     }
     
     func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters,
                  initiatedByFrame frame: WKFrameInfo,
