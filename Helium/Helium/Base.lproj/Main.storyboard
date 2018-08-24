@@ -1331,6 +1331,10 @@ Gw
                                     <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
                                     <wkPreferences key="preferences"/>
                                 </wkWebViewConfiguration>
+                                <connections>
+                                    <outlet property="UIDelegate" destination="XfG-lQ-9wD" id="MKs-bA-MWN"/>
+                                    <outlet property="navigationDelegate" destination="XfG-lQ-9wD" id="MYA-iR-gA3"/>
+                                </connections>
                             </wkWebView>
                         </subviews>
                         <constraints>
