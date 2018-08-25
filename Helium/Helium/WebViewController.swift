@@ -1131,6 +1131,11 @@ for(var i=0; i< allLinks.length; i++)
             do {
                 let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
                 if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                    let newView = MyWebView.init(frame: webView.frame, configuration: configuration)
+                    let contentView = hpc.window?.contentView
+                    hpc.webView.removeFromSuperview()
+                    contentView?.addSubview(newView)
+                    hpc.webViewController.webView = newView
                     hpc.webViewController.loadURL(text: newURL.absoluteString)
                     newWebView = hpc.webView
                 }
