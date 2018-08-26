@@ -1354,6 +1354,38 @@ Gw
             </objects>
             <point key="canvasLocation" x="75" y="454"/>
         </scene>
+        <!--Window Controller-->
+        <scene sceneID="Nw5-MM-un9">
+            <objects>
+                <windowController storyboardIdentifier="CustomController" id="UVO-9J-w1E" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="vzr-C3-QGe" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" HUD="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="196" y="240" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+                        <connections>
+                            <outlet property="delegate" destination="UVO-9J-w1E" id="2vD-wD-OhA"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="ZxL-zw-47r" kind="relationship" relationship="window.shadowedContentViewController" id="xsg-c9-IQx"/>
+                    </connections>
+                </windowController>
+                <customObject id="PeV-J8-seB" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+        <!--Web View Controller-->
+        <scene sceneID="gXn-bL-Xfn">
+            <objects>
+                <viewController id="ZxL-zw-47r" customClass="WebViewController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="4bL-ht-fTV">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </view>
+                </viewController>
+                <customObject id="Hmo-yv-zSZ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
     </scenes>
     <resources>
         <image name="Helium" width="512" height="512"/>
