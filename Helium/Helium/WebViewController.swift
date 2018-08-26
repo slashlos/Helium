@@ -561,10 +561,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         // Custom user agent string for Netflix HTML5 support
         webView._customUserAgent = UserSettings.userAgent.value
         
-        // Setup magic URLs and UI handling
-        webView.navigationDelegate = self
-        webView.uiDelegate = self
-        
         // Allow zooming
         webView.allowsMagnification = true
         
@@ -1150,6 +1146,8 @@ for(var i=0; i< allLinks.length; i++)
                     wvc.viewDidLoad()
 
                     hpc.webViewController.loadURL(text: newURL.absoluteString)
+                    newView.navigationDelegate = wvc
+                    newView.uiDelegate = wvc
                     newWebView = hpc.webView
                     
                     //  Setups all done, make us visible
