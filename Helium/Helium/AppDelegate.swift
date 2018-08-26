@@ -275,7 +275,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         //  This could be anything so add/if a doc and initialize
         do {
-            let doc = try Document.init(contentsOf: fileURL, ofType: fileType)
+            let doc = try Document.init(contentsOf: fileURL)
             
             if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
                 window.offsetFromKeyWindow()
@@ -1311,7 +1311,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
-        Swift.print("sender \(sender) list \(openFiles)")
         // Create a FileManager instance
         let fileManager = FileManager.default
         
