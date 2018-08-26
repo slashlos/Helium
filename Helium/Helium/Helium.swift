@@ -413,7 +413,7 @@ class HeliumDocumentController : NSDocumentController {
     override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> NSDocument {
         var doc: Document
         do {
-            doc = try Document.init(contentsOf: contentsURL, ofType: contentsURL.pathExtension)
+            doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
             if (urlOrNil != nil) {
                 doc.fileURL = urlOrNil
                 doc.fileType = urlOrNil?.pathExtension
@@ -421,6 +421,18 @@ class HeliumDocumentController : NSDocumentController {
         } catch let error {
             NSApp.presentError(error)
             doc = try Document.init(contentsOf: contentsURL, ofType: contentsURL.pathExtension)
+        }
+        return doc
+    }
+
+    override func makeDocument(withContentsOf url: URL, ofType typeName: String) throws -> NSDocument {
+        var doc: Document
+        do {
+            doc = try self.makeDocument(for: url, withContentsOf: url, ofType: typeName) as! Document
+        } catch let error {
+            NSApp.presentError(error)
+            doc = Document.init()
+            doc.update(to: url)
         }
         return doc
     }
@@ -488,20 +500,20 @@ class Document : NSDocument {
         }
     }
     
-    func update(to url: URL, ofType typeName: String) {
+    func update(to url: URL) {
         if url.lastPathComponent == "h3w", let dict = NSDictionary(contentsOf: url) {
             if let item = dict.value(forKey: "settings") {
                 self.restoreSettings(with: item as! Dictionary<String,Any> )
             }
         }
-        fileType = typeName
+        self.fileType = url.pathExtension
         self.fileURL = url
         self.save(self)
     }
     
-    func update(with item: PlayItem, ofType typeName: String) {
+    func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
-        self.update(to: item.link, ofType: typeName)
+        self.update(to: item.link)
         self.save(self)
     }
     
@@ -553,7 +565,7 @@ class Document : NSDocument {
 
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
-        self.update(to: url, ofType: typeName)
+        self.update(to: url)
         
         //  Record url and type, caller will load via notification
         do {
@@ -569,7 +581,7 @@ class Document : NSDocument {
     
     convenience init(withPlayitem item: PlayItem) throws {
         self.init()
-        self.update(with: item, ofType: item.link.pathExtension)
+        self.update(with: item)
 
         //  Record url and type, caller will load via notification
         do {

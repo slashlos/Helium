@@ -150,7 +150,7 @@ class MyWebView : WKWebView {
         {
             self.load(URLRequest(url: nextURL))
         }
-        doc?.update(to: nextURL, ofType: nextURL.pathExtension)
+        doc?.update(to: nextURL)
     }
     
     // MARK: Drag and Drop - Before Release
@@ -197,7 +197,7 @@ class MyWebView : WKWebView {
                     // instead we need to load requests *and* utilize the exception handler
 //                      self.next(url: URL(string: urlString)!)
                         self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
-                        (self.window?.windowController?.document as! Document).update(to: itemURL, ofType: itemURL.lastPathComponent)
+                        (self.window?.windowController?.document as! Document).update(to: itemURL)
                      }
                 }
                 else
@@ -938,7 +938,7 @@ for(var i=0; i< allLinks.length; i++)
 
                     // Remember for later restoration
                     if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
-                        (doc as! Document).update(to: url, ofType: url.pathExtension)
+                        (doc as! Document).update(to: url)
                         self.view.window?.representedURL = url
                         (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
                         NSApp.addWindowsItem(self.view.window!, title: url.lastPathComponent, filename: false)
@@ -1130,9 +1130,9 @@ for(var i=0; i< allLinks.length; i++)
             UserSettings.createNewWindows.value = false
             do {
                 let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
-                if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                if let hpc = doc.windowControllers.first as? HeliumPanelController, let window = hpc.window {
                     let newView = MyWebView.init(frame: webView.frame, configuration: configuration)
-                    let contentView = hpc.window?.contentView
+                    let contentView = window.contentView
                     hpc.webView.removeFromSuperview()
                     contentView?.addSubview(newView)
                     hpc.webViewController.webView = newView

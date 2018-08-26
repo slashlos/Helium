@@ -252,7 +252,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 if let wvc = thisWindow.contentViewController as? WebViewController {
                     
                     if fileType == "h3w" {
-                        (doc as! Document).update(to: fileURL, ofType: fileType)
+                        (doc as! Document).update(to: fileURL)
                         
                         wvc.loadURL(url: (doc as! Document).fileURL!)
                     }
