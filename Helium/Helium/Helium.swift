@@ -565,13 +565,17 @@ class Document : NSDocument {
 
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
-        self.update(to: url)
+        self.fileType = url.pathExtension
+        self.fileURL = url
         
         //  Record url and type, caller will load via notification
         do {
-            self.makeWindowControllers()
+            self.makeWindowControllers(typeName)
             NSDocumentController.shared().addDocument(self)
-
+            
+            //  Defer custom setups until we have a webView
+            if typeName == "Custom" { return }
+            
             if let hwc = self.windowControllers.first {
                 hwc.window?.orderFront(self)
                 (hwc.contentViewController as! WebViewController).loadURL(url: url)
@@ -629,8 +633,13 @@ class Document : NSDocument {
     }
     //MARK:- Actions
     override func makeWindowControllers() {
+        makeWindowControllers("Helium")
+    }
+    func makeWindowControllers(_ typeName: String) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let controller = storyboard.instantiateController(withIdentifier: "HeliumController") as! NSWindowController
+        let identifier = String(format: "%@Controller", typeName)
+        
+        let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
         
         //  Delegate will close down any observations before closure
