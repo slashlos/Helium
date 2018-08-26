@@ -413,14 +413,14 @@ class HeliumDocumentController : NSDocumentController {
     override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> NSDocument {
         var doc: Document
         do {
-            doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
+            doc = try Document.init(contentsOf: contentsURL)
             if (urlOrNil != nil) {
                 doc.fileURL = urlOrNil
                 doc.fileType = urlOrNil?.pathExtension
             }
         } catch let error {
             NSApp.presentError(error)
-            doc = try Document.init(contentsOf: contentsURL, ofType: contentsURL.pathExtension)
+            doc = try Document.init(contentsOf: contentsURL)
         }
         return doc
     }
@@ -563,6 +563,11 @@ class Document : NSDocument {
         }
     }
 
+    convenience init(contentsOf url: URL) throws {
+        do {
+            try self.init(contentsOf: url, ofType: "Helium")
+        }
+    }
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
         self.fileType = url.pathExtension
@@ -570,7 +575,7 @@ class Document : NSDocument {
         
         //  Record url and type, caller will load via notification
         do {
-            self.makeWindowControllers(typeName)
+            self.makeWindowController(typeName)
             NSDocumentController.shared().addDocument(self)
             
             //  Defer custom setups until we have a webView
@@ -633,9 +638,9 @@ class Document : NSDocument {
     }
     //MARK:- Actions
     override func makeWindowControllers() {
-        makeWindowControllers("Helium")
+        makeWindowController("Helium")
     }
-    func makeWindowControllers(_ typeName: String) {
+    func makeWindowController(_ typeName: String) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let identifier = String(format: "%@Controller", typeName)
         
