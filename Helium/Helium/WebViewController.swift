@@ -545,7 +545,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
         
+        if self.webView != nil { setupWebView() }
+    }
+    
+    fileprivate func setupWebView() {
+        
         webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
+        if webView.constraints.count == 0 {
+            fit(webView, parentView: webView.superview!)
+        }
         
         // Allow plug-ins such as silverlight
         webView.configuration.preferences.plugInsEnabled = true
@@ -569,8 +577,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         //  Intercept Finder drags
         webView.register(forDraggedTypes: [NSURLPboardType])
         
-        //  Watch javascript selection messages
+        //  Watch javascript selection messages unless already done
         let controller = webView.configuration.userContentController
+        if controller.userScripts.count > 0 { return }
+        
         controller.add(self, name: "newWindowWithUrlDetected")
         controller.add(self, name: "newSelectionDetected")
         controller.add(self, name: "newUrlDetected")
@@ -1129,15 +1139,21 @@ for(var i=0; i< allLinks.length; i++)
         if let newURL = navigationAction.request.url {
             UserSettings.createNewWindows.value = false
             do {
-                let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
-                if let hpc = doc.windowControllers.first as? HeliumPanelController, let window = hpc.window {
+                let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: "Custom")
+                if let hpc = doc.windowControllers.first as? HeliumPanelController,
+                    let window = hpc.window, let wvc = window.contentViewController as? WebViewController {
                     let newView = MyWebView.init(frame: webView.frame, configuration: configuration)
-                    let contentView = window.contentView
-                    hpc.webView.removeFromSuperview()
-                    contentView?.addSubview(newView)
+                    let contentView = window.contentView!
+                    
                     hpc.webViewController.webView = newView
+                    contentView.addSubview(newView)
+                    wvc.viewDidLoad()
+
                     hpc.webViewController.loadURL(text: newURL.absoluteString)
                     newWebView = hpc.webView
+                    
+                    //  Setups all done, make us visible
+                    window.makeKeyAndOrderFront(self)
                 }
             } catch let error {
                 NSApp.presentError(error)
