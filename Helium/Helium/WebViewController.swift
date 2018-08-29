@@ -568,7 +568,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.allowsBackForwardNavigationGestures = true
         
         // Listen for load progress
-        webView.addObserver(self, forKeyPath: "estimatedProgress", options: NSKeyValueObservingOptions.new, context: nil)
+        webView.addObserver(self, forKeyPath: "estimatedProgress", options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
 
         //  Intercept Finder drags
         webView.register(forDraggedTypes: [NSURLPboardType])
@@ -951,6 +952,10 @@ for(var i=0; i< allLinks.length; i++)
                     }
                 }
             }
+        }
+        else
+        if keyPath == "title" {
+            title = webView.title
         }
     }
     

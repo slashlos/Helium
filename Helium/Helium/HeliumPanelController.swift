@@ -401,6 +401,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             
             //  Remove view tracking, observations
             webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
+            webView.removeObserver(delegate, forKeyPath: "title")
             NotificationCenter.default.removeObserver(delegate)
 
             //  Propagate to super after removal
@@ -435,7 +436,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 docIconButton?.image = NSApp.applicationIconImage
             }
             docIconButton?.isHidden = false
-            self.synchronizeWindowTitleWithDocumentName()
+            if (self.webView.url?.isFileURL)! {
+                self.synchronizeWindowTitleWithDocumentName()
+            }
         }
         else
         {
@@ -469,6 +472,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case k.docRelease:
             return k.docReleaseName
         default:
+            if let length = self.webView.title?.count, length > 0 {
+                return self.webView.title!
+            }
             return displayName
         }
     }
