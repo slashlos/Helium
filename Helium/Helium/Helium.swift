@@ -508,6 +508,7 @@ class Document : NSDocument {
         }
         self.fileType = url.pathExtension
         self.fileURL = url
+        self.docType = 0
         self.save(self)
     }
     
@@ -531,8 +532,10 @@ class Document : NSDocument {
         get {
             switch docType {
             case k.docRelease:
-                return nil
-                
+                let tmpImage = NSImage.init(named: "appIcon")
+                let appImage = tmpImage?.resize(w: 32, h: 32)
+                return appImage
+
             default:
                 if (self.fileURL?.isFileURL) != nil {
                     let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
