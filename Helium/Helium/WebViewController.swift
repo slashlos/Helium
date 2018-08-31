@@ -1050,35 +1050,43 @@ for(var i=0; i< allLinks.length; i++)
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        var url = navigationAction.request.url!
         
-        guard navigationAction.buttonNumber <= 1 else {
-            if let url = navigationAction.request.url {
-                Swift.print("newWindow with url:\(String(describing: url))")
-                self.appDelegate.openURLInNewWindow(url)
-            }
+        guard navigationAction.buttonNumber < 2 else {
+            Swift.print("newWindow with url:\(String(describing: url))")
+            self.appDelegate.openURLInNewWindow(url)
             decisionHandler(WKNavigationActionPolicy.cancel)
             return
         }
         
-        guard !UserSettings.disabledMagicURLs.value,
-            let url = navigationAction.request.url,
-            !((navigationAction.request.url?.absoluteString.hasPrefix("file://"))!) else {
-                if let myWebView: MyWebView = webView as? MyWebView, NSApp.currentEvent?.buttonNumber == 2, let url = myWebView.selectedURL {
-                    Swift.print("newWindow with url:\(url)")
-                    appDelegate.openURLInNewWindow(url)
- //                   webView.goBack()
-                    decisionHandler(WKNavigationActionPolicy.cancel)
-                }
-                else
-                {
-                    decisionHandler(WKNavigationActionPolicy.allow)
-                }
-                return
+        guard !UserSettings.disabledMagicURLs.value else {
+            if let selectedURL = (webView as! MyWebView).selectedURL {
+                url = selectedURL
+            }
+            if navigationAction.buttonNumber > 1 {
+                appDelegate.openURLInNewWindow(url)
+                decisionHandler(WKNavigationActionPolicy.cancel)
+            }
+            else
+            {
+                decisionHandler(WKNavigationActionPolicy.allow)
+            }
+            return
         }
 
-        if let newUrl = UrlHelpers.doMagic(url) {
+        if let newUrl = UrlHelpers.doMagic(url), newUrl != url {
             decisionHandler(WKNavigationActionPolicy.cancel)
-            loadURL(url: newUrl)
+            if let selectedURL = (webView as! MyWebView).selectedURL {
+                url = selectedURL
+            }
+            if navigationAction.buttonNumber > 1
+            {
+                appDelegate.openURLInNewWindow(newUrl)
+            }
+            else
+            {
+                loadURL(url: newUrl)
+            }
         } else {
             decisionHandler(WKNavigationActionPolicy.allow)
         }
@@ -1132,13 +1140,17 @@ for(var i=0; i< allLinks.length; i++)
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
+
+        if navigationAction.targetFrame == nil {
+            appDelegate.openURLInNewWindow(navigationAction.request.url!)
+            return nil
+        }
         
-        let newWindows = UserSettings.createNewWindows.value
+        //  We really want to use the supplied config, so use custom setup
         var newWebView : WKWebView?
         Swift.print("createWebViewWith")
         
         if let newURL = navigationAction.request.url {
-            UserSettings.createNewWindows.value = false
             do {
                 let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: "Custom")
                 if let hpc = doc.windowControllers.first as? HeliumPanelController,
@@ -1148,22 +1160,19 @@ for(var i=0; i< allLinks.length; i++)
                     
                     hpc.webViewController.webView = newView
                     contentView.addSubview(newView)
-                    wvc.viewDidLoad()
 
                     hpc.webViewController.loadURL(text: newURL.absoluteString)
                     newView.navigationDelegate = wvc
                     newView.uiDelegate = wvc
                     newWebView = hpc.webView
-                    
+                    wvc.viewDidLoad()
+
                     //  Setups all done, make us visible
                     window.makeKeyAndOrderFront(self)
                 }
             } catch let error {
                 NSApp.presentError(error)
             }
-        }
-        if UserSettings.createNewWindows.value != newWindows {
-            UserSettings.createNewWindows.value = newWindows
         }
 
         return newWebView
