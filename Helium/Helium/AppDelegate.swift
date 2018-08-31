@@ -312,19 +312,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	}
     
     @IBAction func openFilePress(_ sender: AnyObject) {
+        var openFilesInNewWindows : Bool = false
         let open = NSOpenPanel()
         open.allowsMultipleSelection = true
         open.canChooseDirectories = false
         open.resolvesAliases = true
         open.canChooseFiles = true
-
+        
         //  No window, so load panel modally
         
         if open.runModal() == NSModalResponseOK {
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
-                _ = self.doOpenFile(fileURL: url)
+                if openFilesInNewWindows {
+                    self.openURLInNewWindow(url)
+                }
+                else
+                {
+                    _ = self.doOpenFile(fileURL: url)
+                }
+                
+                //  Multiple files implies new windows
+                openFilesInNewWindows = true
             }
         }
         return

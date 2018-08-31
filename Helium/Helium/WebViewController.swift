@@ -675,11 +675,8 @@ for(var i=0; i< allLinks.length; i++)
         webView.magnification = 1
     }
 
-    fileprivate var openFilesInNewWindows : Bool = false
-    @objc fileprivate func openFilesInNewWindowsPress(_ sender: NSButton) {
-        openFilesInNewWindows = sender.state == NSOnState
-    }
     @IBAction func openFilePress(_ sender: AnyObject) {
+        var openFilesInNewWindows : Bool = false
         let window = self.view.window
         let open = NSOpenPanel()
         
@@ -688,23 +685,22 @@ for(var i=0; i< allLinks.length; i++)
         open.resolvesAliases = true
         open.canChooseFiles = true
         
-        //  Feature new window(s) when asked superseding user setting preference if no
-        let search = NSButton.init(checkboxWithTitle: "Open file(s) in new window(s)", target: self, action: #selector(WebViewController.openFilesInNewWindowsPress(_:)))
-        openFilesInNewWindows = false
-        open.accessoryView = search
-
         open.worksWhenModal = true
         open.beginSheetModal(for: window!, completionHandler: { (response: NSModalResponse) in
             if response == NSModalResponseOK {
                 let urls = open.urls
+                
                 for url in urls {
-                    if self.openFilesInNewWindows {
+                    if openFilesInNewWindows {
                         self.appDelegate.openURLInNewWindow(url)
                     }
                     else
                     {
                         _ = self.appDelegate.doOpenFile(fileURL: url, fromWindow: window)
                     }
+                    
+                    //  Multiple files implies new windows
+                    openFilesInNewWindows = true
                 }
             }
         })
