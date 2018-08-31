@@ -22,6 +22,16 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release history of commit changes:</h4>
 
+<h2>Build 3372</h2>
+<p class="block">
+fcd0e00|18/08/31 icon updates re: affects<br>
+9ba9363|18/08/31 new window, "_blank" handler fixes<br>
+3a667fb|18/08/29 better window content : title synchronization<br>
+44c2316|18/08/26 move ui, nav delegate setting in ui delegate for custom setup<br>
+69ccbed|18/08/26 caller supplies document type<br>
+d8788d9|18/08/26 default document type creation<br>
+</p>
+
 <h2>Build 3266</h2>
 <p class="block">
 0d5d482|18/08/26 UI delegate fixes re: createWebViewWith<br>
