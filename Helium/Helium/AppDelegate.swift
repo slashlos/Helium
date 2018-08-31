@@ -320,6 +320,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         open.canChooseFiles = true
         
         //  No window, so load panel modally
+        NSApp.activate(ignoringOtherApps: true)
         
         if open.runModal() == NSModalResponseOK {
             open.orderOut(sender)
