@@ -22,7 +22,7 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release history of commit changes:</h4>
 
-<h2>Build 3371</h2>
+<h2>Build 3373</h2>
 <p class="block">
 fcd0e00|18/08/31 icon updates re: affects<br>
 9ba9363|18/08/31 new window, "_blank" handler fixes<br>
