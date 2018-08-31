@@ -2,11 +2,11 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "helium_logo.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
+      "filename" : "helium_logo.png",
       "scale" : "2x"
     },
     {

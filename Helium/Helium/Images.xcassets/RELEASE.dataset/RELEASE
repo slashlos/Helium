@@ -22,6 +22,19 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release history of commit changes:</h4>
 
+<h2>Build 3266</h2>
+<p class="block">
+0d5d482|18/08/26 UI delegate fixes re: createWebViewWith<br>
+ee948f6|18/08/26 added CustomController<br>
+bbb4f6e|18/08/26 caller typeName used to configure window controller(s)<br>
+c485a56|18/08/25 removed typeName from Document.update method<br>
+abb6e6e|18/08/24 use supplied configuration in webView creation<br>
+e84fa24|18/08/24 set ui delegate, set web, video to new window target<br>
+799127d|18/08/24 establish nav and ui delegate<br>
+daeb563|18/08/23 revise 'about' window title re: release notes<br>
+7df853b|18/08/23 icon-less 'about' windows re: release etc<br>
+</p>
+
 <h2>Build 3172</h2>
 <p class="block">
 d7df374|18/08/23 show release notes as internal document<br>
