@@ -658,8 +658,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
+    var launchedAsLogInItem : Bool = false
+    
     func applicationWillFinishLaunching(_ notification: Notification) {
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        let event = NSAppleEventDescriptor.currentProcess()
 
         //  Wipe out defaults when OPTION+SHIFT is held down at startup
         if flags.contains([.shift,.option]) {
@@ -667,11 +670,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             resetDefaults()
             NSSound(named: "Purr")?.play()
         }
-/*      TODO: - login item startup save this for future need?
-        let launchedAsLogInItem =
-            event?.eventID == kAEOpenApplication &&
-                event?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
-*/
+        //  We were started as a login item startup save this
+        launchedAsLogInItem = event.eventID == kAEOpenApplication &&
+            event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
 
         //  We need our own to reopen our "document" urls
         _ = HeliumDocumentController.init()
@@ -873,6 +874,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         /* NYI  //  Register our URL protocol(s)
         URLProtocol.registerClass(HeliumURLProtocol.self) */
+        
+        //  If started via login item, launch the login items playlist
+        if launchedAsLogInItem {
+            Swift.print("We were launched as a startup item")
+        }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
