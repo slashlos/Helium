@@ -1327,7 +1327,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: selection)
         }
     }
-    // MARK: Finder drops
+    // MARK: Application Events
     func application(_ sender: NSApplication, openFile: String) -> Bool {
         let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
         let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
