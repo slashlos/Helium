@@ -47,15 +47,47 @@ extension String {
     /// Returns a substring with the given `NSRange`,
     /// or `nil` if the range can't be converted.
     func substring(with nsrange: NSRange) -> String? {
-        guard let range = Range(nsrange, in: self) else { return nil }
-        return self[range]
+        guard let range = nsrange.toRange()
+            else { return nil }
+    #if swift(>=4.0)
+        let start = UTF16Index(range.lowerBound)
+        let end = UTF16Index(range.upperBound)
+        return String(utf16[start..<end])
+    #else
+        return self[0..<range.count]
+    #endif
     }
     
     /// Returns a range equivalent to the given `NSRange`,
     /// or `nil` if the range can't be converted.
     func range(from nsrange: NSRange) -> Range<Index>? {
-        guard let range = Range(nsrange, in: self) else { return nil }
-        return range
+        guard let range = nsrange.toRange() else { return nil }
+    #if swift(>=4.0)
+        let utf16Start = UTF16Index(range.lowerBound)
+        let utf16End = UTF16Index(range.upperBound)
+        
+        guard let start = Index(utf16Start, within: self),
+            let end = Index(utf16End, within: self)
+            else { return nil }
+        
+        return start..<end
+    #else
+        return self.startIndex..<self.index(self.startIndex, offsetBy: range.count)
+    #endif
+    }
+}
+
+extension String {
+    subscript (bounds: CountableClosedRange<Int>) -> String {
+        let start = index(startIndex, offsetBy: bounds.lowerBound)
+        let end = index(startIndex, offsetBy: bounds.upperBound)
+        return String(self[start...end])
+    }
+    
+    subscript (bounds: CountableRange<Int>) -> String {
+        let start = index(startIndex, offsetBy: bounds.lowerBound)
+        let end = index(startIndex, offsetBy: bounds.upperBound)
+        return String(self[start..<end])
     }
 }
 
