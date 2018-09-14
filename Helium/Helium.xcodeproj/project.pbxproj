@@ -3,13 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0F05C7EF1EFEC5F3001B5D02 /* AboutHelium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */; };
 		0F1035921F032E6A00327B30 /* Helium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F10354A1F0300DA00327B30 /* Helium.swift */; };
 		0F5197402002CD0B0090C431 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 0F51973F2002CD0B0090C431 /* Help */; };
+		0F9AB2F1213C3E7A0096C19F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F0213C3E7A0096C19F /* AppDelegate.m */; };
+		0F9AB2F3213C3E7B0096C19F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F2213C3E7B0096C19F /* Assets.xcassets */; };
+		0F9AB2F6213C3E7B0096C19F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F4213C3E7B0096C19F /* MainMenu.xib */; };
+		0F9AB2F9213C3E7B0096C19F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F8213C3E7B0096C19F /* main.m */; };
+		0F9AB300213C421F0096C19F /* XHelium.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0F9AB2ED213C3E7A0096C19F /* XHelium.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0F9AB303213C45140096C19F /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA3EA011BE4CEC9001A471F /* UserSettings.swift */; };
+		0F9AB31C213D78F10096C19F /* Helium.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0FDE23EC1F040484009D4B16 /* Helium.icns */; };
+		0F9AB31E213E09E90096C19F /* LoginItemAutoStart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9AB31D213E09E90096C19F /* LoginItemAutoStart.swift */; };
 		0FD57FDE1EEC89F400A0F84D /* HeliumPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */; };
 		0FD57FE01EECF0FF00A0F84D /* UrlHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */; };
 		0FD6C7381E62286000D6F836 /* PlaylistPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */; };
@@ -51,6 +59,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		0F9AB2FF213C41E10096C19F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				0F9AB300213C421F0096C19F /* XHelium.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		27199AC21BE422AC00E02297 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -69,6 +87,15 @@
 		0F10354A1F0300DA00327B30 /* Helium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F51973F2002CD0B0090C431 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Help; path = ../../Help; sourceTree = "<group>"; };
 		0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
+		0F9AB2ED213C3E7A0096C19F /* XHelium.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XHelium.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F9AB2EF213C3E7A0096C19F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		0F9AB2F0213C3E7A0096C19F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		0F9AB2F2213C3E7B0096C19F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0F9AB2F5213C3E7B0096C19F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		0F9AB2F7213C3E7B0096C19F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0F9AB2F8213C3E7B0096C19F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		0F9AB2FA213C3E7B0096C19F /* XHelium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = XHelium.entitlements; sourceTree = "<group>"; };
+		0F9AB31D213E09E90096C19F /* LoginItemAutoStart.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginItemAutoStart.swift; sourceTree = "<group>"; };
 		0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumPanel.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UrlHelpers.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistPanelController.swift; sourceTree = "<group>"; usesTabs = 0; };
@@ -100,6 +127,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0F9AB2EA213C3E7A0096C19F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		27199AAD1BE422AC00E02297 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,6 +158,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0F9AB2EE213C3E7A0096C19F /* XHelium */ = {
+			isa = PBXGroup;
+			children = (
+				0F9AB2EF213C3E7A0096C19F /* AppDelegate.h */,
+				0F9AB2F0213C3E7A0096C19F /* AppDelegate.m */,
+				0F9AB2F2213C3E7B0096C19F /* Assets.xcassets */,
+				0F9AB2F4213C3E7B0096C19F /* MainMenu.xib */,
+				0F9AB2F7213C3E7B0096C19F /* Info.plist */,
+				0F9AB2F8213C3E7B0096C19F /* main.m */,
+				0F9AB2FA213C3E7B0096C19F /* XHelium.entitlements */,
+			);
+			path = XHelium;
+			sourceTree = "<group>";
+		};
 		27199AB11BE422AC00E02297 /* HeliumShareExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -151,6 +199,7 @@
 				4D867CB31AD6781200681331 /* Helium */,
 				4D8DAEB01C3A427D00B212EC /* HeliumTests */,
 				27199AB11BE422AC00E02297 /* HeliumShareExtension */,
+				0F9AB2EE213C3E7A0096C19F /* XHelium */,
 				4D867CB21AD6781200681331 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -161,6 +210,7 @@
 				4D867CB11AD6781200681331 /* Helium.app */,
 				4D867CC31AD6781200681331 /* HeliumTests.xctest */,
 				27199AB01BE422AC00E02297 /* HeliumShareExtension.appex */,
+				0F9AB2ED213C3E7A0096C19F /* XHelium.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -192,6 +242,7 @@
 			isa = PBXGroup;
 			children = (
 				4D867CB51AD6781200681331 /* Info.plist */,
+				0F9AB31D213E09E90096C19F /* LoginItemAutoStart.swift */,
 				AAA3EA011BE4CEC9001A471F /* UserSettings.swift */,
 				5B75B5111C9A13D600475921 /* StringHelpers.swift */,
 				0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */,
@@ -230,6 +281,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0F9AB2EC213C3E7A0096C19F /* XHelium */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F9AB2FD213C3E7B0096C19F /* Build configuration list for PBXNativeTarget "XHelium" */;
+			buildPhases = (
+				0F9AB2E9213C3E7A0096C19F /* Sources */,
+				0F9AB2EA213C3E7A0096C19F /* Frameworks */,
+				0F9AB2EB213C3E7A0096C19F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = XHelium;
+			productName = XHelium;
+			productReference = 0F9AB2ED213C3E7A0096C19F /* XHelium.app */;
+			productType = "com.apple.product-type.application";
+		};
 		27199AAF1BE422AC00E02297 /* HeliumShareExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27199AC11BE422AC00E02297 /* Build configuration list for PBXNativeTarget "HeliumShareExtension" */;
@@ -256,6 +324,7 @@
 				4D867CAF1AD6781200681331 /* Resources */,
 				27199AC21BE422AC00E02297 /* Embed App Extensions */,
 				0F05C8281EFF1B54001B5D02 /* Version */,
+				0F9AB2FF213C41E10096C19F /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -293,9 +362,14 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Jaden Geller";
 				TargetAttributes = {
+					0F9AB2EC213C3E7A0096C19F = {
+						CreatedOnToolsVersion = 9.4.1;
+						DevelopmentTeam = VQYGYPHYGE;
+						ProvisioningStyle = Automatic;
+					};
 					27199AAF1BE422AC00E02297 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = VQYGYPHYGE;
@@ -328,7 +402,7 @@
 				};
 			};
 			buildConfigurationList = 4D867CAC1AD6781200681331 /* Build configuration list for PBXProject "Helium" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -343,11 +417,22 @@
 				4D867CB01AD6781200681331 /* Helium */,
 				4D867CC21AD6781200681331 /* HeliumTests */,
 				27199AAF1BE422AC00E02297 /* HeliumShareExtension */,
+				0F9AB2EC213C3E7A0096C19F /* XHelium */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0F9AB2EB213C3E7A0096C19F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F9AB2F3213C3E7B0096C19F /* Assets.xcassets in Resources */,
+				0F9AB31C213D78F10096C19F /* Helium.icns in Resources */,
+				0F9AB2F6213C3E7B0096C19F /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		27199AAE1BE422AC00E02297 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -397,6 +482,16 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0F9AB2E9213C3E7A0096C19F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F9AB2F9213C3E7B0096C19F /* main.m in Sources */,
+				0F9AB303213C45140096C19F /* UserSettings.swift in Sources */,
+				0F9AB2F1213C3E7A0096C19F /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		27199AAC1BE422AC00E02297 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -420,6 +515,7 @@
 				0FD6C7381E62286000D6F836 /* PlaylistPanelController.swift in Sources */,
 				0FD57FE01EECF0FF00A0F84D /* UrlHelpers.swift in Sources */,
 				0FD57FDE1EEC89F400A0F84D /* HeliumPanel.swift in Sources */,
+				0F9AB31E213E09E90096C19F /* LoginItemAutoStart.swift in Sources */,
 				4D867CB71AD6781200681331 /* AppDelegate.swift in Sources */,
 				0F1035921F032E6A00327B30 /* Helium.swift in Sources */,
 			);
@@ -449,6 +545,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		0F9AB2F4213C3E7B0096C19F /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0F9AB2F5213C3E7B0096C19F /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
 		27199AB81BE422AC00E02297 /* ShareViewController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -468,6 +572,60 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0F9AB2FB213C3E7B0096C19F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = XHelium/XHelium.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = XHelium/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slashlos.XHelium;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		0F9AB2FC213C3E7B0096C19F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = XHelium/XHelium.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = XHelium/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slashlos.XHelium;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
 		27199ABF1BE422AC00E02297 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -479,11 +637,12 @@
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = HeliumShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.slashlos.Helium.HeliumShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
 			};
@@ -499,11 +658,12 @@
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
 				INFOPLIST_FILE = HeliumShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.slashlos.Helium.HeliumShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
 			};
@@ -559,8 +719,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.13;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -606,8 +767,9 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = macosx;
+				SDKROOT = macosx10.13;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -634,6 +796,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Helium/Helium-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
@@ -663,6 +826,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Helium/Helium-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
@@ -687,9 +851,11 @@
 				);
 				INFOPLIST_FILE = HeliumTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.slashlos.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Helium.app/Contents/MacOS/Helium";
@@ -711,9 +877,11 @@
 				);
 				INFOPLIST_FILE = HeliumTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.slashlos.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Helium.app/Contents/MacOS/Helium";
 			};
@@ -722,6 +890,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0F9AB2FD213C3E7B0096C19F /* Build configuration list for PBXNativeTarget "XHelium" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F9AB2FB213C3E7B0096C19F /* Debug */,
+				0F9AB2FC213C3E7B0096C19F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		27199AC11BE422AC00E02297 /* Build configuration list for PBXNativeTarget "HeliumShareExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
