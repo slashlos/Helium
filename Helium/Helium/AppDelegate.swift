@@ -429,15 +429,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 //        Swift.print("\(key) -> \(index)")
 	}
 	
+    var playlistWindows = [NSWindow]()
 	@IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
-        //  We have a window, create as sheet and load playlists there
+        //  If we have a window, present a sheet with playlists, otherwise ...
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No window, load panel and its playlist controller
             let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
-            ppc.window?.center()
-            ppc.window?.makeKeyAndOrderFront(sender)
+            if let window = ppc.window {
+                NSApp.addWindowsItem(window, title: window.title, filename: false)
+                NSApp.activate(ignoringOtherApps: true)
+                window.makeKeyAndOrderFront(sender)
+                playlistWindows.append(ppc.window!)
+                window.center()
+
+            }
             return
         }
         
