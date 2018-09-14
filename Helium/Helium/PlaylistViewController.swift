@@ -237,8 +237,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if state {
             NotificationCenter.default.addObserver(
                 self,
-                selector: #selector(PlaylistViewController.shiftKeyDown(_:)),
+                selector: #selector(shiftKeyDown(_:)),
                 name: NSNotification.Name(rawValue: "shiftKeyDown"),
+                object: nil)
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(gotNewHistoryItem(_:)),
+                name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
                 object: nil)
         }
         else
@@ -269,7 +274,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         switch keyPath {
         
-        case k.Playlists, k.list:
+        case k.Playlists?, k.list?:
             //  arrays handled by [add,remove]<List,Play> callback closure block
 
             if (newValue != nil) {
@@ -385,12 +390,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  Load playlists shared by all document; our delegate maintains history
         self.restorePlaylists(nil)
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(gotNewHistoryItem(_:)),
-            name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
-            object: nil)
-
         //  Restore hidden columns in tableviews using defaults
         setupHiddenColumns(playlistTableView, hideit: ["date"])
         setupHiddenColumns(playitemTableView, hideit: ["date","link","rect","label","hover","alpha","trans"])
@@ -414,10 +413,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         // cache our list before editing
         playCache = playlists
         
+        //  Reset split view dimensions
         self.playlistSplitView.setPosition(120, ofDividerAt: 0)
-        NSApp.activate(ignoringOtherApps: true)
-        self.view.window?.makeKeyAndOrderFront(self)
-
+        
         //  Watch for bad (duplicate) playlist names
         NotificationCenter.default.addObserver(
             self,
@@ -426,15 +424,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             object: nil)
 
         //  Start observing any changes
-        setObserving(true)
-    }
+        self.setObserving(true)
+     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
         //  We didn't dismiss but so undo observing now
-        setObserving(false)
+        if let window : NSWindow = sender as? NSWindow, let index = appDelegate.playlistWindows.index(of: window) {
+            let pvc = window.contentViewController as! PlaylistViewController
+            pvc.setObserving(false)
+            appDelegate.playlistWindows.remove(at: index)
+        }
         return true
     }
-
+    
     //  MARK:- Playlist Actions
     //
     //  internal are also used by undo manager callback and by IBActions
@@ -571,41 +573,39 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBAction func removePlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
 
-        switch whoAmI {
-            
-        case playlistTableView:
+        if playlistTableView == whoAmI {
             for item in (playlistArrayController.selectedObjects as! [PlayList]).reversed() {
                 let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
                 self.removeList(item, atIndex: index!)
             }
-            break
+            return
+        }
             
-        case playitemTableView:
+        if playitemTableView == whoAmI {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]).reversed() {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
                 self.removePlay(item, atIndex: index!)
             }
-            break
+            return
+        }
         
-        default:
-            if playitemArrayController.selectedObjects.count > 0 {
-                for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
-                    let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
-                    self.removePlay(item, atIndex: index!)
-                }
+        if playitemArrayController.selectedObjects.count > 0 {
+            for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
+                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
+                self.removePlay(item, atIndex: index!)
             }
-            else
-            if playlistArrayController.selectedObjects.count > 0 {
-                for item in (playlistArrayController.selectedObjects as! [PlayList]) {
-                    let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
-                    self.removeList(item, atIndex: index!)
-                }
+        }
+        else
+        if playlistArrayController.selectedObjects.count > 0 {
+            for item in (playlistArrayController.selectedObjects as! [PlayList]) {
+                let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
+                self.removeList(item, atIndex: index!)
             }
-            else
-            {
-                Swift.print("firstResponder: \(String(describing: whoAmI))")
-                NSSound(named: "Sosumi")?.play()
-            }
+        }
+        else
+        {
+            Swift.print("firstResponder: \(String(describing: whoAmI))")
+            NSSound(named: "Sosumi")?.play()
         }
     }
 
@@ -653,20 +653,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  Our rank sorted list from which we'll take last 'throttle' to play
         var list = Array<PlayItem>()
 
-        switch whoAmI {
-        case playitemTableView:
+        if playitemTableView == whoAmI {
             Swift.print("We are in playitemTableView")
             list.append(contentsOf: playitemArrayController.selectedObjects as! Array<PlayItem>)
-            break
-            
-        case playlistTableView:
+        }
+        else
+        if playlistTableView == whoAmI {
             Swift.print("We are in playlistTableView")
             for selectedPlaylist in (playlistArrayController.selectedObjects as? [PlayList])! {
                 list.append(contentsOf: selectedPlaylist.list )
             }
-            break
-            
-        default:
+        }
+        else
+        {
             Swift.print("firstResponder: \(String(describing: whoAmI))")
             NSSound(named: "Sosumi")?.play()
             return

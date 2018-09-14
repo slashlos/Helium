@@ -513,7 +513,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
         }
         set (value) {
-            (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag = value!
+            (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag = value
         }
     }
 
@@ -582,39 +582,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         controller.add(self, name: "newSelectionDetected")
         controller.add(self, name: "newUrlDetected")
 
-        let js = """
-//  https://stackoverflow.com/questions/50846404/how-do-i-get-the-selected-text-from-a-wkwebview-from-objective-c
-function getSelectionAndSendMessage()
-{
-    var txt = document.getSelection().toString() ;
-    window.webkit.messageHandlers.newSelectionDetected.postMessage(txt) ;
-}
-document.onmouseup   = getSelectionAndSendMessage ;
-document.onkeyup     = getSelectionAndSendMessage ;
-
-//  https://stackoverflow.com/questions/21224327/how-to-detect-middle-mouse-button-click/21224428
-document.body.onclick = function (e) {
-  if (e && (e.which == 2 || e.button == 4 )) {
-    sendLink;
-  }
-}
-function middleLink()
-{
-    window.webkit.messageHandlers.newWindowWithUrlDetected.postMessage(this.href) ;
-}
-
-//  https://stackoverflow.com/questions/51894733/how-to-get-mouse-over-urls-into-wkwebview-with-swift/51899392#51899392
-function sendLink()
-{
-    window.webkit.messageHandlers.newUrlDetected.postMessage(this.href) ;
-}
-
-var allLinks = document.links;
-for(var i=0; i< allLinks.length; i++)
-{
-    allLinks[i].onmouseover = sendLink ;
-}
-"""
+        let js = NSString.string(fromAsset: "Helium-js")
         let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         controller.addUserScript(script)
         
@@ -626,6 +594,7 @@ for(var i=0; i< allLinks.length; i++)
     func setupTrackingAreas(_ establish: Bool) {
         if let tag = trackingTag {
             view.removeTrackingRect(tag)
+            trackingTag = nil
         }
         if establish {
             trackingTag = view.addTrackingRect(view.bounds, owner: self, userData: nil, assumeInside: false)
@@ -882,6 +851,10 @@ for(var i=0; i< allLinks.length; i++)
                 var title = NSString(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
 
+                    //  Initial recording of for this url session
+                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : false])
+                    NotificationCenter.default.post(notif)
+
                     // once loaded update window title,size with video name,dimension
                     if let urlTitle = (self.webView.url?.absoluteString) {
                         title = urlTitle as NSString
@@ -1123,7 +1096,9 @@ for(var i=0; i< allLinks.length; i++)
         guard let url = webView.url else {
             return
         }
-        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url);
+        
+        //  Finish recording of for this url session
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : true])
         NotificationCenter.default.post(notif)
         
         Swift.print("webView:didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")

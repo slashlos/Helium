@@ -954,17 +954,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
-        if let itemURL = notification.object as? URL {
-            let item: PlayItem = PlayItem.init()
-            var fileURL: URL? = nil
+        var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) ?? NSDictionary.init() as! [String : Any]
 
-            if let testURL: URL = (itemURL as NSURL).filePathURL {
-                fileURL = testURL
-            }
-            else
+        guard let itemURL = notification.object as? URL, itemURL.scheme != "about" else {
+            return
+        }
+        
+        var item : PlayItem = PlayItem.init()
+        let info = notification.userInfo!
+        var fileURL : URL? = nil
+        
+        if let testURL: URL = (itemURL as NSURL).filePathURL {
+            fileURL = testURL
+        }
+        else
             if (itemURL as NSURL).isFileReferenceURL() {
                 fileURL = (itemURL as NSURL).filePathURL
-            }
+        }
+
+        //  If the title is already seen, update global and playlists
+        if let playitem: PlayItem = lists[(itemURL.absoluteString)] as? PlayItem {
+            item = playitem
+        }
+        else
+        {
             if fileURL != nil {
                 let path = fileURL?.absoluteString//.stringByRemovingPercentEncoding
                 let attr = metadataDictionaryForFileAt((fileURL?.path)!)
@@ -987,18 +1000,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             histories.append(item)
             item.rank = histories.count
-            
-            //  keep a global play items list used to restore settings
-            var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) ?? NSDictionary.init() as! [String : Any]
-            lists[item.link.absoluteString] = item.dictionary()
-            
-            UserDefaults.standard.set(lists, forKey: k.Playitems)
-            UserDefaults.standard.synchronize()
-            
-            //  tell any playlist controller we have updated history
-            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewHistoryItem"), object: item)
-            NotificationCenter.default.post(notif)
         }
+        
+        if let runs = info[k.runs] {
+            item.runs += runs as! Int
+        }
+
+        //  keep a global play items list used to restore settings
+        lists[item.link.absoluteString] = item.dictionary()
+        
+        UserDefaults.standard.set(lists, forKey: k.Playitems)
+        UserDefaults.standard.synchronize()
+        
+        //  tell any playlist controller we have updated history
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewHistoryItem"), object: item)
+        NotificationCenter.default.post(notif)
     }
     
     @objc fileprivate func clearItemAction(_ notification: Notification) {

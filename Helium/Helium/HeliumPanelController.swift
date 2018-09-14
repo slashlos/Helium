@@ -103,6 +103,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func setupTrackingAreas(_ establish : Bool) {
         if let tag = closeTrackingTag {
             closeButton?.removeTrackingRect(tag)
+            closeTrackingTag = nil
+        }
+        if let tag = titleTrackingTag {
+            titleView?.removeTrackingRect(tag)
+            titleTrackingTag = nil
         }
         if establish {
             closeTrackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
@@ -131,19 +136,21 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             NSApp.activate(ignoringOtherApps: true)
         }
 
-        switch theEvent.trackingNumber {
-        case closeTrackingTag:
-            closeButton?.image = closeButtonImage
-            break
-        
-        default:
-            let lastMouseOver = mouseOver
-            mouseOver = true
-            updateTranslucency()
-
-            //  view or title entered
-            if hideTitle && (lastMouseOver != mouseOver) {
-                updateTitleBar(didChange: lastMouseOver != mouseOver)
+        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
+            switch theEvent.trackingNumber {
+            case closeTag:
+                closeButton?.image = closeButtonImage
+                break
+                
+            default:
+                let lastMouseOver = mouseOver
+                mouseOver = true
+                updateTranslucency()
+                
+                //  view or title entered
+                if hideTitle && (lastMouseOver != mouseOver) {
+                    updateTitleBar(didChange: lastMouseOver != mouseOver)
+                }
             }
         }
     }
@@ -152,42 +159,46 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let hideTitle = (doc?.settings.autoHideTitle.value == true)
         let location : NSPoint = theEvent.locationInWindow
 
-        switch theEvent.trackingNumber {
-        case closeTrackingTag:
-            closeButton?.image = nullImage
-            break
-            
-        default:
-            let vSize = self.window?.contentView?.bounds.size
-            
-            //  If we exit to the title bar area we're still in side
-            if theEvent.trackingNumber == titleTrackingTag, let tSize = titleView?.bounds.size {
-                if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y < ((vSize?.height)! + tSize.height) {
+        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
+            switch theEvent.trackingNumber {
+            case closeTag:
+                closeButton?.image = nullImage
+                break
+                
+            default:
+                if let vSize = self.window?.contentView?.bounds.size {
+                
+                    //  If we exit to the title bar area we're still in side
+                    if theEvent.trackingNumber == titleTrackingTag, let tSize = titleView?.bounds.size {
+                        if location.x >= 0.0 && location.x <= (vSize.width) && location.y < ((vSize.height) + tSize.height) {
+                            return
+                        }
+                    }
+                    else
+                    if theEvent.trackingNumber == viewTrackingTag {
+                        if location.x >= 0.0 && location.x <= (vSize.width) && location.y > (vSize.height) {
+                            return
+                        }
+                    }
+                    var lastMouseOver = mouseOver
+                    mouseOver = false
+                    updateTranslucency()
+                    
+                    if ((titleView?.hitTest(theEvent.locationInWindow)) != nil) ||
+                        ((self.window?.contentView?.hitTest(theEvent.locationInWindow)) != nil) {
+                        //Swift.print("still here")
+                        lastMouseOver = true
+                        mouseOver = true
+                    }
+                    if hideTitle {
+                        updateTitleBar(didChange: lastMouseOver != mouseOver)
+                    }
+                    /*
+                    Swift.print(String(format: "%@ exited",
+                                       (theEvent.trackingNumber == titleTrackingTag
+                                        ? "title" : "view")))*/
                 }
             }
-            else
-            if theEvent.trackingNumber == viewTrackingTag {
-                if location.x >= 0.0 && location.x <= (vSize?.width)! && location.y > (vSize?.height)! {
-                    return
-                }
-            }
-            var lastMouseOver = mouseOver
-            mouseOver = false
-            updateTranslucency()
-            
-            if ((titleView?.hitTest(theEvent.locationInWindow)) != nil) ||
-                ((self.window?.contentView?.hitTest(theEvent.locationInWindow)) != nil) {
-                //Swift.print("still here")
-                lastMouseOver = true
-                mouseOver = true
-            }
-            if hideTitle {
-                updateTitleBar(didChange: lastMouseOver != mouseOver)
-            }
-            /*
-            Swift.print(String(format: "%@ exited",
-                               (theEvent.trackingNumber == titleTrackingTag
-                                ? "title" : "view")))*/
         }
     }
     
@@ -387,26 +398,29 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
-        panel.ignoresMouseEvents = true
+        guard let vindow = sender as? NSWindow,
+            let wvc = vindow.contentViewController as? WebViewController,
+            let wpc = vindow.windowController as? HeliumPanelController,
+            let webView = wvc.webView else { return false }
         
-        self.setupTrackingAreas(false)
+        vindow.ignoresMouseEvents = true
+        wpc.setupTrackingAreas(false)
         
         //  Halt anything in progress
-        if let wvc: WebViewController = self.contentViewController as? WebViewController,  let webView = wvc.webView {
-            let delegate = webView.navigationDelegate as! NSObject
+        let delegate = webView.navigationDelegate as! NSObject
+        assert(delegate == wvc, "webView delegate mismatch")
 
-            //  Stop whatever is going on by brute force
-            webView.stopLoading()
-            webView.load(URLRequest.init(url: URL.init(string: "about:blank")!))
-            
-            //  Remove view tracking, observations
-            webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
-            webView.removeObserver(delegate, forKeyPath: "title")
-            NotificationCenter.default.removeObserver(delegate)
+        //  Stop whatever is going on by brute force
+        webView.stopLoading()
+        webView.load(URLRequest.init(url: URL.init(string: "about:blank")!))
+        
+        //  Remove view tracking, observations
+        webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
+        webView.removeObserver(delegate, forKeyPath: "title")
+        NotificationCenter.default.removeObserver(delegate)
 
-            //  Propagate to super after removal
-            wvc.setupTrackingAreas(false)
-       }
+        //  Propagate to super after removal
+        wvc.setupTrackingAreas(false)
         
         // Wind down all observations
         NotificationCenter.default.removeObserver(self)

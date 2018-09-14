@@ -22,6 +22,7 @@ struct k {
     static let time = "time"
     static let rank = "rank"
     static let rect = "rect"
+    static let runs = "runs"
     static let label = "label"
     static let hover = "hover"
     static let alpha = "alpha"
@@ -242,6 +243,7 @@ class PlayItem : NSObject, NSCoding {
     var date : TimeInterval
     var rank : Int
     var rect : NSRect
+    var runs : Int
     var label: Bool
     var hover: Bool
     var alpha: Float
@@ -262,6 +264,7 @@ class PlayItem : NSObject, NSCoding {
         date = Date().timeIntervalSinceReferenceDate
         rank = 0
         rect = NSZeroRect
+        runs = 0
         label = false
         hover = false
         alpha = 0.6
@@ -278,19 +281,21 @@ class PlayItem : NSObject, NSCoding {
         self.time = time
         self.rank = rank
         self.rect = NSZeroRect
+        self.runs = 0
         self.label = false
         self.hover = false
         self.alpha = 0.6
         self.trans = 0
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, label:Bool, hover:Bool, alpha:Float, trans: Int) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, runs:Int, label:Bool, hover:Bool, alpha:Float, trans: Int) {
         self.name = name
         self.link = link
         self.date = date
         self.time = time
         self.rank = rank
         self.rect = rect
+        self.runs = runs
         self.label = label
         self.hover = hover
         self.alpha = alpha
@@ -305,6 +310,7 @@ class PlayItem : NSObject, NSCoding {
         self.time  = (plist[k.time] as AnyObject).doubleValue ?? 0.0
         self.rank  = (plist[k.rank] as AnyObject).intValue ?? 0
         self.rect  = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
+        self.runs  = (plist[k.runs] as AnyObject).intValue ?? 0
         self.label = (plist[k.label] as AnyObject).boolValue ?? false
         self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
         self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
@@ -322,12 +328,13 @@ class PlayItem : NSObject, NSCoding {
         let time = coder.decodeDouble(forKey: k.time)
         let rank = coder.decodeInteger(forKey: k.rank)
         let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
+        let runs = coder.decodeInteger(forKey: k.runs)
         let label = coder.decodeBool(forKey: k.label)
         let hover = coder.decodeBool(forKey: k.hover)
         let alpha = coder.decodeFloat(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
         self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
-                  label: label, hover: hover, alpha: alpha, trans: trans)
+                  runs: runs, label: label, hover: hover, alpha: alpha, trans: trans)
     }
     
     func encode(with coder: NSCoder) {
@@ -337,6 +344,7 @@ class PlayItem : NSObject, NSCoding {
         coder.encode(time, forKey: k.time)
         coder.encode(rank, forKey: k.rank)
         coder.encode(NSStringFromRect(rect), forKey: k.rect)
+        coder.encode(runs, forKey: k.runs)
         coder.encode(label, forKey: k.label)
         coder.encode(hover, forKey: k.hover)
         coder.encode(alpha, forKey: k.alpha)
@@ -349,8 +357,10 @@ class PlayItem : NSObject, NSCoding {
         dict[k.link] = link.absoluteString
         dict[k.date] = date
         dict[k.time] = time
+        dict[k.runs] = runs
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
+        dict[k.runs] = runs
         dict[k.label] = label ? 1 : 0
         dict[k.hover] = hover ? 1 : 0
         dict[k.alpha] = alpha
@@ -404,6 +414,7 @@ internal struct Settings {
     let date = Setup<TimeInterval>("date", value: Date().timeIntervalSinceReferenceDate)
     let time = Setup<TimeInterval>("time", value: 0.0)
     let rect = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
+    let runs = Setup<Int>("runs", value: 0)
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -451,6 +462,7 @@ class Document : NSDocument {
         dict[k.time] = settings.time.value
         dict[k.rank] = settings.rank.value
         dict[k.rect] = NSStringFromRect(settings.rect.value)
+        dict[k.runs] = settings.runs.value
         dict[k.label] = settings.autoHideTitle.value
         dict[k.hover] = settings.disabledFullScreenFloat.value
         dict[k.alpha] = settings.opacityPercentage.value
@@ -466,6 +478,7 @@ class Document : NSDocument {
         item.time = self.settings.time.value
         item.rank = self.settings.rank.value
         item.rect = self.settings.rect.value
+        item.runs = self.settings.runs.value
         item.label = self.settings.autoHideTitle.value
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = Float(self.settings.opacityPercentage.value)
@@ -481,6 +494,7 @@ class Document : NSDocument {
         self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
         self.settings.rank.value = (plist[k.rank] as AnyObject).intValue ?? 0
         self.settings.rect.value = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
+        self.settings.runs.value = (plist[k.runs] as AnyObject).intValue ?? 0
         self.settings.autoHideTitle.value = (plist[k.label] as AnyObject).boolValue ?? false
         self.settings.disabledFullScreenFloat.value = (plist[k.hover] as AnyObject).boolValue ?? false
         self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
