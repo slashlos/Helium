@@ -28,12 +28,18 @@ static NSString * LoginAutoStartAtLaunchKeypath = @"loginAutoStartAtLaunch";
 	[preferenceWindow makeKeyAndOrderFront:sender];
 }
 
+- (IBAction)cancel:(id)sender {
+	[preferenceWindow performClose:sender];
+	[NSApp terminate:self];
+}
+
 - (IBAction)setPreferences:(id)sender
 {
 	NSUserDefaults * prefs = [NSUserDefaults standardUserDefaults];
 	
 	[prefs setBool:loginAutoStartAtLaunch forKey:LoginAutoStartAtLaunchKeypath];
 	[prefs synchronize];
+	[self cancel:sender];
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
@@ -45,8 +51,6 @@ static NSString * LoginAutoStartAtLaunchKeypath = @"loginAutoStartAtLaunch";
 
 - (BOOL)windowShouldClose:(NSWindow *)sender
 {
-	[NSApp terminate:self];
-	
 	return YES;
 }
 
@@ -70,6 +74,7 @@ static NSString * LoginAutoStartAtLaunchKeypath = @"loginAutoStartAtLaunch";
 	}
 
 	//	View/window defining Helium autostart preference via XHelium.
+	[preferenceWindow makeKeyAndOrderFront:self];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
