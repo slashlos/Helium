@@ -411,13 +411,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         assert(delegate == wvc, "webView delegate mismatch")
 
         //  Stop whatever is going on by brute force
-        webView.stopLoading()
-        webView.load(URLRequest.init(url: URL.init(string: "about:blank")!))
-        
-        //  Remove view tracking, observations
-        webView.removeObserver(delegate, forKeyPath: "estimatedProgress")
-        webView.removeObserver(delegate, forKeyPath: "title")
-        NotificationCenter.default.removeObserver(delegate)
+        (panel.contentViewController as! WebViewController).viewWillDisappear()
 
         //  Propagate to super after removal
         wvc.setupTrackingAreas(false)

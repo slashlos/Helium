@@ -617,9 +617,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case k.bingName, k.googleName, k.yahooName:
                 let group = menuItem.tag / 100
                 let index = (menuItem.tag - (group * 100)) % 3
-                let key = String(format: "search%d", group)
                 
-                menuItem.state = UserDefaults.standard.value(forKey: key) as! Int == index ? NSOnState : NSOffState
+                menuItem.state = UserSettings.Search.value == index ? NSOnState : NSOffState
                 break
 
             case "Preferences":
@@ -747,6 +746,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NotificationCenter.default.post(notif)
         }
     }
+    var commandKeyDown : Bool = false {
+        didSet {
+            let notif = Notification(name: Notification.Name(rawValue: "commandKeyDown"),
+                                     object: NSNumber(booleanLiteral: commandKeyDown))
+            NotificationCenter.default.post(notif)
+        }
+    }
 
     func keyDownMonitor(event: NSEvent) -> Bool {
         switch event.modifierFlags.intersection(.deviceIndependentFlagsMask) {
@@ -798,9 +804,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 //            Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
             return true
             
+        case [.command]:
+            self.commandKeyDown = true
+            return true
+            
         default:
             //let wasDown = shiftKeyDown
-            self.shiftKeyDown = false/*
+            self.shiftKeyDown = false
+            self.commandKeyDown = false/*
             if wasDown {
                 Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
             }*/

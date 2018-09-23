@@ -87,6 +87,18 @@ class MyWebView : WKWebView {
             appDelegate.openURLInNewWindow(url)
         }
     }
+    
+    override var mouseDownCanMoveWindow: Bool {
+        get {
+            if let window = self.window {
+                return window.isMovableByWindowBackground
+            }
+            else
+            {
+                return false
+            }
+        }
+    }
 /*
     override func load(_ request: URLRequest) -> WKNavigation? {
         Swift.print("we got \(request)")
@@ -570,6 +582,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         // Listen for load progress
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: .new, context: nil)
         webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
+        observing = true
+        
+        //    Watch command key changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(WebViewController.commandKeyDown(_:)),
+            name: NSNotification.Name(rawValue: "commandKeyDown"),
+            object: nil)
 
         //  Intercept Finder drags
         webView.register(forDraggedTypes: [NSURLPboardType])
@@ -590,6 +610,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+    dynamic var observing : Bool = false
     
     func setupTrackingAreas(_ establish: Bool) {
         if let tag = trackingTag {
@@ -611,6 +632,21 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         setupTrackingAreas(true)
     }
+    
+    override func viewWillDisappear() {
+        let navDelegate = webView.navigationDelegate as! NSObject
+        
+        //  Halt anything in progress
+        webView.stopLoading()
+        webView.loadHTMLString("about:blank", baseURL: nil)
+        
+        // Wind down all observations
+        if observing {
+            webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
+            webView.removeObserver(navDelegate, forKeyPath: "title")
+            observing = false
+        }
+    }
 
     // MARK: Actions
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
@@ -630,6 +666,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @IBAction func forwardPress(_ sender: AnyObject) {
         webView.goForward()
+    }
+    
+    internal func commandKeyDown(_ notification : Notification) {
+        let commandKeyDown : NSNumber = notification.object as! NSNumber
+        if let window = self.view.window {
+            window.isMovableByWindowBackground = commandKeyDown.boolValue
+            Swift.print(String(format: "command %@", commandKeyDown.boolValue ? "v" : "^"))
+        }
     }
     
     fileprivate func zoomIn() {
@@ -793,13 +837,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     fileprivate func requestedReload() {
         webView.reload()
     }
-    
-    fileprivate func shiftKeyDown(_ note: Notification) {
-        webView.willChangeValue(forKey: "mouseDownCanMoveWindow")
-        ;
-        webView.didChangeValue(forKey: "mouseDownCanMoveWindow")
-    }
-    
+        
     // MARK: Javascript
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
