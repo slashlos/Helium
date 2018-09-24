@@ -377,8 +377,14 @@ class MyWebView : WKWebView {
         item.target = wvc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "n")
         item.target = appDelegate
+        subOpen.addItem(item)
+        
+        item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "N")
+        item.target = appDelegate
+        item.isAlternate = true
+        item.tag = 1
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")
@@ -518,7 +524,7 @@ class MyWebView : WKWebView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
+class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate {
 
     var trackingTag: NSTrackingRectTag? {
         get {
@@ -668,11 +674,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.goForward()
     }
     
-    internal func commandKeyDown(_ notification : Notification) {
+    @objc internal func commandKeyDown(_ notification : Notification) {
         let commandKeyDown : NSNumber = notification.object as! NSNumber
         if let window = self.view.window {
             window.isMovableByWindowBackground = commandKeyDown.boolValue
-            Swift.print(String(format: "command %@", commandKeyDown.boolValue ? "v" : "^"))
+//            Swift.print(String(format: "CMND %@", commandKeyDown.boolValue ? "v" : "^"))
         }
     }
     
@@ -837,7 +843,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     fileprivate func requestedReload() {
         webView.reload()
     }
-        
+    
     // MARK: Javascript
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -1065,7 +1071,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
         return hash
     }
-
+    
     // MARK: Navigation Delegate
 
     // Redirect Hulu and YouTube to pop-out videos

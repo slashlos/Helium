@@ -303,7 +303,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Close down any observations before closure
         window.delegate = wc as? NSWindowDelegate
         doc.settings.rect.value = window.frame
-        window.makeKeyAndOrderFront(sender)
+        
+        //  SHIFT key down creates new tabs as tag=1
+        if ((NSApp.currentEvent?.modifierFlags.contains(.shift))! || (sender as! NSMenuItem).tag == 1), let keyWindow = NSApp.keyWindow {
+            keyWindow.addTabbedWindow(window, ordered: .below)
+        }
+        else
+        {
+            window.makeKeyAndOrderFront(sender)
+        }
     }
     
 
@@ -742,7 +750,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var shiftKeyDown : Bool = false {
         didSet {
             let notif = Notification(name: Notification.Name(rawValue: "shiftKeyDown"),
-                                     object: shiftKeyDown);
+                                     object: NSNumber(booleanLiteral: shiftKeyDown));
             NotificationCenter.default.post(notif)
         }
     }
@@ -801,7 +809,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             
         case [.shift]:
             self.shiftKeyDown = true
-//            Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
             return true
             
         case [.command]:
@@ -809,12 +816,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return true
             
         default:
-            //let wasDown = shiftKeyDown
-            self.shiftKeyDown = false
-            self.commandKeyDown = false/*
-            if wasDown {
-                Swift.print(String(format: "shift %@", shiftKeyDown ? "v" : "^"))
-            }*/
+            //  Only clear when true
+            if shiftKeyDown { self.shiftKeyDown = false }
+            if commandKeyDown { self.commandKeyDown = false }
             return false
         }
     }
@@ -946,8 +950,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         item.target = self
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "n")
+        item.isAlternate = true
         item.target = self
+        subOpen.addItem(item)
+
+        item = NSMenuItem(title: "Tab", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "N")
+        item.isAlternate = true
+        item.target = self
+        item.tag = 1
         subOpen.addItem(item)
         return menu
     }

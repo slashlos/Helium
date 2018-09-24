@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13196"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="13196"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14113"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
         <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
@@ -317,6 +317,11 @@
                                                             <action selector="newDocument:" target="Ady-hI-5gd" id="uDc-Ar-nDl"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="N" id="ecy-NE-bhE">
+                                                        <connections>
+                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="Zkh-NM-r2c"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
                                                     <menuItem title="Recent" id="ijm-7H-tnN">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -618,10 +623,14 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Window" id="VKa-yC-mZQ">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                    <menuItem title="Window" keyEquivalent="n" id="VKa-yC-mZQ">
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="KUx-Wv-qtD"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="N" id="Zfp-kU-JpI">
+                                        <connections>
+                                            <action selector="newDocument:" target="Ady-hI-5gd" id="dsw-vr-9iN"/>
                                         </connections>
                                     </menuItem>
                                 </items>
