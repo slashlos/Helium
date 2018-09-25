@@ -397,6 +397,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         updateTranslucency()
     }
     
+    func windowDidResize(_ notification: Notification) {
+        guard let vindow = notification.object as? NSWindow,
+            let wpc = vindow.windowController as? HeliumPanelController else { return }
+        
+        wpc.setupTrackingAreas(true)
+        wpc.updateTranslucency()
+    }
+    
     func windowShouldClose(_ sender: Any) -> Bool {
         guard let vindow = sender as? NSWindow,
             let wvc = vindow.contentViewController as? WebViewController,
