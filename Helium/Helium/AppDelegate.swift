@@ -950,12 +950,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         item.target = self
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "n")
+        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
         item.isAlternate = true
         item.target = self
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Tab", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "N")
+        item = NSMenuItem(title: "Tab", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .shift
         item.isAlternate = true
         item.target = self
         item.tag = 1

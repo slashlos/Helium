@@ -377,11 +377,12 @@ class MyWebView : WKWebView {
         item.target = wvc
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "n")
+        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "N")
+        item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .shift
         item.target = appDelegate
         item.isAlternate = true
         item.tag = 1

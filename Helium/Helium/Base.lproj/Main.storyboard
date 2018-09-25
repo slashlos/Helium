@@ -623,12 +623,14 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Window" keyEquivalent="n" id="VKa-yC-mZQ">
+                                    <menuItem title="Window" id="VKa-yC-mZQ">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="KUx-Wv-qtD"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="N" id="Zfp-kU-JpI">
+                                    <menuItem title="Tab" tag="1" alternate="YES" id="Zfp-kU-JpI">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="dsw-vr-9iN"/>
                                         </connections>
