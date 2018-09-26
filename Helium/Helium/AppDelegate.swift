@@ -305,7 +305,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         doc.settings.rect.value = window.frame
         
         //  SHIFT key down creates new tabs as tag=1
-        if ((NSApp.currentEvent?.modifierFlags.contains(.shift))! || (sender as! NSMenuItem).tag == 1), let keyWindow = NSApp.keyWindow {
+        if ((NSApp.currentEvent?.modifierFlags.contains(.shift))! || (sender as! NSMenuItem).tag == 1), let keyWindow = NSApp.keyWindow,
+            !(keyWindow.contentViewController?.isKind(of: AboutBoxController.self))! {
             keyWindow.addTabbedWindow(window, ordered: .below)
         }
         else
