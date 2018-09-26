@@ -22,6 +22,29 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 3501</h2>
+<p class="block">
+8a07520|18/09/25 cannot add tabs to about window<br>
+7c81588|18/09/25 watch resize to adjust tracking area<br>
+eeee58f|18/09/25 no key equivalents for contextual menu<br>
+a0dd187|18/09/24 key modifier changes supporting tab windows<br>
+76cb23b|18/09/23 use command not shift to move by content<br>
+8cda6fc|18/09/13 capture Helium.js as asset Helium-js<br>
+87250e8|18/09/13 XHelium updates<br>
+da06212|18/09/13 osx 10.12 fixes; play item additions<br>
+ba0e6d8|18/09/13 cache playlist windows<br>
+452bbe4|18/09/13 fix menu item create windows state<br>
+683aafd|18/09/13 embed javascript as string asset Helium-js<br>
+da15bf7|18/09/13 osx 10.12 swift conditonals<br>
+fe59235|18/09/13 fix searches array of String binding<br>
+0bfd15f|18/09/03 notice login auto start<br>
+fbe3ee8|18/09/03 XHelium login auto start utility<br>
+c1b371d|18/08/31 force activation on windowless file open(s)<br>
+044e279|18/08/31 fixes re: multi-file open support<br>
+d74ccca|18/08/31 fixes re: release notes window icon, naming<br>
+7c33962|18/08/31 added new windows option for contextual open<br>
+</p>
+
 <h2>Build 3373</h2>
 <p class="block">
 fcd0e00|18/08/31 icon updates re: affects<br>

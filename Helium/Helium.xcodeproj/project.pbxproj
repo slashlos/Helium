@@ -219,6 +219,7 @@
 			isa = PBXGroup;
 			children = (
 				0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */,
+				0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */,
 				4D867CB61AD6781200681331 /* AppDelegate.swift */,
 				0F10354A1F0300DA00327B30 /* Helium.swift */,
 				0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */,
@@ -229,7 +230,6 @@
 				4DEAB8FE1ADBD98600A2FC2B /* WKWebViewPrivate.h */,
 				4D867CBA1AD6781200681331 /* Images.xcassets */,
 				4D867CBC1AD6781200681331 /* Main.storyboard */,
-				0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */,
 				4D867CB41AD6781200681331 /* Supporting Files */,
 				4DEAB8FD1ADBD98600A2FC2B /* Helium-Bridging-Header.h */,
 				B34C1EC71ADE3CCA0094ADBA /* Resources */,
