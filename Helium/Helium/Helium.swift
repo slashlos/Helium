@@ -587,8 +587,16 @@ class Document : NSDocument {
     }
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
-        self.fileType = url.pathExtension
-        self.fileURL = url
+        
+        //  Read webloc url contents
+        if url.path.hasSuffix("webloc"), let webURL = url.webloc {
+            fileURL = webURL
+        }
+        else
+        {
+            fileURL = url
+        }
+        self.fileType = fileURL?.pathExtension
         
         //  Record url and type, caller will load via notification
         do {
@@ -600,7 +608,7 @@ class Document : NSDocument {
             
             if let hwc = self.windowControllers.first {
                 hwc.window?.orderFront(self)
-                (hwc.contentViewController as! WebViewController).loadURL(url: url)
+                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL!)
             }
         }
     }

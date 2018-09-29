@@ -200,3 +200,21 @@ extension UrlHelpers.Magic {
         return false
     }
 }
+
+//  read back webloc contents
+extension URL {
+    var webloc : URL? {
+        get {
+            do {
+                let data = try Data.init(contentsOf: self) as Data
+                let dict = try! PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
+                let urlString = dict["URL"] as! String
+                return URL.init(string: urlString)
+            }
+            catch
+            {
+                return nil
+            }
+        }
+    }
+}
