@@ -39,6 +39,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         closeButtonImage = closeButton?.image
         setupTrackingAreas(true)
 
+        //  Default to no dragging by content
+        panel.isMovableByWindowBackground = false
+        
         panel.standardWindowButton(.closeButton)?.image = nullImage
         panel.isFloatingPanel = true
         
