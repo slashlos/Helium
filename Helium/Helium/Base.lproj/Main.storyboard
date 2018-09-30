@@ -372,7 +372,7 @@ CA
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="fCx-MI-3W9"/>
-                                        <menuItem title="Search…" keyEquivalent="?" id="OfQ-sB-vjX">
+                                        <menuItem title="Search…" id="OfQ-sB-vjX">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="openSearchPress:" target="Voe-Tx-rLC" id="ULN-mA-ikl"/>
@@ -572,7 +572,8 @@ CA
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Help" systemMenu="help" id="F2S-fz-NVQ">
                                     <items>
-                                        <menuItem title="Helium Help" keyEquivalent="?" id="FKE-Sm-Kum">
+                                        <menuItem title="Helium Help" id="FKE-Sm-Kum">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="showHelp:" target="Ady-hI-5gd" id="y7X-2Q-9no"/>
                                             </connections>
@@ -750,7 +751,7 @@ CA
                                 </items>
                             </menu>
                         </menuItem>
-                        <menuItem title="Search…" keyEquivalent="?" id="H50-eU-quB">
+                        <menuItem title="Search…" id="H50-eU-quB">
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="openSearchPress:" target="Ady-hI-5gd" id="EfB-1z-b8h"/>

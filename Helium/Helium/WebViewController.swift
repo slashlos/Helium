@@ -52,23 +52,6 @@ class MyWebView : WKWebView {
 
         publishApplicationMenu(menu);
     }
-
-    override func keyDown(with event: NSEvent) {
-        if event.keyCode == UInt16(kVK_Escape) {
-            //  We crash otherwise, so just close window
-            self.window?.performClose(event)
-        }
-        else
-        if let chr = event.charactersIgnoringModifiers, chr.starts(with: "?")
-        {
-            (self.window?.contentViewController as! WebViewController).openSearchPress(event)
-        }
-        else
-        {
-            // still here?
-            super.keyDown(with: event)
-        }
-    }
     
     func openLinkInWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
