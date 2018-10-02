@@ -488,7 +488,7 @@ class Document : NSDocument {
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
         let plist = dictionary as NSDictionary
-        self.displayName = dictionary[k.name] as! String
+        self.displayName = dictionary[k.name] as? String
         self.fileURL = URL.init(string: plist[k.link] as! String)!
         self.settings.date.value = (plist[k.date] as AnyObject).timeInterval ?? 0.0
         self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
