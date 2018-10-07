@@ -22,6 +22,15 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 3595</h2>
+<p class="block">
+6572410|18/10/07 Helium-dmg target added<br>
+0f16ce8|18/10/02 fix downcast as suggested<br>
+1faff70|18/09/30 initially clear drag move by background<br>
+3dbcf54|18/09/30 remove %? search key equivalent<br>
+9634fb5|18/09/29 handle webloc documents<br>
+</p>
+
 <h2>Build 3501</h2>
 <p class="block">
 8a07520|18/09/25 cannot add tabs to about window<br>
