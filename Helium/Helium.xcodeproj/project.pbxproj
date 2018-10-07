@@ -42,6 +42,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0F1D80FA216A753800C4277C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D867CA91AD6781200681331 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D867CB01AD6781200681331;
+			remoteInfo = Helium;
+		};
 		27199ABC1BE422AC00E02297 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4D867CA91AD6781200681331 /* Project object */;
@@ -59,6 +66,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		0F60517021612E470008977E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		0F9AB2FF213C41E10096C19F /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -86,6 +102,7 @@
 		0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutHelium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F10354A1F0300DA00327B30 /* Helium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F51973F2002CD0B0090C431 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Help; path = ../../Help; sourceTree = "<group>"; };
+		0F60517221612E470008977E /* Helium-dmg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Helium-dmg"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
 		0F9AB2ED213C3E7A0096C19F /* XHelium.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XHelium.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F9AB2EF213C3E7A0096C19F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -127,6 +144,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0F60516F21612E470008977E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0F9AB2EA213C3E7A0096C19F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -158,6 +182,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0F60517321612E470008977E /* Helium-dmg */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "Helium-dmg";
+			sourceTree = "<group>";
+		};
 		0F9AB2EE213C3E7A0096C19F /* XHelium */ = {
 			isa = PBXGroup;
 			children = (
@@ -200,6 +231,7 @@
 				4D8DAEB01C3A427D00B212EC /* HeliumTests */,
 				27199AB11BE422AC00E02297 /* HeliumShareExtension */,
 				0F9AB2EE213C3E7A0096C19F /* XHelium */,
+				0F60517321612E470008977E /* Helium-dmg */,
 				4D867CB21AD6781200681331 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -211,6 +243,7 @@
 				4D867CC31AD6781200681331 /* HeliumTests.xctest */,
 				27199AB01BE422AC00E02297 /* HeliumShareExtension.appex */,
 				0F9AB2ED213C3E7A0096C19F /* XHelium.app */,
+				0F60517221612E470008977E /* Helium-dmg */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -281,6 +314,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0F60517121612E470008977E /* Helium-dmg */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F60517821612E470008977E /* Build configuration list for PBXNativeTarget "Helium-dmg" */;
+			buildPhases = (
+				0F60516E21612E470008977E /* Sources */,
+				0F60516F21612E470008977E /* Frameworks */,
+				0F60517021612E470008977E /* CopyFiles */,
+				0F60517C216130840008977E /* Build DMG */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0F1D80FB216A753800C4277C /* PBXTargetDependency */,
+			);
+			name = "Helium-dmg";
+			productName = "Helium-dmg";
+			productReference = 0F60517221612E470008977E /* Helium-dmg */;
+			productType = "com.apple.product-type.tool";
+		};
 		0F9AB2EC213C3E7A0096C19F /* XHelium */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0F9AB2FD213C3E7B0096C19F /* Build configuration list for PBXNativeTarget "XHelium" */;
@@ -363,8 +415,12 @@
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0720;
 				LastUpgradeCheck = 0920;
-				ORGANIZATIONNAME = "Jaden Geller";
+				ORGANIZATIONNAME = "Carlos Santiaog";
 				TargetAttributes = {
+					0F60517121612E470008977E = {
+						CreatedOnToolsVersion = 9.4.1;
+						ProvisioningStyle = Automatic;
+					};
 					0F9AB2EC213C3E7A0096C19F = {
 						CreatedOnToolsVersion = 9.4.1;
 						DevelopmentTeam = VQYGYPHYGE;
@@ -418,6 +474,7 @@
 				4D867CC21AD6781200681331 /* HeliumTests */,
 				27199AAF1BE422AC00E02297 /* HeliumShareExtension */,
 				0F9AB2EC213C3E7A0096C19F /* XHelium */,
+				0F60517121612E470008977E /* Helium-dmg */,
 			);
 		};
 /* End PBXProject section */
@@ -477,11 +534,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\necho `wc $buildPlist` > ~/f.f\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber\nbuildNumber=$(($buildNumber + 1))\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor\n#no minor yet; .$buildMinor\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
+			shellScript = "set -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber\nbuildNumber=$(($buildNumber + 1))\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor\n#no minor yet; .$buildMinor\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
+		};
+		0F60517C216130840008977E /* Build DMG */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build DMG";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -x\nexport |sort>~/Desktop/env.txt\n\nbuildPlist=\"${PROJECT}/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\ndmgName=\"${PROJECT}-$buildMajor.$buildMinor.$buildNumber\"; export dmgName\ndmgFile=\"/users/${USER}/Desktop/$dmgName.dmg\"; export dmgFile\ntest -f $dmgFile && rm $dmgFile\nappPath=`find $SYMROOT -name $PROJECT.app -print`; export appPath\n\n### ~/GitHub/create-dmg/create-dmg --window-size 500 300 --background \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\" --icon-size 96 --volname \"${dmgName}\" --app-drop-link 380 205 --icon ${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns 110 205 ${dmgFile} ${appPath}/\n\ntmp=\"/tmp/helium$$.json\"\ncat > $tmp << EOF\n{\n    \"title\": \"$dmgName\",\n    \"icon-size\" : 96,\n    \"icon\": \"${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns\",\n    \"background\": \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\",\n    \"contents\": [\n        { \"x\": 400, \"y\": 200, \"type\": \"link\", \"path\": \"/Applications\" },\n        { \"x\": 100, \"y\": 200, \"type\": \"file\", \"path\": \"$appPath\" }\n    ]\n}\nEOF\nappdmg ${tmp} ${dmgFile}\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0F60516E21612E470008977E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0F9AB2E9213C3E7A0096C19F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -532,6 +610,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		0F1D80FB216A753800C4277C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D867CB01AD6781200681331 /* Helium */;
+			targetProxy = 0F1D80FA216A753800C4277C /* PBXContainerItemProxy */;
+		};
 		27199ABD1BE422AC00E02297 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 27199AAF1BE422AC00E02297 /* HeliumShareExtension */;
@@ -572,6 +655,44 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0F60517621612E470008977E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		0F60517721612E470008977E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		0F9AB2FB213C3E7B0096C19F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -587,6 +708,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = XHelium/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -614,6 +736,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = XHelium/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -634,6 +757,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = HeliumShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
@@ -656,6 +780,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = HeliumShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
@@ -784,6 +909,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Helium",
@@ -814,6 +940,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Helium",
@@ -890,6 +1017,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0F60517821612E470008977E /* Build configuration list for PBXNativeTarget "Helium-dmg" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F60517621612E470008977E /* Debug */,
+				0F60517721612E470008977E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0F9AB2FD213C3E7B0096C19F /* Build configuration list for PBXNativeTarget "XHelium" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
