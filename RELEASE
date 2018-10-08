@@ -22,8 +22,10 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
-<h2>Build 3595</h2>
+<h2>Build 3599</h2>
 <p class="block">
+f9b287e|18/10/08 conditionally increment build before compilation<br>
+9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
 6572410|18/10/07 Helium-dmg target added<br>
 0f16ce8|18/10/02 fix downcast as suggested<br>
 1faff70|18/09/30 initially clear drag move by background<br>
