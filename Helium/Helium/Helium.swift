@@ -13,6 +13,7 @@ import QuickLook
 struct k {
     static let Playlists = "playlists"
     static let Playitems = "playitems"
+    static let Settings = "settings"
     static let play = "play"
     static let item = "item"
     static let name = "name"
@@ -302,7 +303,12 @@ class PlayItem : NSObject, NSCoding {
         self.trans = trans
         super.init()
     }
-    init(with dictionary: Dictionary<String,Any>) {
+    convenience init(with dictionary: Dictionary<String,Any>) {
+        self.init()
+        self.update(with: dictionary)
+    }
+    
+    func update(with dictionary: Dictionary<String,Any>) {
         let plist  = dictionary as NSDictionary
         self.name  = plist[k.name] as! String
         self.link  = URL.init(string: plist[k.link] as! String)!
@@ -315,7 +321,6 @@ class PlayItem : NSObject, NSCoding {
         self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
         self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
         self.trans = (plist[k.trans] as AnyObject).intValue ?? 0
-        super.init()
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
@@ -453,7 +458,12 @@ class Document : NSDocument {
 
     var settings: Settings
     var docType : Int
-    
+    var viewURL : URL? {
+        get {
+            return self.fileURL
+        }
+    }
+
     func dictionary() -> Dictionary<String,Any> {
         var dict: Dictionary<String,Any> = Dictionary()
         dict[k.name] = self.displayName
@@ -515,17 +525,49 @@ class Document : NSDocument {
     }
     
     func update(to url: URL) {
-        if url.lastPathComponent == "h3w", let dict = NSDictionary(contentsOf: url) {
-            if let item = dict.value(forKey: "settings") {
+        if url.pathExtension == "h3w", let dict = NSDictionary(contentsOf: url) {
+            if let item = dict.value(forKey: k.Settings) {
                 self.restoreSettings(with: item as! Dictionary<String,Any> )
             }
+            
+            if let plays = dict.value(forKey: k.Playlists) {
+                Swift.print("plays \(plays)")
+            }
+            
+            if let items = dict.value(forKey: k.Playitems) {
+                Swift.print("items \(items)")
+            }
         }
+        let lists = UserDefaults.standard.dictionary(forKey: k.Playitems) ?? NSDictionary.init() as! [String : Any]
+
         self.fileType = url.pathExtension
         self.fileURL = url
         self.docType = 0
+        
+        if let dict = lists[(url.absoluteString)] {
+            let item = PlayItem.init(with: dict as! Dictionary<String, Any>)
+            
+            if item.rect != NSZeroRect {
+                self.setOrigin(to: item.rect.origin)
+                self.setSize(to: item.rect.size)
+             }
+        }
         self.save(self)
     }
-    
+    func setOrigin(to point: NSPoint) {
+        self.settings.rect.value.origin = point
+
+        if let window = self.windowControllers.first?.window {
+            window.setFrameOrigin(point)
+        }
+    }
+    func setSize(to size: NSSize) {
+        self.settings.rect.value.size = size
+        
+        if let window = self.windowControllers.first?.window {
+            window.setContentSize(size)
+        }
+    }
     func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
         self.update(to: item.link)
