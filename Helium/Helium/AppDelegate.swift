@@ -215,7 +215,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var openForBusiness = false
     
 	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
-        UserSettings.createNewWindows.value = (sender.state == NSOnState)
+        UserSettings.createNewWindows.value = (sender.state == NSOnState ? false : true)
     }
     
     var fullScreen : NSRect? = nil
