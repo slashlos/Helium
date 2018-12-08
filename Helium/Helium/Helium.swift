@@ -28,6 +28,8 @@ struct k {
     static let hover = "hover"
     static let alpha = "alpha"
     static let trans = "trans"
+    static let view = "view"
+    static let fini = "finish"
     static let vers = "vers"
     static let data = "data"
     static let TitleUtility: CGFloat = 16.0

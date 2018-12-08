@@ -913,7 +913,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 if percent == 100, let url = (self.webView.url) {
 
                     //  Initial recording of for this url session
-                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : false, "webView" : self.webView])
+                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView])
                     NotificationCenter.default.post(notif)
 
                     // once loaded update window title,size with video name,dimension
