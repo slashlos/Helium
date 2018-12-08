@@ -992,8 +992,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             fileURL = testURL
         }
         else
-            if (itemURL as NSURL).isFileReferenceURL() {
-                fileURL = (itemURL as NSURL).filePathURL
+        if (itemURL as NSURL).isFileReferenceURL() {
+            fileURL = (itemURL as NSURL).filePathURL
         }
 
         //  If the title is already seen, update global and playlists
@@ -1026,7 +1026,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item.rank = histories.count
         }
         
-        if let runs = info[k.runs] {
+        if let runs = info[k.runs], (info[k.fini] as AnyObject).boolValue == true {
             item.runs += runs as! Int
         }
 
@@ -1037,7 +1037,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserDefaults.standard.synchronize()
         
         //  tell any playlist controller we have updated history
-        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewHistoryItem"), object: item)
+        let notif = Notification(name: Notification.Name(rawValue: k.item), object: item)
         NotificationCenter.default.post(notif)
     }
     

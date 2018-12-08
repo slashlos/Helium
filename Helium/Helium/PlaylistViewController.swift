@@ -243,7 +243,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(gotNewHistoryItem(_:)),
-                name: NSNotification.Name(rawValue: "HeliumNewHistoryItem"),
+                name: NSNotification.Name(rawValue: k.item),
                 object: nil)
         }
         else
