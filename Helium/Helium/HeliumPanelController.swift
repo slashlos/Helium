@@ -461,7 +461,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 docIconButton?.image = NSApp.applicationIconImage
             }
             docIconButton?.isHidden = false
-            if (self.webView.url?.isFileURL)! {
+            if let url = self.webView.url, url.isFileURL {
                 self.synchronizeWindowTitleWithDocumentName()
             }
         }
