@@ -501,18 +501,39 @@ class Document : NSDocument {
     }
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
-        let plist = dictionary as NSDictionary
-        self.displayName = dictionary[k.name] as? String
-        self.fileURL = URL.init(string: plist[k.link] as! String)!
-        self.settings.date.value = (plist[k.date] as AnyObject).timeInterval ?? 0.0
-        self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
-        self.settings.rank.value = (plist[k.rank] as AnyObject).intValue ?? 0
-        self.settings.rect.value = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
-        self.settings.runs.value = (plist[k.runs] as AnyObject).intValue ?? 0
-        self.settings.autoHideTitle.value = (plist[k.label] as AnyObject).boolValue ?? false
-        self.settings.disabledFullScreenFloat.value = (plist[k.hover] as AnyObject).boolValue ?? false
-        self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
-        self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: (plist[k.trans] as AnyObject).intValue ?? 0)!
+        if let name : String = dictionary[k.name] as? String, name != self.displayName {
+            self.displayName = name
+        }
+        if let link : URL = dictionary[k.link] as? URL, link != self.fileURL {
+            self.fileURL = link
+        }
+        if let date : TimeInterval = dictionary[k.date] as? TimeInterval, date != self.settings.date.value {
+            self.settings.date.value = date
+        }
+        if let time : TimeInterval = dictionary[k.time] as? TimeInterval, time != self.settings.time.value {
+            self.settings.time.value = time
+        }
+        if let rank : Int = dictionary[k.rank] as? Int, rank != self.settings.rank.value {
+            self.settings.rank.value = rank
+        }
+        if let rect = dictionary[k.rect] as? NSRect, rect != self.settings.rect.value {
+            self.settings.rect.value = rect
+        }
+        if let runs : Int = dictionary[k.runs] as? Int, runs != self.settings.runs.value {
+            self.settings.runs.value = runs
+        }
+        if let label : Bool = dictionary[k.label] as? Bool, label != self.settings.autoHideTitle.value  {
+            self.settings.autoHideTitle.value  = label
+        }
+        if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.settings.disabledFullScreenFloat.value {
+            self.settings.disabledFullScreenFloat.value = hover
+        }
+        if let alpha : Int = dictionary[k.alpha] as? Int, alpha != self.settings.opacityPercentage.value {
+            self.settings.opacityPercentage.value = alpha
+        }
+        if let trans : Int = dictionary[k.trans] as? Int, trans != self.settings.translucencyPreference.value.rawValue {
+            self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: trans)!
+        }
 
         if self.settings.time.value == 0.0 {
             let appDelegate = NSApp.delegate as! AppDelegate
