@@ -503,7 +503,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             return displayName
         }
     }
-    @objc fileprivate func setFloatOverFullScreenApps() {
+    @objc func setFloatOverFullScreenApps() {
         if settings.disabledFullScreenFloat.value {
             panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         } else {
@@ -528,7 +528,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
-    fileprivate func didUpdateAlpha(_ newAlpha: CGFloat) {
+    func didUpdateAlpha(_ newAlpha: CGFloat) {
         alpha = newAlpha / 100
     }
 }
