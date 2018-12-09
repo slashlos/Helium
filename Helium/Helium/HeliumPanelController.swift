@@ -283,7 +283,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     fileprivate var settings: Settings {
         get {
-            return doc!.settings
+            if let doc = self.doc {
+                return doc.settings
+            }
+            else
+            {
+                return Settings()
+            }
         }
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
