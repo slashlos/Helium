@@ -145,6 +145,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         return .copy
     }
     
+    func window(_ window: NSWindow, shouldDragDocumentWith event: NSEvent, from dragImageLocation: NSPoint, with pasteboard: NSPasteboard) -> Bool {
+        return true
+    }
+    
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         
