@@ -191,14 +191,17 @@ class MyWebView : WKWebView {
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
 
-        //  Open subsequent items in new windows
-        let createNewWindows = UserSettings.createNewWindows.value
-        
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
 
                 if let urlString = item.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/), !urlString.hasPrefix("file://") {
-                    self.text(urlString)
+                    if let webloc = urlString.webloc {
+                        self.next(url: webloc)
+                    }
+                    else
+                    {
+                        self.text(urlString)
+                    }
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeURL as String/*"public.url"*/) {
@@ -257,9 +260,6 @@ class MyWebView : WKWebView {
                     }
                     continue
                 }
-                if !UserSettings.createNewWindows.value {
-                    UserSettings.createNewWindows.value = true
-                }
             }
         }
         else
@@ -270,11 +270,14 @@ class MyWebView : WKWebView {
         else
         if ((pboard.types?.contains(kUTTypeUTF8PlainText as String))!) {
             if let urlString = pboard.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/) {
-                self.text(urlString)
+                if let webloc = urlString.webloc {
+                    self.next(url: webloc)
+                }
+                else
+                {
+                    self.text(urlString)
+                }
             }
-        }
-        if UserSettings.createNewWindows.value != createNewWindows {
-            UserSettings.createNewWindows.value = createNewWindows
         }
         return true
     }
@@ -535,6 +538,7 @@ class MyWebView : WKWebView {
 
 class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate {
 
+    var defaults = UserDefaults.standard
     var trackingTag: NSTrackingRectTag? {
         get {
             return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
@@ -952,10 +956,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                     Swift.print("os \(os)")
                                 }
                             }
-                            //  If we have save attributes restore them
-                            self.restoreSettings(title as String)
-
-
+                            
                             //  Wait for URL to finish
                             let videoPlayer = AVPlayer(url: url)
                             let item = videoPlayer.currentItem
@@ -1005,24 +1006,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     fileprivate func restoreSettings(_ title: String) {
-        if let playitems = UserDefaults.standard.dictionary(forKey: k.Playitems) {
-            if let playitem = playitems[title] as? PlayItem {
-                let hwc = self.view.window?.windowController as! HeliumPanelController
-                let doc = hwc.document as! Document
-                let rect = playitem.rect
-                webSize = rect.size
-                webView.window?.setContentSize(webSize)
-                webView.bounds.size = webSize
-                self.view.window?.setFrameOrigin(rect.origin)
-                doc.settings.autoHideTitle.value = playitem.label
-                hwc.updateTitleBar(didChange: false)
-                doc.settings.opacityPercentage.value = Int(playitem.alpha)
-                hwc.willUpdateAlpha()
-                doc.settings.disabledFullScreenFloat.value = playitem.hover
-                doc.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: playitem.trans)!
-                hwc.translucencyPreference = doc.settings.translucencyPreference.value
-                hwc.willUpdateTranslucency()
-            }
+        guard let dict = defaults.dictionary(forKey: title), let hwc = self.view.window?.windowController, let doc = hwc.document else
+        {
+            return
+        }
+        (doc as! Document).restoreSettings(with: dict)
+        
+        if let hwc : HeliumPanelController = hwc as? HeliumPanelController {
+            hwc.updateTitleBar(didChange: false)
+            hwc.willUpdateAlpha()
+            hwc.translucencyPreference = (doc as! Document).settings.translucencyPreference.value
+            hwc.willUpdateTranslucency()
         }
     }
     
@@ -1154,12 +1148,25 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
+        let hwc = webView.window?.windowController as? HeliumPanelController
+        let doc = hwc?.document as? Document
+        
         guard let url = webView.url else {
             return
         }
         
+        //  Restore setting not done by document controller
+        if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hwc = hwc {
+            doc.restoreSettings(with: dict)
+
+            hwc.updateTitleBar(didChange: false)
+            hwc.setFloatOverFullScreenApps()
+            hwc.willUpdateTranslucency()
+            hwc.willUpdateAlpha()
+        }
+        
         //  Finish recording of for this url session
-        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : true])
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
         NotificationCenter.default.post(notif)
         
         Swift.print("webView:didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
@@ -1172,7 +1179,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 </html>
 """
         webView.loadHTMLString(html, baseURL: nil)*/
-
     }
     
     func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {

@@ -1159,9 +1159,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     item = (doc as! Document).playitem()
                 }
                 else
-                if let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
-                    let playitem: PlayItem = lists[(fileURL?.absoluteString)!] as? PlayItem {
-                    item = playitem
+                if let dict = defaults.dictionary(forKey: (fileURL?.absoluteString)!) {
+                    item = PlayItem.init(with: dict)
                 }
                 else
                 {
@@ -1183,6 +1182,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                     link:URL.init(string: path)!,
                                     time:time,
                                     rank:(list.count > 0) ? (list.last?.rank)! + 1 : 1)
+                    defaults.set(item?.dictionary(), forKey: (item?.link.absoluteString)!) 
                 }
                 
                 //  Insert item at valid offset, else append
@@ -1251,9 +1251,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     } else { sandboxed += 1 }
                     
                     //  If item is in our playitems cache use it
-                    if let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
-                        let playitem: PlayItem = lists[(url?.absoluteString)!] as? PlayItem {
-                        item = playitem
+                    if let dict = defaults.dictionary(forKey: (url?.absoluteString)!) {
+                        item = PlayItem.init(with: dict)
                     }
                     else
                     {

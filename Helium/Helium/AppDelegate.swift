@@ -434,7 +434,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 		let index = (sender.tag - (group * 100)) % 3
 		let key = String(format: "search%d", group)
 
-		UserDefaults.standard.set(index as Any, forKey: key)
+		defaults.set(index as Any, forKey: key)
 //        Swift.print("\(key) -> \(index)")
 	}
 	
@@ -703,12 +703,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appStatusItem.image = NSImage.init(named: "statusIcon")
         appStatusItem.menu = appMenu
 
-        //  Prime user globals playitems dictionary
-        if UserDefaults.standard.dictionary(forKey: k.Playitems) == nil {
-            let playitems: Dictionary<String,AnyObject> = Dictionary()
-            UserDefaults.standard.set(playitems, forKey: k.Playitems)
-        }
-        
         //  Initialize our h:m:s transformer
         ValueTransformer.setValueTransformer(toHMS, forName: NSValueTransformerName(rawValue: "hmsTransformer"))
         
@@ -848,7 +842,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.global(qos: .utility).async {
 
             // Restore history name change
-            if let historyName = UserDefaults.standard.value(forKey: UserSettings.HistoryName.keyPath) {
+            if let historyName = self.defaults.value(forKey: UserSettings.HistoryName.keyPath) {
                 UserSettings.HistoryName.value = historyName as! String
             }
             
@@ -869,7 +863,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
                     temp.label = item[k.label]?.boolValue ?? false
                     temp.hover = item[k.hover]?.boolValue ?? false
-                    temp.alpha = item[k.alpha]?.floatValue ?? 0.6
+                    temp.alpha = item[k.alpha]?.intValue ?? 60
                     temp.trans = item[k.trans]?.intValue ?? 0
                     
                     self.histories.append(temp)
@@ -978,13 +972,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
-        var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) ?? NSDictionary.init() as! [String : Any]
-
         guard let itemURL = notification.object as? URL, itemURL.scheme != "about" else {
             return
         }
         
-        var item : PlayItem = PlayItem.init()
+        let item : PlayItem = PlayItem.init()
         let info = notification.userInfo!
         var fileURL : URL? = nil
         
@@ -997,8 +989,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         //  If the title is already seen, update global and playlists
-        if let playitem: PlayItem = lists[(itemURL.absoluteString)] as? PlayItem {
-            item = playitem
+        if let fileURL = fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
+            item.update(with: dict)
         }
         else
         {
@@ -1030,12 +1022,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item.runs += runs as! Int
         }
 
-        //  keep a global play items list used to restore settings
-        lists[item.link.absoluteString] = item.dictionary()
-        
-        UserDefaults.standard.set(lists, forKey: k.Playitems)
-        UserDefaults.standard.synchronize()
-        
         //  tell any playlist controller we have updated history
         let notif = Notification(name: Notification.Name(rawValue: k.item), object: item)
         NotificationCenter.default.post(notif)
