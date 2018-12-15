@@ -11,6 +11,7 @@ import AppKit
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
+    var defaults = UserDefaults.standard
     var webViewController: WebViewController {
         get {
             return self.window?.contentViewController as! WebViewController
@@ -79,9 +80,26 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         if (notification.object as! NSWindow) == self.window {
             self.doc?.settings.rect.value = (self.window?.frame)!
+            if let doc = self.doc, let url = (doc as Document).url {
+                defaults.set((doc as Document).dictionary(), forKey: url.absoluteString)
+                doc.updateChangeCount(.changeDone)
+            }
         }
     }
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        if sender == self.window {
+            var frame = sender.frame
+            frame.size = frameSize
 
+            settings.rect.value = frame
+            if let doc = self.doc, let url = (doc as Document).url {
+                defaults.set((doc as Document).dictionary(), forKey: url.absoluteString) 
+                doc.updateChangeCount(.changeDone)
+            }
+        }
+        return frameSize
+    }
+    
     func windowWillClose(_ notification: Notification) {
         self.webViewController.webView.stopLoading()
         
@@ -292,8 +310,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             }
         }
     }
+    fileprivate func cacheSettings() {
+        if let doc = self.doc, let url = doc.fileURL {
+            doc.cacheSettings(url)
+        }
+    }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
+        cacheSettings()
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
@@ -398,12 +422,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     //MARK:- Notifications
     @objc func willUpdateAlpha() {
-        let alpha = settings.opacityPercentage.value
-        didUpdateAlpha(CGFloat(alpha))
+        didUpdateAlpha(settings.opacityPercentage.value)
+        cacheSettings()
     }
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
         updateTranslucency()
+        cacheSettings()
     }
     
     func windowDidResize(_ notification: Notification) {
@@ -412,6 +437,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         
         wpc.setupTrackingAreas(true)
         wpc.updateTranslucency()
+        cacheSettings()
     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
@@ -446,6 +472,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
         if note.object as? URL == webView.url {
             self.updateTitleBar(didChange: false)
+            cacheSettings()
         }
     }
     
@@ -469,6 +496,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         {
             docIconButton?.isHidden = true
         }
+        cacheSettings()
     }
     
     @objc func updateTitleBar(didChange: Bool) {
@@ -509,6 +537,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         } else {
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
+        cacheSettings()
     }
     
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
@@ -528,7 +557,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
-    func didUpdateAlpha(_ newAlpha: CGFloat) {
-        alpha = newAlpha / 100
+    func didUpdateAlpha(_ intAlpha: Int) {
+        alpha = CGFloat(intAlpha) / 100.0
     }
 }
