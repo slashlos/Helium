@@ -584,8 +584,6 @@ class Document : NSDocument {
                 self.settings.rect.value = rect
             }
         }
-        
-        self.updateChangeCount(.changeDone)
     }
     
     func update(to url: URL) {
@@ -612,7 +610,6 @@ class Document : NSDocument {
             
             if item.rect != NSZeroRect {
                 self.settings.rect.value = item.rect
-                self.updateChangeCount(.changeDone)
              }
         }
     }
