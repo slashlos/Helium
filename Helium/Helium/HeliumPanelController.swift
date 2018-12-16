@@ -34,17 +34,39 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
 
     // MARK: Window lifecycle
-    override func windowDidLoad() {
-        nullImage = NSImage.init()
-        closeButton = window?.standardWindowButton(.closeButton)
-        closeButtonImage = closeButton?.image
-        setupTrackingAreas(true)
+    var hoverBar : PanelButtonBar?
+    var accessoryViewController : NSTitlebarAccessoryViewController?
 
+    override func windowDidLoad() {
+        //  decide where to place the hover bar
+        if false, let window = self.window, window.responds(to: #selector(NSWindow.addTitlebarAccessoryViewController(_:))) {
+            guard self.accessoryViewController == nil else { return }
+            let accessoryViewController = NSTitlebarAccessoryViewController()
+            self.accessoryViewController = accessoryViewController
+            hoverBar = PanelButtonBar.init(frame: NSMakeRect(0, 0, 80, 19))
+            accessoryViewController.view = hoverBar!
+            accessoryViewController.layoutAttribute = .left
+            window.addTitlebarAccessoryViewController(accessoryViewController)
+        }
+        else
+        {
+            hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
+            self.titleView?.superview?.addSubview(hoverBar!)
+        }
+        
         //  Default to no dragging by content
         panel.isMovableByWindowBackground = false
         
-        panel.standardWindowButton(.closeButton)?.image = nullImage
+        //  we want our own hover bar of buttons (no mini or zoom was visible)
+        if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
+            panelButton.target = windowButton.target
+            panelButton.action = windowButton.action
+        }
+        
+        panel.standardWindowButton(.closeButton)?.isHidden = true//image = NSImage.init()
         panel.isFloatingPanel = true
+        
+        setupTrackingAreas(true)
         
         NotificationCenter.default.addObserver(
             self,
@@ -110,9 +132,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     // MARK:- Mouse events
-    var closeButton : NSButton?
-    var closeButtonImage : NSImage?
-    var nullImage : NSImage?
+    var closeButton : NSButton? {
+        get {
+            return self.hoverBar?.closeButton
+        }
+    }
     var closeTrackingTag: NSTrackingRectTag?
     var viewTrackingTag: NSTrackingRectTag?
     var titleTrackingTag: NSTrackingRectTag?
@@ -162,9 +186,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
 
         if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
+            
+            Swift.print(String(format: "%@ entered",
+                               (theEvent.trackingNumber == closeTrackingTag
+                                ? "mouse" : "view")))
+
             switch theEvent.trackingNumber {
             case closeTag:
-                closeButton?.image = closeButtonImage
                 break
                 
             default:
@@ -185,9 +213,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let location : NSPoint = theEvent.locationInWindow
 
         if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
+            
+            Swift.print(String(format: "%@ exited",
+                               (theEvent.trackingNumber == closeTrackingTag
+                                ? "mouse" : "view")))
+
             switch theEvent.trackingNumber {
             case closeTag:
-                closeButton?.image = nullImage
                 break
                 
             default:
@@ -218,10 +250,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                     if hideTitle {
                         updateTitleBar(didChange: lastMouseOver != mouseOver)
                     }
-                    /*
-                    Swift.print(String(format: "%@ exited",
-                                       (theEvent.trackingNumber == titleTrackingTag
-                                        ? "title" : "view")))*/
                 }
             }
         }
