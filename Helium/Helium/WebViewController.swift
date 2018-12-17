@@ -656,11 +656,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     override func viewDidLayout() {
         super.viewDidLayout()
 
-        // Deferred window setup needing a document' settings
-        if let hwc = self.view.window?.windowController {
-            (hwc as! HeliumPanelController).documentViewDidLoad()
-        }
-        
         setupTrackingAreas(true)
     }
     
@@ -1023,13 +1018,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             return
         }
         (doc as! Document).restoreSettings(with: dict)
-        
-        if let hwc : HeliumPanelController = hwc as? HeliumPanelController {
-            hwc.updateTitleBar(didChange: false)
-            hwc.willUpdateAlpha()
-            hwc.translucencyPreference = (doc as! Document).settings.translucencyPreference.value
-            hwc.willUpdateTranslucency()
-        }
+        (hwc as! HeliumPanelController).documentDidLoad()
     }
     
     //Convert a YouTube video url that starts at a certian point to popup/embedded design
@@ -1170,11 +1159,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         //  Restore setting not done by document controller
         if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hwc = hwc {
             doc.restoreSettings(with: dict)
-
-            hwc.updateTitleBar(didChange: false)
-            hwc.setFloatOverFullScreenApps()
-            hwc.willUpdateTranslucency()
-            hwc.willUpdateAlpha()
+            hwc.documentDidLoad()
         }
         
         //  Finish recording of for this url session

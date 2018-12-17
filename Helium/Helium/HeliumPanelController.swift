@@ -88,11 +88,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         panel.registerForDraggedTypes([NSURLPboardType])
     }
 
-    func documentViewDidLoad() {
+    func documentDidLoad() {
         // Moved later, called by view, when document is available
         setFloatOverFullScreenApps()
         
-        updateTitleBar(didChange:false)
+        willUpdateTitleBar()
         
         willUpdateTranslucency()
         
@@ -462,6 +462,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     @objc func willUpdateAlpha() {
         didUpdateAlpha(settings.opacityPercentage.value)
         cacheSettings()
+    }
+    func willUpdateTitleBar() {
+        guard let doc = self.doc else {
+            return
+        }
+        if doc.settings.autoHideTitle.value != (panel.titleVisibility != .hidden), !self.shouldBeVisible(){
+            updateTitleBar(didChange:true)
+        }
+        
+
     }
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
