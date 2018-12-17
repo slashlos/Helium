@@ -521,6 +521,11 @@ class MyWebView : WKWebView {
         item.target = hwc
         subTranslucency.addItem(item)
 
+        item = NSMenuItem(title: "Save", action: #selector(hwc.saveDocument(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = hwc
+        menu.addItem(item)
+        
         item = NSMenuItem(title: "Search…", action: #selector(AppDelegate.openSearchPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
         item.target = appDelegate
@@ -529,7 +534,9 @@ class MyWebView : WKWebView {
         item = NSMenuItem(title: "Close", action: #selector(NSApp.keyWindow?.performClose(_:)), keyEquivalent: "")
         item.target = NSApp.keyWindow
         menu.addItem(item)
-
+        
+        menu.addItem(NSMenuItem.separator())
+        
         item = NSMenuItem(title: "Quit", action: #selector(NSApp.terminate(_:)), keyEquivalent: "")
         item.target = NSApp
         menu.addItem(item)
@@ -577,6 +584,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
         
         if self.webView != nil { setupWebView() }
+        
+        // Final hwc updates, called by view, when document is available
+        if let hwc = self.view.window?.windowController {
+            (hwc as! HeliumPanelController).documentDidLoad()
+        }
     }
     
     fileprivate func setupWebView() {

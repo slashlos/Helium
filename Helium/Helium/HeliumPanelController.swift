@@ -360,6 +360,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         willUpdateAlpha()
     }
     
+    @IBAction func saveDocument(_ sender: NSMenuItem) {
+        if let doc = self.doc {
+            doc.save(sender)
+        }
+    }
+    
     @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
         case .never:

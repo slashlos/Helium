@@ -755,6 +755,11 @@ class Document : NSDocument {
         //  When a document is written, update in global play items
         UserDefaults.standard.synchronize()
         self.updateChangeCount(.changeCleared)
+        
+        //  Update UI (red dot in close button) immediately
+        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+            hoverBar.closeButton?.setNeedsDisplay()
+        }
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
         do {
