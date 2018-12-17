@@ -159,10 +159,10 @@ class PanelButton : NSButton {
 		
 		//	show our dirty mark (red dot)
 		if (type == NSWindowButton.closeButton), let window = self.window, window.isDocumentEdited {
-			let dotGradient = NSGradient(starting:NSColor.yellow, ending: NSColor.yellow)!;
-			let pt = NSMakePoint(self.bounds.width * 0.43, self.bounds.height * 0.43)
+			let dotGradient = NSGradient(starting:NSColor.red, ending: NSColor.red)!;
+			let pt = NSMakePoint(self.bounds.width * 0.42, self.bounds.height * 0.42)
 			
-			path.appendOval(in: NSMakeRect(pt.x, pt.y, 2.5, 2.5));
+			path.appendOval(in: NSMakeRect(pt.x, pt.y, 2.3, 2.3));
 			dotGradient.draw(in: path, relativeCenterPosition: pt);
 			NSColor.red.setStroke();
 			path.lineWidth = 0.5;
