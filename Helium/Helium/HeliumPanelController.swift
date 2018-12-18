@@ -37,6 +37,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     var accessoryViewController : NSTitlebarAccessoryViewController?
 
     override func windowDidLoad() {
+        panel.standardWindowButton(.closeButton)?.image = NSImage.init()
+
         //  decide where to place the hover bar
         if false, let window = self.window, window.responds(to: #selector(NSWindow.addTitlebarAccessoryViewController(_:))) {
             guard self.accessoryViewController == nil else { return }
@@ -62,7 +64,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             panelButton.action = windowButton.action
         }
         
-        panel.standardWindowButton(.closeButton)?.isHidden = true//image = NSImage.init()
         panel.isFloatingPanel = true
         
         setupTrackingAreas(true)
