@@ -11,7 +11,6 @@ import AppKit
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
-    var defaults = UserDefaults.standard
     var webViewController: WebViewController {
         get {
             return self.window?.contentViewController as! WebViewController
@@ -102,10 +101,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         if (notification.object as! NSWindow) == self.window {
             self.doc?.settings.rect.value = (self.window?.frame)!
-            if let doc = self.doc, let url = (doc as Document).url {
-                defaults.set((doc as Document).dictionary(), forKey: url.absoluteString)
-                doc.updateChangeCount(.changeDone)
-            }
+            cacheSettings()
         }
     }
     func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
@@ -114,10 +110,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             frame.size = frameSize
 
             settings.rect.value = frame
-            if let doc = self.doc, let url = (doc as Document).url {
-                defaults.set((doc as Document).dictionary(), forKey: url.absoluteString) 
-                doc.updateChangeCount(.changeDone)
-            }
+            cacheSettings()
         }
         return frameSize
     }
@@ -324,6 +317,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
+    fileprivate func shouldBeVisible() -> Bool {
+        if doc?.settings.autoHideTitle.value == false {
+            return true
+        }
+        else
+        if ((self.contentViewController?.view.hitTest((NSApp.currentEvent?.locationInWindow)!)) != nil) {
+            return false
+        }
+        else
+        {
+            return true
+        }
+    }
     //MARK:- IBActions
     
     fileprivate var doc: Document? {
@@ -354,10 +360,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
         setFloatOverFullScreenApps()
+        cacheSettings()
     }
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
+        cacheSettings()
     }
     
     @IBAction func saveDocument(_ sender: NSMenuItem) {
@@ -467,6 +475,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         guard let doc = self.doc else {
             return
         }
+        
+        //  synchronize prefs to document's panel state
         if doc.settings.autoHideTitle.value != (panel.titleVisibility != .hidden), !self.shouldBeVisible(){
             updateTitleBar(didChange:true)
         }

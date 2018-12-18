@@ -747,6 +747,12 @@ class Document : NSDocument {
         //  soft update fileURL to cache if needed
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)
+        self.updateChangeCount(.changeDone)
+        
+        //  Update UI (red dot in close button) immediately
+        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+            hoverBar.closeButton?.setNeedsDisplay()
+        }
     }
         
     override func write(to url: URL, ofType typeName: String) throws {
