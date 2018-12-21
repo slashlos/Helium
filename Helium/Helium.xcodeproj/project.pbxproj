@@ -371,11 +371,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D867CCD1AD6781200681331 /* Build configuration list for PBXNativeTarget "Helium" */;
 			buildPhases = (
+				0F05C8281EFF1B54001B5D02 /* Version */,
 				4D867CAD1AD6781200681331 /* Sources */,
 				4D867CAE1AD6781200681331 /* Frameworks */,
 				4D867CAF1AD6781200681331 /* Resources */,
 				27199AC21BE422AC00E02297 /* Embed App Extensions */,
-				0F05C8281EFF1B54001B5D02 /* Version */,
 				0F9AB2FF213C41E10096C19F /* CopyFiles */,
 			);
 			buildRules = (
@@ -534,7 +534,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber\nbuildNumber=$(($buildNumber + 1))\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor\n#no minor yet; .$buildMinor\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
+			shellScript = "set -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber if asked\nbuildIncr=$(/usr/libexec/PlistBuddy -c \"Print CFBuildIncrement\" $buildPlist)\nif [ \"$buildIncr\" = \"true\" ];\nthen\n    buildNumber=$(($buildNumber + 1))\nfi\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
 		};
 		0F60517C216130840008977E /* Build DMG */ = {
 			isa = PBXShellScriptBuildPhase;
