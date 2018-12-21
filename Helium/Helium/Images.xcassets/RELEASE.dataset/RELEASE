@@ -22,10 +22,10 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
-<h2>Build 3685</h2>
+<h2>Build 3690</h2>
 <p class="block">
 9bf1ca4|18/11/12 fix create new windows pref setting<br>
-d3f6728|18/11/04 app field name / button copies info to pasteboard<br>
+d3f6728|18/11/04 about fields' action copies to pasteboard<br>
 1d8d6cc|18/11/04 h3w document settings load changes<br>
 3c663d1|18/11/04 text, url handling updates<br>
 9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
