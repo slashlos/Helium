@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>Helium Changelog</title>
+        <link>https://raw.githubusercontent.com/slalshlos/Helium/master/HeliumUpdatesSparkleFeed.xml</link>
+        <description>Most recent changes with links to updates.</description>
+        <language>en</language>
+        <item>
+            <title>Version 3 (21)</title>
+            <description>
+          	    <![CDATA[
+          	        This update:
+          	        <ul>
+                    <li>"Open in Helium" from Safari with the built-in share extension!</li>
+                    <li>Stays on top even as you switch between spaces—even full screen ones! (This can be disabled in preferences.)</li>
+                    <li>Navigation gestures like swipe to go back</li>
+          	        </ul>
+          	        Last update:
+                    <ul>
+                    <li>document, saved state, reopening next launch
+                    <li>windows, single or all desktop
+                    <li>playlists - global / shared, savable
+                    <li>updated UI:Finder status, contextual menus
+                    <li>viewing history,
+                    <li>updated preferences: auto hide title
+                    <li>updated about box: build, version, history
+                    </ul>
+                ]]>
+            </description>
+            <pubDate>Fri, 8 Oct 2017 15:00:00 -0000</pubDate>
+            <link></link>
+            <enclosure url="https://github.com/slashlos/Helium/releases/download/3/Helium.app.zip"
+                sparkle:shortVersionString="3"
+                sparkle:version="30"
+                sparkle:dsaSignature="MCwCFDFj2XiL9SvEsZ2yLwaLPqNPtH68AhRXAQWlfvzqIc4xm58JgT1diEQuog=="
+                length="4959228"
+                type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>

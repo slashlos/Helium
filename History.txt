@@ -1,0 +1,32 @@
+
+Author:
+    Jaden Geller
+
+Contributors:
+    in no particular order
+
+    Christian Hoffmann - UserSettings.swift
+    Samuel Beek - StringHelpers.swift
+    shdwprince - Panel.swift
+    Viktor Oreshkin - UrlHelpers.swift
+    https://travis-ci.org/stek29/Helium - Swift3
+    Carlos D. Santiago (slashlos) - Version 3
+
+History
+
+  4, August, 2018
+    Carlos D Santiago
+      document windows,
+      playlists - global / shared, savable items
+      balloon images https://pixabay.com
+      Finder status and dock menus,
+      local, global preferences,
+      value transformers,
+      user agent editing,
+      document history,
+      contextual menu,
+      release notes
+      about box
+ 
+  2.0-20, Nov 10, 2015
+    Jaden Geller

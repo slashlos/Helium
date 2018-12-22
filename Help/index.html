@@ -1,0 +1,155 @@
+<html>
+<head>
+<meta name="AppleTitle" content="Helium Help">
+<title>Helium</title>
+</head>
+<body>
+
+<h1>Helium 3</h1>
+<center><img src="helium_logo.png" style="width:60%" alt="Helium 3" /></center>
+<p>&copy; 2017-2018 Carlos D. Santiago,  All rights reserved.</p>
+
+<h2>Introduction</h2>
+
+<p>Helium, a floating browser for Mac OS X now supports multiple windows.</p>
+
+<p>This help will cover the few less obvious topics.</p>
+
+<h2>Key vs Current Window</h2>
+<p>With advent of multiple windows, it might not be obvious which is the current or key window, especially when Helium is not the default application.
+<center><img src="current.png" style="width:80%" alt="current" /></center></p>
+
+<p>The Helium <b>key</b> window features its title in a <b>bold</b> font.</p>
+<p>When Helium is the current app, you can click on one of its windows to select a new key window.
+&ensp;To make Helium the current, active, application, hold down the <b><code>SHIFT</code></b> key when moving into a window.&ensp; You can also select a key window by using the Windows menu when Helium is active.</p>
+<p>Note the mouse click on lower right window to make key window, but then moves outside to another, but key
+<a href="https://youtu.be/F7zlBC_LgCY" target="_blank">window</a> 
+is closed on user input <code>&#8984;W</code> or <b><code>ESCAPE</code></b> key press.</p>
+<center><img src="key.png" style="width:80%" alt="key"/></center></p>
+
+<h2>Windows</h2>
+<img src="windows.png" style="width:100%" alt="windows" /></p>
+
+<p>While Helium supports multiple windows, these are <i>not documents</i>, not in the typical 
+sense of individual storage, file / URL openings, or save dialogs.&ensp; Helium treats all documents
+as part of a larger context stored within the user's defaults.</p>
+Each of a document's details are either read-only <b>attributes</b> or read-write
+<b>preferences</b>.  
+&ensp; Document details are automatically saved whenever a URL is made known to Helium or any
+changes are made, such a moving a document window.
+&ensp;Helium does support normal URL file open and drag-and-drop operations but not save.
+<p>Document Details</p>
+<ul>
+<li>URL</li>
+<li>attributes: window size, origin, time - for audio / video URLs</li>
+<li>preferences: auto-hide, float-above, opacity, translucency </li>
+<li>WebView - Mac OS X built-in web browser</li>
+</ul>
+
+<h3>URL</h3>
+<p>A window is presented for each URL made known to Helium by either filesystem or web location.  
+&ensp; All URL access is read only.&ensp; Helium can write by drag-and-drop to the Finder.  Dragging a
+document window title bar icon creates an alias to the document url.</p>
+
+<h3>Attributes<meta name="description" content="read only document settings"></h3>
+<h4>Name</h4>
+<p>A window name is derived from the document URL.</p>
+<h4>Window Size</h4>
+<p>By default a window's size is remembered when recalled.</p>
+<h4>Window Origin</h4>
+<p>By default a window's origin is remembered when recalled and updated when moved.</p>
+<h4>Duration</h4>
+<p>For video and audio URLs, Helium will catalog the asset's duration.</p>
+
+<h3>WebView</h3>
+<p>Each document window is a browser window and by its contextual menu, can be alter its
+attributes such as mute, loop, hide controls, copy video adress, and when implemented: 
+full screen, and download.&ensp; It can also provide access to helper applications such as <i>Share</i>,
+as well as access to open new URLs, close window, and access to document attributes, 
+preferences as well as to access playlists and their play items.</p>
+
+<h3>Preferences<meta name="description" content="read only document settings"></h3>
+<h4>Auto-hide</h4>
+<p>Helium can hide and restore a document window's title when moving the pointer beyond
+the document
+<a href="https://youtu.be/36PrULnWcjw" target="_blank">window</a>.&ensp; This preference is document specific.
+<center><img src="auto-hide.png" style="width:60%" alt="auto-hide" /></center></p>
+
+<h4>Float Above</h4>
+<p>Helium will float its document windows above other apps, across all spaces.  Optionally the window
+can be local to the current space.&ebsp; Note that windows cannot be moved across spaces.&ensp; This preference is document specific.</p>
+<h4>Opacity</h4>
+<p>Helium can vary a document window opacity value from 10 .. 100%.  
+&ensp; This preference is document specific.</p>
+<h4>History Keep</h4>
+<p>Helium will keep the items seen in a history playlist named "History" by default; this may be altered in the Playlists panel.</p>
+<p>The default history "keep" size is 256 items.  Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
+<PRE>
+	1% defaults read -app Helium historyKeep
+	256
+	1% defaults write -app Helium historyKeep 100
+	1% defaults read -app Helium historyKeep
+	100
+</PRE>
+<p>It is <b>not</b> advised to choose a value too large.</p>
+
+<h4>Playlist Throttle</h4>
+<p>Helium will limit the size of a playlist "play" to reduce runaway sessions.</p>
+<p>Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
+<PRE>
+1% defaults read -app Helium playlistThrottle
+32
+1% defaults write -app Helium playlistThrottle 16
+1% defaults read -app Helium playlistThrottle
+16
+</PRE>
+<p>It is <b>not</b> advised to choose a value too large.</p>
+
+<h4>Translucency</h4>
+<p>Helium can vary a document window opacity display when moving the pointer inside or
+outside a document window, never, or always.&ensp; This preference is document specific.&ensp; This video shows from top left clockwise, an auto-hide title, an always transluency, a mouse over, a mouse outside, and a never translucency
+<a href="https://youtu.be/xuFqopBIPqs" target="_blank">window</a>.</p>
+<center><img src="translucency.png" style="width:80%" alt="translucency" /></center>
+
+<h2>History</h2>
+<p>Helium remembers all documents seen in a history queue.  
+&ensp; This information is saved and restored across sessions.</p>
+
+<h3>Search</h3>
+<p>Helium, provides a web search interface to Bing, Google and Yahoo! web search urls.</p>
+<p>Searches are cached within the default history playlist and preserved across sessions.</p>
+
+<h2>Playlists</h2>
+<center><img src="playlists.png" style="width:60%" alt="playlists" /></center>
+
+<p>Helium can catalog documents into playlists, groups of document URLs, which can be restored
+ or opened by play list or its individual play items.&ensp; By default, Helium will restore all
+ document windows left open from a prior session. Playlist items can be manually created or via
+ drag-n-drop.  Editing a playlist item is guarded by its non-zero time field.</p>
+ <p>The tableView corner menu features a button to renumber in current order playlist items.
+ This ranking governs which item are selected for playlist.  Duplicate items can be pruned by
+ holding down <b><code>SHIFT</code></b> key while pressing the button.</p>
+
+<h2>Menus</h2>
+<p>In addition to the open, and load file or location menu items, Helium supports a recents menu</p>
+<center><img src="documents.png" style="width:80%" alt="documents" /></center>
+<p>a dock menu</p>
+<center><img src="dock.png" style="width:40%" align="middle" alt="dock" /></center>
+<p>a status bar menu</p>
+<center><img src="status.png" style="width:40%" alt="status" /></center>
+<p>and a contextual menu.</p>
+<center><img src="contextual.png" style="width:40%" alt="contextual" /></center>
+
+<h2>Status</h2>
+<p>Track status of Helium at its
+<a href="https://github.com/slashlos/Helium/wiki">wiki</a>
+ or
+<a href="https://github.com/slashlos/Helium/issues">issues</a> page.</p>
+
+<p>See more help and exmaples at <a href="https://slashlos.github.io/Helium/">Helium 3</a> on
+<a href="https://github.com/slashlos/Helium">github</a>!</p>
+
+<p>/los &quot;I was a teenage net-random&quot;</p>
+
+</body>
+</html>
