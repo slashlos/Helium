@@ -76,8 +76,8 @@ class PanelButton : NSButton {
 				.union(NSTrackingAreaOptions.assumeInside)
 				.union(NSTrackingAreaOptions.inVisibleRect);
 			
-			let trackingArea = NSTrackingArea(rect: self.bounds, options:options, owner: self, userInfo: nil);
-			self.addTrackingArea(trackingArea);
+			let trackingArea = NSTrackingArea(rect: self.bounds, options:options, owner: self, userInfo: nil)
+			self.addTrackingArea(trackingArea)
 		}
 	}
 	
@@ -93,7 +93,7 @@ class PanelButton : NSButton {
 	}
 	
 	override func draw(_ dirtyRect: NSRect) {
-		if !self.isMouseOver { return }
+		if self.isHidden || !self.isMouseOver { return }
 		NSGraphicsContext.current()?.saveGraphicsState();
 		var path = NSBezierPath();
 
@@ -107,15 +107,13 @@ class PanelButton : NSButton {
 			let strokeColor = NSColor.white
 			let lineColor = NSColor.black
 			
-			// draw background for close, zoom, skipping mini
-			if (type != NSWindowButton.miniaturizeButton) {
-				path.appendOval(in: NSMakeRect(self.bounds.origin.x + 0.5, self.bounds.origin.y + 0.5, self.bounds.width - 1, self.bounds.height - 1));
-				
-				backgroundGradient.draw(in: path, relativeCenterPosition: NSMakePoint(0, 0));
-				strokeColor.setStroke();
-				path.lineWidth = 0.5;
-				path.stroke();
-			}
+			// draw background for close, mini, zoom
+			path.appendOval(in: NSMakeRect(self.bounds.origin.x + 0.5, self.bounds.origin.y + 0.5, self.bounds.width - 1, self.bounds.height - 1));
+			
+			backgroundGradient.draw(in: path, relativeCenterPosition: NSMakePoint(0, 0));
+			strokeColor.setStroke();
+			path.lineWidth = 0.5;
+			path.stroke();
 			
 			if (self.isHighlighted) {
 				NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: 0.2).setFill();
@@ -135,12 +133,12 @@ class PanelButton : NSButton {
 					path.move(to: NSMakePoint(self.bounds.width * 0.79, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.21, self.bounds.height / 2));
 					path.lineWidth = 1.25//0.75;
-/*	skipped		} else if (type == NSWindowButton.miniaturizeButton) {
-					NSGraphicsContext.current()?.shouldAntialias = false;
+				} else if (type == NSWindowButton.miniaturizeButton) {
+					NSGraphicsContext.current()?.shouldAntialias = true;
 					
 					path.move(to: NSMakePoint(self.bounds.width * 0.80, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.20, self.bounds.height / 2));
-					path.lineWidth = 1//0.75;*/
+					path.lineWidth = 1.25//0.75;
 				} else if (type == NSWindowButton.closeButton) {
 					NSGraphicsContext.current()?.shouldAntialias = true;
 
@@ -172,7 +170,6 @@ class PanelButton : NSButton {
 		if (self.isHighlighted) {
 			NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: 0.2).setFill();
 			path.fill();
-
 		}
 		NSGraphicsContext.current()?.restoreGraphicsState();
 	}
@@ -185,18 +182,18 @@ public class PanelButtonBar : NSView {
 	
 	required public init?(coder: NSCoder) {
 		super.init(coder: coder);
-		self.setupViews();
+		self.setupViews(individualTrackingAreas: true);
 	}
 	
 	override init (frame:NSRect) {
 		super.init(frame: frame);
-		self.setupViews();
+		self.setupViews(individualTrackingAreas: true);
 	}
 	
-	func setupViews () {
-		self.closeButton = PanelButton(frame: NSMakeRect(0, 0, 13, 13), type: NSWindowButton.closeButton, useTrackingArea: false);
-		self.miniaturizeButton = PanelButton(frame: NSMakeRect(20, 0, 13, 13), type: NSWindowButton.miniaturizeButton, useTrackingArea: false);
-		self.zoomButton = PanelButton(frame: NSMakeRect(40, 0, 13, 13), type: NSWindowButton.zoomButton, useTrackingArea: false);
+	func setupViews (individualTrackingAreas ita:Bool) {
+		self.closeButton = PanelButton(frame: NSMakeRect(0, 0, 13, 13), type: NSWindowButton.closeButton, useTrackingArea: ita);
+		self.miniaturizeButton = PanelButton(frame: NSMakeRect(20, 0, 13, 13), type: NSWindowButton.miniaturizeButton, useTrackingArea: ita);
+		self.zoomButton = PanelButton(frame: NSMakeRect(40, 0, 13, 13), type: NSWindowButton.zoomButton, useTrackingArea: ita);
 		
 		self.addSubview(self.closeButton!);
 		self.addSubview(self.miniaturizeButton!);
@@ -207,14 +204,14 @@ public class PanelButtonBar : NSView {
 	}
 	
 	override public func mouseEntered(with theEvent: NSEvent) {
-		self.closeButton?.isMouseOver = true;
-		self.miniaturizeButton?.isMouseOver = true;
-		self.zoomButton?.isMouseOver = true;
+		self.closeButton?.isMouseOver = true
+		self.miniaturizeButton?.isMouseOver = true
+		self.zoomButton?.isMouseOver = true
 	}
 	
 	override public func mouseExited(with theEvent: NSEvent) {
-		self.closeButton?.isMouseOver = false;
-		self.miniaturizeButton?.isMouseOver = false;
-		self.zoomButton?.isMouseOver = false;
+		self.closeButton?.isMouseOver = false
+		self.miniaturizeButton?.isMouseOver = false
+		self.zoomButton?.isMouseOver = false
 	}
 }

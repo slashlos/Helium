@@ -58,6 +58,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         //  Default to no dragging by content
         panel.isMovableByWindowBackground = false
         
+        //  We do not support a miniaturize button at this time
+        miniaturizeButton?.isHidden = true
+        //zoomButton?.isHidden = true
+        
         //  we want our own hover bar of buttons (no mini or zoom was visible)
         if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
             panelButton.target = windowButton.target
@@ -126,12 +130,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     // MARK:- Mouse events
-    var closeButton : NSButton? {
+    var closeButton : PanelButton? {
         get {
             return self.hoverBar?.closeButton
         }
     }
+    var miniaturizeButton : PanelButton? {
+        get {
+            return self.hoverBar?.miniaturizeButton
+        }
+    }
+    var zoomButton : PanelButton? {
+        get {
+            return self.hoverBar?.zoomButton
+        }
+    }
     var closeTrackingTag: NSTrackingRectTag?
+    var miniTrackingTag: NSTrackingRectTag?
+    var zoomTrackingTag: NSTrackingRectTag?
     var viewTrackingTag: NSTrackingRectTag?
     var titleTrackingTag: NSTrackingRectTag?
     var titleView : NSView? {
@@ -150,6 +166,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         if establish {
             closeTrackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            miniTrackingTag = miniaturizeButton?.addTrackingRect((miniaturizeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            zoomTrackingTag = zoomButton?.addTrackingRect((zoomButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
             titleTrackingTag = titleView?.addTrackingRect((titleView?.bounds)!, owner: self, userData: nil, assumeInside: false)
         }
     }
@@ -178,19 +196,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)
         }
-
-        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
+        let tag = theEvent.trackingNumber
+        
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
             
-            Swift.print(String(format: "%@ entered",
-                               (theEvent.trackingNumber == closeTrackingTag
-                                ? "mouse" : "view")))
+            Swift.print(String(format: "%@ entered", (viewTag == tag ? "view" : "button")))
 
-            switch theEvent.trackingNumber {
+            switch tag {
             case closeTag:
+                closeButton?.isMouseOver = true
+                return
+            case miniTag:
+                miniaturizeButton?.isMouseOver = true
+                return
+            case zoomTag:
+                zoomButton?.isMouseOver = true
                 break
                 
             default:
                 let lastMouseOver = mouseOver
+                closeButton?.isMouseOver = false
+                miniaturizeButton?.isMouseOver = false
+                zoomButton?.isMouseOver = false
                 mouseOver = true
                 updateTranslucency()
                 
@@ -205,17 +232,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     override func mouseExited(with theEvent: NSEvent) {
         let hideTitle = (doc?.settings.autoHideTitle.value == true)
         let location : NSPoint = theEvent.locationInWindow
+        let tag = theEvent.trackingNumber
 
-        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
-            
-            Swift.print(String(format: "%@ exited",
-                               (theEvent.trackingNumber == closeTrackingTag
-                                ? "mouse" : "view")))
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
 
-            switch theEvent.trackingNumber {
-            case closeTag:
+            Swift.print(String(format: "%@ exited", (viewTag == tag ? "view" : "button")))
+
+            switch tag {
+            case closeTag, miniTag, zoomTag:
+                closeButton?.isMouseOver = false
+                miniaturizeButton?.isMouseOver = false
+                zoomButton?.isMouseOver = false
                 break
-                
+
             default:
                 if let vSize = self.window?.contentView?.bounds.size {
                 
