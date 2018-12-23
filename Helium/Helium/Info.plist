@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBuildDate</key>
 	<string>20181222.195003</string>
+	<key>CFBuildIncrement</key>
+	<false/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>

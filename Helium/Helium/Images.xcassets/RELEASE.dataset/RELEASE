@@ -33,6 +33,8 @@ d3f6728|18/11/04 about fields' action copies to pasteboard<br>
 
 <h2>Build 3595</h2>
 <p class="block">
+f9b287e|18/10/08 conditionally increment build before compilation<br>
+9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
 6572410|18/10/07 Helium-dmg target added<br>
 0f16ce8|18/10/02 fix downcast as suggested<br>
 1faff70|18/09/30 initially clear drag move by background<br>
