@@ -93,15 +93,26 @@ can be local to the current space.&ebsp; Note that windows cannot be moved acros
 </PRE>
 <p>It is <b>not</b> advised to choose a value too large.</p>
 
+<h4>Zoom Icon</h4>
+<p>Helium window support full screen - aka "zoom" but does not display a zoom button by default it its title bar.  The preferecce be altered by using the <b>Terminal</b> app; for example:</p>
+<PRE>
+	1% defaults read -app Helium hideZoomIcon
+    true
+    1% defaults write -app Helium hideZoomIcon false
+    1% defaults read -app Helium hideZoomIcon
+	true
+</PRE>
+<p>This value is only read at startup.</p>
+
 <h4>Playlist Throttle</h4>
 <p>Helium will limit the size of a playlist "play" to reduce runaway sessions.</p>
 <p>Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
 <PRE>
-1% defaults read -app Helium playlistThrottle
-32
-1% defaults write -app Helium playlistThrottle 16
-1% defaults read -app Helium playlistThrottle
-16
+	1% defaults read -app Helium playlistThrottle
+	32
+	1% defaults write -app Helium playlistThrottle 16
+	1% defaults read -app Helium playlistThrottle
+	16
 </PRE>
 <p>It is <b>not</b> advised to choose a value too large.</p>
 
