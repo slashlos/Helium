@@ -58,9 +58,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         //  Default to no dragging by content
         panel.isMovableByWindowBackground = false
         
-        //  We do not support a miniaturize button at this time
+        //  We do not support a miniaturize button at this time; statically hide zoom
         miniaturizeButton?.isHidden = true
-        //zoomButton?.isHidden = true
+        zoomButton?.isHidden = UserSettings.HideZoomIcon.value
         
         //  we want our own hover bar of buttons (no mini or zoom was visible)
         if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
