@@ -485,6 +485,11 @@ class HeliumDocumentController : NSDocumentController {
 class Document : NSDocument {
 
     var defaults = UserDefaults.standard
+    var autoSaveDocs : Bool {
+        get {
+            return UserSettings.AutoSaveDocs.value
+        }
+    }
     var settings: Settings
     var docType : Int
     var url : URL? {
@@ -747,7 +752,7 @@ class Document : NSDocument {
         //  soft update fileURL to cache if needed
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)
-        self.updateChangeCount(.changeDone)
+        if !autoSaveDocs { self.updateChangeCount(.changeDone) }
         
         //  Update UI (red dot in close button) immediately
         if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
@@ -759,9 +764,9 @@ class Document : NSDocument {
         cacheSettings(url)
         
         //  When a document is written, update in global play items
-        UserDefaults.standard.synchronize()
         self.updateChangeCount(.changeCleared)
-        
+        UserDefaults.standard.synchronize()
+
         //  Update UI (red dot in close button) immediately
         if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()

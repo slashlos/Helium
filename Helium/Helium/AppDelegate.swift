@@ -214,6 +214,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  Complimented with createNewWindows to hold until really open
     var openForBusiness = false
     
+    //  By default we auto save any document changes
+	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
+        UserSettings.AutoSaveDocs.value = (sender.state == NSOffState)
+        
+        //  if turning on, then we save all documents manually
+        if autoSaveDocs {
+            for doc in NSDocumentController.shared().documents {
+                if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
+                    DispatchQueue.main.async {
+                        (hwc as! HeliumPanelController).saveDocument(sender)
+                    }
+                }
+            }
+            NSDocumentController.shared().saveAllDocuments(sender)
+        }
+	}
+	var autoSaveDocs : Bool {
+        get {
+            return UserSettings.AutoSaveDocs.value
+        }
+    }
+    
 	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
         UserSettings.createNewWindows.value = (sender.state == NSOnState ? false : true)
     }
@@ -237,7 +259,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
     }
     
-    func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
+	@IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
+        UserSettings.HideZoomIcon.value = (sender.state == NSOffState)
+        
+        //  sync all document zoom icons now - yuck
+        for doc in NSDocumentController.shared().documents {
+            if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
+                (hwc as! HeliumPanelController).zoomButton?.isHidden = hideZoomIcon
+            }
+        }
+	}
+    var hideZoomIcon : Bool {
+        get {
+            return UserSettings.HideZoomIcon.value
+        }
+    }
+    
+	func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
         let newWindows = UserSettings.createNewWindows.value
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
@@ -632,11 +670,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
             case "Preferences":
                 break
+            case "Auto save documents":
+                menuItem.state = UserSettings.AutoSaveDocs.value ? NSOnState : NSOffState
+                break;
             case "Create New Windows":
                 menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
                 break
             case "Hide Helium in menu bar":
                 menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
+                break
+            case "Hide zoom icon":
+                menuItem.state = UserSettings.HideZoomIcon.value ? NSOnState : NSOffState
                 break
             case "Home Page":
                 break
