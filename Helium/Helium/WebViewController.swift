@@ -298,7 +298,6 @@ class MyWebView : WKWebView {
                 if item.title == "Enter Full Screen" {
                     item.target = appDelegate
                     item.action = #selector(appDelegate.toggleFullScreen(_:))
-                    item.keyEquivalent = "f"
                 }
                 else
                 if self.url != nil {
