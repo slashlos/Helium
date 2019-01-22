@@ -7,7 +7,7 @@
 
 <h1>Helium 3</h1>
 <center><img src="helium_logo.png" style="width:60%" alt="Helium 3" /></center>
-<p>&copy; 2017-2018 Carlos D. Santiago,  All rights reserved.</p>
+<p>&copy; 2017-2019 Carlos D. Santiago,  All rights reserved.</p>
 
 <h2>Introduction</h2>
 
@@ -85,23 +85,34 @@ can be local to the current space.&ebsp; Note that windows cannot be moved acros
 <p>Helium will keep the items seen in a history playlist named "History" by default; this may be altered in the Playlists panel.</p>
 <p>The default history "keep" size is 256 items.  Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
 <PRE>
-	1% defaults read -app Helium historyKeep
-	256
-	1% defaults write -app Helium historyKeep 100
-	1% defaults read -app Helium historyKeep
-	100
+    1% defaults read -app Helium historyKeep
+    256
+    1% defaults write -app Helium historyKeep 100
+    1% defaults read -app Helium historyKeep
+    100
 </PRE>
 <p>It is <b>not</b> advised to choose a value too large.</p>
+
+<h4>Zoom Icon</h4>
+<p>Helium window support full screen - aka "zoom" but does not display a zoom button by default it its title bar.  The preferecce be altered by using the <b>Terminal</b> app; for example:</p>
+<PRE>
+    1% defaults read -app Helium hideZoomIcon
+    true
+    1% defaults write -app Helium hideZoomIcon false
+    1% defaults read -app Helium hideZoomIcon
+    true
+</PRE>
+<p>This value is only read at startup.</p>
 
 <h4>Playlist Throttle</h4>
 <p>Helium will limit the size of a playlist "play" to reduce runaway sessions.</p>
 <p>Should you need to alter the default use the <b>Terminal</b> app; for example:</p>
 <PRE>
-1% defaults read -app Helium playlistThrottle
-32
-1% defaults write -app Helium playlistThrottle 16
-1% defaults read -app Helium playlistThrottle
-16
+    1% defaults read -app Helium playlistThrottle
+    32
+    1% defaults write -app Helium playlistThrottle 16
+    1% defaults read -app Helium playlistThrottle
+    16
 </PRE>
 <p>It is <b>not</b> advised to choose a value too large.</p>
 

@@ -24,7 +24,26 @@ class AboutBoxController : NSViewController {
     var hideRect: NSRect?
     var origRect: NSRect?
     
-    @IBAction func toggleContent(_ sender: Any) {
+	@IBOutlet var appNameButton: NSButton!
+	@IBAction func appButtonPress(_ sender: Any) {
+        var info = Dictionary<String,Any>()
+        info[k.name] = appName!
+        info[k.vers] = versionString!
+        info[k.data] = versionData!
+        info[k.link] = versionLink!
+        info[k.date] = versionDate!
+        
+        let json = try? JSONSerialization.data(withJSONObject: info, options: [])
+        let jsonString = String(data: json!, encoding: .utf8)
+        
+        let pasteboard = NSPasteboard.general
+        pasteboard().declareTypes([NSStringPboardType], owner: nil)
+        if pasteboard().setString(jsonString!, forType: NSStringPboardType) {
+            Swift.print("app info copied to pasteboard")
+        }
+	}
+	
+	@IBAction func toggleContent(_ sender: Any) {
         // Toggle content visibility
         if let window = self.view.window {
             let oldSize = window.contentView?.bounds.size

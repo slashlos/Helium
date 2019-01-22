@@ -33,17 +33,44 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
 
     // MARK: Window lifecycle
-    override func windowDidLoad() {
-        nullImage = NSImage.init()
-        closeButton = window?.standardWindowButton(.closeButton)
-        closeButtonImage = closeButton?.image
-        setupTrackingAreas(true)
+    var hoverBar : PanelButtonBar?
+    var accessoryViewController : NSTitlebarAccessoryViewController?
 
+    override func windowDidLoad() {
+        panel.standardWindowButton(.closeButton)?.image = NSImage.init()
+
+        //  decide where to place the hover bar
+        if false, let window = self.window, window.responds(to: #selector(NSWindow.addTitlebarAccessoryViewController(_:))) {
+            guard self.accessoryViewController == nil else { return }
+            let accessoryViewController = NSTitlebarAccessoryViewController()
+            self.accessoryViewController = accessoryViewController
+            hoverBar = PanelButtonBar.init(frame: NSMakeRect(0, 0, 80, 19))
+            accessoryViewController.view = hoverBar!
+            accessoryViewController.layoutAttribute = .left
+            window.addTitlebarAccessoryViewController(accessoryViewController)
+        }
+        else
+        {
+            hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
+            self.titleView?.superview?.addSubview(hoverBar!)
+        }
+        
         //  Default to no dragging by content
         panel.isMovableByWindowBackground = false
         
-        panel.standardWindowButton(.closeButton)?.image = nullImage
+        //  We do not support a miniaturize button at this time; statically hide zoom
+        miniaturizeButton?.isHidden = true
+        zoomButton?.isHidden = UserSettings.HideZoomIcon.value
+        
+        //  we want our own hover bar of buttons (no mini or zoom was visible)
+        if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
+            panelButton.target = windowButton.target
+            panelButton.action = windowButton.action
+        }
+        
         panel.isFloatingPanel = true
+        
+        setupTrackingAreas(true)
         
         NotificationCenter.default.addObserver(
             self,
@@ -65,11 +92,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         panel.registerForDraggedTypes([NSURLPboardType])
     }
 
-    func documentViewDidLoad() {
+    func documentDidLoad() {
         // Moved later, called by view, when document is available
         setFloatOverFullScreenApps()
         
-        updateTitleBar(didChange:false)
+        willUpdateTitleBar()
         
         willUpdateTranslucency()
         
@@ -79,9 +106,20 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     func windowDidMove(_ notification: Notification) {
         if (notification.object as! NSWindow) == self.window {
             self.doc?.settings.rect.value = (self.window?.frame)!
+            cacheSettings()
         }
     }
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        if sender == self.window {
+            var frame = sender.frame
+            frame.size = frameSize
 
+            settings.rect.value = frame
+            cacheSettings()
+        }
+        return frameSize
+    }
+    
     func windowWillClose(_ notification: Notification) {
         self.webViewController.webView.stopLoading()
         
@@ -92,10 +130,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     // MARK:- Mouse events
-    var closeButton : NSButton?
-    var closeButtonImage : NSImage?
-    var nullImage : NSImage?
+    var closeButton : PanelButton? {
+        get {
+            return self.hoverBar?.closeButton
+        }
+    }
+    var miniaturizeButton : PanelButton? {
+        get {
+            return self.hoverBar?.miniaturizeButton
+        }
+    }
+    var zoomButton : PanelButton? {
+        get {
+            return self.hoverBar?.zoomButton
+        }
+    }
     var closeTrackingTag: NSTrackingRectTag?
+    var miniTrackingTag: NSTrackingRectTag?
+    var zoomTrackingTag: NSTrackingRectTag?
     var viewTrackingTag: NSTrackingRectTag?
     var titleTrackingTag: NSTrackingRectTag?
     var titleView : NSView? {
@@ -114,6 +166,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         if establish {
             closeTrackingTag = closeButton?.addTrackingRect((closeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            miniTrackingTag = miniaturizeButton?.addTrackingRect((miniaturizeButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
+            zoomTrackingTag = zoomButton?.addTrackingRect((zoomButton?.bounds)!, owner: self, userData: nil, assumeInside: false)
             titleTrackingTag = titleView?.addTrackingRect((titleView?.bounds)!, owner: self, userData: nil, assumeInside: false)
         }
     }
@@ -127,6 +181,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         return .copy
     }
     
+    func window(_ window: NSWindow, shouldDragDocumentWith event: NSEvent, from dragImageLocation: NSPoint, with pasteboard: NSPasteboard) -> Bool {
+        return true
+    }
+    
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         
@@ -138,15 +196,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         if theEvent.modifierFlags.contains(.shift) {
             NSApp.activate(ignoringOtherApps: true)
         }
+        let tag = theEvent.trackingNumber
+        
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
+            
+            Swift.print(String(format: "%@ entered", (viewTag == tag ? "view" : "button")))
 
-        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
-            switch theEvent.trackingNumber {
+            switch tag {
             case closeTag:
-                closeButton?.image = closeButtonImage
+                closeButton?.isMouseOver = true
+                return
+            case miniTag:
+                miniaturizeButton?.isMouseOver = true
+                return
+            case zoomTag:
+                zoomButton?.isMouseOver = true
                 break
                 
             default:
                 let lastMouseOver = mouseOver
+                closeButton?.isMouseOver = false
+                miniaturizeButton?.isMouseOver = false
+                zoomButton?.isMouseOver = false
                 mouseOver = true
                 updateTranslucency()
                 
@@ -161,13 +232,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     override func mouseExited(with theEvent: NSEvent) {
         let hideTitle = (doc?.settings.autoHideTitle.value == true)
         let location : NSPoint = theEvent.locationInWindow
+        let tag = theEvent.trackingNumber
 
-        if let closeTag = self.closeTrackingTag, let _ = self.viewTrackingTag {
-            switch theEvent.trackingNumber {
-            case closeTag:
-                closeButton?.image = nullImage
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
+
+            Swift.print(String(format: "%@ exited", (viewTag == tag ? "view" : "button")))
+
+            switch tag {
+            case closeTag, miniTag, zoomTag:
+                closeButton?.isMouseOver = false
+                miniaturizeButton?.isMouseOver = false
+                zoomButton?.isMouseOver = false
                 break
-                
+
             default:
                 if let vSize = self.window?.contentView?.bounds.size {
                 
@@ -196,10 +273,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                     if hideTitle {
                         updateTitleBar(didChange: lastMouseOver != mouseOver)
                     }
-                    /*
-                    Swift.print(String(format: "%@ exited",
-                                       (theEvent.trackingNumber == titleTrackingTag
-                                        ? "title" : "view")))*/
                 }
             }
         }
@@ -274,6 +347,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
+    fileprivate func shouldBeVisible() -> Bool {
+        if doc?.settings.autoHideTitle.value == false {
+            return true
+        }
+        else
+        if ((self.contentViewController?.view.hitTest((NSApp.currentEvent?.locationInWindow)!)) != nil) {
+            return false
+        }
+        else
+        {
+            return true
+        }
+    }
     //MARK:- IBActions
     
     fileprivate var doc: Document? {
@@ -283,19 +369,39 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     fileprivate var settings: Settings {
         get {
-            return doc!.settings
+            if let doc = self.doc {
+                return doc.settings
+            }
+            else
+            {
+                return Settings()
+            }
+        }
+    }
+    fileprivate func cacheSettings() {
+        if let doc = self.doc, let url = doc.fileURL {
+            doc.cacheSettings(url)
         }
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == NSOffState)
+        cacheSettings()
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == NSOnState)
         setFloatOverFullScreenApps()
+        cacheSettings()
     }
     @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
+        cacheSettings()
+    }
+    
+    @IBAction func saveDocument(_ sender: NSMenuItem) {
+        if let doc = self.doc {
+            doc.save(sender)
+        }
     }
     
     @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
@@ -392,12 +498,25 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
     //MARK:- Notifications
     @objc func willUpdateAlpha() {
-        let alpha = settings.opacityPercentage.value
-        didUpdateAlpha(CGFloat(alpha))
+        didUpdateAlpha(settings.opacityPercentage.value)
+        cacheSettings()
+    }
+    func willUpdateTitleBar() {
+        guard let doc = self.doc else {
+            return
+        }
+        
+        //  synchronize prefs to document's panel state
+        if doc.settings.autoHideTitle.value != (panel.titleVisibility != .hidden), !self.shouldBeVisible(){
+            updateTitleBar(didChange:true)
+        }
+        
+
     }
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
         updateTranslucency()
+        cacheSettings()
     }
     
     func windowDidResize(_ notification: Notification) {
@@ -406,6 +525,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         
         wpc.setupTrackingAreas(true)
         wpc.updateTranslucency()
+        cacheSettings()
     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
@@ -440,6 +560,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
         if note.object as? URL == webView.url {
             self.updateTitleBar(didChange: false)
+            cacheSettings()
         }
     }
     
@@ -455,7 +576,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 docIconButton?.image = NSApp.applicationIconImage
             }
             docIconButton?.isHidden = false
-            if (self.webView.url?.isFileURL)! {
+            if let url = self.webView.url, url.isFileURL {
                 self.synchronizeWindowTitleWithDocumentName()
             }
         }
@@ -463,6 +584,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         {
             docIconButton?.isHidden = true
         }
+        cacheSettings()
     }
     
     @objc func updateTitleBar(didChange: Bool) {
@@ -497,12 +619,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             return displayName
         }
     }
-    @objc fileprivate func setFloatOverFullScreenApps() {
+    @objc func setFloatOverFullScreenApps() {
         if settings.disabledFullScreenFloat.value {
             panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         } else {
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
+        cacheSettings()
     }
     
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
@@ -522,7 +645,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
-    fileprivate func didUpdateAlpha(_ newAlpha: CGFloat) {
-        alpha = newAlpha / 100
+    func didUpdateAlpha(_ intAlpha: Int) {
+        alpha = CGFloat(intAlpha) / 100.0
     }
 }

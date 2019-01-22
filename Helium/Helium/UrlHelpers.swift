@@ -218,3 +218,21 @@ extension URL {
         }
     }
 }
+
+extension String {
+    var webloc : URL? {
+        get {
+            if let url = URL.init(string: self) {
+                return url
+            }
+            else
+            if let dict : Dictionary = self.propertyList() as? [String:Any] {
+                let urlString = dict["URL"] as! String
+                if let url = URL.init(string: urlString) {
+                    return url
+                }
+            }
+            return nil
+        }
+    }
+}

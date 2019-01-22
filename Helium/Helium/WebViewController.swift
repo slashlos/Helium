@@ -121,7 +121,7 @@ class MyWebView : WKWebView {
         //  Resolve alias before bookmarking
         if let original = (nextURL as NSURL).resolvedFinderAlias() { nextURL = original }
 
-        if url.isFileURL, appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: nextURL) {
+        if nextURL.isFileURL, appDelegate.isSandboxed() && !appDelegate.storeBookmark(url: nextURL) {
             Swift.print("Yoink, unable to sandbox \(nextURL)")
             return
         }
@@ -141,11 +141,44 @@ class MyWebView : WKWebView {
                 return
             }
         }
-        else
-        {
-            self.load(URLRequest(url: nextURL))
-        }
+        self.load(URLRequest(url: nextURL))
         doc?.update(to: nextURL)
+    }
+    
+    func text(_ text : String) {
+        if FileManager.default.fileExists(atPath: text) {
+            let url = URL.init(fileURLWithPath: text)
+            next(url: url)
+            return
+        }
+        
+        if let url = URL.init(string: text) {
+            next(url: url)
+            return
+        }
+        
+        if let data = text.data(using: String.Encoding.utf8) {
+            do {
+                let json = try JSONSerialization.jsonObject(with: data, options: [.allowFragments])
+                let wvc = self.window?.contentViewController
+                (wvc as! WebViewController).loadAttributes(dict: json as! Dictionary<String, Any>)
+                return
+            } catch let error as NSError {
+                NSApp.presentError(error)
+                Swift.print(error)
+            }
+        }
+        
+        let html = String(format: """
+<html>
+<body>
+<code>
+%@
+</code>
+</body>
+</html>
+""", text);
+        self.loadHTMLString(html, baseURL: nil)
     }
     
     // MARK: Drag and Drop - Before Release
@@ -155,49 +188,39 @@ class MyWebView : WKWebView {
     }
     // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-//        let homeURL = FileManager.default.homeDirectoryForCurrentUser
-//        let rootURL = URL.init(string: "file:///")
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
 
-        //  Open subsequent items in new windows
-        let createNewWindows = UserSettings.createNewWindows.value
-        
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
 
-                if let urlString = item.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/) {
-                    self.next(url: URL(string: urlString)!)
+                if let urlString = item.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/), !urlString.hasPrefix("file://") {
+                    if let webloc = urlString.webloc {
+                        self.next(url: webloc)
+                    }
+                    else
+                    {
+                        self.text(urlString)
+                    }
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeURL as String/*"public.url"*/) {
                     self.next(url: URL(string: urlString)!)
                 }
                 else
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/), var itemURL = URL.init(string: urlString) {
-                    if appDelegate.openForBusiness && UserSettings.createNewWindows.value {
+                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
+                    if appDelegate.openForBusiness && UserSettings.createNewWindows.value, let itemURL = URL.init(string: urlString) {
                         _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
                         continue
                     }
-                    guard itemURL.isFileURL, appDelegate.isSandboxed() else {
-                        self.next(url: URL(string: urlString)!)
-                        continue
-                    }
-                    
-                    //  Resolve alias before bookmarking
-                    if let original = (itemURL as NSURL).resolvedFinderAlias() { itemURL = original }
-
-                    if appDelegate.storeBookmark(url: itemURL as URL) {
-                    // DON'T use self.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
-                    // instead we need to load requests *and* utilize the exception handler
-//                      self.next(url: URL(string: urlString)!)
-                        self.loadFileURL(itemURL, allowingReadAccessTo: itemURL)
-                        (self.window?.windowController?.document as! Document).update(to: itemURL)
-                     }
+                    self.next(url: URL(string: urlString)!)
+                }
+                else
+                if let urlString = item.string(forType: kUTTypeData as String), let url = urlString.webloc {
+                    self.next(url: url)
                 }
                 else
 /*
-                kUTTypeData as String,
                 kUTTypeURL as String,
                 PlayList.className(),
                 PlayItem.className(),
@@ -237,9 +260,6 @@ class MyWebView : WKWebView {
                     }
                     continue
                 }
-                if !UserSettings.createNewWindows.value {
-                    UserSettings.createNewWindows.value = true
-                }
             }
         }
         else
@@ -247,9 +267,17 @@ class MyWebView : WKWebView {
             Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
 //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
         }
-        
-        if UserSettings.createNewWindows.value != createNewWindows {
-            UserSettings.createNewWindows.value = createNewWindows
+        else
+        if ((pboard.types?.contains(kUTTypeUTF8PlainText as String))!) {
+            if let urlString = pboard.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/) {
+                if let webloc = urlString.webloc {
+                    self.next(url: webloc)
+                }
+                else
+                {
+                    self.text(urlString)
+                }
+            }
         }
         return true
     }
@@ -492,6 +520,11 @@ class MyWebView : WKWebView {
         item.target = hwc
         subTranslucency.addItem(item)
 
+        item = NSMenuItem(title: "Save", action: #selector(hwc.saveDocument(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = hwc
+        menu.addItem(item)
+        
         item = NSMenuItem(title: "Search…", action: #selector(AppDelegate.openSearchPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
         item.target = appDelegate
@@ -500,7 +533,9 @@ class MyWebView : WKWebView {
         item = NSMenuItem(title: "Close", action: #selector(NSApp.keyWindow?.performClose(_:)), keyEquivalent: "")
         item.target = NSApp.keyWindow
         menu.addItem(item)
-
+        
+        menu.addItem(NSMenuItem.separator())
+        
         item = NSMenuItem(title: "Quit", action: #selector(NSApp.terminate(_:)), keyEquivalent: "")
         item.target = NSApp
         menu.addItem(item)
@@ -509,6 +544,7 @@ class MyWebView : WKWebView {
 
 class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate {
 
+    var defaults = UserDefaults.standard
     var trackingTag: NSTrackingRectTag? {
         get {
             return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
@@ -547,6 +583,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
         
         if self.webView != nil { setupWebView() }
+        
+        // Final hwc updates, called by view, when document is available
+        if let hwc = self.view.window?.windowController {
+            (hwc as! HeliumPanelController).documentDidLoad()
+        }
     }
     
     fileprivate func setupWebView() {
@@ -581,7 +622,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
 
         //  Intercept Finder drags
-        webView.register(forDraggedTypes: [NSURLPboardType])
+        webView.register(forDraggedTypes: [NSURLPboardType,NSStringPboardType])
         
         //  Watch javascript selection messages unless already done
         let controller = webView.configuration.userContentController
@@ -614,11 +655,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     override func viewDidLayout() {
         super.viewDidLayout()
 
-        // Deferred window setup needing a document' settings
-        if let hwc = self.view.window?.windowController {
-            (hwc as! HeliumPanelController).documentViewDidLoad()
-        }
-        
         setupTrackingAreas(true)
     }
     
@@ -819,7 +855,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             _ = loadURL(text: string)
         }
     }
-
+    
+    func loadAttributes(dict: Dictionary<String,Any>) {
+        Swift.print("loadAttributes: dict \(dict)")
+    }
+    
+    func loadAttributes(item: PlayItem) {
+        loadAttributes(dict: item.dictionary())
+    }
+    
     // TODO: For now just log what we would play once we figure out how to determine when an item finishes so we can start the next
     func playerDidFinishPlaying(_ note: Notification) {
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: note.object)
@@ -882,7 +926,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 if percent == 100, let url = (self.webView.url) {
 
                     //  Initial recording of for this url session
-                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : false])
+                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView])
                     NotificationCenter.default.post(notif)
 
                     // once loaded update window title,size with video name,dimension
@@ -921,10 +965,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                     Swift.print("os \(os)")
                                 }
                             }
-                            //  If we have save attributes restore them
-                            self.restoreSettings(title as String)
-
-
+                            
                             //  Wait for URL to finish
                             let videoPlayer = AVPlayer(url: url)
                             let item = videoPlayer.currentItem
@@ -974,25 +1015,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     fileprivate func restoreSettings(_ title: String) {
-        if let playitems = UserDefaults.standard.dictionary(forKey: k.Playitems) {
-            if let playitem = playitems[title] as? PlayItem {
-                let hwc = self.view.window?.windowController as! HeliumPanelController
-                let doc = hwc.document as! Document
-                let rect = playitem.rect
-                webSize = rect.size
-                webView.window?.setContentSize(webSize)
-                webView.bounds.size = webSize
-                self.view.window?.setFrameOrigin(rect.origin)
-                doc.settings.autoHideTitle.value = playitem.label
-                hwc.updateTitleBar(didChange: false)
-                doc.settings.opacityPercentage.value = Int(playitem.alpha)
-                hwc.willUpdateAlpha()
-                doc.settings.disabledFullScreenFloat.value = playitem.hover
-                doc.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: playitem.trans)!
-                hwc.translucencyPreference = doc.settings.translucencyPreference.value
-                hwc.willUpdateTranslucency()
-            }
+        guard let dict = defaults.dictionary(forKey: title), let hwc = self.view.window?.windowController, let doc = hwc.document else
+        {
+            return
         }
+        (doc as! Document).restoreSettings(with: dict)
+        (hwc as! HeliumPanelController).documentDidLoad()
     }
     
     //Convert a YouTube video url that starts at a certian point to popup/embedded design
@@ -1123,12 +1151,21 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
+        let hwc = webView.window?.windowController as? HeliumPanelController
+        let doc = hwc?.document as? Document
+        
         guard let url = webView.url else {
             return
         }
         
+        //  Restore setting not done by document controller
+        if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hwc = hwc {
+            doc.restoreSettings(with: dict)
+            hwc.documentDidLoad()
+        }
+        
         //  Finish recording of for this url session
-        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: ["finish" : true])
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
         NotificationCenter.default.post(notif)
         
         Swift.print("webView:didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
@@ -1141,7 +1178,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 </html>
 """
         webView.loadHTMLString(html, baseURL: nil)*/
-
     }
     
     func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {

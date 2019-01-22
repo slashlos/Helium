@@ -13,6 +13,7 @@ import QuickLook
 struct k {
     static let Playlists = "playlists"
     static let Playitems = "playitems"
+    static let Settings = "settings"
     static let play = "play"
     static let item = "item"
     static let name = "name"
@@ -27,6 +28,10 @@ struct k {
     static let hover = "hover"
     static let alpha = "alpha"
     static let trans = "trans"
+    static let view = "view"
+    static let fini = "finish"
+    static let vers = "vers"
+    static let data = "data"
     static let TitleUtility: CGFloat = 16.0
     static let TitleNormal: CGFloat = 22.0
     static let ToolbarItemHeight: CGFloat = 48.0
@@ -246,7 +251,7 @@ class PlayItem : NSObject, NSCoding {
     var runs : Int
     var label: Bool
     var hover: Bool
-    var alpha: Float
+    var alpha: Int
     var trans: Int
     var temp : String {
         get {
@@ -267,7 +272,7 @@ class PlayItem : NSObject, NSCoding {
         runs = 0
         label = false
         hover = false
-        alpha = 0.6
+        alpha = 60
         trans = 0
         super.init()
         
@@ -284,11 +289,11 @@ class PlayItem : NSObject, NSCoding {
         self.runs = 0
         self.label = false
         self.hover = false
-        self.alpha = 0.6
+        self.alpha = 60
         self.trans = 0
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, runs:Int, label:Bool, hover:Bool, alpha:Float, trans: Int) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, runs:Int, label:Bool, hover:Bool, alpha:Int, trans: Int) {
         self.name = name
         self.link = link
         self.date = date
@@ -302,20 +307,49 @@ class PlayItem : NSObject, NSCoding {
         self.trans = trans
         super.init()
     }
-    init(with dictionary: Dictionary<String,Any>) {
-        let plist  = dictionary as NSDictionary
-        self.name  = plist[k.name] as! String
-        self.link  = URL.init(string: plist[k.link] as! String)!
-        self.date  = (plist[k.date] as AnyObject).doubleValue ?? 0.0
-        self.time  = (plist[k.time] as AnyObject).doubleValue ?? 0.0
-        self.rank  = (plist[k.rank] as AnyObject).intValue ?? 0
-        self.rect  = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
-        self.runs  = (plist[k.runs] as AnyObject).intValue ?? 0
-        self.label = (plist[k.label] as AnyObject).boolValue ?? false
-        self.hover = (plist[k.hover] as AnyObject).boolValue ?? false
-        self.alpha = (plist[k.alpha] as AnyObject).floatValue ?? 0.6
-        self.trans = (plist[k.trans] as AnyObject).intValue ?? 0
-        super.init()
+    convenience init(with dictionary: Dictionary<String,Any>) {
+        self.init()
+        self.update(with: dictionary)
+    }
+    
+    func update(with dictionary: Dictionary<String,Any>) {
+        if let name : String = dictionary[k.name] as? String, name != self.name {
+            self.name = name
+        }
+        if let link : URL = dictionary[k.link] as? URL, link != self.link {
+            self.link = link
+        }
+        else
+        if let urlString : String = dictionary[k.link] as? String, let link = URL.init(string: urlString), link != self.link {
+            self.link = link
+        }
+        if let date : TimeInterval = dictionary[k.date] as? TimeInterval, date != self.date {
+            self.date = date
+        }
+        if let time : TimeInterval = dictionary[k.time] as? TimeInterval, time != self.time {
+            self.time = time
+        }
+        if let rank : Int = dictionary[k.rank] as? Int, rank != self.rank {
+            self.rank = rank
+        }
+        if let rect = dictionary[k.rect] as? NSRect, rect != self.rect {
+            self.rect = rect
+        }
+        if let runs : Int = dictionary[k.runs] as? Int, runs != self.runs {
+            self.runs = runs
+        }
+        if let label : Bool = dictionary[k.label] as? Bool, label != self.label  {
+            self.label  = label
+        }
+        if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.hover {
+            self.hover = hover
+        }
+        if let alpha : Int = dictionary[k.alpha] as? Int, alpha != self.alpha {
+            self.alpha = alpha
+        }
+        if let trans : Int = dictionary[k.trans] as? Int, trans != self.trans {
+            self.trans = trans
+        }
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
@@ -331,7 +365,7 @@ class PlayItem : NSObject, NSCoding {
         let runs = coder.decodeInteger(forKey: k.runs)
         let label = coder.decodeBool(forKey: k.label)
         let hover = coder.decodeBool(forKey: k.hover)
-        let alpha = coder.decodeFloat(forKey: k.alpha)
+        let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
         self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
                   runs: runs, label: label, hover: hover, alpha: alpha, trans: trans)
@@ -409,12 +443,11 @@ internal struct Settings {
     let autoHideTitle = Setup<Bool>("autoHideTitle", value: false)
     let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
-    let windowURL = Setup<URL>("windowURL", value: URL.init(string: "http://")!)
-    let rank = Setup<Int>("rank", value: 0)
-    let date = Setup<TimeInterval>("date", value: Date().timeIntervalSinceReferenceDate)
-    let time = Setup<TimeInterval>("time", value: 0.0)
-    let rect = Setup<NSRect>("frame", value: NSMakeRect(0, 0, 0, 0))
-    let runs = Setup<Int>("runs", value: 0)
+    let rank = Setup<Int>(k.rank, value: 0)
+    let date = Setup<TimeInterval>(k.date, value: Date().timeIntervalSinceReferenceDate)
+    let time = Setup<TimeInterval>(k.time, value: 0.0)
+    let rect = Setup<NSRect>(k.rect, value: NSMakeRect(0, 0, 0, 0))
+    let runs = Setup<Int>(k.runs, value: 0)
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -451,9 +484,32 @@ class HeliumDocumentController : NSDocumentController {
 
 class Document : NSDocument {
 
+    var defaults = UserDefaults.standard
+    var autoSaveDocs : Bool {
+        get {
+            return UserSettings.AutoSaveDocs.value
+        }
+    }
     var settings: Settings
     var docType : Int
-    
+    var url : URL? {
+        get {
+            if let url = self.fileURL
+            {
+                return url
+            }
+            else
+            if let webView = self.windowControllers.first?.contentViewController?.view.subviews.first, webView.isKind(of: MyWebView.self)
+            {
+                return (webView as! MyWebView).url
+            }
+            else
+            {
+                return URL.init(string: UserSettings.homePageURL.default)
+            }
+        }
+    }
+
     func dictionary() -> Dictionary<String,Any> {
         var dict: Dictionary<String,Any> = Dictionary()
         dict[k.name] = self.displayName
@@ -481,55 +537,90 @@ class Document : NSDocument {
         item.runs = self.settings.runs.value
         item.label = self.settings.autoHideTitle.value
         item.hover = self.settings.disabledFullScreenFloat.value
-        item.alpha = Float(self.settings.opacityPercentage.value)
+        item.alpha = self.settings.opacityPercentage.value
         item.trans = self.settings.translucencyPreference.value.rawValue
         return item
     }
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
-        let plist = dictionary as NSDictionary
-        self.displayName = dictionary[k.name] as? String
-        self.fileURL = URL.init(string: plist[k.link] as! String)!
-        self.settings.date.value = (plist[k.date] as AnyObject).timeInterval ?? 0.0
-        self.settings.time.value = (plist[k.time] as AnyObject).timeInterval ?? 0.0
-        self.settings.rank.value = (plist[k.rank] as AnyObject).intValue ?? 0
-        self.settings.rect.value = (plist[k.rect] as AnyObject).rectValue ?? NSZeroRect
-        self.settings.runs.value = (plist[k.runs] as AnyObject).intValue ?? 0
-        self.settings.autoHideTitle.value = (plist[k.label] as AnyObject).boolValue ?? false
-        self.settings.disabledFullScreenFloat.value = (plist[k.hover] as AnyObject).boolValue ?? false
-        self.settings.opacityPercentage.value = (plist[k.alpha] as AnyObject).intValue ?? 60
-        self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: (plist[k.trans] as AnyObject).intValue ?? 0)!
+        if let name : String = dictionary[k.name] as? String, name != self.displayName {
+            self.displayName = name
+        }
+        if let link : URL = dictionary[k.link] as? URL, link != self.fileURL {
+            self.fileURL = link
+        }
+        if let date : TimeInterval = dictionary[k.date] as? TimeInterval, date != self.settings.date.value {
+            self.settings.date.value = date
+        }
+        if let time : TimeInterval = dictionary[k.time] as? TimeInterval, time != self.settings.time.value {
+            self.settings.time.value = time
+        }
+        if let rank : Int = dictionary[k.rank] as? Int, rank != self.settings.rank.value {
+            self.settings.rank.value = rank
+        }
+        if let rect = dictionary[k.rect] as? NSRect, rect != self.settings.rect.value {
+            self.settings.rect.value = rect
+        }
+        if let runs : Int = dictionary[k.runs] as? Int, runs != self.settings.runs.value {
+            self.settings.runs.value = runs
+        }
+        if let label : Bool = dictionary[k.label] as? Bool, label != self.settings.autoHideTitle.value  {
+            self.settings.autoHideTitle.value  = label
+        }
+        if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.settings.disabledFullScreenFloat.value {
+            self.settings.disabledFullScreenFloat.value = hover
+        }
+        if let alpha : Int = dictionary[k.alpha] as? Int, alpha != self.settings.opacityPercentage.value {
+            self.settings.opacityPercentage.value = alpha
+        }
+        if let trans : Int = dictionary[k.trans] as? Int, trans != self.settings.translucencyPreference.value.rawValue {
+            self.settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: trans)!
+        }
 
-        if self.settings.time.value == 0.0 {
+        if self.settings.time.value == 0.0, let url = self.url, url.isFileURL {
             let appDelegate = NSApp.delegate as! AppDelegate
             let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
             if let secs = attr?[kMDItemDurationSeconds] {
                 self.settings.time.value = secs as! TimeInterval
             }
         }
-        if self.settings.rect.value == NSZeroRect,
-            let lists = UserDefaults.standard.dictionary(forKey: k.Playitems),
-            let playitem: PlayItem = lists[(self.fileURL?.absoluteString)!] as? PlayItem {
-            self.settings.rect.value = playitem.rect
+        if self.settings.rect.value == NSZeroRect, let fileURL = self.fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
+            if let rect = dict[k.rect] as? NSRect, rect != self.settings.rect.value {
+                self.settings.rect.value = rect
+            }
         }
     }
     
     func update(to url: URL) {
-        if url.lastPathComponent == "h3w", let dict = NSDictionary(contentsOf: url) {
-            if let item = dict.value(forKey: "settings") {
+        if url.pathExtension == "h3w", let dict = NSDictionary(contentsOf: url) {
+            if let item = dict.value(forKey: k.Settings) {
                 self.restoreSettings(with: item as! Dictionary<String,Any> )
             }
+            
+            if let plays = dict.value(forKey: k.Playlists) {
+                Swift.print("plays \(plays)")
+            }
+            
+            if let items = dict.value(forKey: k.Playitems) {
+                Swift.print("items \(items)")
+            }
         }
+
         self.fileType = url.pathExtension
         self.fileURL = url
         self.docType = 0
-        self.save(self)
+        
+        if let dict = defaults.dictionary(forKey: url.absoluteString) {
+            let item = PlayItem.init(with: dict)
+            
+            if item.rect != NSZeroRect {
+                self.settings.rect.value = item.rect
+             }
+        }
     }
-    
     func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
         self.update(to: item.link)
-        self.save(self)
     }
     
     override init() {
@@ -606,7 +697,18 @@ class Document : NSDocument {
             //  Defer custom setups until we have a webView
             if typeName == "Custom" { return }
             
+            //  If we were seen before then restore settings
             if let hwc = self.windowControllers.first {
+                if let dict = defaults.dictionary(forKey: (fileURL?.absoluteString)!) {
+                    self.restoreSettings(with: dict)
+                    (hwc as! HeliumPanelController).willUpdateTranslucency()
+                    (hwc as! HeliumPanelController).willUpdateAlpha()
+                }
+                
+                if settings.rect.value != NSZeroRect, let window = hwc.window {
+                    window.setFrame(settings.rect.value, display: true)
+                }
+
                 hwc.window?.orderFront(self)
                 (hwc.contentViewController as! WebViewController).loadURL(url: fileURL!)
             }
@@ -645,13 +747,29 @@ class Document : NSDocument {
         }
     }
     
+    func cacheSettings(_ url : URL) {
+        
+        //  soft update fileURL to cache if needed
+        if self.url != url { self.fileURL = url }
+        defaults.set(self.dictionary(), forKey: url.absoluteString)
+        if !autoSaveDocs { self.updateChangeCount(.changeDone) }
+        
+        //  Update UI (red dot in close button) immediately
+        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+            hoverBar.closeButton?.setNeedsDisplay()
+        }
+    }
+        
     override func write(to url: URL, ofType typeName: String) throws {
+        cacheSettings(url)
+        
         //  When a document is written, update in global play items
-        if var lists = UserDefaults.standard.dictionary(forKey: k.Playitems) {
-            lists[url.absoluteString] = self.dictionary()
-            UserDefaults.standard.set(lists, forKey: k.Playitems)
-            UserDefaults.standard.synchronize()
-            self.updateChangeCount(.changeCleared)
+        self.updateChangeCount(.changeCleared)
+        UserDefaults.standard.synchronize()
+
+        //  Update UI (red dot in close button) immediately
+        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+            hoverBar.closeButton?.setNeedsDisplay()
         }
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
@@ -683,7 +801,6 @@ class Document : NSDocument {
         {
             controller.window?.offsetFromKeyWindow()
         }
-        self.save(self)
     }
 
 }

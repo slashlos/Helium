@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0F05C7EF1EFEC5F3001B5D02 /* AboutHelium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */; };
 		0F1035921F032E6A00327B30 /* Helium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F10354A1F0300DA00327B30 /* Helium.swift */; };
+		0F1B034221C691270050A7DC /* PanelButtonBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1B034121C691270050A7DC /* PanelButtonBar.swift */; };
 		0F5197402002CD0B0090C431 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 0F51973F2002CD0B0090C431 /* Help */; };
 		0F9AB2F1213C3E7A0096C19F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F0213C3E7A0096C19F /* AppDelegate.m */; };
 		0F9AB2F3213C3E7B0096C19F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F2213C3E7B0096C19F /* Assets.xcassets */; };
@@ -101,6 +102,8 @@
 /* Begin PBXFileReference section */
 		0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutHelium.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0F10354A1F0300DA00327B30 /* Helium.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helium.swift; sourceTree = "<group>"; usesTabs = 0; };
+		0F1B034121C691270050A7DC /* PanelButtonBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelButtonBar.swift; sourceTree = "<group>"; };
+		0F2F92B121C325AD0089FF55 /* WindowButtonBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowButtonBar.swift; sourceTree = "<group>"; };
 		0F51973F2002CD0B0090C431 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Help; path = ../../Help; sourceTree = "<group>"; };
 		0F60517221612E470008977E /* Helium-dmg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Helium-dmg"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
@@ -280,6 +283,8 @@
 				5B75B5111C9A13D600475921 /* StringHelpers.swift */,
 				0FD57FDF1EECF0FF00A0F84D /* UrlHelpers.swift */,
 				0FF0BB391EAA25FE009952D4 /* ValueTransformers.swift */,
+				0F1B034121C691270050A7DC /* PanelButtonBar.swift */,
+				0F2F92B121C325AD0089FF55 /* WindowButtonBar.swift */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -371,11 +376,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D867CCD1AD6781200681331 /* Build configuration list for PBXNativeTarget "Helium" */;
 			buildPhases = (
-				0F05C8281EFF1B54001B5D02 /* Version */,
 				4D867CAD1AD6781200681331 /* Sources */,
 				4D867CAE1AD6781200681331 /* Frameworks */,
 				4D867CAF1AD6781200681331 /* Resources */,
 				27199AC21BE422AC00E02297 /* Embed App Extensions */,
+				0F05C8281EFF1B54001B5D02 /* Version */,
 				0F9AB2FF213C41E10096C19F /* CopyFiles */,
 			);
 			buildRules = (
@@ -419,17 +424,19 @@
 				TargetAttributes = {
 					0F60517121612E470008977E = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
 					0F9AB2EC213C3E7A0096C19F = {
 						CreatedOnToolsVersion = 9.4.1;
 						DevelopmentTeam = VQYGYPHYGE;
+						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
 					27199AAF1BE422AC00E02297 = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = VQYGYPHYGE;
-						LastSwiftMigration = 0830;
+						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
@@ -440,7 +447,7 @@
 					4D867CB01AD6781200681331 = {
 						CreatedOnToolsVersion = 6.3;
 						DevelopmentTeam = VQYGYPHYGE;
-						LastSwiftMigration = 0830;
+						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
@@ -548,7 +555,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -x\nexport |sort>~/Desktop/env.txt\n\nbuildPlist=\"${PROJECT}/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\ndmgName=\"${PROJECT} $buildMajor.$buildMinor.$buildNumber\"; export dmgName\ndmgFile=\"/users/${USER}/Desktop/$dmgName.dmg\"; export dmgFile\ntest -f $dmgFile && rm $dmgFile\nappPath=`find $SYMROOT -name $PROJECT.app -print`; export appPath\n\n### ~/GitHub/create-dmg/create-dmg --window-size 500 300 --background \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\" --icon-size 96 --volname \"${dmgName}\" --app-drop-link 380 205 --icon ${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns 110 205 ${dmgFile} ${appPath}/\n\ntmp=\"/tmp/helium$$.json\"\ncat > $tmp << EOF\n{\n    \"title\": \"$dmgName\",\n    \"icon-size\" : 96,\n    \"icon\": \"${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns\",\n    \"background\": \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\",\n    \"contents\": [\n        { \"x\": 400, \"y\": 200, \"type\": \"link\", \"path\": \"/Applications\" },\n        { \"x\": 100, \"y\": 200, \"type\": \"file\", \"path\": \"$appPath\" }\n    ]\n}\nEOF\nappdmg ${tmp} \"${dmgFile}\"\nmv ${dmgFile} `echo \"${dmgFile}\" | sed \"/\\=/ /\"`\nrm -f ${tmp}\n";
+			shellScript = "set -x\nexport |sort>~/Desktop/env.txt\n\nbuildPlist=\"${PROJECT}/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\ndmgName=\"${PROJECT} $buildMajor.$buildMinor.$buildNumber\"; export dmgName\ndmgFile=\"/users/${USER}/Desktop/$dmgName.dmg\"; export dmgFile\ntest -f ${dmgFile} && rm -v ${dmgFile}\nappPath=`find $SYMROOT -name $PROJECT.app -print`; export appPath\n\n### ~/GitHub/create-dmg/create-dmg --window-size 500 300 --background \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\" --icon-size 96 --volname \"${dmgName}\" --app-drop-link 380 205 --icon ${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns 110 205 ${dmgFile} ${appPath}/\n\ntmp=\"/tmp/helium$$.json\"\ncat > $tmp << EOF\n{\n    \"title\": \"$dmgName\",\n    \"icon-size\" : 96,\n    \"icon\": \"${PROJECT_DIR}/${PROJECT}/Assets/${PROJECT}.icns\",\n    \"background\": \"${PROJECT_DIR}/${PROJECT}/Assets/background.png\",\n    \"contents\": [\n        { \"x\": 400, \"y\": 200, \"type\": \"link\", \"path\": \"/Applications\" },\n        { \"x\": 100, \"y\": 200, \"type\": \"file\", \"path\": \"$appPath\" }\n    ]\n}\nEOF\nappdmg ${tmp} \"${dmgFile}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -588,6 +595,7 @@
 				0F05C7EF1EFEC5F3001B5D02 /* AboutHelium.swift in Sources */,
 				0FD6C7391E62286000D6F836 /* PlaylistViewController.swift in Sources */,
 				4D8DAEAC1C3A41F300B212EC /* UserSettings.swift in Sources */,
+				0F1B034221C691270050A7DC /* PanelButtonBar.swift in Sources */,
 				4D867CB91AD6781200681331 /* WebViewController.swift in Sources */,
 				0FF0BB3A1EAA25FE009952D4 /* ValueTransformers.swift in Sources */,
 				0FD6C7381E62286000D6F836 /* PlaylistPanelController.swift in Sources */,

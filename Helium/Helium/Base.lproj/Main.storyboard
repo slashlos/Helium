@@ -12,7 +12,7 @@
         <scene sceneID="t8N-qi-OCo">
             <objects>
                 <windowController id="1dx-1f-JSH" sceneMemberID="viewController">
-                    <window key="window" title="About Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="kbG-0e-qka" customClass="NSPanel">
+                    <window key="window" title="About Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="kbG-0e-qka" customClass="NSPanel">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="425" y="461" width="285" height="165"/>
@@ -53,7 +53,7 @@
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ApO-5O-qon">
                                 <rect key="frame" x="12" y="86" width="259" height="5"/>
                             </box>
-                            <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IV0-Ql-nbs">
+                            <textField hidden="YES" toolTip="copy app info to pasteboard" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IV0-Ql-nbs">
                                 <rect key="frame" x="62" y="140" width="161" height="18"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Helium" placeholderString="" id="dzr-yS-Vgn">
                                     <font key="font" metaFont="system" size="14"/>
@@ -61,6 +61,17 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button toolTip="copy app info to pasteboard" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b0R-I6-wV0">
+                                <rect key="frame" x="62" y="133" width="161" height="32"/>
+                                <buttonCell key="cell" type="bevel" title="AppNameButton" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="D91-93-KwH">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system" size="14"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="appButtonPress:" target="umu-a0-Tfe" id="UKn-m1-K0O"/>
+                                    <binding destination="umu-a0-Tfe" name="title" keyPath="self.appNameField.stringValue" id="NRr-fk-XWe"/>
+                                </connections>
+                            </button>
                             <button focusRingType="none" translatesAutoresizingMaskIntoConstraints="NO" id="ISs-R1-bl3">
                                 <rect key="frame" x="110" y="168" width="63" height="63"/>
                                 <constraints>
@@ -90,20 +101,20 @@
                             </button>
                             <scrollView hidden="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OZR-xn-j0b">
                                 <rect key="frame" x="12" y="6" width="259" height="77"/>
-                                <clipView key="contentView" id="6A6-Eg-DDC">
+                                <clipView key="contentView" drawsBackground="NO" id="6A6-Eg-DDC">
                                     <rect key="frame" x="1" y="1" width="257" height="75"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4IG-nm-Y5X">
                                             <rect key="frame" x="0.0" y="0.0" width="257" height="75"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <size key="minSize" width="257" height="75"/>
                                             <size key="maxSize" width="678" height="10000000"/>
                                             <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                         </textView>
                                     </subviews>
-                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="kwe-eA-EL8">
                                     <rect key="frame" x="1" y="59" width="0.0" height="15"/>
@@ -114,7 +125,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <customView hidden="YES" toolTip="Yahoo! Search" translatesAutoresizingMaskIntoConstraints="NO" id="0C4-5f-uW8">
+                            <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0C4-5f-uW8">
                                 <rect key="frame" x="0.0" y="77" width="283" height="164"/>
                             </customView>
                         </subviews>
@@ -128,13 +139,16 @@
                             <constraint firstItem="rKn-5s-fYK" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="ApO-5O-qon" secondAttribute="trailing" id="97U-V3-PhZ"/>
                             <constraint firstItem="ISs-R1-bl3" firstAttribute="centerX" secondItem="kg1-aS-nIq" secondAttribute="centerX" id="BAF-pp-sSy"/>
                             <constraint firstItem="0NX-wg-Xfe" firstAttribute="leading" secondItem="ApO-5O-qon" secondAttribute="leading" id="DTR-SJ-l6U"/>
+                            <constraint firstItem="b0R-I6-wV0" firstAttribute="leading" secondItem="kg1-aS-nIq" secondAttribute="leading" constant="62" id="DuB-PV-4lj"/>
                             <constraint firstItem="rKn-5s-fYK" firstAttribute="top" secondItem="IV0-Ql-nbs" secondAttribute="bottom" constant="10" id="IjD-Om-Lsc"/>
                             <constraint firstItem="rKn-5s-fYK" firstAttribute="leading" secondItem="kg1-aS-nIq" secondAttribute="leading" constant="12" id="J0e-NW-kyF"/>
                             <constraint firstItem="0C4-5f-uW8" firstAttribute="top" secondItem="kg1-aS-nIq" secondAttribute="top" constant="-1" id="KCm-hN-11F"/>
                             <constraint firstItem="ApO-5O-qon" firstAttribute="leading" secondItem="OZR-xn-j0b" secondAttribute="leading" id="OeC-qj-voD"/>
                             <constraint firstItem="IV0-Ql-nbs" firstAttribute="leading" relation="lessThanOrEqual" secondItem="kg1-aS-nIq" secondAttribute="leading" constant="64" id="Ouj-bR-WKP"/>
+                            <constraint firstAttribute="trailing" secondItem="b0R-I6-wV0" secondAttribute="trailing" constant="60" id="VXH-X2-ZgM"/>
                             <constraint firstItem="ApO-5O-qon" firstAttribute="trailing" secondItem="rKn-5s-fYK" secondAttribute="trailing" id="VhN-BH-V88"/>
                             <constraint firstItem="0C4-5f-uW8" firstAttribute="leading" secondItem="kg1-aS-nIq" secondAttribute="leading" id="XWU-AF-ZzI"/>
+                            <constraint firstItem="b0R-I6-wV0" firstAttribute="centerY" secondItem="IV0-Ql-nbs" secondAttribute="centerY" id="dfl-pq-lo8"/>
                             <constraint firstItem="ApO-5O-qon" firstAttribute="top" secondItem="0NX-wg-Xfe" secondAttribute="bottom" constant="7" id="dzT-hq-Tjr"/>
                             <constraint firstItem="rKn-5s-fYK" firstAttribute="leading" secondItem="0NX-wg-Xfe" secondAttribute="leading" id="eLl-jS-mAK"/>
                             <constraint firstAttribute="trailing" secondItem="0C4-5f-uW8" secondAttribute="trailing" id="eiv-4E-A2T"/>
@@ -145,7 +159,8 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="appNameField" destination="IV0-Ql-nbs" id="9UC-Ra-UDn"/>
+                        <outlet property="appNameButton" destination="b0R-I6-wV0" id="ruA-K7-otA"/>
+                        <outlet property="appNameField" destination="IV0-Ql-nbs" id="PWB-L1-HeA"/>
                         <outlet property="creditScroll" destination="OZR-xn-j0b" id="QC1-VA-sHp"/>
                         <outlet property="creditSeparatorBox" destination="ApO-5O-qon" id="eLH-hF-26w"/>
                         <outlet property="creditsButton" destination="0NX-wg-Xfe" id="2Gg-gO-bji"/>
@@ -253,6 +268,26 @@
                                                             </items>
                                                         </menu>
                                                     </menuItem>
+                                                    <menuItem title="Statics" id="Pit-lF-DBZ">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Statics" id="aZx-SB-S34">
+                                                            <items>
+                                                                <menuItem title="Auto save documents" id="drc-ov-KJT">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoSaveDocsPress:" target="Voe-Tx-rLC" id="W1x-qA-dbn"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Hide zoom icon" id="2nN-CZ-MHD">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="hideZoomIconPress:" target="Voe-Tx-rLC" id="Ruk-Sf-kRt"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                            <accessibility help="static preference settings"/>
+                                                        </menu>
+                                                    </menuItem>
                                                 </items>
                                                 <connections>
                                                     <outlet property="delegate" destination="Voe-Tx-rLC" id="7xL-pl-5Bj"/>
@@ -358,6 +393,11 @@ CA
                                         <menuItem title="Close" keyEquivalent="w" id="dfe-3b-ReR">
                                             <connections>
                                                 <action selector="performClose:" target="Ady-hI-5gd" id="Rpf-np-Tdj"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Save" keyEquivalent="s" id="L3y-mY-Msk">
+                                            <connections>
+                                                <action selector="saveDocument:" target="Ady-hI-5gd" id="2Da-J9-Bqx"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wbg-XB-qHT"/>
@@ -685,12 +725,6 @@ CA
                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="DUb-Jc-Weo"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="User Agent" id="oeK-lr-tYp">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="fov-K5-mhb"/>
-                                        </connections>
-                                    </menuItem>
                                     <menuItem title="Translucency" id="JEh-0f-gsX">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <menu key="submenu" title="Translucency" id="0Lo-4S-2Ic">
@@ -748,6 +782,12 @@ CA
                                             </items>
                                         </menu>
                                     </menuItem>
+                                    <menuItem title="User Agent" id="oeK-lr-tYp">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="fov-K5-mhb"/>
+                                        </connections>
+                                    </menuItem>
                                 </items>
                             </menu>
                         </menuItem>
@@ -766,7 +806,7 @@ CA
         <scene sceneID="3rF-Wl-9by">
             <objects>
                 <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -811,12 +851,12 @@ CA
                                     </button>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KRs-AT-9D8">
                                         <rect key="frame" x="0.0" y="39" width="126" height="233"/>
-                                        <clipView key="contentView" id="Noe-Za-eMO">
+                                        <clipView key="contentView" drawsBackground="NO" id="Noe-Za-eMO">
                                             <rect key="frame" x="1" y="0.0" width="124" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="167" height="194"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="167" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -867,6 +907,7 @@ CA
                                                     </connections>
                                                 </tableView>
                                             </subviews>
+                                            <nil key="backgroundColor"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="atn-XO-QDu">
                                             <rect key="frame" x="1" y="217" width="124" height="15"/>
@@ -877,7 +918,7 @@ CA
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="tha-4C-kVE" customClass="PlayHeaderView" customModule="Helium" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="167" height="23"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="167" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1020,12 +1061,12 @@ Gw
                                     </stackView>
                                     <scrollView horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
                                         <rect key="frame" x="0.0" y="39" width="314" height="233"/>
-                                        <clipView key="contentView" id="Ix6-nN-7A8">
+                                        <clipView key="contentView" drawsBackground="NO" id="Ix6-nN-7A8">
                                             <rect key="frame" x="1" y="0.0" width="297" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="823" height="209"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="823" height="207"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1236,17 +1277,18 @@ Gw
                                                     </connections>
                                                 </tableView>
                                             </subviews>
+                                            <nil key="backgroundColor"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1e4-tR-Cc8">
                                             <rect key="frame" x="-100" y="-100" width="297" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="aSB-Wi-46z">
-                                            <rect key="frame" x="298" y="23" width="15" height="209"/>
+                                            <rect key="frame" x="298" y="25" width="15" height="207"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
-                                            <rect key="frame" x="0.0" y="0.0" width="823" height="23"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="823" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1311,7 +1353,7 @@ Gw
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController storyboardIdentifier="HeliumController" id="B8D-0N-5wS" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingIdentifier="webView" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingIdentifier="webView" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -1370,7 +1412,7 @@ Gw
         <scene sceneID="Nw5-MM-un9">
             <objects>
                 <windowController storyboardIdentifier="CustomController" id="UVO-9J-w1E" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="vzr-C3-QGe" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="vzr-C3-QGe" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" HUD="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
