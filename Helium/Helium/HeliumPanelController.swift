@@ -39,21 +39,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     override func windowDidLoad() {
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
 
-        //  decide where to place the hover bar
-        if false, let window = self.window, window.responds(to: #selector(NSWindow.addTitlebarAccessoryViewController(_:))) {
-            guard self.accessoryViewController == nil else { return }
-            let accessoryViewController = NSTitlebarAccessoryViewController()
-            self.accessoryViewController = accessoryViewController
-            hoverBar = PanelButtonBar.init(frame: NSMakeRect(0, 0, 80, 19))
-            accessoryViewController.view = hoverBar!
-            accessoryViewController.layoutAttribute = .left
-            window.addTitlebarAccessoryViewController(accessoryViewController)
-        }
-        else
-        {
-            hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
-            self.titleView?.superview?.addSubview(hoverBar!)
-        }
+        // place the hover bar
+        hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
+        self.titleView?.superview?.addSubview(hoverBar!)
         
         //  Default to no dragging by content
         panel.isMovableByWindowBackground = false
