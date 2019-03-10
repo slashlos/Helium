@@ -978,28 +978,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         let item : PlayItem = PlayItem.init()
         let info = notification.userInfo!
-        var fileURL : URL? = nil
         
-        if let testURL: URL = (itemURL as NSURL).filePathURL {
-            fileURL = testURL
-        }
-        else
-        if (itemURL as NSURL).isFileReferenceURL() {
-            fileURL = (itemURL as NSURL).filePathURL
-        }
-
         //  If the title is already seen, update global and playlists
-        if let fileURL = fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
+        if let dict = defaults.dictionary(forKey: itemURL.absoluteString) {
             item.update(with: dict)
         }
         else
         {
-            if fileURL != nil {
-                let path = fileURL?.absoluteString//.stringByRemovingPercentEncoding
-                let attr = metadataDictionaryForFileAt((fileURL?.path)!)
+            if let fileURL: URL = (itemURL as NSURL).filePathURL {
+                let path = fileURL.absoluteString//.stringByRemovingPercentEncoding
+                let attr = metadataDictionaryForFileAt(fileURL.path)
                 let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
                 item.name = fuzz.removingPercentEncoding!
-                item.link = URL.init(string: path!)!
+                item.link = URL.init(string: path)!
                 item.time = attr?[kMDItemDurationSeconds] as? TimeInterval ?? 0
             }
             else
@@ -1014,14 +1005,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item.link = itemURL
                 item.time = 0
             }
-            histories.append(item)
-            item.rank = histories.count
-        }
-        
-        if let runs = info[k.runs], (info[k.fini] as AnyObject).boolValue == true {
-            item.runs += runs as! Int
         }
 
+        //  if not finished bump plays
+        if (info[k.fini] as AnyObject).boolValue == false {
+            item.plays += 1
+        }
+        else
+        {
+            //  move to next item in playlist
+            Swift.print("move to next item in playlist")
+        }
+
+        //  always instantiate to histories
+        histories.append(item)
+        item.rank = histories.count
+        
+        //  always synchronize this item to defaults - lazily
+        defaults.set(item.dictionary(), forKey: item.link.absoluteString)
+        
         //  tell any playlist controller we have updated history
         let notif = Notification(name: Notification.Name(rawValue: k.item), object: item)
         NotificationCenter.default.post(notif)
