@@ -93,11 +93,13 @@ class PlayItemCornerView : NSView {
         case true:
             var seen = [String:PlayItem]()
             for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated().reversed() {
+                if item.plays == 0 { item.plays = 1}
                 if seen[item.name] == nil {
                     seen[item.name] = item
                 }
                 else
                 {
+                    seen[item.name]?.plays += item.plays
                     (self.window?.contentViewController as! PlaylistViewController).removePlay(item, atIndex: row)
                 }
             }
