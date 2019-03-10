@@ -23,7 +23,7 @@ struct k {
     static let time = "time"
     static let rank = "rank"
     static let rect = "rect"
-    static let runs = "runs"
+    static let plays = "plays"
     static let label = "label"
     static let hover = "hover"
     static let alpha = "alpha"
@@ -162,7 +162,21 @@ class PlayList : NSObject,NSCoding {
     }
     var list : Array <PlayItem> = Array()
     var date : TimeInterval
-    
+    var tally: Int {
+        get {
+            return self.list.count
+        }
+    }
+    var plays: Int {
+        get {
+            var plays = 0
+            for item in self.list {
+                plays += item.plays
+            }
+            return plays
+        }
+    }
+
     override var description: String {
         get {
             return String(format: "<%@: %p '%@' %ld item(s)", self.className, self, self.name, list.count)
@@ -193,10 +207,6 @@ class PlayList : NSObject,NSCoding {
 
         self.list = list
         self.name = name
-    }
-    
-    func listCount() -> Int {
-        return list.count
     }
     
     func writableTypes(for pasteboard: NSPasteboard) -> [String] {
@@ -248,7 +258,7 @@ class PlayItem : NSObject, NSCoding {
     var date : TimeInterval
     var rank : Int
     var rect : NSRect
-    var runs : Int
+    var plays : Int
     var label: Bool
     var hover: Bool
     var alpha: Int
@@ -269,7 +279,7 @@ class PlayItem : NSObject, NSCoding {
         date = Date().timeIntervalSinceReferenceDate
         rank = 0
         rect = NSZeroRect
-        runs = 0
+        plays = 0
         label = false
         hover = false
         alpha = 60
@@ -286,21 +296,21 @@ class PlayItem : NSObject, NSCoding {
         self.time = time
         self.rank = rank
         self.rect = NSZeroRect
-        self.runs = 0
+        self.plays = 0
         self.label = false
         self.hover = false
         self.alpha = 60
         self.trans = 0
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, runs:Int, label:Bool, hover:Bool, alpha:Int, trans: Int) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int) {
         self.name = name
         self.link = link
         self.date = date
         self.time = time
         self.rank = rank
         self.rect = rect
-        self.runs = runs
+        self.plays = plays
         self.label = label
         self.hover = hover
         self.alpha = alpha
@@ -335,8 +345,8 @@ class PlayItem : NSObject, NSCoding {
         if let rect = dictionary[k.rect] as? NSRect, rect != self.rect {
             self.rect = rect
         }
-        if let runs : Int = dictionary[k.runs] as? Int, runs != self.runs {
-            self.runs = runs
+        if let plays : Int = dictionary[k.plays] as? Int, plays != self.plays {
+            self.plays = plays
         }
         if let label : Bool = dictionary[k.label] as? Bool, label != self.label  {
             self.label  = label
@@ -362,13 +372,13 @@ class PlayItem : NSObject, NSCoding {
         let time = coder.decodeDouble(forKey: k.time)
         let rank = coder.decodeInteger(forKey: k.rank)
         let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
-        let runs = coder.decodeInteger(forKey: k.runs)
+        let plays = coder.decodeInteger(forKey: k.plays)
         let label = coder.decodeBool(forKey: k.label)
         let hover = coder.decodeBool(forKey: k.hover)
         let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
         self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
-                  runs: runs, label: label, hover: hover, alpha: alpha, trans: trans)
+                  plays: plays, label: label, hover: hover, alpha: alpha, trans: trans)
     }
     
     func encode(with coder: NSCoder) {
@@ -378,7 +388,7 @@ class PlayItem : NSObject, NSCoding {
         coder.encode(time, forKey: k.time)
         coder.encode(rank, forKey: k.rank)
         coder.encode(NSStringFromRect(rect), forKey: k.rect)
-        coder.encode(runs, forKey: k.runs)
+        coder.encode(plays, forKey: k.plays)
         coder.encode(label, forKey: k.label)
         coder.encode(hover, forKey: k.hover)
         coder.encode(alpha, forKey: k.alpha)
@@ -391,10 +401,10 @@ class PlayItem : NSObject, NSCoding {
         dict[k.link] = link.absoluteString
         dict[k.date] = date
         dict[k.time] = time
-        dict[k.runs] = runs
+        dict[k.plays] = plays
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
-        dict[k.runs] = runs
+        dict[k.plays] = plays
         dict[k.label] = label ? 1 : 0
         dict[k.hover] = hover ? 1 : 0
         dict[k.alpha] = alpha
@@ -447,7 +457,7 @@ internal struct Settings {
     let date = Setup<TimeInterval>(k.date, value: Date().timeIntervalSinceReferenceDate)
     let time = Setup<TimeInterval>(k.time, value: 0.0)
     let rect = Setup<NSRect>(k.rect, value: NSMakeRect(0, 0, 0, 0))
-    let runs = Setup<Int>(k.runs, value: 0)
+    let plays = Setup<Int>(k.plays, value: 0)
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -513,7 +523,7 @@ class Document : NSDocument {
         dict[k.time] = settings.time.value
         dict[k.rank] = settings.rank.value
         dict[k.rect] = NSStringFromRect(settings.rect.value)
-        dict[k.runs] = settings.runs.value
+        dict[k.plays] = settings.plays.value
         dict[k.label] = settings.autoHideTitle.value
         dict[k.hover] = settings.disabledFullScreenFloat.value
         dict[k.alpha] = settings.opacityPercentage.value
@@ -529,7 +539,7 @@ class Document : NSDocument {
         item.time = self.settings.time.value
         item.rank = self.settings.rank.value
         item.rect = self.settings.rect.value
-        item.runs = self.settings.runs.value
+        item.plays = self.settings.plays.value
         item.label = self.settings.autoHideTitle.value
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = self.settings.opacityPercentage.value
@@ -556,8 +566,8 @@ class Document : NSDocument {
         if let rect = dictionary[k.rect] as? NSRect, rect != self.settings.rect.value {
             self.settings.rect.value = rect
         }
-        if let runs : Int = dictionary[k.runs] as? Int, runs != self.settings.runs.value {
-            self.settings.runs.value = runs
+        if let plays : Int = dictionary[k.plays] as? Int, plays != self.settings.plays.value {
+            self.settings.plays.value = plays
         }
         if let label : Bool = dictionary[k.label] as? Bool, label != self.settings.autoHideTitle.value  {
             self.settings.autoHideTitle.value  = label
