@@ -144,6 +144,20 @@ extension Array where Element:PlayList {
     }
 }
 
+extension Array where Element:PlayItem {
+    func has(_ name: String) -> Bool {
+        return self.item(name) != nil
+    }
+    func item(_ name: String) -> PlayItem? {
+        for item in self {
+            if item.link.absoluteString == name {
+                return item
+            }
+        }
+        return nil
+    }
+}
+
 class PlayList : NSObject,NSCoding {
     //  Keep playlist names unique
     var name : String = k.list {
@@ -243,7 +257,23 @@ class PlayList : NSObject,NSCoding {
         self.init(name: name, list: list)
         self.date = date
     }
-    
+    func update(with dictionary: Dictionary<String,Any>) {
+        if let name : String = dictionary[k.name] as? String, name != self.name {
+            self.name = name
+        }
+        if let plists : [Dictionary<String,Any>] = dictionary[k.list] as? [Dictionary<String,Any>] {
+
+            for plist in plists {
+                if let item : PlayItem = list.item(plist[k.link] as! String) {
+                    item.update(with: plist)
+                }
+            }
+        }
+        if let date : TimeInterval = dictionary[k.date] as? TimeInterval, date != self.date {
+            self.date = date
+        }
+    }
+
     func encode(with coder: NSCoder) {
         coder.encode(name, forKey: k.name)
         coder.encode(list, forKey: k.list)
@@ -296,7 +326,7 @@ class PlayItem : NSObject, NSCoding {
         self.time = time
         self.rank = rank
         self.rect = NSZeroRect
-        self.plays = 0
+        self.plays = 1
         self.label = false
         self.hover = false
         self.alpha = 60
@@ -348,6 +378,7 @@ class PlayItem : NSObject, NSCoding {
         if let plays : Int = dictionary[k.plays] as? Int, plays != self.plays {
             self.plays = plays
         }
+        self.plays = (self.plays == 0) ? 1 : self.plays // default missing value
         if let label : Bool = dictionary[k.label] as? Bool, label != self.label  {
             self.label  = label
         }
