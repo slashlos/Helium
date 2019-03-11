@@ -326,7 +326,6 @@ class MyWebView : WKWebView {
                 if item.title == "Enter Full Screen" {
                     item.target = appDelegate
                     item.action = #selector(appDelegate.toggleFullScreen(_:))
-                    item.keyEquivalent = "f"
                 }
                 else
                 if self.url != nil {
@@ -746,8 +745,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString)
-        let urlString = URL.init(string: rawString!)?.absoluteString ?? currentURL
+        var urlString = currentURL
+        
+        if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {
+            urlString = rawString
+        }
 
         appDelegate.didRequestUserUrl(RequestUserStrings (
             currentURL:         urlString,

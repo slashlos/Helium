@@ -268,6 +268,26 @@
                                                             </items>
                                                         </menu>
                                                     </menuItem>
+                                                    <menuItem title="Statics" id="Pit-lF-DBZ">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Statics" id="aZx-SB-S34">
+                                                            <items>
+                                                                <menuItem title="Auto save documents" id="drc-ov-KJT">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoSaveDocsPress:" target="Voe-Tx-rLC" id="W1x-qA-dbn"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Hide zoom icon" id="2nN-CZ-MHD">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="hideZoomIconPress:" target="Voe-Tx-rLC" id="Ruk-Sf-kRt"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                            <accessibility help="static preference settings"/>
+                                                        </menu>
+                                                    </menuItem>
                                                 </items>
                                                 <connections>
                                                     <outlet property="delegate" destination="Voe-Tx-rLC" id="7xL-pl-5Bj"/>
@@ -705,12 +725,6 @@ CA
                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="DUb-Jc-Weo"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="User Agent" id="oeK-lr-tYp">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="fov-K5-mhb"/>
-                                        </connections>
-                                    </menuItem>
                                     <menuItem title="Translucency" id="JEh-0f-gsX">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <menu key="submenu" title="Translucency" id="0Lo-4S-2Ic">
@@ -767,6 +781,12 @@ CA
                                                 </menuItem>
                                             </items>
                                         </menu>
+                                    </menuItem>
+                                    <menuItem title="User Agent" id="oeK-lr-tYp">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="fov-K5-mhb"/>
+                                        </connections>
                                     </menuItem>
                                 </items>
                             </menu>

@@ -22,17 +22,51 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4088</h2>
+<p class="block">
+25b0871|18/12/23 auto save, hide zoom preference support<br>
+20a9f17|18/12/22 de-tab<br>
+64fc0b0|18/12/22 zoom icon help<br>
+346e53a|18/12/22 added zoom icon help<br>
+07c8f01|18/12/22 merge fix 2<br>
+c353d85|18/12/22 merge fix<br>
+4d3e54a|18/12/22 Time Machine restore<br>
+959a1d5|18/12/21 release update<br>
+ae8293b|18/12/18 hide close image early<br>
+869be66|18/12/17 centralize doc settings change<br>
+31c2810|18/12/16 implement documentDidLoad function<br>
+8e922d1|18/12/16 added explicit save support<br>
+ed6da50|18/12/16 modified red dot - modification marker<br>
+01f83b3|18/12/16 undo change counts - not user action<br>
+c041d37|18/12/16 NYI window button bar<br>
+3a5a2d9|18/12/16 implement hover bar widget workaround<br>
+4e0c521|18/12/16 fix url string handling order<br>
+62329d9|18/12/16 implement hover bar<br>
+4133752|18/12/15 add shouldDragDocumentWith delegate routine<br>
+c2c85c7|18/12/15 cache item changes to defaults<br>
+f1eff75|18/12/15 playitems deprecated to individual item cache<br>
+3701038|18/12/08 conditionally restore settings<br>
+00d347f|18/12/08 fix url test in docIconToggle()<br>
+19cfa60|18/12/08 publish private functions<br>
+032056f|18/12/08 fix settings getter<br>
+653b057|18/12/08 use static string k.item<br>
+cf91f9f|18/12/08 use static strings<br>
+eb7e752|18/12/05 fixed new windows preference<br>
+</p>
+
 <h2>Build 3690</h2>
 <p class="block">
 9bf1ca4|18/11/12 fix create new windows pref setting<br>
 d3f6728|18/11/04 about fields' action copies to pasteboard<br>
 1d8d6cc|18/11/04 h3w document settings load changes<br>
 3c663d1|18/11/04 text, url handling updates<br>
-9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
+9449d65|18/10/07 background asset appdg/create-dmg<br>
 </p>
 
 <h2>Build 3595</h2>
 <p class="block">
+f9b287e|18/10/08 conditionally increment build before compilation<br>
+9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
 6572410|18/10/07 Helium-dmg target added<br>
 0f16ce8|18/10/02 fix downcast as suggested<br>
 1faff70|18/09/30 initially clear drag move by background<br>
