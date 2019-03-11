@@ -827,6 +827,7 @@ CA
                                         </buttonCell>
                                         <connections>
                                             <action selector="playPlaylist:" target="YAy-lX-dae" id="SZn-cv-787"/>
+                                            <binding destination="YAy-lX-dae" name="toolTip" keyPath="playButtonTooltip" id="PcZ-Bb-UAl"/>
                                         </connections>
                                     </button>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KRs-AT-9D8">
@@ -836,13 +837,13 @@ CA
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="167" height="192"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="253" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="" width="121.04746736703925" minWidth="40" maxWidth="1000" id="zpc-Ad-MEK">
+                                                        <tableColumn identifier="name" width="121.04746736703925" minWidth="40" maxWidth="1000" id="zpc-Ad-MEK">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Playlist">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -868,15 +869,60 @@ CA
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                             </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="FFi-KL-M68">
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" title="Text Cell" id="FFi-KL-M68">
                                                                 <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="MMM.d''yy hh:m:s" id="iWk-07-iUl"/>
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="b0P-yv-XZJ"/>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="120" id="eTP-QM-9yi">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Count">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" title="Text Cell" id="zem-8R-Hfw">
+                                                                <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="cq2-cO-uS3"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="tally"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.tally" id="erv-H5-Ucy">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="120" id="dxN-As-ZFj">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Plays">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" title="Text Cell" id="4qr-Qn-x2h">
+                                                                <numberFormatter key="formatter" formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="OgM-So-Pls"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="plays"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.plays" id="b0Q-oK-G3c">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
                                                             </connections>
                                                         </tableColumn>
                                                     </tableColumns>
@@ -898,7 +944,7 @@ CA
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="tha-4C-kVE" customClass="PlayHeaderView" customModule="Helium" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="167" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="253" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -917,6 +963,7 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="addPlaylist:" target="YAy-lX-dae" id="DUY-PE-H0l"/>
+                                                    <binding destination="YAy-lX-dae" name="toolTip" keyPath="addButtonTooltip" id="NeR-Hf-Cx7"/>
                                                 </connections>
                                             </button>
                                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="o1D-da-uMx">
@@ -931,6 +978,7 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="removePlaylist:" target="YAy-lX-dae" id="OUO-pJ-yYE"/>
+                                                    <binding destination="YAy-lX-dae" name="toolTip" keyPath="removeButtonTooltip" id="u01-KJ-TRL"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -963,7 +1011,7 @@ CA
                                     <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WiW-pB-vRx">
                                         <rect key="frame" x="10" y="10" width="134" height="21"/>
                                         <subviews>
-                                            <button toolTip="Restore saved playlists" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DNq-eF-IsJ">
+                                            <button toolTip="Restore selected playlists or playitems" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="DNq-eF-IsJ">
                                                 <rect key="frame" x="-6" y="-7" width="80" height="32"/>
                                                 <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="3XW-t7-vOU">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -971,9 +1019,10 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="restorePlaylists:" target="YAy-lX-dae" id="zhn-cs-UOH"/>
+                                                    <binding destination="YAy-lX-dae" name="toolTip" keyPath="restoreButtonTooltip" id="i23-zs-q1C"/>
                                                 </connections>
                                             </button>
-                                            <button toolTip="Save playlists to user defaults" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zo4-as-HFj">
+                                            <button toolTip="Save selected playlists or playitems" verticalHuggingPriority="750" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="zo4-as-HFj">
                                                 <rect key="frame" x="70" y="-7" width="70" height="32"/>
                                                 <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="x6P-T8-kml">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -981,6 +1030,7 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="savePlaylists:" target="YAy-lX-dae" id="KLq-pb-ZJ7"/>
+                                                    <binding destination="YAy-lX-dae" name="toolTip" keyPath="saveButtonTooltip" id="Ac8-gP-1N5"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -1039,14 +1089,14 @@ Gw
                                             <real value="3.4028234663852886e+38"/>
                                         </customSpacing>
                                     </stackView>
-                                    <scrollView horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
+                                    <scrollView horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
                                         <rect key="frame" x="0.0" y="39" width="314" height="233"/>
                                         <clipView key="contentView" drawsBackground="NO" id="Ix6-nN-7A8">
-                                            <rect key="frame" x="1" y="0.0" width="297" height="232"/>
+                                            <rect key="frame" x="1" y="0.0" width="297" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="823" height="207"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="890" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1148,12 +1198,34 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="rect"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.rect" id="p4G-cg-lcu">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                         <string key="NSValueTransformerName">rectTransformer</string>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="plays" width="64" minWidth="10" maxWidth="200" headerToolTip="play count" id="etn-d3-AIr">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Plays">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" alignment="right" title="Text Cell" id="wqk-WR-2Tx">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="plays"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.plays" id="afq-Oj-Hc8">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
@@ -1259,16 +1331,16 @@ Gw
                                             </subviews>
                                             <nil key="backgroundColor"/>
                                         </clipView>
-                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1e4-tR-Cc8">
-                                            <rect key="frame" x="-100" y="-100" width="297" height="15"/>
+                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="1e4-tR-Cc8">
+                                            <rect key="frame" x="1" y="217" width="297" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="aSB-Wi-46z">
-                                            <rect key="frame" x="298" y="25" width="15" height="207"/>
+                                            <rect key="frame" x="298" y="25" width="15" height="192"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
-                                            <rect key="frame" x="0.0" y="0.0" width="823" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="890" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
