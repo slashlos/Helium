@@ -52,7 +52,11 @@ class PlayTableView : NSTableView {
         // Pay attention to column resizes and aggressively force the tableview's cornerview to redraw.
         self.cornerView?.needsDisplay = true
     }
-
+    override func becomeFirstResponder() -> Bool {
+        let notif = Notification(name: Notification.Name(rawValue: "NSTableViewSelectionDidChange"), object: self, userInfo: nil)
+        (self.delegate as! PlaylistViewController).tableViewSelectionDidChange(notif)
+        return true
+    }
 }
 
 class PlayItemCornerView : NSView {
@@ -571,6 +575,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             Swift.print("firstResponder: \(String(describing: whoAmI))")
         }
     }
+	internal func addButtonTooltip() -> String {
+		let whoAmI = self.view.window?.firstResponder
+		
+		if whoAmI == playlistTableView || whoAmI == nil {
+			return "Add playlist"
+		}
+		else
+		{
+			return "Add playitem"
+		}
+	}
 
     @IBAction func removePlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
@@ -610,6 +625,29 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             NSSound(named: "Sosumi")?.play()
         }
     }
+	internal func removeButtonTooltip() -> String {
+		let whoAmI = self.view.window?.firstResponder
+		
+		if whoAmI == playlistTableView || whoAmI == nil {
+			if playlistArrayController.selectedObjects.count == 0 {
+				return "Remove all playlists"
+			}
+			else
+			{
+				return "Remove selected playlist(s)"
+			}
+		}
+		else
+		{
+			if playitemArrayController.selectedObjects.count == 0 {
+				return "Remove playitem playitem(s)"
+			}
+			else
+			{
+				return "Remove selected playitems(s)"
+			}
+		}
+	}
 
     // Our playlist panel return point if any
     var webViewController: WebViewController? = nil
@@ -692,7 +730,30 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             play(sender, items:list, maxSize: list.count)
         }
     }
-    
+	internal func playButtonTooltip() -> String {
+		let whoAmI = self.view.window?.firstResponder
+		
+		if whoAmI == playlistTableView || whoAmI == nil {
+			if playlistArrayController.selectedObjects.count == 0 {
+				return "Play all playlists"
+			}
+			else
+			{
+				return "Play selected playlist(s)"
+			}
+		}
+		else
+		{
+			if playitemArrayController.selectedObjects.count == 0 {
+				return "Play playlist playitem(s)"
+			}
+			else
+			{
+				return "Play selected playitems(s)"
+			}
+		}
+	}
+
     // Return notification from webView controller
     @objc func gotNewHistoryItem(_ note: Notification) {
         //  If history is current playplist, add to the history
@@ -702,6 +763,29 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     @IBOutlet weak var restoreButton: NSButton!
+	internal func restoreButtonTooltip() -> String {
+		let whoAmI = self.view.window?.firstResponder
+
+		if whoAmI == playlistTableView || whoAmI == nil {
+			if playlistArrayController.selectedObjects.count == 0 {
+				return "Restore all playlists"
+			}
+			else
+			{
+				return "Return selected playlist(s)"
+			}
+		}
+		else
+		{
+			if playitemArrayController.selectedObjects.count == 0 {
+				return "Restore playlist playitem(s)"
+			}
+			else
+			{
+				return "Restore selected playitems(s)"
+			}
+		}
+	}
     @IBAction func restorePlaylists(_ sender: NSButton?) {
         let whoAmI = self.view.window?.firstResponder
 
@@ -791,6 +875,29 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     @IBOutlet weak var saveButton: NSButton!
+	internal func saveButtonTooltip() -> String {
+		let whoAmI = self.view.window?.firstResponder
+		
+		if whoAmI == playlistTableView || whoAmI == nil {
+			if playlistArrayController.selectedObjects.count == 0 {
+				return "Save all playlists"
+			}
+			else
+			{
+				return "Save selected playlist(s)"
+			}
+		}
+		else
+		{
+			if playitemArrayController.selectedObjects.count == 0 {
+				return "Save playlist playitem(s)"
+			}
+			else
+			{
+				return "Save selected playitems(s)"
+			}
+		}
+	}
     @IBAction func savePlaylists(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
@@ -953,6 +1060,21 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         return "no tip for you"
     }
+    func tableViewSelectionDidChange(_ notification: Notification) {
+        //  Alert tooltip changes when selection does in tableView
+        let buttons = [ "add", "remove", "play", "restore", "save"]
+        let tableView : NSTableView = notification.object as! NSTableView
+        let hpc = tableView.delegate as! PlaylistViewController
+//        Swift.print("change tooltips \(buttons)")
+        for button in buttons {
+            hpc.willChangeValue(forKey: String(format: "%@ButtonTooltip", button))
+        }
+        ;
+        for button in buttons {
+            hpc.didChangeValue(forKey: String(format: "%@ButtonTooltip", button))
+        }
+    }
+
     // MARK:- Drag-n-Drop
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
 
