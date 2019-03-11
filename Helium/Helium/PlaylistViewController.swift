@@ -393,8 +393,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         self.restorePlaylists(nil)
 
         //  Restore hidden columns in tableviews using defaults
-        setupHiddenColumns(playlistTableView, hideit: ["date"])
-        setupHiddenColumns(playitemTableView, hideit: ["date","link","rect","label","hover","alpha","trans"])
+        setupHiddenColumns(playlistTableView, hideit: ["date","tally"])
+        setupHiddenColumns(playitemTableView, hideit: ["date","link","plays","rect","label","hover","alpha","trans"])
     }
 
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
@@ -447,7 +447,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     //  but use their index to update the controller scrolling only initially.
 
     //  "Play" items are individual PlayItem items, part of a playlist
-    internal func addPlay(_ item: PlayItem, atIndex p_index: Int) {
+    internal func addItem(_ item: PlayItem, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
@@ -482,7 +482,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.addPlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                self.addItem(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Remove PlayItem")
                 }
@@ -564,7 +564,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let item = PlayItem()
             item.rank = (list.count > 0) ? (list.last?.rank)! + 1 : 1
 
-            self.addPlay(item, atIndex: -1)
+            self.addItem(item, atIndex: -1)
         }
         else
         {
@@ -697,56 +697,148 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc func gotNewHistoryItem(_ note: Notification) {
         //  If history is current playplist, add to the history
         if historyCache.name == (playlistArrayController.selectedObjects.first as! PlayList).name {
-            self.addPlay(note.object as! PlayItem, atIndex: -1)
+            self.addItem(note.object as! PlayItem, atIndex: -1)
         }
     }
 
     @IBOutlet weak var restoreButton: NSButton!
     @IBAction func restorePlaylists(_ sender: NSButton?) {
+        let whoAmI = self.view.window?.firstResponder
+
         //  We're nil when called at view load
         if sender != nil { setObserving(false) }
         
-        if playCache.count > 0 {
-            playlists = playCache
-        }
-        else
-        if let playArray = defaults.dictionary(forKey: k.Playlists) {
-            playlists = [PlayList]()
-            for (name,plist) in playArray {
-                guard let items = plist as? [Dictionary<String,Any>] else {
-                    let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
-                    let playlist = PlayList()
-                    playlist.list.append(item)
-                    playlists.append(playlist)
-                    continue
+        //  We want to restore to existing play item or list or global playlists
+        if whoAmI == playlistTableView || whoAmI == nil {
+            Swift.print("restore playlist(s)")
+            
+            let playArray = playlistArrayController.selectedObjects as! [PlayList]
+            
+            //  If no playlist(s) selection restore from defaults
+            if playArray.count == 0 {
+                if let playPlists = defaults.dictionary(forKey: k.Playlists) {
+                    playlists = [PlayList]()
+                    for (name,plist) in playPlists{
+                        guard let items = plist as? [Dictionary<String,Any>] else {
+                            let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
+                            let playlist = PlayList()
+                            playlist.list.append(item)
+                            playlists.append(playlist)
+                            continue
+                        }
+                        var list : [PlayItem] = [PlayItem]()
+                        for plist in items {
+                            let item = PlayItem.init(with: plist)
+                            list.append(item)
+                        }
+                        let playlist = PlayList.init(name: name, list: list)
+                        playlistArrayController.addObject(playlist)
+                    }
                 }
-                var list : [PlayItem] = [PlayItem]()
-                for playitem in items {
-                    let item = PlayItem.init(with: playitem)
-                    
-                    list.append(item)
+            }
+            else
+            {
+                for playlist in playArray {
+                    if let plists = defaults.dictionary(forKey: playlist.name) {
+                        
+                        //  First update matching playitems
+                        playlist.update(with: plists)
+                        
+                        //  Second, using plist, add playitems not found in playlist
+                        if let value = plists[k.list], let dicts = value as? [[String:Any]]  {
+                            for dict in dicts {
+                                if !playlist.list.has(dict[k.link] as! String) {
+                                    let item = PlayItem.init(with: dict)
+                                    self.addItem(item, atIndex: -1)
+                                }
+                            }
+                            
+                            //  Third remove playitems not found in plist
+                            for playitem in playlist.list {
+                                var found = false
+
+                                for dict in dicts {
+                                    if playitem.link.absoluteString == (dict[k.link] as? String) { found = true; break }
+                                }
+
+                                if !found {
+                                    removePlay(playitem, atIndex: -1)
+                                }
+                            }
+                        }
+                    }
                 }
-                let playlist = PlayList.init(name: name, list: list)
-                playlistArrayController.addObject(playlist)
             }
         }
+        else
+        {
+            Swift.print("restore playitems(s)")
+            
+            var itemArray = playitemArrayController.selectedObjects as! [PlayItem]
+            
+            if itemArray.count == 0 {
+                itemArray = playitemArrayController.arrangedObjects as! [PlayItem]
+            }
+            
+            for playitem in itemArray {
+                if let dict = defaults.dictionary(forKey: playitem.link.absoluteString) {
+                    playitem.update(with: dict)
+                }
+            }
+        }
+        
         if sender != nil { setObserving(true) }
     }
 
     @IBOutlet weak var saveButton: NSButton!
     @IBAction func savePlaylists(_ sender: AnyObject) {
-        let playArray = playlistArrayController.arrangedObjects as! [PlayList]
-        var temp = Dictionary<String,Any>()
-        for playlist in playArray {
-            var list = Array<Any>()
-            for playitem in playlist.list {
-                let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
-                list.append(item as AnyObject)/*
-                list.append(playitem.dictionary() as AnyObject)*/
+        let whoAmI = self.view.window?.firstResponder
+        
+        //  We want to save to existing play item or list
+        if whoAmI == playlistTableView {
+            Swift.print("save playlist(s)")
+
+            var playArray = playlistArrayController.selectedObjects as! [PlayList]
+
+            //  If no playlist(s) selection save all to defaults
+            if playArray.count == 0 {
+                playArray = playlistArrayController.arrangedObjects as! [PlayList]
+                
+                var playPlists = Dictionary<String,Any>()
+                for playlist in playArray {
+                    var list = Array<Any>()
+                    for playitem in playlist.list {
+                        //let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
+                        //list.append(item as AnyObject)
+                        let plist = playitem.dictionary()
+                        list.append(plist as AnyObject)
+                    }
+                    playPlists[playlist.name] = list
+                }
+                defaults.set(playPlists, forKey: k.Playlists)
             }
-            temp[playlist.name] = list
+            else
+            {
+                for playlist in playArray {
+                    defaults.set(playlist.dictionary(), forKey: playlist.name)
+                }
+            }
+         }
+        else
+        {
+            Swift.print("save playitems(s)")
+            
+            var itemArray = playitemArrayController.selectedObjects as! [PlayItem]
+            
+            if itemArray.count == 0 {
+                itemArray = playitemArrayController.arrangedObjects as! [PlayItem]
+            }
+
+            for playitem in itemArray {
+                defaults.set(playitem.dictionary(), forKey: playitem.link.absoluteString)
+            }
         }
-        defaults.set(temp, forKey: k.Playlists)
+
         defaults.synchronize()
     }
     
@@ -823,12 +915,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             return true
         }
         else
-            if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
-                return tableColumn?.identifier == "time" || (item as! PlayItem).time == 0
-            }
-            else
-            {
-                return false
+        if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
+            return (item as! PlayItem).plays == 0
+        }
+        else
+        {
+            return false
         }
     }
     func tableView(_ tableView: NSTableView, toolTipFor cell: NSCell, rect: NSRectPointer, tableColumn: NSTableColumn?, row: Int, mouseLocation: NSPoint) -> String {
@@ -836,7 +928,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         {
             let play = (playlistArrayController.arrangedObjects as! [PlayList])[row]
 
-            return String(format: "%ld item(s)", play.list.count)
+            if let plays : NSTableColumn = tableView.tableColumn(withIdentifier: k.plays), plays.isHidden {
+                return String(format: "%ld play(s)", play.plays)
+            }
+            else
+            {
+                return String(format: "%ld item(s)", play.list.count)
+            }
         }
         else
         if tableView == playitemTableView
@@ -1059,7 +1157,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for index in selectedRowIndexes! {
                 let playlist = (playlistArrayController.arrangedObjects as! [PlayList])[index]
                 for playItem in playlist.list {
-                    addPlay(playItem, atIndex: -1)
+                    addItem(playItem, atIndex: -1)
                 }
             }
         }
@@ -1117,7 +1215,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //    We have a Finder drag-n-drop of file or location URLs ?
         if let items: Array<AnyObject> = pasteboard.readObjects(forClasses: [NSURL.classForCoder()], options: options) as Array<AnyObject>? {
 
-            //  addList() and addPlay() affect array controller selection,
+            //  addPlay() and addItem() affect array controller selection,
             //  so we must alter selection to the drop row for playlist;
             //  note that we append items so adjust the newIndexOffset
             switch tableView {
@@ -1189,7 +1287,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 
                 //  Insert item at valid offset, else append
                 if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                    addPlay(item!, atIndex: row + newIndexOffset)
+                    addItem(item!, atIndex: row + newIndexOffset)
                     
                     //  Dropping on from a sourceTableView implies replacement
                     if dropOperation == .on {
@@ -1202,7 +1300,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
                 else
                 {
-                    addPlay(item!, atIndex: -1)
+                    addItem(item!, atIndex: -1)
                 }
                 newIndexOffset += 1
             }
@@ -1275,7 +1373,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     }
                     
                     if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                        addPlay(item!, atIndex: row + newIndexOffset)
+                        addItem(item!, atIndex: row + newIndexOffset)
 
                         //  Dropping on from a sourceTableView implies replacement
                         if dropOperation == .on {
@@ -1288,7 +1386,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     }
                     else
                     {
-                        addPlay(item!, atIndex: -1)
+                        addItem(item!, atIndex: -1)
                     }
                     newIndexOffset += 1
                 }
