@@ -21,6 +21,7 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
         if let window = self.window, let pvc = window.contentViewController {
             //  call playlist view windowShouldClose() on close
             window.delegate = (pvc as! PlaylistViewController)
+            panel.isFloatingPanel = true
         }
     }
 }
