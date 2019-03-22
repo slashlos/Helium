@@ -104,7 +104,7 @@ class PlayItemCornerView : NSView {
                 else
                 {
                     seen[item.name]?.plays += item.plays
-                    (self.window?.contentViewController as! PlaylistViewController).removePlay(item, atIndex: row)
+                    (self.window?.contentViewController as! PlaylistViewController).removeItem(item, atIndex: row)
                 }
             }
             self.setNeedsDisplay(self.frame)
@@ -455,7 +455,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.removePlay(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                self.removeItem(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Add PlayItem")
                 }
@@ -482,7 +482,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.playitemTableView.scrollRowToVisible(index)
         }
     }
-    internal func removePlay(_ item: PlayItem, atIndex p_index: Int) {
+    internal func removeItem(_ item: PlayItem, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
@@ -601,7 +601,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if playitemTableView == whoAmI {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]).reversed() {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
-                self.removePlay(item, atIndex: index!)
+                self.removeItem(item, atIndex: index!)
             }
             return
         }
@@ -609,7 +609,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if playitemArrayController.selectedObjects.count > 0 {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
-                self.removePlay(item, atIndex: index!)
+                self.removeItem(item, atIndex: index!)
             }
         }
         else
@@ -846,7 +846,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                 }
 
                                 if !found {
-                                    removePlay(playitem, atIndex: -1)
+                                    removeItem(playitem, atIndex: -1)
                                 }
                             }
                         }
@@ -1417,7 +1417,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         let oldItem = playitems[row+newIndexOffset+1]
 
                         //  We've shifted so remove old item at new location
-                        removePlay(oldItem, atIndex: row+newIndexOffset+1)
+                        removeItem(oldItem, atIndex: row+newIndexOffset+1)
                     }
                 }
                 else
@@ -1503,7 +1503,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                             let oldItem = playitems[row+newIndexOffset+1]
 
                             //  We've shifted so remove old item at new location
-                            removePlay(oldItem, atIndex: row+newIndexOffset+1)
+                            removeItem(oldItem, atIndex: row+newIndexOffset+1)
                         }
                     }
                     else
