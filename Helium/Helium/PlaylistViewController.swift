@@ -104,7 +104,7 @@ class PlayItemCornerView : NSView {
                 else
                 {
                     seen[item.name]?.plays += item.plays
-                    (self.window?.contentViewController as! PlaylistViewController).removeItem(item, atIndex: row)
+                    (self.window?.contentViewController as! PlaylistViewController).remove(play: item, atIndex: row)
                 }
             }
             self.setNeedsDisplay(self.frame)
@@ -451,11 +451,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     //  but use their index to update the controller scrolling only initially.
 
     //  "Play" items are individual PlayItem items, part of a playlist
-    internal func addItem(_ item: PlayItem, atIndex p_index: Int) {
+    internal func add(play item: PlayItem, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.removeItem(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                self.remove(play: oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Add PlayItem")
                 }
@@ -482,11 +482,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.playitemTableView.scrollRowToVisible(index)
         }
     }
-    internal func removeItem(_ item: PlayItem, atIndex p_index: Int) {
+    internal func remove(play item: PlayItem, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.addItem(oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
+                self.add(play: oldVals["item"] as! PlayItem, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Remove PlayItem")
                 }
@@ -509,11 +509,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     //  "List" items are PlayList objects
-    internal func addList(_ item: PlayList, atIndex p_index: Int) {
+    internal func add(list item: PlayList, atIndex p_index: Int) {
         var index = p_index
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.removeList(oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
+                self.remove(list: oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Add PlayList")
                 }
@@ -533,10 +533,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.playlistTableView.scrollRowToVisible(index)
         }
     }
-    internal func removeList(_ item: PlayList, atIndex index: Int) {
+    internal func remove(list item: PlayList, atIndex index: Int) {
         if let undo = self.undoManager {
             undo.registerUndo(withTarget: self, handler: {[oldVals = ["item": item, "index": index] as [String : Any]] (PlaylistViewController) -> () in
-                self.addList(oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
+                self.add(list: oldVals["item"] as! PlayList, atIndex: oldVals["index"] as! Int)
                 if !undo.isUndoing {
                     undo.setActionName("Remove PlayList")
                 }
@@ -558,7 +558,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if whoAmI == playlistTableView {
             let item = PlayList()
             
-            self.addList(item, atIndex: -1)
+            self.add(list: item, atIndex: -1)
         }
         else
         if let selectedPlaylist = playlistArrayController.selectedObjects.first as? PlayList {
@@ -568,7 +568,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let item = PlayItem()
             item.rank = (list.count > 0) ? (list.last?.rank)! + 1 : 1
 
-            self.addItem(item, atIndex: -1)
+            self.add(play: item, atIndex: -1)
         }
         else
         {
@@ -593,7 +593,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if playlistTableView == whoAmI {
             for item in (playlistArrayController.selectedObjects as! [PlayList]).reversed() {
                 let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
-                self.removeList(item, atIndex: index!)
+                self.remove(list: item, atIndex: index!)
             }
             return
         }
@@ -601,7 +601,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if playitemTableView == whoAmI {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]).reversed() {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
-                self.removeItem(item, atIndex: index!)
+                self.remove(play: item, atIndex: index!)
             }
             return
         }
@@ -609,14 +609,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if playitemArrayController.selectedObjects.count > 0 {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
                 let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
-                self.removeItem(item, atIndex: index!)
+                self.remove(play: item, atIndex: index!)
             }
         }
         else
         if playlistArrayController.selectedObjects.count > 0 {
             for item in (playlistArrayController.selectedObjects as! [PlayList]) {
                 let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
-                self.removeList(item, atIndex: index!)
+                self.remove(list: item, atIndex: index!)
             }
         }
         else
@@ -758,7 +758,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc func gotNewHistoryItem(_ note: Notification) {
         //  If history is current playplist, add to the history
         if historyCache.name == (playlistArrayController.selectedObjects.first as! PlayList).name {
-            self.addItem(note.object as! PlayItem, atIndex: -1)
+            self.add(play: note.object as! PlayItem, atIndex: -1)
         }
     }
 
@@ -833,7 +833,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                             for dict in dicts {
                                 if !playlist.list.has(dict[k.link] as! String) {
                                     let item = PlayItem.init(with: dict)
-                                    self.addItem(item, atIndex: -1)
+                                    self.add(play: item, atIndex: -1)
                                 }
                             }
                             
@@ -846,7 +846,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                 }
 
                                 if !found {
-                                    removeItem(playitem, atIndex: -1)
+                                    remove(play: playitem, atIndex: -1)
                                 }
                             }
                         }
@@ -1279,7 +1279,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for index in selectedRowIndexes! {
                 let playlist = (playlistArrayController.arrangedObjects as! [PlayList])[index]
                 for playItem in playlist.list {
-                    addItem(playItem, atIndex: -1)
+                    add(play: playItem, atIndex: -1)
                 }
             }
         }
@@ -1311,7 +1311,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             else
             {
-                addList(PlayList(), atIndex: -1)
+                add(list: PlayList(), atIndex: -1)
                 tableView.scrollRowToVisible(row)
                 playlistTableView.reloadData()
             }
@@ -1337,7 +1337,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //    We have a Finder drag-n-drop of file or location URLs ?
         if let items: Array<AnyObject> = pasteboard.readObjects(forClasses: [NSURL.classForCoder()], options: options) as Array<AnyObject>? {
 
-            //  addPlay() and addItem() affect array controller selection,
+            //  add(play:) and add(list:) affect array controller selection,
             //  so we must alter selection to the drop row for playlist;
             //  note that we append items so adjust the newIndexOffset
             switch tableView {
@@ -1350,7 +1350,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     break
                 default:
                     play = PlayList()
-                    addList(play!, atIndex: -1)
+                    add(list: play!, atIndex: -1)
                     playlistTableView.reloadData()
                     
                     //  Pick our seleced playlist
@@ -1409,7 +1409,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 
                 //  Insert item at valid offset, else append
                 if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                    addItem(item!, atIndex: row + newIndexOffset)
+                    add(play: item!, atIndex: row + newIndexOffset)
                     
                     //  Dropping on from a sourceTableView implies replacement
                     if dropOperation == .on {
@@ -1417,12 +1417,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         let oldItem = playitems[row+newIndexOffset+1]
 
                         //  We've shifted so remove old item at new location
-                        removeItem(oldItem, atIndex: row+newIndexOffset+1)
+                        remove(play: oldItem, atIndex: row+newIndexOffset+1)
                     }
                 }
                 else
                 {
-                    addItem(item!, atIndex: -1)
+                    add(play: item!, atIndex: -1)
                 }
                 newIndexOffset += 1
             }
@@ -1495,7 +1495,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     }
                     
                     if (row+newIndexOffset) < (playitemArrayController.arrangedObjects as AnyObject).count {
-                        addItem(item!, atIndex: row + newIndexOffset)
+                        add(play: item!, atIndex: row + newIndexOffset)
 
                         //  Dropping on from a sourceTableView implies replacement
                         if dropOperation == .on {
@@ -1503,12 +1503,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                             let oldItem = playitems[row+newIndexOffset+1]
 
                             //  We've shifted so remove old item at new location
-                            removeItem(oldItem, atIndex: row+newIndexOffset+1)
+                            remove(play: oldItem, atIndex: row+newIndexOffset+1)
                         }
                     }
                     else
                     {
-                        addItem(item!, atIndex: -1)
+                        add(play: item!, atIndex: -1)
                     }
                     newIndexOffset += 1
                 }
