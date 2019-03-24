@@ -22,6 +22,30 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4121</h2>
+<p class="block">
+b71fedd|19/03/24 playlist corner updates<br>
+90d0bd5|19/03/24 Swift 4.2 changes<br>
+9815e39|19/03/24 playlist corner view button changes<br>
+9c6c248|19/03/24 adopt Playlist document sub-type<br>
+746a395|19/03/24 adopt string struc names<br>
+6ba56a5|19/03/23 use overloaded add(), remove() func naming<br>
+8633b3d|19/03/22 restore playlist window floating attribute<br>
+dbc8286|19/03/21 renamed removePlay -> removeItem<br>
+613a2b1|19/03/11 4111 playlist UI overhaul<br>
+8eeefc9|19/03/10 update copyright<br>
+3e4ea95|19/03/10 restore conditional version increment<br>
+1978ea0|19/03/10 tooltips: add, remove, play, restore, save<br>
+a16a0cc|19/03/10 fix save, restore button logic<br>
+fb39cda|19/03/10 playlist fixes: plays, search, update<br>
+bc416e5|19/03/10 renamed runs to plays<br>
+895404d|19/03/10 fix history plays accounting<br>
+d2091b9|19/03/10 adopt hover bar<br>
+abf86c8|19/03/10 fix history plays accounting<br>
+2e69ef7|19/01/21 fix pasteboard url handling<br>
+bd9d390|19/01/21 no key equivalents<br>
+</p>
+
 <h2>Build 4088</h2>
 <p class="block">
 25b0871|18/12/23 auto save, hide zoom preference support<br>
@@ -65,8 +89,8 @@ d3f6728|18/11/04 about fields' action copies to pasteboard<br>
 
 <h2>Build 3595</h2>
 <p class="block">
-f9b287e|18/10/08 conditionally increment build before compilation<br>
-9449d65|18/10/07 background asset added for appdg/create-dmg uses<br>
+f9b287e|18/10/08 conditionally increment build numbering<br>
+9449d65|18/10/07 asset added for appdmg/create-dmg uses<br>
 6572410|18/10/07 Helium-dmg target added<br>
 0f16ce8|18/10/02 fix downcast as suggested<br>
 1faff70|18/09/30 initially clear drag move by background<br>
@@ -114,7 +138,6 @@ ee948f6|18/08/26 added CustomController<br>
 bbb4f6e|18/08/26 typeName used to configure window controller(s)<br>
 c485a56|18/08/25 removed typeName from Document.update method<br>
 abb6e6e|18/08/24 use supplied configuration in webView creation<br>
-e84fa24|18/08/24 set ui delegate, set web, video to new window target<br>
 799127d|18/08/24 establish nav and ui delegate<br>
 daeb563|18/08/23 revise 'about' window title re: release notes<br>
 7df853b|18/08/23 icon-less 'about' windows re: release etc<br>
@@ -126,7 +149,7 @@ d7df374|18/08/23 show release notes as internal document<br>
 890ab93|18/08/23 use Helium icon in about window<br>
 96472b4|18/08/23 remove tracking areas before window close<br>
 e4ee7a0|18/08/23 remove duplicate item (Quit) from dock menu<br>
-0e52da4|18/08/23 default load url to pasteboard buffer when appropriate<br>
+0e52da4|18/08/23 load url to pasteboard buffer when appropriate<br>
 c461cb7|18/08/23 typo fix re: quotes<br>
 c11def9|18/08/23 build 3177 posted to github<br>
 f21673d|18/08/23 fix commit line wrapping<br>
@@ -180,12 +203,11 @@ c67fce1|18/07/31 completed playlist overhaul re: defaults format<br>
 1cfebcb|18/07/31 added tooltip to tableView<br>
 614eec4|18/07/29 defer saving move<br>
 3144469|18/07/29 drop refresh()<br>
-8cf2da1|18/07/29 playlists array of PlayList objects uniquely named<br>
+8cf2da1|18/07/29 playlists of PlayList objects uniquely named<br>
 83bdfdc|18/07/29 update description<br>
 e7a5a17|18/07/29 unify playdicts into unique playlist name<br>
 e09b6cb|18/07/29 drop refresh()<br>
 c1bb6d9|18/07/29 setupTrackingAreas calls updateTrackingAreas<br>
-f13e74d|18/07/29 renamed updateTrackingAreas to setupTrackingAreas<br>
 138f74f|18/07/25 playdict key maps to playlist object<br>
 1b2a1bc|18/07/22 force focus even when modal<br>
 c02c341|18/07/22 group code to comment<br>
@@ -193,7 +215,7 @@ c02c341|18/07/22 group code to comment<br>
 fc5452e|18/07/22 unify file, url dialog on app delegate<br>
 1d25211|18/07/21 check-in drag-drop playlist from finder<br>
 fac4146|18/07/20 removed conflicting validation method<br>
-756abe5|18/07/20 hand off window close delegate to view controller<br>
+756abe5|18/07/20 window close delegate in view controller<br>
 8b33007|18/07/20 made update tracking function take arg<br>
 45a0dfc|18/07/20 remove tracking on close<br>
 2137ad4|18/07/20 introduced PlaylistsPanel<br>
@@ -209,23 +231,22 @@ a7d4710|18/07/18 update history table view of new item<br>
 b4366e4|18/07/18 cache os version info<br>
 94dbfee|18/07/18 size to natural size when able<br>
 633911b|18/07/18 use window context for playlist sheet<br>
-e5c2edd|18/07/17 defer creating new windows after restoration done<br>
+e5c2edd|18/07/17 defer new windows after restoration done<br>
 72145c4|18/07/17 update window title<br>
 21f158c|18/07/17 playlist overhaul; undo support; help update<br>
 73c44f0|18/07/17 added observer tracer output<br>
-818f65b|18/07/17 todo -  restore asset's rect to last known frame rect<br>
 f9893e4|18/07/17 removed duplicate undo action<br>
 35d9828|18/07/17 visually scroll to correct row after add/remove<br>
 82df0c4|18/07/17 save delegate history when normal dismissal<br>
-bf77a22|18/07/17 playlist array controller manages PlayLIst objects<br>
-f24dd2d|18/07/17 keep histories cache synchronized with delegate<br>
+bf77a22|18/07/17 array controller manages PlayLIst objects<br>
+f24dd2d|18/07/17 histories cache synchronized with delegate<br>
 4de306b|18/07/17 restore history cache when loaded<br>
 a792a21|18/07/17 use initialized item name<br>
 5e231e8|18/07/17 let document controller set window frame<br>
-4725848|18/07/17 added PlayList encoding support; item name with address<br>
+4725848|18/07/17 PlayList encoding support; name with address<br>
 acd70e1|18/07/16 change warning sound used<br>
 1c80b20|18/07/16 support playlist duplicate pruning<br>
-3c4ef9f|18/07/16 enforce playlist name uniqueness via app dictionary<br>
+3c4ef9f|18/07/16 playlist name uniqueness via app dictionary<br>
 fa71e48|18/07/16 tooltip etc changes re: playlists<br>
 2ff7110|18/07/16 updates re: undo playlist, code formats<br>
 2b18f95|18/07/16 validate playlists' name with dictionary<br>
@@ -239,8 +260,7 @@ f9b6c4c|18/07/10 renamed observing to setObserving<br>
 003b855|18/07/09 playlist fixes<br>
 1dfa47f|18/07/09 dock, window menu adjustments<br>
 e2ed504|18/07/09 moved newDocument: to delegate<br>
-5a89467|18/07/09 uniformly impose play throttle; ditch rank sorting<br>
-233292c|18/07/09 added interaction methods: modalOKCancel, sheetOKCancel<br>
+5a89467|18/07/09 impose play throttle; ditch rank sorting<br>
 0ba0806|18/07/08 fix bind to selection not first<br>
 06a17cb|18/07/08 undo manager support for lists and items<br>
 9cbf44b|18/07/07 added temp for link url entry<br>
@@ -248,15 +268,15 @@ a2b42a9|18/07/07 limit playitem editing until time is entered<br>
 779a101|18/07/07 added playlist, playitem object undo support<br>
 014f925|18/07/07 support multiple items for play<br>
 fb9c254|18/07/07 stack new windows, moving key to newest<br>
-ea9c9b4|18/07/07 added %P key equivalent for Playlist window/sheet<br>
+ea9c9b4|18/07/07 %P key equivalent for Playlist window/sheet<br>
 fc7b777|18/07/07 handle play selection list<br>
-bf0a0d0|18/07/05 wire undo/redo buttons; address ambiguous constraints<br>
-71e4ca2|18/06/30 implement historyKeep preference and its help text<br>
-059de3f|18/06/29 skip refreshing until our app delegate is ready<br>
-2657045|18/06/29 remove duplicate code; history loading by utility queue<br>
+bf0a0d0|18/07/05 undo/redo buttons; address constraints<br>
+71e4ca2|18/06/30 historyKeep preference and its help text<br>
+059de3f|18/06/29 skip refreshing until app delegate is ready<br>
+2657045|18/06/29 remove duplicate code; history loading by queue<br>
 49bfa91|18/06/16 duplicate tags removed<br>
 a62b672|18/06/15 app menu preference reloaded at startup<br>
-a56291a|18/06/13 issue #9; synchronize app menu to preference setting<br>
+a56291a|18/06/13 issue #9; synchronize preference setting<br>
 70886e8|18/06/04 staging artwork updates<br>
 b3a357a|18/06/04 update copyright<br>
 d7425f1|18/06/04 do not focus toggle button<br>
@@ -268,17 +288,17 @@ bb0f9c1|18/05/22 Update README.md<br>
 f1a6378|18/05/13 perform file open via delegage<br>
 f589252|18/05/13 offset open window when dragging<br>
 b8a8cd6|18/04/30 just log FNF errors vs present error<br>
-f1335df|18/04/29 intercept contextual actions play/mute for hidden windows<br>
-24e5b4e|18/04/29 keep item actions cache used in hidden windows' toggle<br>
+f1335df|18/04/29 contextual actions for hidden windows<br>
+24e5b4e|18/04/29 keep actions used in hidden windows' toggle<br>
 0228443|18/04/29 support full screen, video in new window<br>
 6ccc55a|18/04/29 shorten zoom menu item titles<br>
 3f06461|18/04/29 app icon updates<br>
 5d9990d|18/04/28 add playlist throttle default at 32<br>
 320b47c|18/04/28 monitor sequence to toggle visibility<br>
-6650c64|18/04/28 support disabling reopen at start when OPTION present<br>
+6650c64|18/04/28 disable reopen at start when OPTION present<br>
 836cb67|18/04/25 Xcode 9.3 suggestions<br>
 613179b|18/04/18 added full screen support<br>
-b986742|18/04/05 fallback on load() until loadFileuURL() resolved<br>
+b986742|18/04/05 fallback on until loadFileuURL() resolved<br>
 ba32f85|18/04/05 offset from key or main<br>
 a216e14|18/03/11 track close button mouse overs<br>
 </p>
@@ -302,8 +322,8 @@ db59bca|18/02/14 consolidate web view policy<br>
 4a7d335|18/02/14 restore magnification handling<br>
 059d8c2|18/02/14 pull deprecated code<br>
 1444530|18/02/14 support multi-file open<br>
-24a0c31|18/02/14 allow multi-file open, fix create new window pref<br>
-636a18a|18/02/14 high sierra user agent but default to WKWebView (10.11)<br>
+24a0c31|18/02/14 multi-file open, fix create new window pref<br>
+636a18a|18/02/14 high sierra user agent default to (10.11)<br>
 77ec8c1|18/01/28 unify bookmark diagnostic handling<br>
 9c1acc0|18/01/28 bookmark and store drags for later retrieval<br>
 b6a93c5|18/01/28 rely on web view controller for url processing<br>
@@ -325,9 +345,9 @@ ddf119c|18/01/07 added help images<br>
 a67c5eb|18/01/07 resync after rebuild<br>
 84a8887|18/01/07 restore help after rebuild<br>
 e1cdfcb|17/12/24 addressed layout issues<br>
-4f88167|17/12/24 rename placeholder; address vesion/toggle button layout<br>
+4f88167|17/12/24 address vesion/toggle button layout<br>
 d5dbd7d|17/12/24 address layout issues less version button<br>
-dc44873|17/12/24 move app window tracking to web view controller<br>
+dc44873|17/12/24 app window tracking in web view controller<br>
 bffc1b3|17/12/24 update window menu<br>
 dd8ab7c|17/12/23 drop temporary exception entitlement<br>
 a74e4f0|17/12/23 sandbox support<br>
@@ -342,10 +362,10 @@ b87c4e3|17/11/05 create security scope url<br>
 85eea24|17/11/05 Xcode 9.1 deprecations<br>
 6338415|17/11/05 Xcode 9.1 deprecations<br>
 5456eba|17/11/05 sandbox support<br>
-66e9704|17/11/05 added bookmarks as segue from absolute path exception<br>
+66e9704|17/11/05 bookmarks as segue from absolute path<br>
 045ea6c|17/11/04 Xcode 9 Swift update<br>
 33e46f4|17/10/22 Xcode 9, os/x 10.12 update<br>
-3fda52a|17/10/22 simplify entitlements to absolute path read-only<br>
+3fda52a|17/10/22 simplify entitlements to read-only<br>
 db65c7b|17/10/11 normalize copyright whitespace<br>
 </p>
 
@@ -357,13 +377,13 @@ e48a462|17/10/11 sandbox added with entitlement exception - read<br>
 1d674c7|17/10/11 obfuscate sparkle<br>
 13db353|17/10/10 show short version string<br>
 9ef0278|17/10/10 remove sparkle references<br>
-2378a3e|17/10/10 fabricate bundle version from major, minor build numbers<br>
+2378a3e|17/10/10 version from major, minor build numbers<br>
 14b62f4|17/10/10 use icon set<br>
 1f1ece9|17/10/09 addressing validation issues<br>
 dbe7481|17/10/08 commit version 3 build<br>
 d4dd34c|17/10/08 update sparkle xml link<br>
 eecaa06|17/10/08 support window url drops<br>
-ca069ea|17/10/08 allow file:// scheme regardless of magic redirection<br>
+ca069ea|17/10/08 allow file:// regardless of magic redirection<br>
 2a0ffcf|17/10/08 support file: scheme<br>
 2d79d20|17/10/08 updated home url<br>
 4e64fd8|17/10/08 updated public certificate<br>
@@ -375,7 +395,7 @@ ffc4505|17/10/08 Sparkle 1.18.1 update<br>
 4c513ea|17/10/07 update image address<br>
 6c0eaae|17/10/07 update start page<br>
 a07cfb4|17/10/07 Update helium_start.html<br>
-611a81d|17/10/06 support multiple copyrights in historical reverse order<br>
+611a81d|17/10/06 multiple copyrights in reverse order<br>
 8abdd78|17/09/30 Update helium_start.html<br>
 db72046|17/09/30 Update index.md<br>
 795c90c|17/09/30 fix markdown image references<br>
@@ -410,13 +430,13 @@ afc04f8|17/09/25 updated readme<br>
 cd3cd75|17/09/25 helium3 files<br>
 6d2e5cc|17/09/15 trap ESC to close window, avoiding crash(es)<br>
 862ec8c|17/09/08 fix rect refresh from dictionary object<br>
-4fe6490|17/09/07 refresh play items' time, rect from play items defaults<br>
+4fe6490|17/09/07 play items' time, rect from play defaults<br>
 3cc1250|17/09/07 fix time capture; use play item info in drops<br>
 3927ac9|17/09/07 play (restore) playlist item(s)<br>
 59f77f0|17/09/04 fix promise drag type, name, items encodings<br>
 3d2ddc9|17/09/04 use built-in literals<br>
 01a4eb9|17/09/04 updated history re: balloon images<br>
-ee4e1b0|17/09/04 fix play item item restore; added dictionary method<br>
+ee4e1b0|17/09/04 play item restore; added dictionary method<br>
 22a70c2|17/09/04 whitespace trimming<br>
 27134a9|17/09/01 use helium3 asset naming<br>
 b9acf8c|17/08/30 added local logo<br>
@@ -434,12 +454,12 @@ ea7dd95|17/08/27 updated history<br>
 c0321cd|17/08/27 toggle auto hide title depends on mouse over<br>
 06cfe3d|17/08/27 track status icon menu item state<br>
 37548a9|17/08/23 key play items by url absolute string<br>
-b5da886|17/08/23 documents settings in play items; play lists as dictionary<br>
+b5da886|17/08/23 play items; play lists as dictionary<br>
 b81108d|17/08/23 renamed method to update(to:ofTyoe:)<br>
-fba3be1|17/08/23 cache documents as play item dictionary to preferences<br>
+fba3be1|17/08/23 cache documents to preferences<br>
 93e6de1|17/08/23 keep documents in play items globals<br>
 328f617|17/08/22 skip file url rerouting<br>
-82bd2aa|17/08/22 not really supporting window drag on (title bar) future?<br>
+82bd2aa|17/08/22 supporting window drag on (title bar) future?<br>
 4e61e00|17/08/22 play item <-> dictionary plist<br>
 95c5b68|17/08/22 cache document - a play item as plist<br>
 76e601b|17/08/20 added PlayList object for dragging<br>
@@ -461,7 +481,7 @@ d61ca95|17/08/07 updated history - user agent preference<br>
 fca56dc|17/07/30 autosave document as playitem<br>
 e46e53b|17/07/30 expose alpha, translucency notification methods<br>
 df313f7|17/07/30 restore settings if item in inventory<br>
-030ca6e|17/07/27 simplify open/new menu; prime play items preference<br>
+030ca6e|17/07/27 open/new menu; prime play items preference<br>
 bd36a42|17/07/27 add window offset extension<br>
 dc43a7a|17/07/27 auto save document changes<br>
 3f22b95|17/07/27 simplify open/new to just open<br>
@@ -472,7 +492,7 @@ dc43a7a|17/07/27 auto save document changes<br>
 12d9095|17/07/23 dropped playprefs in favor of document context<br>
 ffb6355|17/07/23 add custom header and column control<br>
 3edea89|17/07/20 move to singular playlists document<br>
-c4e1e25|17/07/18 remove change accounting affecting icon Finder drag<br>
+c4e1e25|17/07/18 change accounting affecting icon Finder drag<br>
 7ae6916|17/07/17 added shared preferences items<br>
 8c73950|17/07/16 workaround styleMask x80 non-activating support<br>
 a774dea|17/07/16 rework play list cache usage<br>
@@ -486,7 +506,7 @@ fd3cc0e|17/07/14 document open run as sheet<br>
 6aaafa9|17/07/14 track document window movements<br>
 4e98d4a|17/07/13 removed unwrapping<br>
 974aeb2|17/07/13 removed stale outlet<br>
-88c9eff|17/07/12 support new location with new document and window<br>
+88c9eff|17/07/12 new location with new document and window<br>
 5d626db|17/07/10 case which tableView via first responder<br>
 73ac6ea|17/07/09 remove new modifier key<br>
 054bc57|17/07/09 new document / window fixes<br>
@@ -522,12 +542,11 @@ a3dde3b|17/07/04 moved to document based settings<br>
 a65347a|17/06/30 use auto layout<br>
 4016135|17/06/30 artwork updates / restore<br>
 535fe1f|17/06/30 artwork update and restore<br>
-dbd2a9f|17/06/30 record webViewController as playlist callback object<br>
+dbd2a9f|17/06/30 webViewController as playlist callback object<br>
 7894b7e|17/06/30 send playlist item back to caller<br>
 607b6dd|17/06/30 added close; send playlist item to caller<br>
 443a7b8|17/06/30 restore shipping artwork<br>
 315131c|17/06/30 fallback to shipping artwork<br>
-b9e5b5d|17/06/30 added close button to be later hidden/shown when needed<br>
 e555ba5|17/06/30 remove tracer output<br>
 3c36606|17/06/30 center toggle button<br>
 d3965f1|17/06/30 remove window close box<br>
@@ -545,24 +564,24 @@ ba7198c|17/06/27 make active when shift + mouse entered event<br>
 <p class="block">
 fc9b077|17/06/25 v2.1 (20) playlists, history, about-box, etc<br>
 ae155bc|17/06/25 About box panel, text resources<br>
-e5aad72|17/06/25 added attributed string reading from asset catalog<br>
+e5aad72|17/06/25 attributed string reading from asset catalog<br>
 ce76681|17/06/25 fix credit field resizing mask<br>
 8ec29c0|17/06/25 version 2.1.20<br>
 547bdf7|17/06/25 bump short and bundle version<br>
-f69320b|17/06/25 capture build date and number from version script<br>
-574c927|17/06/25 added CFBuildDate, CFBuildNumber tokens, bump version to 20<br>
+f69320b|17/06/25 build date and number from version script<br>
+574c927|17/06/25 CFBuildDate, CFBuildNumber, version to 20<br>
 328597e|17/06/25 adjust about box size to built-in default<br>
 a4a376f|17/06/24 removed debugging tracer output<br>
 2412898|17/06/24 support hiding status item menu<br>
 441e04c|17/06/24 fixed rank renumbering in model<br>
-2d778f4|17/06/23 allow drag-n-drop from playtimes -> [new] playlist<br>
+2d778f4|17/06/23 allow drag-n-drop from playtimes -> [new]<br>
 c91b3d5|17/06/23 fix handling history preference renaming<br>
-bffcc2a|17/06/23 added TODO item; capture history preference name change<br>
+bffcc2a|17/06/23 TODO item; history preference name change<br>
 00704f0|17/06/23 fix histories capture<br>
 d1036fc|17/06/23 playlist fixes for dictionary controller<br>
 f21ddbe|17/06/23 removed unused defaults<br>
 8136d93|17/06/22 added home page name<br>
-752ab00|17/06/22 cycle in refreshed history cell with each playlist view appearance<br>
+752ab00|17/06/22 cycle refreshed history with playlist view<br>
 fa61ddf|17/06/22 moved code into actual functionality block<br>
 19fb378|17/06/22 ignore start page in history cache<br>
 cfaebac|17/06/22 de-tab sources<br>
@@ -572,11 +591,11 @@ cfaebac|17/06/22 de-tab sources<br>
 043e49b|17/06/22 unify opacity menu state etc at the delegate<br>
 7cc9c54|17/06/21 use history constant<br>
 37af345|17/06/21 removed comment<br>
-cb9eab4|17/06/21 updated description; fix mouse down rank numbering; TODO history updating in tableview<br>
+cb9eab4|17/06/21 TODO history updating in tableview<br>
 df6b49f|17/06/21 maintain history list<br>
-512b18a|17/06/21 allow updating item name, time and link but not rank<br>
-6ee09f0|17/06/21 set validate immediately for dictionary controller<br>
-662725e|17/06/21 adopt NSDictionaryControllerKeyValuePair as playlists' item<br>
+512b18a|17/06/21 updating item name, time and link but not rank<br>
+6ee09f0|17/06/21 validate immediately for dictionary controller<br>
+662725e|17/06/21 NSDictionaryControllerKeyValuePair as playlist<br>
 2bf7d31|17/06/21 NSDictionaryController introduction<br>
 7fa4517|17/06/21 history, playlist fixes<br>
 df5fa7b|17/06/20 fixed addObject to dictionary controller<br>
@@ -594,8 +613,8 @@ d786a25|17/06/10 whitespace edit<br>
 9d3d80f|17/06/09 added quit menu, reduce separators<br>
 d814340|17/06/09 status item menu<br>
 9e7b346|17/06/09 centralize string url method<br>
-60fe9f3|17/06/09 watch float over preference change to affect changes<br>
-15493e4|17/06/09 synchronize contextual menu with status item menu<br>
+60fe9f3|17/06/09 observe watch float over preference changes<br>
+15493e4|17/06/09 synchronize contextual with status item menu<br>
 243caa2|17/06/09 validate status item contents<br>
 1317cbd|17/06/09 synchronize app and status item menus<br>
 5135e1c|17/06/07 disabled log noise<br>
@@ -609,17 +628,17 @@ df891ee|17/06/07 pull log noise<br>
 e530b3b|17/06/06 added Preferences menu item to webView menu<br>
 0d16c6f|17/06/06 added Translucency preference<br>
 6c04c4c|17/06/06 initialize menu state to user defaults<br>
-550c700|17/06/06 check-in auto-hide, translucency state to preference<br>
-2e721eb|17/06/06 sync translucency enabled menu state to preference<br>
+550c700|17/06/06 auto-hide, translucency state to preference<br>
+2e721eb|17/06/06 translucency enabled menu state to preference<br>
 c3c99c5|17/05/17 minimal magnification is 1<br>
-42aedc7|17/04/21 capture video file duration in play item time ivar<br>
-b965742|17/04/21 register and use hmsTransformer for play item time column<br>
+42aedc7|17/04/21 video file duration in play item time ivar<br>
+b965742|17/04/21 use hmsTransformer for play item time column<br>
 8592fff|17/04/21 value transformer for media metadata<br>
 0cbb363|17/04/11 Set url TextView on focus<br>
 c38a78c|17/03/30 removed deprecated code (comment)<br>
 feea2a1|17/03/30 de-tab<br>
 5ff63e9|17/03/25 auto layout fix<br>
-61eb424|17/03/25 working webView resize (along with controls)<br>
+61eb424|17/03/25 webView resize (along with controls)<br>
 </p>
 
 <h2>Build 17</h2>
@@ -632,7 +651,7 @@ f5bcd04|17/03/24 added playlist item support<br>
 f5e5431|17/03/23 added split view divider initial placement<br>
 73ff74f|17/03/12 adopt text view field entry<br>
 aa03c69|17/03/03 deprecations removed<br>
-6d3bb8e|17/03/03 adopt playlist constants; fix playlist restore and save<br>
+6d3bb8e|17/03/03 fix playlist restore and save<br>
 95ce94b|17/03/03 save button outlet added<br>
 015398d|17/03/03 updated save, restore buttons<br>
 6256964|17/03/02 select finder drop items<br>
@@ -642,13 +661,13 @@ a21079c|17/03/01 made columns editable except rank<br>
 8bb4688|17/03/01 update storyboard table views<br>
 bd072fa|17/02/28 added playlist support<br>
 e6e4a3e|17/02/28 added drag-n-drop for playlist tableviews<br>
-18f30e7|17/02/28 allow allow multiple selection in playlist tableviews<br>
+18f30e7|17/02/28 allow multiple selection in playlist tableviews<br>
 8c9315c|17/02/28 intra play list/item table drag-n-drop<br>
 ffe6952|17/02/26 added tooltips<br>
 929ef92|17/02/26 added Play, Restore, Save buttons<br>
 183130b|17/02/25 moved playlists to playlist view controller<br>
 e4dc150|17/02/25 adopt presentPlaylistSheet() method<br>
-abb63f9|17/02/25 move playlist observing to playlist view controller<br>
+abb63f9|17/02/25 playlist observing to playlist view controller<br>
 2528d48|17/02/24 playlists is an array<br>
 382ad4b|17/02/22 initial playlist controller view and window<br>
 dcc07a5|17/02/22 just return leaving state when user cancels<br>
@@ -665,13 +684,13 @@ dcc07a5|17/02/22 just return leaving state when user cancels<br>
 185dab1|17/02/09 undo wrong edit re: preference saving<br>
 cbacea5|17/02/09 fix auto hide preference capture<br>
 12ecb61|17/02/09 guard video file URLs only<br>
-fabce3f|17/02/08 tite auto hide; file url titling and view sizing<br>
+fabce3f|17/02/08 title auto hide; file url and view sizing<br>
 8ecfea1|17/02/08 restored key equivalent for auto hide<br>
-91ddef8|17/02/08 change title hiding to toggle when mouse enters, exits<br>
-c046a51|17/02/08 toggle title bar on mouse events entering, exiting<br>
-64a0ff9|17/02/08 adopt UserSetting enum for auto hide title preference<br>
+91ddef8|17/02/08 title hiding to toggle when mouse enters, exits<br>
+c046a51|17/02/08 title bar on mouse events entering, exiting<br>
+64a0ff9|17/02/08 UserSetting enum for auto hide title preference<br>
 dd3191f|17/02/08 update for legacy swift 2.3<br>
-065d18d|17/02/08 added user controlled auto title hiding when enter, exiting<br>
+065d18d|17/02/08 user controlled auto title<br>
 8bb2c2f|17/02/08 bump version to 1.9.1<br>
 b76949c|17/02/08 added auto hide title preference<br>
 d41e56b|17/02/08 added auto hide menu<br>
@@ -683,43 +702,43 @@ b16b19e|17/02/08 fix module header<br>
 f3e2d67|16/07/11 added html5 support for twitch<br>
 e62e44e|16/07/02 Update tracking rect when view resizes.`<br>
 43c36e8|16/06/13 Supporting playlist<br>
-488bebd|16/05/19 Should address issue #163. Updated the useragent being used to identify Helium to be the same as most recent OSX and Safari versions.<br>
+488bebd|16/05/19 issue #163. useragent to recent OSX and Safari<br>
 bc2c65f|16/04/23 Option to hide Titlebar<br>
 8c328f0|16/04/18 Added menu bar menu for home page setting<br>
 af6f0bc|16/04/18 Updated to recommended settings<br>
 796dcf0|16/04/18 Modernized swift code<br>
 dd84957|16/03/17 Move Twitch to https<br>
 cf88e65|16/03/16 make UserSetting internal<br>
-2117c4c|16/03/16 Use guard pattern in the appDelegate to make it more safe<br>
-427d26e|16/03/16 Make functions private were possible, restructure file<br>
+2117c4c|16/03/16 guard pattern in delegate to make it more safe<br>
+427d26e|16/03/16 functions private were possible<br>
 4f6975c|16/03/16 Move String extensions to separate file<br>
-8b25af0|16/03/16 restructure the file, remove unused functions and make private where possible<br>
-b084a8e|16/03/07 Use String for consistency (instead of NSString)<br>
+8b25af0|16/03/16 remove unused and make private where possible<br>
+b084a8e|16/03/07 NSString to String for consistency<br>
 d21cf2e|16/03/07 Validation for Home page URL<br>
-982d9f8|16/03/07 Added preference to set home page which is loaded at startup<br>
+982d9f8|16/03/07 home page perference loaded at startup<br>
 2843b9d|16/02/18 Saving/restoring opacity percentage<br>
 2f77800|16/01/29 use embeded player for dailymotion vids<br>
 f8aa3f9|16/01/21 add twitch.tv live broadcast support<br>
 c3eb9d9|16/01/03 Fixed test target<br>
 9e335f3|16/01/03 Added file to project<br>
-c04384e|15/12/03 Added proper support for youtube videos with a start time in the link<br>
+c04384e|15/12/03 YouTube videos with start time in the link<br>
 b7319f4|15/11/17 Checking/editing the correct YouTube URL now.<br>
 a68a6bf|15/11/17 Fixed check to add a start time.<br>
 1ed057d|15/11/16 Only run the added code to YouTube links.<br>
-60009b7|15/11/16 Added support for YouTube videos to start at a specific time.<br>
-b75223b|15/10/31 Do not hard code user defaults strings but use central point of truth<br>
+60009b7|15/11/16 YouTube videos to start at a specific time.<br>
+b75223b|15/10/31 Do not hard code user defaults strings<br>
 cf3b128|15/10/30 Update HeliumUpdatesSparkleFeed.xml<br>
 0d92034|15/10/30 revert<br>
 2e6dd3c|15/10/30 Update HeliumUpdatesSparkleFeed.xml<br>
 1742f89|15/10/30 Signing<br>
-ed5fec8|15/10/30 Don't appear in Share menu unless a URL is being shared<br>
+ed5fec8|15/10/30 No Share menu entry unless a URL is shared<br>
 bc3c429|15/10/30 Fixed dist cert<br>
 01719e0|15/10/30 Renamed menu<br>
 63aed01|15/10/30 Fixed code signing issues<br>
 dc265a3|15/10/30 Xcode project update<br>
 9121373|15/10/30 Add extension<br>
 afeafa5|15/10/28 Back and forth nav. gestures<br>
-ccdc219|15/10/27 Fixed bug where there was always a new update :P<br>
+ccdc219|15/10/27 Fixed bug - always a new update<br>
 bbdf059|15/10/27 Add preference to float over full screen apps<br>
 8379d42|15/10/26 Update HeliumUpdatesSparkleFeed.xml<br>
 f84c6af|15/10/26 Swipe to go back<br>
@@ -737,15 +756,15 @@ a4172d9|15/10/25 Fixed url scheme<br>
 c557b1e|15/10/16 Reformatted, typo fix.<br>
 944dc77|15/10/12 Updated Swift syntax<br>
 4e6bd94|15/10/01 Update to new swift syntax<br>
-8c64bcf|15/08/18 Changed line break mode from wrapping to single line<br>
+8c64bcf|15/08/18 line break mode from wrapping to single line<br>
 57646df|15/07/26 Changed commenting<br>
 998423c|15/07/26 Changed user agent string<br>
 33abb54|15/05/21 Move `helium://` scheme registration<br>
 912707a|15/04/24 Added "Back" and "Forward" web functionality<br>
-dfb663e|15/04/24 Add buttons to navigate back and forward in location menu<br>
-312a669|15/04/21 Used FirstResponder to link actions instead of NSNotificationCenter<br>
+dfb663e|15/04/24 Add navigate buttons: back and forward<br>
+312a669|15/04/21 FirstResponder to notifications<br>
 553fc79|15/04/21 Revert acb1129..b70363d<br>
-b70363d|15/04/18 Removed unnecessary NSNotificationCenter messages<br>
+b70363d|15/04/18 Removed unnecessary notifications<br>
 ac2f51e|15/04/15 added screenshot<br>
 79725be|15/04/15 Update window title on page load.<br>
 102418b|15/04/15 Add window shadow;<br>
@@ -761,17 +780,17 @@ a770a63|15/04/15 Added keyboard shortcut for 100% opacity<br>
 f456cfb|15/04/15 Added update feed XML file<br>
 44dbcd5|15/04/15 Edited info.plist, added update feed location<br>
 200b2ac|15/04/15 Regenerated keys<br>
-0e46284|15/04/15 Added SUUpdated object and "Check for Updates" menu item<br>
+0e46284|15/04/15 SUUpdated object and "Check for Updates" menu <br>
 6235f8a|15/04/14 Set other linker flags b/c Xcode sucks<br>
-ea71af7|15/04/14 Set up Copy Files build step for Sparkle framework<br>
+ea71af7|15/04/14 Copy Files build step for Sparkle framework<br>
 8dfdc63|15/04/14 Added sparkle update signing tool<br>
 93ea76d|15/04/14 Added Sparkle public key<br>
 6d288da|15/04/14 Added sparkle framework<br>
 c18b3ba|15/04/14 Update README.md<br>
-6eacf6e|15/04/15 Add shortcuts for opacity options using ⌘ and the numbers from 1 to 9<br>
+6eacf6e|15/04/15 opacity options using ⌘ and 1 to 9<br>
 caec5b4|15/04/14 Update README.md<br>
 d190ee0|15/04/14 URLSchemes<br>
-0759685|15/04/14 added support for pinch to zoom, menu bar zoom options<br>
+0759685|15/04/14 support pinch to zoom, menu bar zoom options<br>
 f14190f|15/04/14 Added support for opening local files<br>
 789cfdd|15/04/14 support for youku.com<br>
 5b44da6|15/04/14 Fixed accidental deletion<br>
@@ -790,12 +809,12 @@ bdd5b23|15/04/13 updated to use WKWebView<br>
 d2b2bbb|15/04/13 updated version numbers<br>
 bc323dc|15/04/13 supports netflix and remote start page updates<br>
 5a4d38a|15/04/09 Changed version number<br>
-ede89c1|15/04/09 Made the first time user experience a bit friendlier<br>
+ede89c1|15/04/09 first time user experience a bit friendlier<br>
 3eb0b7e|15/04/09 Fixed icon, added other sizes<br>
 6d444bb|15/04/09 Create README.md<br>
 719e561|15/04/09 updated icon and added clear action<br>
 c578d43|15/04/09 Potential icon added<br>
-e19b263|15/04/09 Implemented base functionality, transparency, etc<br>
+e19b263|15/04/09 base functionality, transparency, etc<br>
 05413d5|15/04/09 Created a floating panel<br>
 4a9f18c|15/04/09 Initial project<br>
 38a39c7|15/04/09 Initial commit<br>
