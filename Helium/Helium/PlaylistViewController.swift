@@ -59,86 +59,10 @@ class PlayTableView : NSTableView {
     }
 }
 
-class PlayItemCornerView : NSView {
-    @IBOutlet weak var playlistArrayController: NSArrayController!
-	@IBOutlet weak var playitemArrayController: NSArrayController!
-    @IBOutlet weak var playitemTableView: PlayTableView!
-    var shiftKeyDown: Bool {
-        get {
-            return (NSApp.delegate as! AppDelegate).shiftKeyDown
-        }
-    }
-    var menuIconName: String {
-        get {
-            if shiftKeyDown {
-                return "NSTouchBarSearchTemplate"
-            }
-            else
-            {
-                return "NSRefreshTemplate"
-            }
-        }
-    }
-    override func draw(_ dirtyRect: NSRect) {
-        let icon = NSImage.init(imageLiteralResourceName: self.menuIconName)
-        let os = (NSApp.delegate as! AppDelegate).os
-        var operation : NSCompositingOperation
-        let alignRect = icon.alignmentRect
-        
-        NSGraphicsContext.saveGraphicsState()
-        
-        //  Pick compositions based on os version; newest is dark mode
-        switch (os.majorVersion, os.minorVersion, os.patchVersion) {
-        case (10, 14, _):
-            operation = .hardLight
-            icon.draw(in: NSMakeRect(2, 5, 7, 11), from: alignRect, operation: operation, fraction: 1)
-            break
-        default:
-            operation = .sourceOver
-            icon.draw(in: NSMakeRect(2, 5, 7, 11), from: alignRect, operation: operation, fraction: 1)
-            break
-        }
-        
-        NSGraphicsContext.restoreGraphicsState()
-    }
-    
-    override func mouseDown(with event: NSEvent) {
-        // Renumber playlist items via array controller
-        playitemTableView.beginUpdates()
+class PlayItemCornerButton : NSButton {
+}
 
-        //  True - prune duplicates, false resequence
-        switch shiftKeyDown {
-        case true:
-            var seen = [String:PlayItem]()
-            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated().reversed() {
-                if item.plays == 0 { item.plays = 1}
-                if seen[item.name] == nil {
-                    seen[item.name] = item
-                }
-                else
-                {
-                    seen[item.name]?.plays += item.plays
-                    (self.window?.contentViewController as! PlaylistViewController).remove(play: item, atIndex: row)
-                }
-            }
-            self.setNeedsDisplay(self.frame)
-            break
-            
-        case false:
-            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
-                if let undo = self.undoManager {
-                    undo.registerUndo(withTarget: self, handler: { [oldValue = item.rank] (PlaylistViewController) -> () in
-                        (item as AnyObject).setValue(oldValue, forKey: "rank")
-                        if !undo.isUndoing {
-                            undo.setActionName(String.init(format: "Reseq %@", "rank"))
-                        }
-                    })
-                }
-                item.rank = row + 1
-            }
-        }
-        playitemTableView.endUpdates()
-    }
+class PlayItemCornerView : NSView {
 }
 
 class PlayHeaderView : NSTableHeaderView {
@@ -211,7 +135,77 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
     
-    //  delegate keeps our parsing dict to keeps names unique
+    var shiftKeyDown : Bool {
+        get {
+            return (NSApp.delegate as! AppDelegate).shiftKeyDown
+        }
+    }
+    var menuIconName: String {
+        get {
+            if shiftKeyDown {
+                return "NSTouchBarSearchTemplate"
+            }
+            else
+            {
+                return "NSRefreshTemplate"
+            }
+        }
+    }
+    var cornerImage : NSImage {
+        get {
+            return NSImage.init(imageLiteralResourceName: self.menuIconName)
+        }
+    }
+    
+	@IBOutlet var cornerButton: PlayItemCornerButton!
+	@IBAction func cornerAction(_ sender: Any) {
+        // Renumber playlist items via array controller
+        playitemTableView.beginUpdates()
+        
+        //  True - prune duplicates, false resequence
+        switch shiftKeyDown {
+        case true:
+            var seen = [String:PlayItem]()
+            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated().reversed() {
+                if item.plays == 0 { item.plays = 1}
+                if seen[item.name] == nil {
+                    seen[item.name] = item
+                }
+                else
+                {
+                    seen[item.name]?.plays += item.plays
+                    self.remove(play: item, atIndex: row)
+                }
+            }
+            self.cornerButton.setNeedsDisplay()
+            break
+            
+        case false:
+            for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
+                if let undo = self.undoManager {
+                    undo.registerUndo(withTarget: self, handler: { [oldValue = item.rank] (PlaylistViewController) -> () in
+                        (item as AnyObject).setValue(oldValue, forKey: "rank")
+                        if !undo.isUndoing {
+                            undo.setActionName(String.init(format: "Reseq %@", "rank"))
+                        }
+                    })
+                }
+                item.rank = row + 1
+            }
+        }
+        playitemTableView.endUpdates()
+	}
+    internal func cornerTooltip() -> String {
+        if shiftKeyDown {
+            return "Consolidate"
+        }
+        else
+        {
+            return "Resequence"
+        }
+    }
+
+	//  delegate keeps our parsing dict to keeps names unique
     //  PlayList.name.willSet will track changes in playdicts
     dynamic var playlists : [PlayList] {
         get {
@@ -281,10 +275,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     internal func shiftKeyDown(_ note: Notification) {
-        if let pcv : PlayItemCornerView = playitemTableView.cornerView as? PlayItemCornerView {
-            DispatchQueue.main.async {
-                pcv.setNeedsDisplay(pcv.bounds)
-            }
+        let keyPaths = ["cornerImage","cornerTooltip"]
+        for keyPath in (keyPaths)
+        {
+            self.willChangeValue(forKey: keyPath)
+        }
+        
+        for keyPath in (keyPaths)
+        {
+            self.didChangeValue(forKey: keyPath)
         }
     }
 
@@ -1028,7 +1027,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
-            return (item as! PlayItem).plays == 0
+            return (item as! PlayItem).plays == 0 || tableColumn?.identifier != k.link
         }
         else
         {
