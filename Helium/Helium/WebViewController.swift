@@ -1204,7 +1204,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         if let newURL = navigationAction.request.url {
             do {
-                let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: "Custom")
+                let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: k.Custom)
                 if let hpc = doc.windowControllers.first as? HeliumPanelController,
                     let window = hpc.window, let wvc = window.contentViewController as? WebViewController {
                     let newView = MyWebView.init(frame: webView.frame, configuration: configuration)
