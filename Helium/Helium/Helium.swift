@@ -14,6 +14,7 @@ struct k {
     static let Playlists = "playlists"
     static let Playitems = "playitems"
     static let Settings = "settings"
+    static let Custom = "Custom"
     static let play = "play"
     static let item = "item"
     static let name = "name"
@@ -38,7 +39,9 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 4.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let ToolbarlessSpacer: CGFloat = 4.0
+    static let docHelium = 0
     static let docRelease = 1
+    static let docPlaylists = 2
     static let docReleaseName = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
@@ -649,7 +652,7 @@ class Document : NSDocument {
 
         self.fileType = url.pathExtension
         self.fileURL = url
-        self.docType = 0
+        self.docType = k.docHelium
         
         if let dict = defaults.dictionary(forKey: url.absoluteString) {
             let item = PlayItem.init(with: dict)
@@ -666,7 +669,7 @@ class Document : NSDocument {
     
     override init() {
         settings = Settings()
-        docType = 0
+        docType = k.docHelium
         super.init()
     }
     
@@ -677,7 +680,7 @@ class Document : NSDocument {
     var displayImage: NSImage? {
         get {
             switch docType {
-            case k.docRelease:
+            case k.docPlaylists, k.docRelease:
                 let tmpImage = NSImage.init(named: "appIcon")
                 let appImage = tmpImage?.resize(w: 32, h: 32)
                 return appImage
@@ -719,7 +722,8 @@ class Document : NSDocument {
     }
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
-        
+        self.docType = (typeName == k.Playlists ? k.docPlaylists : k.docHelium)
+
         //  Read webloc url contents
         if url.path.hasSuffix("webloc"), let webURL = url.webloc {
             fileURL = webURL
@@ -736,7 +740,11 @@ class Document : NSDocument {
             NSDocumentController.shared().addDocument(self)
             
             //  Defer custom setups until we have a webView
-            if typeName == "Custom" { return }
+            if typeName == k.Custom { return }
+
+            //  Playlists in its view controller
+            //  nothing to do for playlists here
+            if typeName == k.Playlists { return }
             
             //  If we were seen before then restore settings
             if let hwc = self.windowControllers.first {
@@ -773,6 +781,14 @@ class Document : NSDocument {
                     hwc.window?.setFrameOrigin(item.rect.origin)
                 }
             }
+        }
+    }
+    
+    convenience init(withPlaylists item: [PlayList]) throws {
+        
+        do {
+            let homeURL = URL.init(string: UserSettings.homePageURL.value)!
+            try self.init(contentsOf: homeURL, ofType: k.Playlists)
         }
     }
     
@@ -826,7 +842,9 @@ class Document : NSDocument {
     }
     func makeWindowController(_ typeName: String) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let identifier = String(format: "%@Controller", typeName)
+        let identifier = (docType == k.docPlaylists || typeName == k.Playlists)
+            ? "PlaylistPanelController"
+            : String(format: "%@Controller", typeName)
         
         let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)

@@ -479,21 +479,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 //        Swift.print("\(key) -> \(index)")
 	}
 	
-    var playlistWindows = [NSWindow]()
 	@IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
         //  If we have a window, present a sheet with playlists, otherwise ...
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
-            //  No window, load panel and its playlist controller
-            let ppc = storyboard.instantiateController(withIdentifier: "PlaylistPanelController") as! PlaylistPanelController
-            if let window = ppc.window {
-                NSApp.addWindowsItem(window, title: window.title, filename: false)
-                NSApp.activate(ignoringOtherApps: true)
-                window.makeKeyAndOrderFront(sender)
-                playlistWindows.append(ppc.window!)
-                window.center()
-
+            //  No contextual window, load panel and its playlist controller
+            do {
+                let doc = try Document.init(withPlaylists: playlists)
+                doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
+            }
+            catch let error {
+                NSApp.presentError(error)
+                Swift.print("Yoink, unable to load playlists")
             }
             return
         }
@@ -726,6 +724,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
         let event = NSAppleEventDescriptor.currentProcess()
 
+        //  We need our own to reopen our "document" urls
+        _ = HeliumDocumentController.init()
+        
         //  Wipe out defaults when OPTION+SHIFT is held down at startup
         if flags.contains([.shift,.option]) {
             Swift.print("shift+option at start")
@@ -736,9 +737,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         launchedAsLogInItem = event.eventID == kAEOpenApplication &&
             event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
 
-        //  We need our own to reopen our "document" urls
-        _ = HeliumDocumentController.init()
-        
         NSAppleEventManager.shared().setEventHandler(
             self,
             andSelector: #selector(AppDelegate.handleURLEvent(_:withReply:)),

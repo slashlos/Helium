@@ -80,11 +80,25 @@ class PlayItemCornerView : NSView {
         }
     }
     override func draw(_ dirtyRect: NSRect) {
-        let tote = NSImage.init(imageLiteralResourceName: self.menuIconName)
-        let alignRect = tote.alignmentRect
+        let icon = NSImage.init(imageLiteralResourceName: self.menuIconName)
+        let os = (NSApp.delegate as! AppDelegate).os
+        var operation : NSCompositingOperation
+        let alignRect = icon.alignmentRect
         
         NSGraphicsContext.saveGraphicsState()
-        tote.draw(in: NSMakeRect(2, 5, 7, 11), from: alignRect, operation: .sourceOver, fraction: 1)
+        
+        //  Pick compositions based on os version; newest is dark mode
+        switch (os.majorVersion, os.minorVersion, os.patchVersion) {
+        case (10, 14, _):
+            operation = .hardLight
+            icon.draw(in: NSMakeRect(2, 5, 7, 11), from: alignRect, operation: operation, fraction: 1)
+            break
+        default:
+            operation = .sourceOver
+            icon.draw(in: NSMakeRect(2, 5, 7, 11), from: alignRect, operation: operation, fraction: 1)
+            break
+        }
+        
         NSGraphicsContext.restoreGraphicsState()
     }
     
@@ -219,7 +233,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     var itemIvars : [String] {
         get {
-            return ["name", "link", "time", "rank", "rect", "label", "hover", "alpha", "trans", "temp"]
+            return ["name", "link", "time", "plays", "rank", "rect", "label", "hover", "alpha", "trans", "temp"]
         }
     }
 
@@ -431,15 +445,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         //  Start observing any changes
         self.setObserving(true)
-     }
+    }
+    
+    override func viewWillDisappear() {
+        //  Stop observing any changes
+        self.setObserving(false)
+    }
     
     func windowShouldClose(_ sender: Any) -> Bool {
-        //  We didn't dismiss but so undo observing now
-        if let window : NSWindow = sender as? NSWindow, let index = appDelegate.playlistWindows.index(of: window) {
-            let pvc = window.contentViewController as! PlaylistViewController
-            pvc.setObserving(false)
-            appDelegate.playlistWindows.remove(at: index)
-        }
         return true
     }
     
@@ -789,9 +802,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBAction func restorePlaylists(_ sender: NSButton?) {
         let whoAmI = self.view.window?.firstResponder
 
-        //  We're nil when called at view load
-        if sender != nil { setObserving(false) }
-        
         //  We want to restore to existing play item or list or global playlists
         if whoAmI == playlistTableView || whoAmI == nil {
             Swift.print("restore playlist(s)")
@@ -870,8 +880,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
             }
         }
-        
-        if sender != nil { setObserving(true) }
     }
 
     @IBOutlet weak var saveButton: NSButton!
@@ -952,9 +960,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @IBAction override func dismiss(_ sender: Any?) {
         super.dismiss(sender)
         
-        //  Stop observing any changes
-        setObserving(false)
-
         //  If we were run as a window, close it
         if let plw = self.view.window, plw.isKind(of: PlaylistsPanel.self) {
             plw.orderOut(sender)
