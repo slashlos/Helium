@@ -581,7 +581,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
-        
+    }
+    
+    override func viewDidAppear() {
+        //  https://stackoverflow.com/questions/32056874/programmatically-wkwebview-inside-an-uiview-with-auto-layout
+        //  the autolayout is complete only when the view has appeared.
         if self.webView != nil { setupWebView() }
         
         // Final hwc updates, called by view, when document is available

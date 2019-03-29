@@ -1,26 +1,26 @@
-# Helium 3 does windows!
+# Helium does windows!
 
 ![helium_logo](helium_logo.png "Helium does windows")
 
 Helium 3 it's a forked project of the floating browser window by [Jaden Geller](https://github.com/JadenGeller/Helium).
 
-Helium 3 supports multiple windows as documents, each with their own
+Helium supports multiple windows as documents, each with their own
 settings as well as global preferences such as playlists and history, and
 supporting multiple windows via a Finder status and dock icon menus.
 
-Helium 3 allows you to watch media, browse the web and do much more while
+Helium allows you to watch media, browse the web and do much more while
 you stay productive. Your content will never fall behind your other
 windows even as you switch tasks.
 
-Helium 3 supports a number of per window preferences such a auto-hide titling,
+Helium supports a number of per window preferences such a auto-hide titling,
 as well as a customizable translucency mode that allows you to simultaneously
 see your content and your work, without intercepting mouse clicks when it's
 translucent.  You have the ability to click, drag, scroll
 behind your floating content. 
 
-## Getting Started - Helium 3
+## Getting Started - Helium
 
-Check out the videos on Helium 3 on YouTube:
+Check out the videos on Helium on YouTube:
 
 [Helium Video #0](https://www.youtube.com/watch?v=z-T0MPI6PfU)
 
@@ -28,7 +28,7 @@ Check out the videos on Helium 3 on YouTube:
 
 ## Getting Started - Helium
 
-Like prior versions, Helium 3 windows will float over your work but now being
+Like prior versions, Helium windows will float over your work but now being
 a multiple window applcation, document based, some setting were made document
 based, while some are global.
 
