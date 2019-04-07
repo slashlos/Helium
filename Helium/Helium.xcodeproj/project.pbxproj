@@ -376,11 +376,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D867CCD1AD6781200681331 /* Build configuration list for PBXNativeTarget "Helium" */;
 			buildPhases = (
+				0F05C8281EFF1B54001B5D02 /* Version */,
 				4D867CAD1AD6781200681331 /* Sources */,
 				4D867CAE1AD6781200681331 /* Frameworks */,
 				4D867CAF1AD6781200681331 /* Resources */,
 				27199AC21BE422AC00E02297 /* Embed App Extensions */,
-				0F05C8281EFF1B54001B5D02 /* Version */,
 				0F9AB2FF213C41E10096C19F /* CopyFiles */,
 			);
 			buildRules = (
