@@ -674,18 +674,25 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             super.dismiss(sender)
             
             //  If we were run modally as a window, close it
+            //  current window to be reused for the 1st item
             if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
                 NSApp.abortModal()
                 ppc.window?.orderOut(sender)
             }
         }
+        else
+        {
+            UserSettings.createNewWindows.value = true
+        }
         
         //  Try to restore item at its last known location
         for (i,item) in (items.enumerated()).prefix(maxSize) {
-            if appDelegate.doOpenFile(fileURL: item.link) && !newWindows {
-                UserSettings.createNewWindows.value = true
+            if appDelegate.doOpenFile(fileURL: item.link) {
+                print(String(format: "%3d %3d %@", i, item.rank, item.name))
             }
-            print(String(format: "%3d %3d %@", i, item.rank, item.name))
+            
+            //  2nd item and on get a new window
+            UserSettings.createNewWindows.value = true
         }
         
         //  Restore user settings
