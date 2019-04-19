@@ -1328,6 +1328,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         else
         {
+            //  No window, so load panel modally
+            NSApp.activate(ignoringOtherApps: true)
+
             switch alert.runModal() {
             case NSAlertThirdButtonReturn:
                 var newUrl = (alert.buttons[2] as NSButton).toolTip
