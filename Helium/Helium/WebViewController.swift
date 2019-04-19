@@ -12,6 +12,34 @@ import WebKit
 import AVFoundation
 import Carbon.HIToolbox
 
+extension WKWebViewConfiguration {
+    /// Async Factory method to acquire WKWebViewConfigurations packaged with system cookies
+    static func cookiesIncluded(completion: @escaping (WKWebViewConfiguration?) -> Void) {
+        let config = WKWebViewConfiguration()
+        guard let cookies = HTTPCookieStorage.shared.cookies else {
+            completion(config)
+            return
+        }
+        // Use nonPersistent() or default() depending on if you want cookies persisted to disk
+        // and shared between WKWebViews of the same app (default), or not persisted and not shared
+        // across WKWebViews in the same app.
+        let dataStore = WKWebsiteDataStore.nonPersistent()
+        let waitGroup = DispatchGroup()
+        for cookie in cookies {
+            waitGroup.enter()
+            if #available(OSX 10.13, *) {
+                dataStore.httpCookieStore.setCookie(cookie) { waitGroup.leave() }
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+        waitGroup.notify(queue: DispatchQueue.main) {
+            config.websiteDataStore = dataStore
+            completion(config)
+        }
+    }
+}
+
 class MyWebView : WKWebView {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     override class func handlesURLScheme(_ urlScheme: String) -> Bool {
@@ -542,7 +570,16 @@ class MyWebView : WKWebView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate {
+class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, WKHTTPCookieStoreObserver {
+
+    @available(OSX 10.13, *)
+    public func cookiesDidChange(in cookieStore: WKHTTPCookieStore) {
+        DispatchQueue.main.async {
+            cookieStore.getAllCookies { cookies in
+                // Process cookies
+            }
+        }
+    }
 
     var defaults = UserDefaults.standard
     var trackingTag: NSTrackingRectTag? {
@@ -613,8 +650,25 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         // Alow back and forth
         webView.allowsBackForwardNavigationGestures = true
         
+        //  ditch loading indicator background
+        loadingIndicator.appearance = NSAppearance.init(named: NSAppearanceNameAqua)
+        
+        //  Fetch, synchronize and observe data store for cookie changes
+        if #available(OSX 10.13, *) {
+            let websiteDataStore = WKWebsiteDataStore.nonPersistent()
+            let configuration = webView.configuration
+            configuration.websiteDataStore = websiteDataStore
+            
+            configuration.processPool = WKProcessPool()
+            let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
+            
+            cookies.forEach({ configuration.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil) })
+            WKWebsiteDataStore.default().httpCookieStore.add(self)
+        }
+        
         // Listen for load progress
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: "loading", options: .new, context: nil)
         webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
         observing = true
         
@@ -639,6 +693,21 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let js = NSString.string(fromAsset: "Helium-js")
         let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         controller.addUserScript(script)
+        
+        //  make http: -> https:
+        if #available(OSX 10.13, *) {
+            //  https://developer.apple.com/videos/play/wwdc2017/220/ 21:04
+            let jsonString = """
+                [{
+                    "trigger" : { "url-filter" : ".*" },
+                    "action" : { "type" : "make-https" }
+                }]
+            """
+            WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "httpRuleList", encodedContentRuleList: jsonString, completionHandler: {(list, error) in
+                guard let contentRuleList = list else { return }
+                self.webView.configuration.userContentController.add(contentRuleList)
+            })
+        }
         
         clear()
     }
@@ -920,9 +989,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 	@IBOutlet var webView: MyWebView!
 	var webSize = CGSize(width: 0,height: 0)
     
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+	@IBOutlet weak var loadingIndicator: NSProgressIndicator!
+	override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
-        if keyPath == "estimatedProgress", let view = object as? MyWebView, view == webView {
+        guard let mwv = object as? MyWebView, mwv == self.webView else { return }
+
+        switch keyPath {
+        case "estimatedProgress":
 
             if let progress = change?[NSKeyValueChangeKey(rawValue: "new")] as? Float {
                 let percent = progress * 100
@@ -934,7 +1007,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     NotificationCenter.default.post(notif)
 
                     // once loaded update window title,size with video name,dimension
-                    if let urlTitle = (self.webView.url?.absoluteString) {
+                    if let urlTitle = (mwv.url?.absoluteString) {
                         title = urlTitle as NSString
 
                         if let track = AVURLAsset(url: url, options: nil).tracks.first {
@@ -949,18 +1022,18 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                 let os = appDelegate.os
                                 switch (os.majorVersion, os.minorVersion, os.patchVersion) {
                                 case (10, 10, _), (10, 11, _), (10, 12, _):
-                                    if let oldSize = webView.window?.contentView?.bounds.size, oldSize != webSize, var origin = self.webView.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
+                                    if let oldSize = mwv.window?.contentView?.bounds.size, oldSize != webSize, var origin = mwv.window?.frame.origin, let theme = self.view.window?.contentView?.superview {
                                         var iterator = theme.constraints.makeIterator()
-                                        Swift.print(String(format:"view:%p webView:%p", webView.superview!, webView))
+                                        Swift.print(String(format:"view:%p webView:%p", mwv.superview!, mwv))
                                         while let constraint = iterator.next()
                                         {
                                             Swift.print("\(constraint.priority) \(constraint)")
                                         }
                                         
                                         origin.y += (oldSize.height - webSize.height)
-                                        webView.window?.setContentSize(webSize)
-                                        webView.window?.setFrameOrigin(origin)
-                                        webView.bounds.size = webSize
+                                        mwv.window?.setContentSize(webSize)
+                                        mwv.window?.setFrameOrigin(origin)
+                                        mwv.bounds.size = webSize
                                     }
                                     break
                                     
@@ -994,7 +1067,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         }
                         else
                         {
-                            self.restoreSettings(title as String)
+                            restoreSettings(title as String)
                         }
                     } else {
                         title = "Helium"
@@ -1011,13 +1084,68 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     }
                 }
             }
-        }
-        else
-        if keyPath == "title" {
-            title = webView.title
+            break
+            
+        case "loading":
+            guard let loading = change?[NSKeyValueChangeKey(rawValue: "new")] as? Bool, loading == loadingIndicator.isHidden else { return }
+            Swift.print("loading: \(loading ? "YES" : "NO")")
+            if loadingIndicator.isHidden {
+                loadingIndicator.startAnimation(self)
+                loadingIndicator.isHidden = false
+            }
+            else
+            {
+                loadingIndicator.stopAnimation(self)
+                loadingIndicator.isHidden = true
+            }
+            break;
+            
+        case "title":
+            title = mwv.title
+            break;
+            
+        default:
+            Swift.print("Unknown observing keyPath \(String(describing: keyPath))")
         }
     }
+/*
+    @IBOutlet weak var tableView: NSTableView!
+    @IBOutlet weak var arrayController: NSArrayController!
+    @IBOutlet weak var progressIndicator: NSProgressIndicator!
     
+    let fetcher = ScheduleFetcher()
+    dynamic var courses: [Course] = []
+    
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        
+        tableView.target = self
+        tableView.doubleAction = Selector("openClass:")
+        
+        progressIndicator.startAnimation(self)
+        progressIndicator.hidden = false
+        
+        fetcher.fetchCoursesUsingCompletionHandler({ (result) in
+            self.progressIndicator.stopAnimation(self)
+            self.progressIndicator.hidden = true
+            switch result {
+            case .Success(let courses):
+                print("Got courses: \(courses)")
+                self.courses = courses
+            case .Failure(let error):
+                print("Got error: \(error)")
+                NSAlert(error: error).runModal()
+                self.courses = []
+            }
+        })
+    }
+    
+    func openClass(sender: AnyObject!) {
+        if let course = arrayController.selectedObjects.first as? Course {
+            NSWorkspace.sharedWorkspace().openURL(course.url)
+        }
+    }
+*/
     fileprivate func restoreSettings(_ title: String) {
         guard let dict = defaults.dictionary(forKey: title), let hwc = self.view.window?.windowController, let doc = hwc.document else
         {
@@ -1029,7 +1157,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     //Convert a YouTube video url that starts at a certian point to popup/embedded design
     // (i.e. ...?t=1m2s --> ?start=62)
-    fileprivate func makeCustomStartTimeURL(_ url: String) -> String {
+    func makeCustomStartTimeURL(_ url: String) -> String {
         let startTime = "?t="
         let idx = url.indexOf(startTime)
         if idx == -1 {
@@ -1137,6 +1265,28 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             decisionHandler(WKNavigationActionPolicy.allow)
         }
     }
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        
+        guard let response = navigationResponse.response as? HTTPURLResponse,
+            let url = navigationResponse.response.url else {
+                decisionHandler(.allow)
+                return
+        }
+        
+        //  load cookies
+        if #available(OSX 10.13, *) {
+            if let headerFields = response.allHeaderFields as? [String:String] {
+                Swift.print("\(url.absoluteString) allHeaderFields:\n\(headerFields)")
+
+                let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+                cookies.forEach({ cookie in
+                    webView.configuration.websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: nil)
+                })
+            }
+        }
+        
+        decisionHandler(.allow)
+    }
     
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         Swift.print("didStartProvisionalNavigation - 1st")
@@ -1147,11 +1297,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        Swift.print("didFail")
+        handleError(error)
     }
-    
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        Swift.print("didFailProvisionalNavigation")
+        handleError(error)
+    }
+    fileprivate func handleError(_ error: Error) {
+        let message = error.localizedDescription
+        Swift.print("didFail?: \(message)")
+        if (error as NSError).code >= 400 {
+            NSApp.presentError(error)
+        }
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
