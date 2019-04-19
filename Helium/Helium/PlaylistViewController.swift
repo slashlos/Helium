@@ -143,7 +143,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var menuIconName: String {
         get {
             if shiftKeyDown {
-                return "NSTouchBarSearchTemplate"
+                return "NSActionTemplate"
             }
             else
             {
