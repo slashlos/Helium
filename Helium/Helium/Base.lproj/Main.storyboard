@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14113"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
     <scenes>
         <!--Window Controller-->
@@ -61,7 +62,7 @@
                                 </textFieldCell>
                             </textField>
                             <button toolTip="copy app info to pasteboard" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b0R-I6-wV0">
-                                <rect key="frame" x="62" y="140" width="161" height="18"/>
+                                <rect key="frame" x="62" y="133" width="161" height="32"/>
                                 <buttonCell key="cell" type="bevel" title="AppNameButton" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="D91-93-KwH">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system" size="14"/>
@@ -958,7 +959,7 @@ CA
                                             <rect key="frame" x="1" y="216" width="124" height="16"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
-                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="phY-te-dcT">
+                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="phY-te-dcT">
                                             <rect key="frame" x="224" y="17" width="15" height="102"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
@@ -1398,16 +1399,16 @@ Gw
                     <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <subviews>
-                        <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="4" width="12" height="12"/>
+                        <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
+                            <rect key="frame" x="3" y="-2" width="11" height="11"/>
                             <constraints>
-                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="12" id="M0e-Jn-aca"/>
-                                <constraint firstAttribute="width" constant="14" id="hp3-tD-W1v"/>
-                                <constraint firstAttribute="height" constant="14" id="xFE-lp-ss6"/>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="8" id="M0e-Jn-aca"/>
+                                <constraint firstAttribute="width" constant="11" id="hp3-tD-W1v"/>
+                                <constraint firstAttribute="height" constant="11" id="xFE-lp-ss6"/>
                             </constraints>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRefreshTemplate" imagePosition="only" alignment="center" alternateImage="NSTouchBarSearchTemplate" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="xGp-AG-fk9">
+                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRefreshTemplate" imagePosition="only" alignment="center" alternateImage="NSTouchBarSearchTemplate" controlSize="mini" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="xGp-AG-fk9">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
+                                <font key="font" metaFont="miniSystem"/>
                             </buttonCell>
                             <connections>
                                 <action selector="cornerAction:" target="YAy-lX-dae" id="P79-wh-d8z"/>
@@ -1417,8 +1418,8 @@ Gw
                         </button>
                     </subviews>
                     <constraints>
-                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="leading" secondItem="sMV-Oo-qve" secondAttribute="leading" id="Z3E-WB-AQU"/>
-                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="top" secondItem="sMV-Oo-qve" secondAttribute="top" constant="3" id="uBx-dC-o7l"/>
+                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="leading" secondItem="sMV-Oo-qve" secondAttribute="leading" constant="3" id="Z3E-WB-AQU"/>
+                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="top" secondItem="sMV-Oo-qve" secondAttribute="top" constant="7" id="uBx-dC-o7l"/>
                     </constraints>
                     <connections>
                         <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="cpI-yi-sQl"/>
