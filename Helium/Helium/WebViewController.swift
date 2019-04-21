@@ -1089,15 +1089,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         case "loading":
             guard let loading = change?[NSKeyValueChangeKey(rawValue: "new")] as? Bool, loading == loadingIndicator.isHidden else { return }
             Swift.print("loading: \(loading ? "YES" : "NO")")
-            if loadingIndicator.isHidden {
-                loadingIndicator.startAnimation(self)
-                loadingIndicator.isHidden = false
-            }
-            else
-            {
-                loadingIndicator.stopAnimation(self)
-                loadingIndicator.isHidden = true
-            }
             break;
             
         case "title":
