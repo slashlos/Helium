@@ -1018,7 +1018,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
                                 
-                                //  Try to adjust initial sizee if possible
+                                //  Try to adjust initial size if possible
                                 let os = appDelegate.os
                                 switch (os.majorVersion, os.minorVersion, os.patchVersion) {
                                 case (10, 10, _), (10, 11, _), (10, 12, _):
