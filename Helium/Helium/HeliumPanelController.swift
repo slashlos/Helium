@@ -188,7 +188,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         
         if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
             
-            Swift.print(String(format: "%@ entered", (viewTag == tag ? "view" : "button")))
+            ///Swift.print(String(format: "%@ entered", (viewTag == tag ? "view" : "button")))
 
             switch tag {
             case closeTag:
@@ -224,7 +224,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
         if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
 
-            Swift.print(String(format: "%@ exited", (viewTag == tag ? "view" : "button")))
+            ///Swift.print(String(format: "%@ exited", (viewTag == tag ? "view" : "button")))
 
             switch tag {
             case closeTag, miniTag, zoomTag:
