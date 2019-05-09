@@ -295,8 +295,7 @@
 				4D8DAEB11C3A427D00B212EC /* HeliumTests.swift */,
 				4D8DAEB21C3A427D00B212EC /* Info.plist */,
 			);
-			name = HeliumTests;
-			path = "../../../../Downloads/Helium-master/Helium/HeliumTests";
+			path = HeliumTests;
 			sourceTree = "<group>";
 		};
 		B34C1EC41ADE3B5E0094ADBA /* Frameworks */ = {
