@@ -186,7 +186,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         let tag = theEvent.trackingNumber
         
-        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag/*, let viewTag = self.viewTrackingTag*/ {
             
             ///Swift.print(String(format: "%@ entered", (viewTag == tag ? "view" : "button")))
 
@@ -222,7 +222,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         let location : NSPoint = theEvent.locationInWindow
         let tag = theEvent.trackingNumber
 
-        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag, let viewTag = self.viewTrackingTag {
+        if let closeTag = self.closeTrackingTag, let miniTag = self.miniTrackingTag, let zoomTag = zoomTrackingTag/*, let viewTag = self.viewTrackingTag*/ {
 
             ///Swift.print(String(format: "%@ exited", (viewTag == tag ? "view" : "button")))
 
