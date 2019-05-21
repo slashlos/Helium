@@ -1028,10 +1028,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func metadataDictionaryForFileAt(_ fileName: String) -> Dictionary<NSObject,AnyObject>? {
         
-        let item = MDItemCreate(kCFAllocatorDefault, fileName as CFString)
-        if ( item == nil) { return nil };
+        guard let item = MDItemCreate(kCFAllocatorDefault, fileName as CFString) else { return nil }
         
-        let list = MDItemCopyAttributeNames(item)
+        guard let list = MDItemCopyAttributeNames(item) else { return nil }
+        
         let resDict = MDItemCopyAttributes(item,list) as Dictionary
         return resDict
     }
