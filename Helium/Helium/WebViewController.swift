@@ -1002,10 +1002,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 	var webSize = CGSize(width: 0,height: 0)
     
 	@IBOutlet weak var loadingIndicator: NSProgressIndicator!
-	override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         guard let mwv = object as? MyWebView, mwv == self.webView else { return }
 
+        //  We *must* have a key path
+        guard let keyPath = keyPath else { return }
+        
         switch keyPath {
         case "estimatedProgress":
 
