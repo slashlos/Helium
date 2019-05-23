@@ -240,6 +240,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.createNewWindows.value = (sender.state == NSOnState ? false : true)
     }
     
+    @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+        UserSettings.developerExtrasEnabled.value = (sender.state == NSOnState)
+    }
+    
     var fullScreen : NSRect? = nil
     @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
         if let keyWindow = NSApp.keyWindow {
@@ -677,6 +681,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case "Create New Windows":
                 menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
                 break
+            case "Developer Extras":
+                guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
+                    guard let wc = NSApp.keyWindow?.windowController,
+                        let hwc : HeliumPanelController = wc as? HeliumPanelController,
+                        let state = hwc.webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
+                            menuItem.state = UserSettings.developerExtrasEnabled.value ? NSOnState : NSOffState
+                            break
+                    }
+                    menuItem.state = (state as! NSNumber).boolValue ? NSOnState : NSOffState
+                    break
+                }
+                menuItem.state = NSOnState
+                break
             case "Hide Helium in menu bar":
                 menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
                 break
@@ -941,6 +958,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if launchedAsLogInItem {
             Swift.print("We were launched as a startup item")
         }
+        
+        //  Developer extras off by default
+        UserSettings.developerExtrasEnabled.value = false
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1008,10 +1028,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func metadataDictionaryForFileAt(_ fileName: String) -> Dictionary<NSObject,AnyObject>? {
         
-        let item = MDItemCreate(kCFAllocatorDefault, fileName as CFString)
-        if ( item == nil) { return nil };
+        guard let item = MDItemCreate(kCFAllocatorDefault, fileName as CFString) else { return nil }
         
-        let list = MDItemCopyAttributeNames(item)
+        guard let list = MDItemCopyAttributeNames(item) else { return nil }
+        
         let resDict = MDItemCopyAttributes(item,list) as Dictionary
         return resDict
     }

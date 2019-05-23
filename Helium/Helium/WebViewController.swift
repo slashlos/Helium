@@ -629,6 +629,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if let hwc = self.view.window?.windowController {
             (hwc as! HeliumPanelController).documentDidLoad()
         }
+        
+        //  load developer panel if asked - initially no
+        self.webView?.configuration.preferences.setValue(UserSettings.developerExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
     fileprivate func setupWebView() {
@@ -749,6 +752,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     // MARK: Actions
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
         switch menuItem.title {
+        case "Developer Extras":
+            guard let state = webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else { return false }
+            menuItem.state = (state as? NSNumber)?.boolValue == true ? NSOnState : NSOffState
+            return true
+
         case "Back":
             return webView.canGoBack
         case "Forward":
@@ -784,6 +792,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     fileprivate func resetZoom() {
         webView.magnification = 1
+    }
+
+    @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+        self.webView?.configuration.preferences.setValue((sender.state != NSOnState), forKey: "developerExtrasEnabled")
     }
 
     @IBAction func openFilePress(_ sender: AnyObject) {
@@ -990,10 +1002,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 	var webSize = CGSize(width: 0,height: 0)
     
 	@IBOutlet weak var loadingIndicator: NSProgressIndicator!
-	override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         guard let mwv = object as? MyWebView, mwv == self.webView else { return }
 
+        //  We *must* have a key path
+        guard let keyPath = keyPath else { return }
+        
         switch keyPath {
         case "estimatedProgress":
 

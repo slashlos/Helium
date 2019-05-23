@@ -63,7 +63,8 @@ internal struct UserSettings {
     static let homePageURL = Setting<String>(
         "homePageURL",
 //      defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
-        defaultValue: "https://cdn.rawgit.com/slashlos/Helium/master/helium_start.html"
+//      defaultValue: "https://cdn.rawgit.com/slashlos/Helium/master/helium_start.html"
+        defaultValue: "https://slashlos.github.io/Helium/helium_start.html"
     )
     static let releaseNotesURL = Setting<String>(
         "releaseNotesURL",
@@ -91,4 +92,7 @@ internal struct UserSettings {
     //  Search provider - must match k struct, menu item tags
     static let Search = Setting<Int>("search", defaultValue: 1) // Google
     static let Searches = Setting<Array<String>>("searches", defaultValue: [String]())
+    
+    //  Developer setting(s)
+    static let developerExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)
 }
