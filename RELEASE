@@ -22,6 +22,29 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4126</h2>
+<p class="block">
+f3c6dec|19/05/22 10.13 sdk; UI updates, limit debugging I/O<br>
+2771d34|19/05/05 comment typo<br>
+a11f1c0|19/05/01 reduce tracking debug output<br>
+065540a|19/04/26 integrate changes from pensieve<br>
+6f96140|19/04/20 move loading animation to IB<br>
+a1366bc|19/04/19 upgrade sdk to 10.13<br>
+cb053e9|19/04/19 activate, raising window for load alert<br>
+fff07b6|19/04/19 added loading progress indicator<br>
+2537eec|19/04/19 adopt NSActionTemplate for resequenced<br>
+65fe79d|19/04/19 adjust playlist corner button dimensions<br>
+6a63cde|19/04/16 fix play button list handling<br>
+</p>
+
+<h2>Build 4125</h2>
+<p class="block">
+43ab945|19/04/07 Build 4125; fix build version setting<br>
+4cd3c83|19/04/05 remove trailing paragraph tag<br>
+e3c7ffb|19/03/29 updated web properties<br>
+</p>
+
+
 <h2>Build 4121</h2>
 <p class="block">
 b71fedd|19/03/24 playlist corner updates<br>
