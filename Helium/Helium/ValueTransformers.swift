@@ -18,19 +18,17 @@ class hmsTransformer: ValueTransformer {
 
     // by default returns value
     internal override func transformedValue(_ value: Any?) -> Any? {
-        if var secs : TimeInterval = value as? TimeInterval {
-            let h = Int(secs / 3600)
-            secs -= TimeInterval(h*3600)
-            let m = Int(secs / 60)
-            secs -= TimeInterval(m*60)
-
-            //    return optional hms components
-            return String(format:"%@%@%02.f",
-                          (h > 0 ? String(format:"%d:",h) : ""),
-                          (m > 0 ? String(format:"%02d:",m) : ""),
-                          secs)
-        }
-        return nil
+        guard var secs : TimeInterval = value as? TimeInterval, secs > 0 else { return nil }
+        let h = Int(secs / 3600)
+        secs -= TimeInterval(h*3600)
+        let m = Int(secs / 60)
+        secs -= TimeInterval(m*60)
+        
+        //    return optional hms components
+        return String(format:"%@%@%02.f",
+                      (h > 0 ? String(format:"%d:",h) : ""),
+                      (m > 0 ? String(format:"%02d:",m) : ""),
+                      secs)
     }
 
     // by default raises an exception if +allowsReverseTransformation returns NO and otherwise invokes transformedValue:
