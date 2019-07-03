@@ -449,6 +449,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     override func viewWillDisappear() {
         //  Stop observing any changes
         self.setObserving(false)
+        
+        DispatchQueue.main.async {
+            self.saveAllPlaylists()
+        }
     }
     
     func windowShouldClose(_ sender: Any) -> Bool {
@@ -912,52 +916,62 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 			}
 		}
 	}
+    
+    fileprivate func saveAllPlaylists() {
+        let playArray = playlistArrayController.arrangedObjects as! [PlayList]
+        var playPlists = Dictionary<String,Any>()
+        
+        for playlist in playArray {
+            var list = Array<Any>()
+            for playitem in playlist.list {
+                //let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
+                //list.append(item as AnyObject)
+                let plist = playitem.dictionary()
+                list.append(plist as AnyObject)
+            }
+            playPlists[playlist.name] = list
+        }
+        defaults.set(playPlists, forKey: k.Playlists)
+    }
     @IBAction func savePlaylists(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to save to existing play item or list
         if whoAmI == playlistTableView {
-            Swift.print("save playlist(s)")
+            let playArray = playlistArrayController.selectedObjects as! [PlayList]
+            let saveAll = playArray.count == 0
 
-            var playArray = playlistArrayController.selectedObjects as! [PlayList]
-
-            //  If no playlist(s) selection save all to defaults
-            if playArray.count == 0 {
-                playArray = playlistArrayController.arrangedObjects as! [PlayList]
-                
-                var playPlists = Dictionary<String,Any>()
-                for playlist in playArray {
-                    var list = Array<Any>()
-                    for playitem in playlist.list {
-                        //let item : [String:AnyObject] = [k.name:playitem.name as AnyObject, k.link:playitem.link.absoluteString as AnyObject, k.time:playitem.time as AnyObject, k.rank:playitem.rank as AnyObject]
-                        //list.append(item as AnyObject)
-                        let plist = playitem.dictionary()
-                        list.append(plist as AnyObject)
-                    }
-                    playPlists[playlist.name] = list
-                }
-                defaults.set(playPlists, forKey: k.Playlists)
+            //  If no selection save *all* to global array to be restored
+            if saveAll {
+                saveAllPlaylists()
+                appDelegate.userAlertMessage("Saved playlists(*)", info: "Playlists list global updated")
             }
             else
             {
+                var names = Array<String>()
                 for playlist in playArray {
                     defaults.set(playlist.dictionary(), forKey: playlist.name)
+                    names.append(playlist.name)
                 }
+                appDelegate.userAlertMessage("Saved playlists(\(names.count))",
+                    info: (names.count > 8) ? "Too many to list" : (names.count > 5) ? names.list : names.listing)
             }
-         }
+        }
         else
         {
-            Swift.print("save playitems(s)")
-            
             var itemArray = playitemArrayController.selectedObjects as! [PlayItem]
-            
+            var names = Array<String>()
+
             if itemArray.count == 0 {
                 itemArray = playitemArrayController.arrangedObjects as! [PlayItem]
             }
 
             for playitem in itemArray {
                 defaults.set(playitem.dictionary(), forKey: playitem.link.absoluteString)
+                names.append(playitem.name)
             }
+            appDelegate.userAlertMessage("Saved playitems(\(names.count))",
+                info: (names.count > 8) ? "Too many to list" : (names.count > 5) ? names.list : names.listing)
         }
 
         defaults.synchronize()
