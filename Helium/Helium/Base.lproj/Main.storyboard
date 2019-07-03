@@ -862,14 +862,14 @@ CA
                                             <rect key="frame" x="1" y="0.0" width="124" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="253" height="192"/>
+                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" autosaveName="playlistTableView.prefs" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                    <rect key="frame" x="0.0" y="0.0" width="296" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="name" width="121.04746736703925" minWidth="40" maxWidth="1000" id="zpc-Ad-MEK">
+                                                        <tableColumn identifier="name" width="121.04746736703925" minWidth="40" maxWidth="200" id="zpc-Ad-MEK">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Playlist">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -889,14 +889,14 @@ CA
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="date" width="40" minWidth="40" maxWidth="120" id="i0k-lz-NaQ">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Created">
+                                                        <tableColumn identifier="date" width="40" minWidth="40" maxWidth="200" id="i0k-lz-NaQ">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                             </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" title="Text Cell" id="FFi-KL-M68">
-                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="MMM.d''yy hh:m:s" id="iWk-07-iUl"/>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="FFi-KL-M68">
+                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="yy&quot;MM,dd h:mm a" id="iWk-07-iUl"/>
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -907,7 +907,29 @@ CA
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="b0P-yv-XZJ"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="120" id="eTP-QM-9yi">
+                                                        <tableColumn identifier="date" width="40" minWidth="40" maxWidth="200" id="D9Q-7Y-kCl">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingHead" selectable="YES" alignment="right" title="Text Cell" id="R5C-xE-bNh">
+                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="yy&quot;MM,dd h:mm a" id="wb6-mJ-QWg"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="Ii4-oB-RiS">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="200" id="eTP-QM-9yi">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Count">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -929,7 +951,7 @@ CA
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="120" id="dxN-As-ZFj">
+                                                        <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="200" id="dxN-As-ZFj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Plays">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -970,7 +992,7 @@ CA
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="tha-4C-kVE" customClass="PlayHeaderView" customModule="Helium" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="253" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="296" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1121,8 +1143,8 @@ Gw
                                             <rect key="frame" x="1" y="0.0" width="297" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="890" height="192"/>
+                                                <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" autosaveName="playitemTableView.prefs" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                    <rect key="frame" x="0.0" y="0.0" width="836" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1144,7 +1166,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.rank" id="0iW-kj-6jp"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="name" width="160" minWidth="40" maxWidth="200" id="FZ4-3v-Vfd">
+                                                        <tableColumn identifier="name" width="120" minWidth="40" maxWidth="240" id="FZ4-3v-Vfd">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1160,25 +1182,8 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.name" id="sW1-1k-zdk"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="date" width="89" minWidth="40" maxWidth="120" id="1Xm-xK-1Dz">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Created">
-                                                                <font key="font" metaFont="smallSystem"/>
-                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                                                            </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="no6-ng-UoI">
-                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="MMM.d''yy hh:m:s" id="iy3-Gu-PRa"/>
-                                                                <font key="font" metaFont="system"/>
-                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                            </textFieldCell>
-                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="kqd-vc-zDo"/>
-                                                            </connections>
-                                                        </tableColumn>
-                                                        <tableColumn identifier="time" width="89" minWidth="40" maxWidth="120" id="3W1-zN-OJV">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                        <tableColumn identifier="secs" width="60" minWidth="40" maxWidth="120" headerToolTip="" id="3W1-zN-OJV">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Secs">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1188,16 +1193,54 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="time"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.time" id="Bzh-BE-DNP">
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.time" id="LwQ-Y5-t28">
                                                                     <dictionary key="options">
+                                                                        <string key="NSNullPlaceholder">n/a</string>
                                                                         <string key="NSValueTransformerName">hmsTransformer</string>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="link" width="95" minWidth="10" maxWidth="3.4028234663852886e+38" id="uQe-2d-GQY">
+                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="120" id="vWm-ko-T1E">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="of0-3u-hQF">
+                                                                <dateFormatter key="formatter" timeStyle="short" id="asQ-yH-mHS"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="CBL-I6-ace"/>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="120" id="i44-ze-mWu">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="n1R-cv-lAA">
+                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="yy&quot;MM''dd" id="ZEh-xS-oVa"/>
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="uQ8-JO-Rvq"/>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="link" width="80" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="URL">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1213,7 +1256,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.temp" id="EWy-J4-avV"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="rect" width="64" minWidth="10" maxWidth="200" headerToolTip="size and location" id="mwR-gL-vIn">
+                                                        <tableColumn identifier="rect" width="80" minWidth="10" maxWidth="200" headerToolTip="size and location" id="mwR-gL-vIn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Rect">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1235,7 +1278,7 @@ Gw
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="plays" width="64" minWidth="10" maxWidth="120" headerToolTip="play count" id="etn-d3-AIr">
+                                                        <tableColumn identifier="plays" width="60" minWidth="10" maxWidth="120" headerToolTip="play count" id="etn-d3-AIr">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Plays">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1256,7 +1299,7 @@ Gw
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="label" width="64" minWidth="10" maxWidth="120" headerToolTip="auto hide label" id="ofy-Rm-Ytf">
+                                                        <tableColumn identifier="label" width="60" minWidth="10" maxWidth="120" headerToolTip="auto hide label" id="ofy-Rm-Ytf">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Labelless">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1277,7 +1320,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.label" id="rDy-4y-bAQ"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="alpha" width="64" minWidth="10" maxWidth="80" headerToolTip="" id="eyl-fn-AYC">
+                                                        <tableColumn identifier="alpha" width="60" minWidth="10" maxWidth="120" headerToolTip="" id="eyl-fn-AYC">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Alpha">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1299,7 +1342,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.alpha" id="olx-QT-k1G"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="hover" width="64" minWidth="10" maxWidth="80" headerToolTip="above all windows" id="Fmz-cc-tVY">
+                                                        <tableColumn identifier="hover" width="60" minWidth="10" maxWidth="120" headerToolTip="above all windows" id="Fmz-cc-tVY">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Spaces">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1320,7 +1363,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.hover" id="Qwb-vL-z4j"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="trans" width="64" minWidth="10" maxWidth="100" headerToolTip="mouse translucency" id="a0x-FK-bxj">
+                                                        <tableColumn identifier="trans" width="60" minWidth="10" maxWidth="120" headerToolTip="mouse translucency" id="a0x-FK-bxj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Translucency">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1366,7 +1409,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
-                                            <rect key="frame" x="0.0" y="0.0" width="890" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="836" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1427,11 +1470,6 @@ Gw
                         <constraint firstItem="r0H-gG-FQJ" firstAttribute="leading" secondItem="sMV-Oo-qve" secondAttribute="leading" constant="3" id="Z3E-WB-AQU"/>
                         <constraint firstItem="r0H-gG-FQJ" firstAttribute="top" secondItem="sMV-Oo-qve" secondAttribute="top" constant="7" id="uBx-dC-o7l"/>
                     </constraints>
-                    <connections>
-                        <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="cpI-yi-sQl"/>
-                        <outlet property="playitemTableView" destination="IBh-ZH-TR3" id="LPo-ZJ-0YM"/>
-                        <outlet property="playlistArrayController" destination="Vul-U2-GKW" id="cVX-IY-Jme"/>
-                    </connections>
                 </customView>
                 <arrayController id="Vul-U2-GKW">
                     <connections>
