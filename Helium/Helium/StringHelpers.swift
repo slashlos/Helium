@@ -91,6 +91,23 @@ extension String {
     }
 }
 
+// From https://stackoverflow.com/questions/27624331/unique-values-of-array-in-swift
+extension Array where Element : Hashable {
+    var unique: [Element] {
+        return Array(Set(self))
+    }
+}
+
+// From https://stackoverflow.com/questions/31093678/how-to-get-rid-of-array-brackets-while-printing/31093744#31093744
+extension Sequence {
+    var list: String {
+        return map { "\($0)" }.joined(separator: ", ")
+    }
+    var listing: String {
+        return map { "\($0)" }.joined(separator: "\n")
+    }
+}
+
 // From https://stackoverflow.com/questions/12837965/converting-nsdictionary-to-xml
 /*
 extension Any {
