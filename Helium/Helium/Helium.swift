@@ -43,6 +43,7 @@ struct k {
     static let docRelease = 1
     static let docPlaylists = 2
     static let docReleaseName = "Helium Release Notes"
+    static let docPlaylistsName = "Helium Playlists"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
     static let bingLink = "https://search.bing.com/search?Q=%@"
