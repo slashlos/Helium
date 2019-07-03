@@ -600,6 +600,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         switch (self.document as! Document).docType {
         case k.docRelease:
             return k.docReleaseName
+        case k.docPlaylists:
+            return k.docPlaylistsName
         default:
             if let length = self.webView.title?.count, length > 0 {
                 return self.webView.title!
