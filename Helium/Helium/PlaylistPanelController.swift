@@ -16,6 +16,10 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
         }
     }
 
+    override func windowTitle(forDocumentDisplayName displayName: String) -> String {
+        return k.docPlaylistsName
+    }
+    
     override func windowDidLoad() {
         super.windowDidLoad()
         if let window = self.window, let pvc = window.contentViewController {
