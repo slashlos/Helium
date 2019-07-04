@@ -1079,6 +1079,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 return args
             }
             else
+            if let temp = temp.removingPercentEncoding
             {
                 return temp
             }
