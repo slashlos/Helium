@@ -191,6 +191,142 @@
                                                 <segue destination="1dx-1f-JSH" kind="modal" id="EC4-pe-v2x"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Appearance" id="3LK-WP-db9">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Appearance" id="9uu-ld-jEZ">
+                                                <items>
+                                                    <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="0Pe-R9-a7L">
+                                                        <connections>
+                                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="Fnz-Lc-CSm"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Full Screen" keyEquivalent="f" id="wjj-tN-fNZ" userLabel="Full Screen">
+                                                        <connections>
+                                                            <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="9XA-5c-DgT"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Translucency" id="p5y-jd-2z6" userLabel="Translucency">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Translucency" systemMenu="window" id="jdM-lt-6od">
+                                                            <items>
+                                                                <menuItem title="Enabled" keyEquivalent="t" id="3vF-to-PqC">
+                                                                    <connections>
+                                                                        <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="B23-a6-OI6"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Opacity" id="co4-Ne-jH7">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <menu key="submenu" title="Opacity" systemMenu="window" id="hEr-Kp-uiy">
+                                                                        <items>
+                                                                            <menuItem title="10%" tag="10" keyEquivalent="1" id="7ry-KM-gX5">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="WQr-ns-7A2"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="20%" tag="20" keyEquivalent="2" id="BgJ-Oe-gbg">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="i02-e8-fab"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="30%" tag="30" keyEquivalent="3" id="zHz-x8-yxD">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="xSf-jr-zAz"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="40%" tag="40" keyEquivalent="4" id="wXL-cr-DSH">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="HSJ-bn-b4j"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="50%" tag="50" keyEquivalent="5" id="OO0-vL-KNM">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="f0j-YM-Lq2"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="60%" state="on" tag="60" keyEquivalent="6" id="lI6-1q-9J2">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="TVM-rO-T2Z"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="70%" tag="70" keyEquivalent="7" id="RFy-aG-A2s">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="j6M-sa-pY2"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="80%" tag="80" keyEquivalent="8" id="lcq-OP-68y">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="xUF-s3-Ykp"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="90%" tag="90" keyEquivalent="9" id="tkQ-0g-7V2">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="GFQ-yL-MXm"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="100%" tag="100" keyEquivalent="0" id="tQa-rO-g1c">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="11E-sa-K2T"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                        </items>
+                                                                    </menu>
+                                                                    <connections>
+                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="N9g-RB-zmh"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem isSeparatorItem="YES" id="eu7-25-XGu"/>
+                                                                <menuItem title="Never" state="on" id="5XH-k1-eQP" userLabel="Never">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="Ehg-kv-2iH"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Always" tag="1" id="yQ1-sH-Y9y" userLabel="Always">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="X1e-8z-PYj"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Mouse Over" tag="2" id="ccm-bf-9k8">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="te9-l9-hfY"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Mouse Outside" tag="3" id="Zmi-TV-sid">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="Cyd-uJ-nAB"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
+                                                    <menuItem title="Zoom" id="gSe-Tr-QyI">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Zoom" id="zji-5p-1SL">
+                                                            <items>
+                                                                <menuItem title="In" keyEquivalent="+" id="L0G-Zz-lVW">
+                                                                    <connections>
+                                                                        <action selector="zoomIn:" target="Ady-hI-5gd" id="Kp3-HD-SRl"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Out" keyEquivalent="-" id="bcA-91-Gi9">
+                                                                    <connections>
+                                                                        <action selector="zoomOut:" target="Ady-hI-5gd" id="Trl-Fj-45f"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Reset" keyEquivalent="=" id="hlz-0m-6DY">
+                                                                    <connections>
+                                                                        <action selector="resetZoomLevel:" target="Ady-hI-5gd" id="ZkM-mD-aat"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
                                         <menuItem title="Preferences..." id="MMM-uX-MFR">
                                             <menu key="submenu" title="Preferences..." id="BdD-B4-azf">
@@ -339,6 +475,26 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Location" id="bib-Uj-vzu">
                                     <items>
+                                        <menuItem title="New" id="4OQ-29-DoS">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="New" id="lz3-XZ-eKC">
+                                                <items>
+                                                    <menuItem title="Window" keyEquivalent="n" id="5z8-gm-Cg3">
+                                                        <connections>
+                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="MBG-Bq-nZh"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="N" id="NGT-Ia-bmu">
+                                                        <connections>
+                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="dQm-Nv-HoC"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                                <connections>
+                                                    <outlet property="delegate" destination="Voe-Tx-rLC" id="0lq-Vz-ZN2"/>
+                                                </connections>
+                                            </menu>
+                                        </menuItem>
                                         <menuItem title="Open" id="wiF-om-ZaY">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Open" id="wjR-Gf-o9v">
@@ -351,16 +507,6 @@
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
                                                         <connections>
                                                             <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Window" keyEquivalent="n" id="DR8-hJ-Dgj">
-                                                        <connections>
-                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="uDc-Ar-nDl"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="N" id="ecy-NE-bhE">
-                                                        <connections>
-                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="Zkh-NM-r2c"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
@@ -430,142 +576,6 @@ CA
                                     </connections>
                                 </menu>
                             </menuItem>
-                            <menuItem title="Appearance" id="H8h-7b-M4v">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Appearance" id="HyV-fh-RgO">
-                                    <items>
-                                        <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="fpG-6V-xxb">
-                                            <connections>
-                                                <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="O7c-yh-tbI"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Full Screen" keyEquivalent="f" id="YeO-4u-euO" userLabel="Full Screen">
-                                            <connections>
-                                                <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="HTj-ot-BGs"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Translucency" id="RVf-yr-XjB" userLabel="Translucency">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Translucency" systemMenu="window" id="fPu-ZA-vuX">
-                                                <items>
-                                                    <menuItem title="Enabled" keyEquivalent="t" id="p0U-Pp-s8F">
-                                                        <connections>
-                                                            <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="K1s-hD-jeV"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Opacity" id="wlj-XI-Lng">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <menu key="submenu" title="Opacity" systemMenu="window" id="5ao-Bb-P10">
-                                                            <items>
-                                                                <menuItem title="10%" tag="10" keyEquivalent="1" id="SpQ-gr-DsG">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="3e3-fW-qZl"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="20%" tag="20" keyEquivalent="2" id="B4x-FQ-kVj">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="YcF-LS-erZ"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="30%" tag="30" keyEquivalent="3" id="S1G-zW-xWx">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="Mp8-cE-1I1"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="40%" tag="40" keyEquivalent="4" id="sB8-xz-mYZ">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="7lH-fx-UPv"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="50%" tag="50" keyEquivalent="5" id="BNJ-gh-yGK">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="DUZ-FB-yWe"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="60%" state="on" tag="60" keyEquivalent="6" id="iS5-Jd-p7Q">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="j5L-cM-Y1E"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="70%" tag="70" keyEquivalent="7" id="0pX-17-4u5">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="SRq-5i-3Rv"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="80%" tag="80" keyEquivalent="8" id="mJa-We-e3P">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="je5-5d-AEP"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="90%" tag="90" keyEquivalent="9" id="JLI-El-Rtf">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="21R-me-tat"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="100%" tag="100" keyEquivalent="0" id="2NP-ZM-pKs">
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="Gpu-G0-Ksx"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                            </items>
-                                                        </menu>
-                                                        <connections>
-                                                            <action selector="percentagePress:" target="Ady-hI-5gd" id="sul-5v-LYq"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem isSeparatorItem="YES" id="52B-gm-nq5"/>
-                                                    <menuItem title="Never" state="on" id="DDN-6r-tbV" userLabel="Never">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="translucencyPress:" target="Ady-hI-5gd" id="rJY-km-o9x"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Always" tag="1" id="UhQ-aG-PEv" userLabel="Always">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="translucencyPress:" target="Ady-hI-5gd" id="emF-8U-osL"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Mouse Over" tag="2" id="Tdi-1w-idY">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="translucencyPress:" target="Ady-hI-5gd" id="dAH-GZ-xrg"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Mouse Outside" tag="3" id="keL-ga-Rmv">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="translucencyPress:" target="Ady-hI-5gd" id="7v9-xm-Hhy"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                        <menuItem title="Zoom" id="kjo-5J-SOa">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Zoom" id="91W-6v-hBY">
-                                                <items>
-                                                    <menuItem title="In" keyEquivalent="+" id="x5u-Za-He5">
-                                                        <connections>
-                                                            <action selector="zoomIn:" target="Ady-hI-5gd" id="8DU-pG-x48"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Out" keyEquivalent="-" id="oZd-ZE-I3d">
-                                                        <connections>
-                                                            <action selector="zoomOut:" target="Ady-hI-5gd" id="B27-BH-sc0"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Reset" keyEquivalent="=" id="CkG-jI-gbw">
-                                                        <connections>
-                                                            <action selector="resetZoomLevel:" target="Ady-hI-5gd" id="fjs-3Q-hPk"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
                             <menuItem title="Edit" id="5QF-Oa-p0T">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Edit" id="W48-6f-4Dl">
@@ -610,10 +620,15 @@ CA
                                     </items>
                                 </menu>
                             </menuItem>
-                            <menuItem title="Window" id="awM-PM-9xH">
+                            <menuItem title="Window" id="GCB-22-CDu">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Window" systemMenu="window" id="3T3-to-DAm"/>
+                                <menu key="submenu" title="Window" systemMenu="window" id="3T3-to-DAm">
+                                    <items>
+                                        <menuItem isSeparatorItem="YES" id="Mmt-YT-MZ5"/>
+                                    </items>
+                                </menu>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="plF-ra-0mg"/>
                             <menuItem title="Help" id="wpr-3q-Mcd">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Help" systemMenu="help" id="F2S-fz-NVQ">
@@ -654,6 +669,25 @@ CA
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">
                     <items>
+                        <menuItem title="New" id="LTp-B5-DZL">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <menu key="submenu" title="New" id="ReN-RZ-qss">
+                                <items>
+                                    <menuItem title="Window" id="sa6-w8-Bve">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                        <connections>
+                                            <action selector="newDocument:" target="Ady-hI-5gd" id="F4r-B4-BOi"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="Tab" tag="1" alternate="YES" id="kuG-JL-b07">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <connections>
+                                            <action selector="newDocument:" target="Ady-hI-5gd" id="6K8-jq-Fnh"/>
+                                        </connections>
+                                    </menuItem>
+                                </items>
+                            </menu>
+                        </menuItem>
                         <menuItem title="Open" id="fDe-O9-X2L">
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <menu key="submenu" title="Open" id="cgH-8w-eo4">
@@ -1144,7 +1178,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" autosaveName="playitemTableView.prefs" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="836" height="192"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="773" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1183,7 +1217,7 @@ Gw
                                                             </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="secs" width="60" minWidth="40" maxWidth="120" headerToolTip="" id="3W1-zN-OJV">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Secs">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1204,14 +1238,14 @@ Gw
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="120" id="vWm-ko-T1E">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
+                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="160" id="vWm-ko-T1E">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Added">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                             </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="of0-3u-hQF">
-                                                                <dateFormatter key="formatter" timeStyle="short" id="asQ-yH-mHS"/>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" title="Text Cell" id="of0-3u-hQF">
+                                                                <dateFormatter key="formatter" dateStyle="short" timeStyle="short" id="asQ-yH-mHS"/>
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1220,24 +1254,6 @@ Gw
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="CBL-I6-ace"/>
-                                                            </connections>
-                                                        </tableColumn>
-                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="120" id="i44-ze-mWu">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
-                                                                <font key="font" metaFont="smallSystem"/>
-                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                                                            </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="n1R-cv-lAA">
-                                                                <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" dateFormat="yy&quot;MM''dd" id="ZEh-xS-oVa"/>
-                                                                <font key="font" metaFont="system"/>
-                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                            </textFieldCell>
-                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
-                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="uQ8-JO-Rvq"/>
                                                             </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="link" width="80" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
@@ -1409,7 +1425,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
-                                            <rect key="frame" x="0.0" y="0.0" width="836" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="773" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
