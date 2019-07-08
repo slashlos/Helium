@@ -19,6 +19,7 @@ struct k {
     static let item = "item"
     static let name = "name"
     static let list = "list"
+    static let tooltip = "tooltip"
     static let link = "link"
     static let date = "date"
     static let time = "time"
@@ -194,7 +195,22 @@ class PlayList : NSObject,NSCoding {
             return plays
         }
     }
-
+    dynamic var shiftKeyDown : Bool {
+        get {
+            return (NSApp.delegate as! AppDelegate).shiftKeyDown
+        }
+    }
+    var tooltip : String {
+        get {
+            if shiftKeyDown {
+                return String(format: "%ld play(s)", self.plays)
+            }
+            else
+            {
+                return String(format: "%ld item(s)", self.list.count)
+            }
+        }
+    }
     override var description: String {
         get {
             return String(format: "<%@: %p '%@' %ld item(s)", self.className, self, self.name, list.count)
@@ -217,11 +233,30 @@ class PlayList : NSObject,NSCoding {
                 name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
             }
         }
+        
+        //  watch shift key changes affecting our playlist
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(shiftKeyDown(_:)),
+            name: NSNotification.Name(rawValue: "shiftKeyDown"),
+            object: nil)
     }
     
-    init(name:String, list:Array <PlayItem>) {
-        self.date = Date().timeIntervalSinceReferenceDate
-        super.init()
+    internal func shiftKeyDown(_ note: Notification) {
+        let keyPaths = ["tooltip"]
+        for keyPath in (keyPaths)
+        {
+            self.willChangeValue(forKey: keyPath)
+        }
+        
+        for keyPath in (keyPaths)
+        {
+            self.didChangeValue(forKey: keyPath)
+        }
+    }
+    
+    convenience init(name:String, list:Array <PlayItem>) {
+        self.init()
 
         self.list = list
         self.name = name

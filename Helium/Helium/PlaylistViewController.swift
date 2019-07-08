@@ -1060,13 +1060,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         {
             let play = (playlistArrayController.arrangedObjects as! [PlayList])[row]
 
-            if let plays : NSTableColumn = tableView.tableColumn(withIdentifier: k.plays), plays.isHidden {
-                return String(format: "%ld play(s)", play.plays)
-            }
-            else
-            {
-                return String(format: "%ld item(s)", play.list.count)
-            }
+            return play.tooltip
         }
         else
         if tableView == playitemTableView

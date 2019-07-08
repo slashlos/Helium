@@ -618,6 +618,30 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
             name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
             object: nil)
+        
+        //  We want to be notified when a player is added
+        let originalDidAddSubviewMethod = class_getInstanceMethod(NSView.self, #selector(NSView.didAddSubview(_:)))
+        let originalDidAddSubviewImplementation = method_getImplementation(originalDidAddSubviewMethod)
+        
+        typealias DidAddSubviewCFunction = @convention(c) (AnyObject, Selector, NSView) -> Void
+        let castedOriginalDidAddSubviewImplementation = unsafeBitCast(originalDidAddSubviewImplementation, to: DidAddSubviewCFunction.self)
+        
+        let newDidAddSubviewImplementationBlock: @convention(block) (AnyObject?, NSView) -> Void = { (view: AnyObject!, subview: NSView) -> Void in
+            castedOriginalDidAddSubviewImplementation(view, Selector(("didAddsubview:")), subview)
+            Swift.print("view: \(subview.className)")
+            if subview.className == "WKFlippedView" {
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "WKFlippedView"), object: subview)
+            }
+        }
+        
+        let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
+        method_setImplementation(originalDidAddSubviewMethod, newDidAddSubviewImplementation)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(wkFlippedView(_:)), name: NSNotification.Name(rawValue: "WKFlippedView"), object: nil)
+    }
+    
+    func wkFlippedView(_ note: NSNotification) {
+        print("A Player \(String(describing: note.object)) will be opened now")
     }
     
     override func viewDidAppear() {
@@ -1223,7 +1247,59 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
         return hash
     }
+    /*
+    func webView(webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: () -> Void) {
+        
+        let alertController = NSAlertController(title: nil, message: message, preferredStyle: .ActionSheet)
+        
+        alertController.addAction(NSAlertAction(title: "Ok", style: .Default, handler: { (action) in
+            completionHandler()
+        }))
+        
+        self.presentViewController(alertController, animated: true, completion: nil)
+    }
     
+    func webView(webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: (Bool) -> Void) {
+        
+        let alertController = AlertController(title: nil, message: message, preferredStyle: .ActionSheet)
+        
+        alertController.addAction(AlertAction(title: "Ok", style: .Default, handler: { (action) in
+            completionHandler(true)
+        }))
+        
+        alertController.addAction(AlertAction(title: "Cancel", style: .Default, handler: { (action) in
+            completionHandler(false)
+        }))
+        
+        self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    func webView(webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: (String?) -> Void) {
+        
+        let alertController = UIAlertController(title: nil, message: prompt, preferredStyle: .ActionSheet)
+        
+        alertController.addTextFieldWithConfigurationHandler { (textField) in
+            textField.text = defaultText
+        }
+        
+        alertController.addAction(AlertAction(title: "Ok", style: .Default, handler: { (action) in
+            if let text = alertController.textFields?.first?.text {
+                completionHandler(text)
+            } else {
+                completionHandler(defaultText)
+            }
+            
+        }))
+        
+        alertController.addAction(AlertAction(title: "Cancel", style: .Default, handler: { (action) in
+            
+            completionHandler(nil)
+            
+        }))
+        
+        self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    */
     // MARK: Navigation Delegate
 
     // Redirect Hulu and YouTube to pop-out videos
@@ -1351,6 +1427,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             return
         }
         Swift.print("webView:didFinishLoad: '\(title)' => \(urlString)")
+    }
+    
+    func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard let serverTrust = challenge.protectionSpace.serverTrust else { return completionHandler(.useCredential, nil) }
+        let exceptions = SecTrustCopyExceptions(serverTrust)
+        SecTrustSetExceptions(serverTrust, exceptions)
+        completionHandler(.useCredential, URLCredential(trust: serverTrust))
     }
     
     //  MARK: UI Delegate
