@@ -118,7 +118,7 @@ class MyWebView : WKWebView {
 */
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
-        let newWindows = UserSettings.createNewWindows.value
+        let newWindows = UserSettings.CreateNewWindows.value
         let appDelegate = NSApp.delegate as! AppDelegate
         var nextURL = url
 
@@ -237,7 +237,7 @@ class MyWebView : WKWebView {
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    if appDelegate.openForBusiness && UserSettings.createNewWindows.value, let itemURL = URL.init(string: urlString) {
+                    if appDelegate.openForBusiness && UserSettings.CreateNewWindows.value, let itemURL = URL.init(string: urlString) {
                         _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
                         continue
                     }
@@ -442,7 +442,7 @@ class MyWebView : WKWebView {
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Create New Windows", action: #selector(AppDelegate.createNewWindowPress(_:)), keyEquivalent: "")
-        item.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
+        item.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
         item.target = appDelegate
         subPref.addItem(item)
         
@@ -456,7 +456,7 @@ class MyWebView : WKWebView {
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Magic URL Redirects", action: #selector(AppDelegate.magicURLRedirectPress(_:)), keyEquivalent: "")
-        item.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+        item.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
         item.target = appDelegate
         subPref.addItem(item)
 
@@ -632,16 +632,27 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             if subview.className == "WKFlippedView" {
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "WKFlippedView"), object: subview)
             }
+            if subview.className == "NSScrollViewMirrorView" {
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "NSScrollViewMirrorView"), object: subview)
+            }
         }
         
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
         method_setImplementation(originalDidAddSubviewMethod, newDidAddSubviewImplementation)
         
         NotificationCenter.default.addObserver(self, selector: #selector(wkFlippedView(_:)), name: NSNotification.Name(rawValue: "WKFlippedView"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(scrollView(_:)), name: NSNotification.Name(rawValue: "NSScrollViewMirrorView"), object: nil)
     }
     
     func wkFlippedView(_ note: NSNotification) {
         print("A Player \(String(describing: note.object)) will be opened now")
+    }
+    
+    func scrollView(_ note: NSNotification) {
+        print("Scroll View \(String(describing: note.object)) will be opened now")
+        if let scrollView : NSScrollView = note.object as? NSScrollView {
+            scrollView.autohidesScrollers = true
+        }
     }
     
     override func viewDidAppear() {
@@ -655,7 +666,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         //  load developer panel if asked - initially no
-        self.webView?.configuration.preferences.setValue(UserSettings.developerExtrasEnabled.value, forKey: "developerExtrasEnabled")
+        self.webView?.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
     fileprivate func setupWebView() {
@@ -669,7 +680,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.configuration.preferences.plugInsEnabled = true
         
         // Custom user agent string for Netflix HTML5 support
-        webView._customUserAgent = UserSettings.userAgent.value
+        webView._customUserAgent = UserSettings.UserAgent.value
         
         // Allow zooming
         webView.allowsMagnification = true
@@ -865,7 +876,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
+            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.HomePageURL.value),
                                       onWindow: self.view.window as? HeliumPanel,
                                       title: "Enter URL",
                                       acceptHandler: { (newUrl: String) in
@@ -926,7 +937,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     internal func loadUserAgent(userAgentString: Notification) {
-        webView._customUserAgent = UserSettings.userAgent.value
+        webView._customUserAgent = UserSettings.UserAgent.value
     }
     
     internal func loadURL(text: String) {
@@ -1019,7 +1030,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     // MARK: Webview functions
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
-        loadURL(text: UserSettings.homePageURL.value)
+        loadURL(text: UserSettings.HomePageURL.value)
     }
 
 	@IBOutlet var webView: MyWebView!
@@ -1315,7 +1326,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             return
         }
         
-        guard !UserSettings.disabledMagicURLs.value else {
+        guard !UserSettings.DisabledMagicURLs.value else {
             if let selectedURL = (webView as! MyWebView).selectedURL {
                 url = selectedURL
             }

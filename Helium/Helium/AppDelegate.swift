@@ -198,15 +198,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	}
     @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
-            currentURL: UserSettings.homePageURL.value,
+            currentURL: UserSettings.HomePageURL.value,
             alertMessageText:   "New home page",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.homePageURL.default),
+            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.HomePageURL.default),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
                           title: "Enter URL",
                           acceptHandler: { (newUrl: String) in
-                            UserSettings.homePageURL.value = newUrl
+                            UserSettings.HomePageURL.value = newUrl
         }
         )
     }
@@ -214,6 +214,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     //  Complimented with createNewWindows to hold until really open
     var openForBusiness = false
     
+    //  By defaut we show document title bar
+    @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
+        UserSettings.AutoHideTitle.value = (sender.state == NSOffState)
+     }
+
     //  By default we auto save any document changes
 	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
         UserSettings.AutoSaveDocs.value = (sender.state == NSOffState)
@@ -237,11 +242,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
 	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
-        UserSettings.createNewWindows.value = (sender.state == NSOnState ? false : true)
+        UserSettings.CreateNewWindows.value = (sender.state == NSOnState ? false : true)
     }
     
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        UserSettings.developerExtrasEnabled.value = (sender.state == NSOnState)
+        UserSettings.DeveloperExtrasEnabled.value = (sender.state == NSOnState)
     }
     
     var fullScreen : NSRect? = nil
@@ -260,7 +265,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
-        UserSettings.disabledMagicURLs.value = (sender.state == NSOnState)
+        UserSettings.DisabledMagicURLs.value = (sender.state == NSOnState)
     }
     
 	@IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
@@ -280,7 +285,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
 	func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
-        let newWindows = UserSettings.createNewWindows.value
+        let newWindows = UserSettings.CreateNewWindows.value
         let dc = NSDocumentController.shared()
         let fileType = fileURL.pathExtension
         dc.noteNewRecentDocumentURL(fileURL)
@@ -312,7 +317,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         
         //  Open a new window
-        UserSettings.createNewWindows.value = false
+        UserSettings.CreateNewWindows.value = false
         var status = false
         
         //  This could be anything so add/if a doc and initialize
@@ -329,7 +334,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             print("*** Error open file: \(error.localizedDescription)")
             status = false
         }
-        UserSettings.createNewWindows.value = newWindows
+        UserSettings.CreateNewWindows.value = newWindows
 
         return status
     }
@@ -393,8 +398,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     internal func openURLInNewWindow(_ newURL: URL) {
-        let newWindows = UserSettings.createNewWindows.value
-        UserSettings.createNewWindows.value = false
+        let newWindows = UserSettings.CreateNewWindows.value
+        UserSettings.CreateNewWindows.value = false
         do {
             let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
             if let hpc = doc.windowControllers.first as? HeliumPanelController {
@@ -403,7 +408,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } catch let error {
             NSApp.presentError(error)
         }
-        UserSettings.createNewWindows.value = newWindows
+        UserSettings.CreateNewWindows.value = newWindows
     }
     @IBAction func openURLInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
@@ -411,7 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        var urlString = UserSettings.homePageURL.value
+        var urlString = UserSettings.HomePageURL.value
         
         //  No window, so load alert modally
         if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {
@@ -422,7 +427,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.homePageURL.value),
+            alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.HomePageURL.value),
                           onWindow: nil,
                           title: "Enter URL",
                           acceptHandler: { (newUrl: String) in
@@ -523,9 +528,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 	
 	@IBAction func showReleaseInfo(_ sender: Any) {
         //  Temporarily disable new windows as we'll create one now
-        let newWindows = UserSettings.createNewWindows.value
-        let urlString = UserSettings.releaseNotesURL.value
-        UserSettings.createNewWindows.value = false
+        let newWindows = UserSettings.CreateNewWindows.value
+        let urlString = UserSettings.ReleaseNotesURL.value
+        UserSettings.CreateNewWindows.value = false
 
         do
         {
@@ -543,7 +548,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Swift.print("Yoink, unable to load url (\(urlString))")
         }
         
-        UserSettings.createNewWindows.value = newWindows
+        UserSettings.CreateNewWindows.value = newWindows
         return
 	}
 	
@@ -580,15 +585,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
 	@IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
-            currentURL: UserSettings.userAgent.value,
+            currentURL: UserSettings.UserAgent.value,
             alertMessageText:   "New user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
-            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.userAgent.default),
+            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.UserAgent.default),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
                           title: "User Agent",
                           acceptHandler: { (newUserAgent: String) in
-                            UserSettings.userAgent.value = newUserAgent
+                            UserSettings.UserAgent.value = newUserAgent
                             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewUserAgentString"),
                                                      object: newUserAgent);
                             NotificationCenter.default.post(notif)
@@ -675,18 +680,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
             case "Preferences":
                 break
+            case "Auto-hide Title Bar":
+                menuItem.state = UserSettings.AutoHideTitle.value ? NSOnState : NSOffState
+                break
             case "Auto save documents":
                 menuItem.state = UserSettings.AutoSaveDocs.value ? NSOnState : NSOffState
                 break;
             case "Create New Windows":
-                menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
                 break
             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hwc : HeliumPanelController = wc as? HeliumPanelController,
                         let state = hwc.webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
-                            menuItem.state = UserSettings.developerExtrasEnabled.value ? NSOnState : NSOffState
+                            menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? NSOnState : NSOffState
                             break
                     }
                     menuItem.state = (state as! NSNumber).boolValue ? NSOnState : NSOffState
@@ -703,7 +711,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case "Home Page":
                 break
             case "Magic URL Redirects":
-                menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+                menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
                 break
             case "User Agent":
                 break
@@ -960,7 +968,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         
         //  Developer extras off by default
-        UserSettings.developerExtrasEnabled.value = false
+        UserSettings.DeveloperExtrasEnabled.value = false
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1064,7 +1072,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let name = fuzz.removingPercentEncoding
                 
                 // Ignore our home page from the history queue
-                if name! == UserSettings.homePageName.value { return }
+                if name! == UserSettings.HomePageName.value { return }
 
                 item.name = name!
                 item.link = itemURL
@@ -1379,7 +1387,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        let newWindows = UserSettings.createNewWindows.value
+        let newWindows = UserSettings.CreateNewWindows.value
 
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
             let rawString = keyDirectObject.stringValue else {
@@ -1399,7 +1407,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         
         //  Temporarily disable new windows as we'll create one now
-        UserSettings.createNewWindows.value = false
+        UserSettings.CreateNewWindows.value = false
         do
         {
             let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
@@ -1410,7 +1418,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSApp.presentError(error)
             Swift.print("Yoink, unable to create new url doc for (\(urlString))")
         }
-        UserSettings.createNewWindows.value = newWindows
+        UserSettings.CreateNewWindows.value = newWindows
         return
     }
 

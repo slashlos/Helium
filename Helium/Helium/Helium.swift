@@ -520,7 +520,7 @@ internal struct Settings {
         }
     }
     
-    let autoHideTitle = Setup<Bool>("autoHideTitle", value: false)
+    let autoHideTitle = Setup<Bool>("autoHideTitle", value: UserSettings.AutoHideTitle.value)
     let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let rank = Setup<Int>(k.rank, value: 0)
@@ -585,7 +585,7 @@ class Document : NSDocument {
             }
             else
             {
-                return URL.init(string: UserSettings.homePageURL.default)
+                return URL.init(string: UserSettings.HomePageURL.default)
             }
         }
     }
@@ -823,7 +823,7 @@ class Document : NSDocument {
     convenience init(withPlaylists item: [PlayList]) throws {
         
         do {
-            let homeURL = URL.init(string: UserSettings.homePageURL.value)!
+            let homeURL = URL.init(string: UserSettings.HomePageURL.value)!
             try self.init(contentsOf: homeURL, ofType: k.Playlists)
         }
     }

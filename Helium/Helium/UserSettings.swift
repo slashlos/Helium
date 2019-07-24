@@ -56,23 +56,23 @@ internal struct UserSettings {
     }
     
     //  Global Defaults keys
-    static let disabledMagicURLs = Setting<Bool>("disabledMagicURLs", defaultValue: false)
-    static let createNewWindows = Setting<Bool>("createNewWindows", defaultValue: false)
-    static let playlistThrottle = Setting<Int>("playlistThrottle", defaultValue: 32)
+    static let DisabledMagicURLs = Setting<Bool>("disabledMagicURLs", defaultValue: false)
+    static let CreateNewWindows = Setting<Bool>("createNewWindows", defaultValue: false)
+    static let PlaylistThrottle = Setting<Int>("playlistThrottle", defaultValue: 32)
 
-    static let homePageURL = Setting<String>(
+    static let HomePageURL = Setting<String>(
         "homePageURL",
 //      defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
 //      defaultValue: "https://cdn.rawgit.com/slashlos/Helium/master/helium_start.html"
         defaultValue: "https://slashlos.github.io/Helium/helium_start.html"
     )
-    static let releaseNotesURL = Setting<String>(
+    static let ReleaseNotesURL = Setting<String>(
         "releaseNotesURL",
         defaultValue: "https://slashlos.github.io/Helium/Help/index.html"
     )
-    static let homePageName = Setting<String>("homePageName", defaultValue: "helium_start")
+    static let HomePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
-    static let userAgent = Setting<String>(
+    static let UserAgent = Setting<String>(
         "userAgent",
 /*10.11*/        defaultValue: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17"
 //10.12//        defaultValue: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.12 Safari/603.3.8"
@@ -87,6 +87,7 @@ internal struct UserSettings {
     static let HistoryList  = Setting<String>("historyList", defaultValue:"histories")
     static let HideAppMenu  = Setting<Bool>("hideAppMenu", defaultValue: false)
     static let HideZoomIcon = Setting<Bool>("hideZoomIcon", defaultValue: true)
+    static let AutoHideTitle = Setting<Bool>("autoHideTitle", defaultValue: false)
     static let AutoSaveDocs = Setting<Bool>("autoSaveDocs", defaultValue: true)
     
     //  Search provider - must match k struct, menu item tags
@@ -94,5 +95,5 @@ internal struct UserSettings {
     static let Searches = Setting<Array<String>>("searches", defaultValue: [String]())
     
     //  Developer setting(s)
-    static let developerExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)
+    static let DeveloperExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)
 }

@@ -670,7 +670,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     internal func play(_ sender: Any, items: Array<PlayItem>, maxSize: Int) {
         //  first window might be reused, others no
-        let newWindows = UserSettings.createNewWindows.value
+        let newWindows = UserSettings.CreateNewWindows.value
 
         //  Unless we're the standalone helium playlist window dismiss all
         if !(self.view.window?.isKind(of: HeliumPanel.self))! {
@@ -686,7 +686,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         {
-            UserSettings.createNewWindows.value = true
+            UserSettings.CreateNewWindows.value = true
         }
         
         //  Try to restore item at its last known location
@@ -696,12 +696,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             
             //  2nd item and on get a new window
-            UserSettings.createNewWindows.value = true
+            UserSettings.CreateNewWindows.value = true
         }
         
         //  Restore user settings
-        if UserSettings.createNewWindows.value != newWindows {
-            UserSettings.createNewWindows.value = newWindows
+        if UserSettings.CreateNewWindows.value != newWindows {
+            UserSettings.CreateNewWindows.value = newWindows
         }
     }
     
@@ -711,7 +711,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         let whoAmI = self.view.window?.firstResponder
 
         //  Quietly, do not exceed program / user specified throttle
-        let throttle = UserSettings.playlistThrottle.value
+        let throttle = UserSettings.PlaylistThrottle.value
 
         //  Our rank sorted list from which we'll take last 'throttle' to play
         var list = Array<PlayItem>()
@@ -738,7 +738,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if list.count > throttle {
             let message = String(format: "Limiting playlist(s) %ld items to throttle?", list.count)
             let infoMsg = String(format: "User defaults: %@ = %ld",
-                                 UserSettings.playlistThrottle.keyPath,
+                                 UserSettings.PlaylistThrottle.keyPath,
                                  throttle)
             
             appDelegate.sheetOKCancel(message, info: infoMsg,
@@ -1032,7 +1032,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             switch menuItem.title {
                 
             default:
-                menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+                menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
                 break
             }
         }

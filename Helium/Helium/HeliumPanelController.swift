@@ -242,12 +242,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                             return
                         }
                     }
-                    else
-                    if theEvent.trackingNumber == viewTrackingTag {
-                        if location.x >= 0.0 && location.x <= (vSize.width) && location.y > (vSize.height) {
-                            return
-                        }
-                    }
+                    
                     var lastMouseOver = mouseOver
                     mouseOver = false
                     updateTranslucency()
@@ -267,7 +262,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     // MARK:- Translucency
-    fileprivate var mouseOver: Bool = false
+    fileprivate var mouseOver: Bool = false {
+        didSet {
+            if (doc?.settings.autoHideTitle.value)!, let window = self.webView.window {
+                window.titleVisibility = mouseOver ? NSWindowTitleVisibility.visible : NSWindowTitleVisibility.hidden
+                window.titlebarAppearsTransparent = mouseOver ? false : true
+                docIconToggle()
+            }
+        }
+    }
     
     fileprivate var alpha: CGFloat = 0.6 { //default
         didSet {
@@ -452,7 +455,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 : value == .mouseOutside ? NSOnState : NSOffState
             break
         case "Create New Windows":
-            menuItem.state = UserSettings.createNewWindows.value ? NSOnState : NSOffState
+            menuItem.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
             break
         case "Float Above All Spaces":
             menuItem.state = settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
@@ -463,7 +466,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case "Home Page":
             break
         case "Magic URL Redirects":
-            menuItem.state = UserSettings.disabledMagicURLs.value ? NSOffState : NSOnState
+            menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
             break
             
         default:
@@ -563,14 +566,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             {
                 docIconButton?.image = NSApp.applicationIconImage
             }
-            docIconButton?.isHidden = false
+            docIconButton?.isHidden = !mouseOver//false
             if let url = self.webView.url, url.isFileURL {
                 self.synchronizeWindowTitleWithDocumentName()
             }
         }
         else
         {
-            docIconButton?.isHidden = true
+            docIconButton?.isHidden = !mouseOver//true
         }
         cacheSettings()
     }
@@ -581,15 +584,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.2
                     panel.animator().titleVisibility = NSWindowTitleVisibility.hidden
-                    panel.animator().titlebarAppearsTransparent = true
-                    panel.animator().styleMask.formUnion(.fullSizeContentView)
+///                    panel.animator().titlebarAppearsTransparent = true
+///                    panel.animator().styleMask.formUnion(.fullSizeContentView)
                 }, completionHandler: nil)
             } else {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.2
                     panel.animator().titleVisibility = NSWindowTitleVisibility.visible
-                    panel.animator().titlebarAppearsTransparent = false
-                    panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
+///                    panel.animator().titlebarAppearsTransparent = false
+///                    panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
                 }, completionHandler: nil)
             }
         }

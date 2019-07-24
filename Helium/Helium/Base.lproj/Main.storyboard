@@ -191,142 +191,6 @@
                                                 <segue destination="1dx-1f-JSH" kind="modal" id="EC4-pe-v2x"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Appearance" id="3LK-WP-db9">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Appearance" id="9uu-ld-jEZ">
-                                                <items>
-                                                    <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="0Pe-R9-a7L">
-                                                        <connections>
-                                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="Fnz-Lc-CSm"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Full Screen" keyEquivalent="f" id="wjj-tN-fNZ" userLabel="Full Screen">
-                                                        <connections>
-                                                            <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="9XA-5c-DgT"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Translucency" id="p5y-jd-2z6" userLabel="Translucency">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <menu key="submenu" title="Translucency" systemMenu="window" id="jdM-lt-6od">
-                                                            <items>
-                                                                <menuItem title="Enabled" keyEquivalent="t" id="3vF-to-PqC">
-                                                                    <connections>
-                                                                        <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="B23-a6-OI6"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Opacity" id="co4-Ne-jH7">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <menu key="submenu" title="Opacity" systemMenu="window" id="hEr-Kp-uiy">
-                                                                        <items>
-                                                                            <menuItem title="10%" tag="10" keyEquivalent="1" id="7ry-KM-gX5">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="WQr-ns-7A2"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="20%" tag="20" keyEquivalent="2" id="BgJ-Oe-gbg">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="i02-e8-fab"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="30%" tag="30" keyEquivalent="3" id="zHz-x8-yxD">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="xSf-jr-zAz"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="40%" tag="40" keyEquivalent="4" id="wXL-cr-DSH">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="HSJ-bn-b4j"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="50%" tag="50" keyEquivalent="5" id="OO0-vL-KNM">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="f0j-YM-Lq2"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="60%" state="on" tag="60" keyEquivalent="6" id="lI6-1q-9J2">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="TVM-rO-T2Z"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="70%" tag="70" keyEquivalent="7" id="RFy-aG-A2s">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="j6M-sa-pY2"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="80%" tag="80" keyEquivalent="8" id="lcq-OP-68y">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="xUF-s3-Ykp"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="90%" tag="90" keyEquivalent="9" id="tkQ-0g-7V2">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="GFQ-yL-MXm"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                            <menuItem title="100%" tag="100" keyEquivalent="0" id="tQa-rO-g1c">
-                                                                                <connections>
-                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="11E-sa-K2T"/>
-                                                                                </connections>
-                                                                            </menuItem>
-                                                                        </items>
-                                                                    </menu>
-                                                                    <connections>
-                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="N9g-RB-zmh"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem isSeparatorItem="YES" id="eu7-25-XGu"/>
-                                                                <menuItem title="Never" state="on" id="5XH-k1-eQP" userLabel="Never">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="Ehg-kv-2iH"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Always" tag="1" id="yQ1-sH-Y9y" userLabel="Always">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="X1e-8z-PYj"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Mouse Over" tag="2" id="ccm-bf-9k8">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="te9-l9-hfY"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Mouse Outside" tag="3" id="Zmi-TV-sid">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="Cyd-uJ-nAB"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                            </items>
-                                                        </menu>
-                                                    </menuItem>
-                                                    <menuItem title="Zoom" id="gSe-Tr-QyI">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <menu key="submenu" title="Zoom" id="zji-5p-1SL">
-                                                            <items>
-                                                                <menuItem title="In" keyEquivalent="+" id="L0G-Zz-lVW">
-                                                                    <connections>
-                                                                        <action selector="zoomIn:" target="Ady-hI-5gd" id="Kp3-HD-SRl"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Out" keyEquivalent="-" id="bcA-91-Gi9">
-                                                                    <connections>
-                                                                        <action selector="zoomOut:" target="Ady-hI-5gd" id="Trl-Fj-45f"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Reset" keyEquivalent="=" id="hlz-0m-6DY">
-                                                                    <connections>
-                                                                        <action selector="resetZoomLevel:" target="Ady-hI-5gd" id="ZkM-mD-aat"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                            </items>
-                                                        </menu>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
                                         <menuItem title="Preferences..." id="MMM-uX-MFR">
                                             <menu key="submenu" title="Preferences..." id="BdD-B4-azf">
@@ -334,7 +198,7 @@
                                                     <menuItem title="Auto-hide Title Bar" id="bwA-Ka-6Ou">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
-                                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="m4H-Fo-eBP"/>
+                                                            <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="eyA-Hl-bel"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="Create New Windows" id="XlG-m9-GkO">
@@ -624,6 +488,142 @@ CA
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Window" systemMenu="window" id="3T3-to-DAm">
                                     <items>
+                                        <menuItem title="Appearance" id="hd6-Gd-vCv">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Appearance" id="2N0-Zn-jSm">
+                                                <items>
+                                                    <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="D5w-CV-8ur">
+                                                        <connections>
+                                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="NB2-z3-ghY"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Full Screen" keyEquivalent="f" id="YB7-sd-Ej8" userLabel="Full Screen">
+                                                        <connections>
+                                                            <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="xZc-0b-LN6"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Translucency" id="yAu-DE-1jG" userLabel="Translucency">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Translucency" systemMenu="window" id="kEP-We-47v">
+                                                            <items>
+                                                                <menuItem title="Enabled" keyEquivalent="t" id="31i-Tw-GdD">
+                                                                    <connections>
+                                                                        <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="6Wc-xq-5Ex"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Opacity" id="htE-fe-3NL">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <menu key="submenu" title="Opacity" systemMenu="window" id="DfG-XA-zos">
+                                                                        <items>
+                                                                            <menuItem title="10%" tag="10" keyEquivalent="1" id="Eba-DG-4ii">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="73W-6l-Gat"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="20%" tag="20" keyEquivalent="2" id="TZm-eL-00G">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="xnL-at-x1p"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="30%" tag="30" keyEquivalent="3" id="Wsd-Ez-Wq7">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="QyW-wf-S2M"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="40%" tag="40" keyEquivalent="4" id="euX-6m-E9M">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="61u-QS-ho8"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="50%" tag="50" keyEquivalent="5" id="zSr-h1-fbu">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="1qa-aA-IzT"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="60%" state="on" tag="60" keyEquivalent="6" id="FSx-tQ-0dF">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="Nes-sG-yJg"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="70%" tag="70" keyEquivalent="7" id="S7P-n6-dLr">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="m0a-OY-mRt"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="80%" tag="80" keyEquivalent="8" id="BxE-IT-jSN">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="evR-cl-OTh"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="90%" tag="90" keyEquivalent="9" id="ZfN-02-SRd">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="2lh-BC-hWy"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                            <menuItem title="100%" tag="100" keyEquivalent="0" id="Yp7-SR-Q6M">
+                                                                                <connections>
+                                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="Sdr-th-jrh"/>
+                                                                                </connections>
+                                                                            </menuItem>
+                                                                        </items>
+                                                                    </menu>
+                                                                    <connections>
+                                                                        <action selector="percentagePress:" target="Ady-hI-5gd" id="tai-OU-6Z2"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem isSeparatorItem="YES" id="gWb-95-np8"/>
+                                                                <menuItem title="Never" state="on" id="32b-uc-SoZ" userLabel="Never">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="OeV-lM-tzi"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Always" tag="1" id="KPp-15-TZ6" userLabel="Always">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="PJc-cu-FvH"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Mouse Over" tag="2" id="9pC-Gy-y3r">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="REf-Vb-BDZ"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Mouse Outside" tag="3" id="aT1-bj-vFI">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="fwz-44-2in"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
+                                                    <menuItem title="Zoom" id="bdZ-3R-GDa">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Zoom" id="fqm-ZV-dAN">
+                                                            <items>
+                                                                <menuItem title="In" keyEquivalent="+" id="zbp-L7-ZYE">
+                                                                    <connections>
+                                                                        <action selector="zoomIn:" target="Ady-hI-5gd" id="r8e-2v-hAl"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Out" keyEquivalent="-" id="jSg-Wr-9LC">
+                                                                    <connections>
+                                                                        <action selector="zoomOut:" target="Ady-hI-5gd" id="M5b-Sx-ukP"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Reset" keyEquivalent="=" id="8Yf-NM-XH1">
+                                                                    <connections>
+                                                                        <action selector="resetZoomLevel:" target="Ady-hI-5gd" id="JFV-Co-hIZ"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="Mmt-YT-MZ5"/>
                                     </items>
                                 </menu>
@@ -846,8 +846,8 @@ CA
         <scene sceneID="3rF-Wl-9by">
             <objects>
                 <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" titlebarAppearsTransparent="YES" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="425" y="461" width="480" height="270"/>
@@ -932,8 +932,8 @@ CA
                                                                                 </connections>
                                                                             </textFieldCell>
                                                                             <connections>
-                                                                                <binding destination="mHz-pC-h6G" name="toolTip" keyPath="objectValue.tooltip" id="xZn-iF-bWk"/>
                                                                                 <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.name" id="8HX-Ml-4RJ"/>
+                                                                                <binding destination="mHz-pC-h6G" name="toolTip" keyPath="objectValue.tooltip" id="xZn-iF-bWk"/>
                                                                             </connections>
                                                                         </textField>
                                                                     </subviews>
@@ -1101,7 +1101,7 @@ CA
                                             </subviews>
                                             <nil key="backgroundColor"/>
                                         </clipView>
-                                        <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.0077519379844961239" horizontal="YES" id="atn-XO-QDu">
+                                        <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="atn-XO-QDu">
                                             <rect key="frame" x="1" y="217" width="124" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
@@ -1594,7 +1594,7 @@ Gw
             <objects>
                 <windowController storyboardIdentifier="HeliumController" id="B8D-0N-5wS" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingIdentifier="webView" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES" fullSizeContentView="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
