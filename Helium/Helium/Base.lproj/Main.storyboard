@@ -207,12 +207,6 @@
                                                             <action selector="createNewWindowPress:" target="Voe-Tx-rLC" id="OzI-m7-v2a"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Float Above All Spaces" id="J8Z-sv-9PI" userLabel="Float over Full Screen Apps Menu">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="JOZ-SB-dtT"/>
-                                                        </connections>
-                                                    </menuItem>
                                                     <menuItem title="Hide Helium in menu bar" id="2GK-ox-Nku" userLabel="Hide Helium in menu bar">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
@@ -495,6 +489,12 @@ CA
                                                     <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="D5w-CV-8ur">
                                                         <connections>
                                                             <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="NB2-z3-ghY"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Float Above All Spaces" id="4hh-G0-MfV">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="Full Screen" keyEquivalent="f" id="YB7-sd-Ej8" userLabel="Full Screen">

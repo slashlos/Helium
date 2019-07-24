@@ -431,41 +431,23 @@ class MyWebView : WKWebView {
         item.target = appDelegate
         menu.addItem(item)
 
-        item = NSMenuItem(title: "Preferences", action: #selector(menuClicked(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Appearance", action: #selector(menuClicked(_:)), keyEquivalent: "")
         menu.addItem(item)
-        let subPref = NSMenu()
-        item.submenu = subPref
+        let appear = NSMenu()
+        item.submenu = appear
 
         item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hwc.autoHideTitlePress(_:)), keyEquivalent: "")
         item.state = doc.settings.autoHideTitle.value ? NSOnState : NSOffState
         item.target = hwc
-        subPref.addItem(item)
+        appear.addItem(item)
 
-        item = NSMenuItem(title: "Create New Windows", action: #selector(AppDelegate.createNewWindowPress(_:)), keyEquivalent: "")
-        item.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
-        item.target = appDelegate
-        subPref.addItem(item)
-        
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
         item.state = doc.settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
         item.target = hwc
-        subPref.addItem(item)
-        
-        item = NSMenuItem(title: "Home Page", action: #selector(AppDelegate.homePagePress(_:)), keyEquivalent: "")
-        item.target = appDelegate
-        subPref.addItem(item)
-
-        item = NSMenuItem(title: "Magic URL Redirects", action: #selector(AppDelegate.magicURLRedirectPress(_:)), keyEquivalent: "")
-        item.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
-        item.target = appDelegate
-        subPref.addItem(item)
-
-        item = NSMenuItem(title: "User Agent", action: #selector(AppDelegate.userAgentPress(_:)), keyEquivalent: "")
-        item.target = appDelegate
-        subPref.addItem(item)
+        appear.addItem(item)
         
         item = NSMenuItem(title: "Translucency", action: #selector(menuClicked(_:)), keyEquivalent: "")
-        subPref.addItem(item)
+        appear.addItem(item)
         let subTranslucency = NSMenu()
         item.submenu = subTranslucency
 
@@ -632,20 +614,24 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             if subview.className == "WKFlippedView" {
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "WKFlippedView"), object: subview)
             }
-            if subview.className == "NSScrollViewMirrorView" {
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "NSScrollViewMirrorView"), object: subview)
-            }
         }
         
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
         method_setImplementation(originalDidAddSubviewMethod, newDidAddSubviewImplementation)
         
         NotificationCenter.default.addObserver(self, selector: #selector(wkFlippedView(_:)), name: NSNotification.Name(rawValue: "WKFlippedView"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(scrollView(_:)), name: NSNotification.Name(rawValue: "NSScrollViewMirrorView"), object: nil)
     }
     
     func wkFlippedView(_ note: NSNotification) {
         print("A Player \(String(describing: note.object)) will be opened now")
+        guard let view = note.object as? NSView, let scrollView = view.enclosingScrollView else { return }
+        
+        if scrollView.hasHorizontalScroller {
+            scrollView.horizontalScroller?.isHidden = true
+        }
+        if scrollView.hasVerticalScroller {
+            scrollView.verticalScroller?.isHidden = true
+        }
     }
     
     func scrollView(_ note: NSNotification) {
@@ -765,6 +751,16 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     override func viewDidLayout() {
         super.viewDidLayout()
+
+        //  ditch horizonatal scroll when not over
+        if let scrollView = self.webView.enclosingScrollView {
+            if scrollView.hasHorizontalScroller {
+                scrollView.horizontalScroller?.isHidden = true
+            }
+            if scrollView.hasVerticalScroller {
+                scrollView.verticalScroller?.isHidden = true
+            }
+        }
 
         setupTrackingAreas(true)
     }
