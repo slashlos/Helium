@@ -12,6 +12,7 @@
 //  statusItem, main menu, and webView contextual menu.
 //
 import Cocoa
+import CoreLocation
 
 struct RequestUserStrings {
     let currentURL: String?
@@ -144,7 +145,40 @@ fileprivate class URLField: NSTextField {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationManagerDelegate {
+
+    //  For those site that require your location while we're active
+    var locationManager : CLLocationManager?
+    var isLocationEnabled : Bool {
+        get {
+            guard CLLocationManager.locationServicesEnabled() else { return false }
+            return [.authorizedAlways, .authorized].contains(CLLocationManager.authorizationStatus())
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            Swift.print("location notDetermined")
+            break
+            
+        case .restricted:
+            Swift.print("location restricted")
+            break
+            
+        case .denied:
+            Swift.print("location denied")
+            break
+            
+        case .authorizedWhenInUse:
+            print("location authorizedWhenInUse")
+            break
+            
+        case .authorizedAlways:
+            print("location authorizedWhenInUse")
+            break
+        }
+    }
 
     var os = ProcessInfo().operatingSystemVersion
     @IBOutlet weak var magicURLMenu: NSMenuItem!
@@ -337,6 +371,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserSettings.CreateNewWindows.value = newWindows
 
         return status
+    }
+    
+    @IBAction func locationServicesPress(_ sender: NSMenuItem) {
+        if isLocationEnabled {
+            locationManager?.stopMonitoringSignificantLocationChanges()
+            locationManager?.stopUpdatingLocation()
+            locationManager = nil
+        }
+        else
+        {
+            locationManager = CLLocationManager()
+            locationManager?.delegate = self
+            locationManager?.startUpdatingLocation()
+        }
+        //  Lazily store preference setting to what it is now
+        UserSettings.RestoreLocationSvcs.value = isLocationEnabled
     }
     
     @IBAction func newDocument(_ sender: Any) {
@@ -710,6 +760,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 break
             case "Home Page":
                 break
+            case "Location services":
+                menuItem.state = isLocationEnabled ? NSOnState : NSOffState
+                break
             case "Magic URL Redirects":
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
                 break
@@ -789,6 +842,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Load sandbox bookmark url when necessary
         if self.isSandboxed() != self.loadBookmarks() {
             Swift.print("Yoink, unable to load bookmarks")
+        }
+        
+        //  For site that require location services
+        if UserSettings.RestoreLocationSvcs.value {
+            locationManager = CLLocationManager()
+            locationManager?.delegate = self
         }
     }
 
@@ -976,6 +1035,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         //  Forget key down monitoring
         NSEvent.removeMonitor(localKeyDownMonitor!)
         NSEvent.removeMonitor(globalKeyDownMonitor!)
+        
+        //  Forget location services
+        if !UserSettings.RestoreLocationSvcs.value && isLocationEnabled {
+            locationManager?.stopMonitoringSignificantLocationChanges()
+            locationManager?.stopUpdatingLocation()
+            locationManager = nil
+        }
         
         //  Save sandbox bookmark urls when necessary
         if isSandboxed() != saveBookmarks() {

@@ -422,6 +422,12 @@ CA
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="fCx-MI-3W9"/>
+                                        <menuItem title="Location services" toolTip="while app is active" id="aex-eD-iUs">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="locationServicesPress:" target="Voe-Tx-rLC" id="Chs-wT-4LJ"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Search…" id="OfQ-sB-vjX">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
