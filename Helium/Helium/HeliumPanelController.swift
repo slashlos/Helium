@@ -16,7 +16,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             return self.window?.contentViewController as! WebViewController
         }
     }
-    var webView: MyWebView {
+    var webView: MyWebView? {
         get {
             return self.webViewController.webView
         }
@@ -264,7 +264,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     // MARK:- Translucency
     fileprivate var mouseOver: Bool = false {
         didSet {
-            if (doc?.settings.autoHideTitle.value)!, let window = self.webView.window {
+            if (doc?.settings.autoHideTitle.value)!, let window = self.webView?.window {
                 window.titleVisibility = mouseOver ? NSWindowTitleVisibility.visible : NSWindowTitleVisibility.hidden
                 window.titlebarAppearsTransparent = mouseOver ? false : true
                 docIconToggle()
@@ -567,7 +567,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 docIconButton?.image = NSApp.applicationIconImage
             }
             docIconButton?.isHidden = !mouseOver//false
-            if let url = self.webView.url, url.isFileURL {
+            if let url = self.webView?.url, url.isFileURL {
                 self.synchronizeWindowTitleWithDocumentName()
             }
         }
@@ -606,8 +606,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case k.docPlaylists:
             return k.docPlaylistsName
         default:
-            if let length = self.webView.title?.count, length > 0 {
-                return self.webView.title!
+            if let length = self.webView?.title?.count, length > 0 {
+                return self.webView!.title!
             }
             return displayName
         }
