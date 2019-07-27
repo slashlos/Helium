@@ -227,7 +227,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     var itemIvars : [String] {
         get {
-            return ["name", "link", "time", "plays", "rank", "rect", "label", "hover", "alpha", "trans", "temp"]
+            return [k.tnam, k.link, k.time, k.plays, k.rank, k.rect, k.label, k.hover, k.alpha, k.trans, k.turl]
         }
     }
 
