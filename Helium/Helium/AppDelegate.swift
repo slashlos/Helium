@@ -1117,6 +1117,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         let item : PlayItem = PlayItem.init()
         let info = notification.userInfo!
+        let fini = (info[k.fini] as AnyObject).boolValue == true
         
         //  If the title is already seen, update global and playlists
         if let dict = defaults.dictionary(forKey: itemURL.absoluteString) {
@@ -1134,20 +1135,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
             else
             {
-                let fuzz = itemURL.deletingPathExtension().lastPathComponent
-                let name = fuzz.removingPercentEncoding
-                
-                // Ignore our home page from the history queue
-                if name! == UserSettings.HomePageName.value { return }
-
-                item.name = name!
+                item.name = itemURL.lastPathComponent
                 item.link = itemURL
                 item.time = 0
             }
         }
 
         //  if not finished bump plays
-        if (info[k.fini] as AnyObject).boolValue == false {
+        if !fini {
             item.plays += 1
         }
         else
@@ -1156,8 +1151,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             Swift.print("move to next item in playlist")
         }
 
-        //  always instantiate to histories
-        histories.append(item)
+        //  instantiate to histories on inception
+        if !fini { histories.append(item) }
         item.rank = histories.count
         
         //  always synchronize this item to defaults - lazily
