@@ -743,7 +743,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hwc : HeliumPanelController = wc as? HeliumPanelController,
-                        let state = hwc.webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
+                        let state = hwc.webView?.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
                             menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? NSOnState : NSOffState
                             break
                     }
