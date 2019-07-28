@@ -227,7 +227,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     var itemIvars : [String] {
         get {
-            return [k.tnam, k.link, k.time, k.plays, k.rank, k.rect, k.label, k.hover, k.alpha, k.trans, k.turl]
+            return [k.name, k.link, k.time, k.plays, k.rank, k.rect, k.label, k.hover, k.alpha, k.trans, k.temp]
         }
     }
 
@@ -951,10 +951,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 var names = Array<String>()
                 for playlist in playArray {
                     defaults.set(playlist.dictionary(), forKey: playlist.name)
-                    names.append(playlist.name)
+                    names.append(String(format: "%@: %d", playlist.name, playlist.list.count))
                 }
                 appDelegate.userAlertMessage("Saved playlists(\(names.count))",
-                    info: (names.count > 8) ? "Too many to list" : (names.count > 5) ? names.list : names.listing)
+                    info: (names.count > 8) ? String(format: "%d - too many to list",names.count) : (names.count > 5) ? names.list : names.listing)
             }
         }
         else
@@ -971,7 +971,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 names.append(playitem.name)
             }
             appDelegate.userAlertMessage("Saved playitems(\(names.count))",
-                info: (names.count > 8) ? "Too many to list" : (names.count > 5) ? names.list : names.listing)
+                info: (names.count > 8) ? String(format: "%d - too many to list",names.count) : (names.count > 5) ? names.list : names.listing)
         }
 
         defaults.synchronize()
