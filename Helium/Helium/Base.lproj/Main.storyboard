@@ -852,8 +852,8 @@ CA
         <scene sceneID="3rF-Wl-9by">
             <objects>
                 <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" titlebarAppearsTransparent="YES" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
+                    <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="425" y="461" width="480" height="270"/>
@@ -902,7 +902,7 @@ CA
                                             <rect key="frame" x="1" y="0.0" width="124" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" autosaveName="playlistTableView.prefs" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playlistTableView.prefs" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="253" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -929,7 +929,7 @@ CA
                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AFk-cQ-CKw">
                                                                             <rect key="frame" x="0.0" y="0.0" width="121" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="z0B-Lg-eec">
+                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="z0B-Lg-eec">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1267,8 +1267,8 @@ Gw
                                             <rect key="frame" x="1" y="0.0" width="297" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" autosaveName="playitemTableView.prefs" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="773" height="192"/>
+                                                <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playitemTableView.prefs" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                    <rect key="frame" x="0.0" y="0.0" width="813" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1290,7 +1290,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.rank" id="0iW-kj-6jp"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="name" width="120" minWidth="40" maxWidth="240" id="FZ4-3v-Vfd">
+                                                        <tableColumn identifier="name" width="120" minWidth="40" maxWidth="400" id="FZ4-3v-Vfd">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1303,7 +1303,7 @@ Gw
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.name" id="sW1-1k-zdk"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.name" id="kUx-OS-IMQ"/>
                                                             </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="secs" width="60" minWidth="40" maxWidth="120" headerToolTip="" id="3W1-zN-OJV">
@@ -1346,7 +1346,7 @@ Gw
                                                                 <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="CBL-I6-ace"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="link" width="80" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
+                                                        <tableColumn identifier="link" width="120" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="URL">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1359,7 +1359,7 @@ Gw
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.temp" id="EWy-J4-avV"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.temp" id="6wd-Vt-k3V"/>
                                                             </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="rect" width="80" minWidth="10" maxWidth="200" headerToolTip="size and location" id="mwR-gL-vIn">
@@ -1515,7 +1515,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
-                                            <rect key="frame" x="0.0" y="0.0" width="773" height="25"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="813" height="25"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -1600,7 +1600,7 @@ Gw
             <objects>
                 <windowController storyboardIdentifier="HeliumController" id="B8D-0N-5wS" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Helium" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingIdentifier="webView" id="IQv-IB-iLA" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES" fullSizeContentView="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" HUD="YES" fullSizeContentView="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
@@ -1667,7 +1667,7 @@ Gw
             <objects>
                 <windowController storyboardIdentifier="CustomController" id="UVO-9J-w1E" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="vzr-C3-QGe" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" HUD="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
