@@ -22,6 +22,32 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4162</h2>
+<p class="block">
+7d9fc10|19/07/28 window, playlist UI updates<br>
+16bcc42|19/07/28 added restore doc attributes preference<br>
+c2c39a0|19/07/28 restore fields employ static strings<br>
+f27bb24|19/07/28 restore temp static string<br>
+e2cbeda|19/07/26 capture history item initially, then update<br>
+f374fe5|19/07/26 webView might not always be<br>
+da7813f|19/07/26 use struct constants<br>
+6f66022|19/07/26 webView might not always be<br>
+81457c5|19/07/25 added location services support<br>
+99cca88|19/07/24 UI menu updates<br>
+7102cc8|19/07/24 prefs - doc (lower), global (upper)<br>
+db101ec|19/07/24 default build increment to true<br>
+5c9c235|19/07/07 added dynamic playlist tooltip<br>
+ba629e9|19/07/07 updated help artwork<br>
+3a2dee9|19/07/07 move Appearance under Helium menu<br>
+e176fbb|19/07/04 human readable play item URL<br>
+f6d6a0d|19/07/03 added playlist window title name<br>
+6cfd8ff|19/07/03 fix playlist window title<br>
+42fc7a2|19/07/03 rework date, time secs columns<br>
+b8206c6|19/07/03 Array (unique) and Sequence (list,listing) exts<br>
+4601975|19/07/03 updated save UI feedback<br>
+f1018b3|19/07/01 return nil on zero value<br>
+</p>
+
 <h2>Build 4126</h2>
 <p class="block">
 f3c6dec|19/05/22 10.13 sdk; UI updates, limit debugging I/O<br>
