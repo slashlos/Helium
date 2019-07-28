@@ -34,6 +34,7 @@ struct k {
     static let fini = "finish"
     static let vers = "vers"
     static let data = "data"
+    static let temp = "temp"
     static let TitleUtility: CGFloat = 16.0
     static let TitleNormal: CGFloat = 22.0
     static let ToolbarItemHeight: CGFloat = 48.0
