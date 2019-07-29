@@ -576,6 +576,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 	
+	@IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
+        UserSettings.RestoreDocAttrs.value = (sender.state == NSOnState ? false : true)
+	}
+	
 	@IBAction func showReleaseInfo(_ sender: Any) {
         //  Temporarily disable new windows as we'll create one now
         let newWindows = UserSettings.CreateNewWindows.value
@@ -765,6 +769,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 break
             case "Magic URL Redirects":
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
+                break
+            case "Restore Doc Attributes":
+                menuItem.state = UserSettings.RestoreDocAttrs.value ? NSOnState : NSOffState
                 break
             case "User Agent":
                 break

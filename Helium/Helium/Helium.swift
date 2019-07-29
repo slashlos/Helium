@@ -472,7 +472,6 @@ class PlayItem : NSObject, NSCoding {
         dict[k.link] = link.absoluteString
         dict[k.date] = date
         dict[k.time] = time
-        dict[k.plays] = plays
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
         dict[k.plays] = plays
@@ -624,6 +623,11 @@ class Document : NSDocument {
     }
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
+        let appDelegate = NSApp.delegate as! AppDelegate
+
+        //  Wait until we're restoring after open or in intialization
+        guard !appDelegate.openForBusiness || UserSettings.RestoreDocAttrs.value else { return }
+        
         if let name : String = dictionary[k.name] as? String, name != self.displayName {
             self.displayName = name
         }
@@ -639,14 +643,17 @@ class Document : NSDocument {
         if let rank : Int = dictionary[k.rank] as? Int, rank != self.settings.rank.value {
             self.settings.rank.value = rank
         }
-        if let rect = dictionary[k.rect] as? NSRect, rect != self.settings.rect.value {
-            self.settings.rect.value = rect
+        if let rect = dictionary[k.rect] as? String {
+            self.settings.rect.value = NSRectFromString(rect)
+            if let window = self.windowControllers.first?.window {
+                window.setFrameFrom(rect)
+            }
         }
         if let plays : Int = dictionary[k.plays] as? Int, plays != self.settings.plays.value {
             self.settings.plays.value = plays
         }
         if let label : Bool = dictionary[k.label] as? Bool, label != self.settings.autoHideTitle.value  {
-            self.settings.autoHideTitle.value  = label
+            self.settings.autoHideTitle.value = label
         }
         if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.settings.disabledFullScreenFloat.value {
             self.settings.disabledFullScreenFloat.value = hover
@@ -666,8 +673,11 @@ class Document : NSDocument {
             }
         }
         if self.settings.rect.value == NSZeroRect, let fileURL = self.fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
-            if let rect = dict[k.rect] as? NSRect, rect != self.settings.rect.value {
-                self.settings.rect.value = rect
+            if let rect = dict[k.rect] as? String {
+                self.settings.rect.value = NSRectFromString(rect)
+                if let window = self.windowControllers.first?.window {
+                    window.setFrameFrom(rect)
+                }
             }
         }
     }
@@ -847,6 +857,7 @@ class Document : NSDocument {
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)
         if !autoSaveDocs { self.updateChangeCount(.changeDone) }
+        defaults.synchronize()
         
         //  Update UI (red dot in close button) immediately
         if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {

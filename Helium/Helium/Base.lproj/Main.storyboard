@@ -225,6 +225,12 @@
                                                             <action selector="magicURLRedirectPress:" target="Voe-Tx-rLC" id="dGe-Ut-ADQ"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Restore Doc Attributes" id="tJf-fU-ji8">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="restoreDocAttrsPress:" target="Voe-Tx-rLC" id="VCX-Qd-Gxf"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="User Agent" id="oRg-Z4-GTG">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
