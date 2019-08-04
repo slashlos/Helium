@@ -860,6 +860,7 @@ class Document : NSDocument {
         defaults.synchronize()
         
         //  Update UI (red dot in close button) immediately
+        guard self.docType == k.docHelium else { return }
         if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()
         }
