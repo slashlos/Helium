@@ -1404,13 +1404,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             NSApp.presentError(error)
         }
         else
-        if let info = error._userInfo as? [String: Any] {
-            if let url = info["NSErrorFailingURLKey"] as? URL {
-                appDelegate.userAlertMessage(message, info: url.absoluteString)
-            }
-            else
-            if let urlString = info["NSErrorFailingURLStringKey"] as? String {
-                appDelegate.userAlertMessage(message, info: urlString)
+        if (error as NSError).code < 0 {
+            if let info = error._userInfo as? [String: Any] {
+                if let url = info["NSErrorFailingURLKey"] as? URL {
+                    appDelegate.userAlertMessage(message, info: url.absoluteString)
+                }
+                else
+                if let urlString = info["NSErrorFailingURLStringKey"] as? String {
+                    appDelegate.userAlertMessage(message, info: urlString)
+                }
             }
         }
     }
