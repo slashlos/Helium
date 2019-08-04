@@ -123,21 +123,9 @@ class MyWebView : WKWebView {
         var nextURL = url
 
         //  Pick off request (non-file) urls first
-        if !url.isFileURL {
-            if appDelegate.openForBusiness && newWindows && doc != nil {
-                do
-                {
-                    let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-                    let oldWindow = self.window
-                    let newWindow = next.windowControllers.first?.window
-                    (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: url))
-                    newWindow?.offsetFromWindow(oldWindow!)
-                }
-                catch let error {
-                    NSApp.presentError(error)
-                    Swift.print("Yoink, unable to create new url doc for (\(url))")
-                    return
-                }
+        guard url.isFileURL else {
+            if appDelegate.openForBusiness && newWindows {
+                appDelegate.openURLInNewWindow(url)
             }
             else
             {
@@ -411,11 +399,27 @@ class MyWebView : WKWebView {
         item.target = wvc
         subOpen.addItem(item)
 
+        item = NSMenuItem(title: "File in new window…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .shift
+        item.representedObject = self.window
+        item.isAlternate = true
+        item.target = wvc
+        item.tag = 1
+        subOpen.addItem(item)
+        
         item = NSMenuItem(title: "URL…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
         item.target = wvc
         subOpen.addItem(item)
 
+        item = NSMenuItem(title: "URL in new window…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .shift
+        item.representedObject = self.window
+        item.isAlternate = true
+        item.target = wvc
+        item.tag = 1
+        subOpen.addItem(item)
+        
         item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         subOpen.addItem(item)
@@ -831,7 +835,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @IBAction func openFilePress(_ sender: AnyObject) {
-        var openFilesInNewWindows : Bool = false
+        var openFilesInNewWindows = sender.tag > 0
         let window = self.view.window
         let open = NSOpenPanel()
         

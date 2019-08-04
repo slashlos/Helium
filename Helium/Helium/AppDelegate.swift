@@ -437,7 +437,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 }
                 
                 //  Multiple files implies new windows
-                openFilesInNewWindows = true
+                UserSettings.CreateNewWindows.value = true
             }
         }
         return
@@ -463,6 +463,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
+        UserSettings.CreateNewWindows.value = sender.tag > 0
         var urlString = UserSettings.HomePageURL.value
         
         //  No window, so load alert modally
@@ -484,6 +485,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     @IBAction func openSearchPress(_ sender: AnyObject) {
+        UserSettings.CreateNewWindows.value = sender.tag > 0
         let name = k.searchNames[ UserSettings.Search.value ]
         let info = k.searchInfos[ UserSettings.Search.value ]
 

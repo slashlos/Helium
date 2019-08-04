@@ -201,12 +201,6 @@
                                                             <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="eyA-Hl-bel"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Create New Windows" id="XlG-m9-GkO">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createNewWindowPress:" target="Voe-Tx-rLC" id="OzI-m7-v2a"/>
-                                                        </connections>
-                                                    </menuItem>
                                                     <menuItem title="Hide Helium in menu bar" id="2GK-ox-Nku" userLabel="Hide Helium in menu bar">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
@@ -368,9 +362,19 @@
                                                             <action selector="openFilePress:" target="Voe-Tx-rLC" id="f5f-OR-pBN"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="O" id="at8-06-y5R">
+                                                        <connections>
+                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="jT0-c7-Nhu"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
                                                         <connections>
                                                             <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="L" id="AWF-C8-zwA">
+                                                        <connections>
+                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="Z2e-hp-2tb"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
@@ -710,10 +714,22 @@ CA
                                             <action selector="openFilePress:" target="Ady-hI-5gd" id="U4H-Js-T9x"/>
                                         </connections>
                                     </menuItem>
+                                    <menuItem title="File in new window…" alternate="YES" id="opw-7V-Qjd">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <connections>
+                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="Vft-W5-ERd"/>
+                                        </connections>
+                                    </menuItem>
                                     <menuItem title="URL…" id="u6q-4i-qrU">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="URL in new window…" alternate="YES" id="bPE-6p-LIF">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <connections>
+                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="XBW-Qe-YgI"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Window" id="VKa-yC-mZQ">
@@ -745,12 +761,6 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="TWO-Et-uNB"/>
-                                        </connections>
-                                    </menuItem>
-                                    <menuItem title="Create New Windows" id="YHy-bp-M43">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="createNewWindowPress:" target="Voe-Tx-rLC" id="Nt4-Zm-Jlw"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Float Above All Spaces" id="4Lx-l2-xwH">
