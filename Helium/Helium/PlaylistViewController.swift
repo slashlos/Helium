@@ -707,6 +707,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  MARK:- IBActions
     @IBAction func playPlaylist(_ sender: AnyObject) {
+        UserSettings.CreateNewWindows.value = shiftKeyDown
+        
         //  first responder tells us who called so dispatch
         let whoAmI = self.view.window?.firstResponder
 

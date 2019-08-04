@@ -454,9 +454,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 ? NSMixedState
                 : value == .mouseOutside ? NSOnState : NSOffState
             break
-        case "Create New Windows":
-            menuItem.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
-            break
         case "Float Above All Spaces":
             menuItem.state = settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
             break;

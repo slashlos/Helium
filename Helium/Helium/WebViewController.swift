@@ -211,6 +211,7 @@ class MyWebView : WKWebView {
     
     // MARK: Drag and Drop - Before Release
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        UserSettings.CreateNewWindows.value = appDelegate.shiftKeyDown
 //        Swift.print("draggingUpdated -> .copy")
         return .copy
     }
@@ -861,6 +862,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
+        UserSettings.CreateNewWindows.value = sender.tag > 0
         var urlString = currentURL
         
         if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {

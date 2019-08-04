@@ -245,7 +245,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         )
     }
 
-    //  Complimented with createNewWindows to hold until really open
+    //  Restore operations are progress until open
     var openForBusiness = false
     
     //  By defaut we show document title bar
@@ -273,10 +273,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         get {
             return UserSettings.AutoSaveDocs.value
         }
-    }
-    
-	@IBAction func createNewWindowPress(_ sender: NSMenuItem) {
-        UserSettings.CreateNewWindows.value = (sender.state == NSOnState ? false : true)
     }
     
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
@@ -418,7 +414,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
     
     @IBAction func openFilePress(_ sender: AnyObject) {
-        var openFilesInNewWindows : Bool = false
+        UserSettings.CreateNewWindows.value = sender.tag > 0
         let open = NSOpenPanel()
         open.allowsMultipleSelection = true
         open.canChooseDirectories = false
@@ -432,7 +428,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
-                if openFilesInNewWindows {
+                if UserSettings.CreateNewWindows.value {
                     self.openURLInNewWindow(url)
                 }
                 else
@@ -460,11 +456,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         UserSettings.CreateNewWindows.value = newWindows
     }
-    @IBAction func openURLInNewWindowPress(_ sender: NSMenuItem) {
+    @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
             self.openURLInNewWindow(newURL as! URL)
         }
     }
+    
     @IBAction func openLocationPress(_ sender: AnyObject) {
         var urlString = UserSettings.HomePageURL.value
         
@@ -480,8 +477,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.HomePageURL.value),
                           onWindow: nil,
                           title: "Enter URL",
-                          acceptHandler: { (newUrl: String) in
-                            self.openURLInNewWindow(URL.init(string: newUrl)!)
+                          acceptHandler: { (location: String) in
+                            //  save for our error handler
+                            self.openURLInNewWindow(URL.init(string: location)!)
         })
     }
 
@@ -740,9 +738,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case "Auto save documents":
                 menuItem.state = UserSettings.AutoSaveDocs.value ? NSOnState : NSOffState
                 break;
-            case "Create New Windows":
-                menuItem.state = UserSettings.CreateNewWindows.value ? NSOnState : NSOffState
-                break
             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
@@ -1070,6 +1065,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             temp.append(item as String)
         }
         defaults.set(temp, forKey: UserSettings.Searches.keyPath)
+        
+        //  Save our non-document (file://) windows to our keep list
+        if UserSettings.RestoreDocAttrs.value {
+            for document in NSApp.orderedDocuments {
+                Swift.print("keep \(String(describing: document.fileURL?.absoluteString))")
+            }
+        }
         
         defaults.synchronize()
     }
