@@ -783,13 +783,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     //  MARK:- Lifecyle
-
+    dynamic var documentsToRestore = false
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
         //  Now we're open for business
         self.openForBusiness = true
 
-        let dc = NSDocumentController.shared()
-        return dc.documents.count == 0
+        //  If we will restore then skip initial Untitled
+        return !documentsToRestore
     }
     
     func resetDefaults() {
@@ -954,11 +954,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     func applicationDidFinishLaunching(_ aNotification: Notification) {
 
         //  OPTION at startup disables reopening documents
-        if let currentEvent = NSApp.currentEvent {
-            let flags = currentEvent.modifierFlags
-            disableDocumentReOpening = flags.contains(.option)
-        }
-
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
         disableDocumentReOpening = flags.contains(.option)
 
@@ -1001,14 +996,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     
                     self.histories.append(temp)
                 }
-//                Swift.print("histories restored")
+                Swift.print("histories \(self.histories.count) restored")
             }
             
             if let items = self.defaults.array(forKey: UserSettings.Searches.keyPath) {
                 for search in items {
                     self.recentSearches.append(search as! String)
                 }
-//                Swift.print("searches restored")
+                Swift.print("searches \(self.recentSearches.count) restored")
             }
         }
         
@@ -1032,6 +1027,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  Developer extras off by default
         UserSettings.DeveloperExtrasEnabled.value = false
+        
+        //  Restore our non-document (file://) windows if any via
+        //  asynchronous code running on the low priority queue
+        guard UserSettings.RestoreDocAttrs.value, let keep = defaults.array(forKey: UserSettings.KeepListName.value) else { return }
+
+        for item in keep {
+            guard let urlString = (item as? String) else { continue }
+            guard let url = URL.init(string: urlString ) else { continue }
+            self.openURLInNewWindow(url)
+            Swift.print("rest \(item)")
+        }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1070,9 +1076,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  Save our non-document (file://) windows to our keep list
         if UserSettings.RestoreDocAttrs.value {
+            temp = Array<String>()
             for document in NSApp.orderedDocuments {
+                guard let webURL = document.fileURL, !webURL.isFileURL else {
+                    Swift.print("skip \(String(describing: document.fileURL?.absoluteString))")
+                    continue
+                }
                 Swift.print("keep \(String(describing: document.fileURL?.absoluteString))")
+                temp.append(webURL.absoluteString)
             }
+            defaults.set(temp, forKey: UserSettings.KeepListName.value)
         }
         
         defaults.synchronize()
