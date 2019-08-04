@@ -438,21 +438,21 @@ class MyWebView : WKWebView {
 
         item = NSMenuItem(title: "Appearance", action: #selector(menuClicked(_:)), keyEquivalent: "")
         menu.addItem(item)
-        let appear = NSMenu()
-        item.submenu = appear
+        let subPref = NSMenu()
+        item.submenu = subPref
 
         item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hwc.autoHideTitlePress(_:)), keyEquivalent: "")
         item.state = doc.settings.autoHideTitle.value ? NSOnState : NSOffState
         item.target = hwc
-        appear.addItem(item)
+        subPref.addItem(item)
 
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
         item.state = doc.settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
         item.target = hwc
-        appear.addItem(item)
+        subPref.addItem(item)
         
         item = NSMenuItem(title: "Translucency", action: #selector(menuClicked(_:)), keyEquivalent: "")
-        appear.addItem(item)
+        subPref.addItem(item)
         let subTranslucency = NSMenu()
         item.submenu = subTranslucency
 
