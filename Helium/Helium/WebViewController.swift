@@ -1397,6 +1397,16 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if (error as NSError).code >= 400 {
             NSApp.presentError(error)
         }
+        else
+        if let info = error._userInfo as? [String: Any] {
+            if let url = info["NSErrorFailingURLKey"] as? URL {
+                appDelegate.userAlertMessage(message, info: url.absoluteString)
+            }
+            else
+            if let urlString = info["NSErrorFailingURLStringKey"] as? String {
+                appDelegate.userAlertMessage(message, info: urlString)
+            }
+        }
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
