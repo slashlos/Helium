@@ -360,7 +360,7 @@ class MyWebView : WKWebView {
                 if self.url != nil {
                     item.representedObject = self.url
                     item.target = appDelegate
-                    item.action = #selector(appDelegate.openURLInNewWindowPress(_:))
+                    item.action = #selector(appDelegate.openVideoInNewWindowPress(_:))
                 }
                 else
                 {
