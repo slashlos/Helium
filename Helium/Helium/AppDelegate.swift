@@ -1244,6 +1244,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
         }
 
+        //  Have window, but make it active
+        NSApp.activate(ignoringOtherApps: true)
+        
         if let urlWindow = onWindow {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are accept, cancel, default
@@ -1337,6 +1340,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
         }
         
+        //  Have window, but make it active
+        NSApp.activate(ignoringOtherApps: true)
+        
         if let urlWindow = onWindow {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are user-search-url, cancel, google-search
@@ -1417,6 +1423,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 alert3rdButton.toolTip = alert3rdtToolTip
             }
         }
+        
+        //  Have window, but make it active
+        NSApp.activate(ignoringOtherApps: true)
         
         if let urlWindow = onWindow {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
