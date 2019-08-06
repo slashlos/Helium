@@ -63,7 +63,7 @@ document window title bar icon creates an alias to the document url.</p>
 
 <h3>WebView</h3>
 <p>Each document window is a browser window and by its contextual menu, can be alter its
-attributes such as mute, loop, hide controls, copy video adress, and when implemented: 
+attributes such as mute, loop, hide controls, copy video adress, user agent, and when implemented: 
 full screen, and download.&ensp; It can also provide access to helper applications such as <i>Share</i>,
 as well as access to open new URLs, close window, and access to document attributes, 
 preferences as well as to access playlists and their play items.</p>
@@ -115,6 +115,16 @@ can be local to the current space.&ebsp; Note that windows cannot be moved acros
     16
 </PRE>
 <p>It is <b>not</b> advised to choose a value too large.</p>
+
+<h4>User Agent</h4>
+<p>The Helium user agent string should not normally be modified.  With that said you may alter it as a default - affecting future windows:</p>
+
+<center><img src="default-ua.png" style="width:80%" alt="default-UA" /></center>
+
+<p>or a custom setting - affecting the current window:</p>
+
+<center><img src="custom-ua.png" style="width:80%" alt="custom-UA" /></center>
+<p>This setting dialog may appear as a separate windor or sheet depending on the current key window if any, and whether the setting was invoked from menu bar (default) or contextual menu (custom).</p>
 
 <h4>Translucency</h4>
 <p>Helium can vary a document window opacity display when moving the pointer inside or
