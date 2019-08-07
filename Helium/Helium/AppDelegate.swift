@@ -1028,6 +1028,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  Developer extras off by default
         UserSettings.DeveloperExtrasEnabled.value = false
         
+        //  Capture default user agent string for this platform
+        UserSettings.UserAgent.default = WKWebView()._userAgent
+
         //  Restore our non-document (file://) windows if any via
         //  asynchronous code running on the low priority queue
         guard UserSettings.RestoreDocAttrs.value, let keep = defaults.array(forKey: UserSettings.KeepListName.value) else { return }

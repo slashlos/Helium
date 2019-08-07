@@ -75,14 +75,8 @@ internal struct UserSettings {
     )
     static let HomePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
-    static let UserAgent = Setting<String>(
-        "userAgent",
-/*10.11*/        defaultValue: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17"
-//10.12//        defaultValue: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.12 Safari/603.3.8"
-//10.13//        defaultValue: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0.3 Safari/604.5.6"// Safari
-
-        // swiftlint:disable:previous line_length
-    )
+    //  NOTE: UserAgent default is loaded at run-time
+    static let UserAgent = Setting<String>("userAgent", defaultValue: "TBD")
 
     //  User Defaults keys
     static let HistoryName  = Setting<String>("historyName", defaultValue:"History")
