@@ -30,6 +30,7 @@ struct k {
     static let hover = "hover"
     static let alpha = "alpha"
     static let trans = "trans"
+    static let agent = "agent"
     static let view = "view"
     static let fini = "finish"
     static let vers = "vers"
@@ -333,6 +334,7 @@ class PlayItem : NSObject, NSCoding {
     var hover: Bool
     var alpha: Int
     var trans: Int
+    var agent: String = UserSettings.UserAgent.value
     var temp : String {
         get {
             return link.absoluteString
@@ -354,6 +356,7 @@ class PlayItem : NSObject, NSCoding {
         hover = false
         alpha = 60
         trans = 0
+        agent = UserSettings.UserAgent.value
         super.init()
         
         let temp = NSString(format:"%p",self) as String
@@ -371,9 +374,10 @@ class PlayItem : NSObject, NSCoding {
         self.hover = false
         self.alpha = 60
         self.trans = 0
+        self.agent = UserSettings.UserAgent.value
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int, agent: String) {
         self.name = name
         self.link = link
         self.date = date
@@ -385,6 +389,7 @@ class PlayItem : NSObject, NSCoding {
         self.hover = hover
         self.alpha = alpha
         self.trans = trans
+        self.agent = agent
         super.init()
     }
     convenience init(with dictionary: Dictionary<String,Any>) {
@@ -431,6 +436,9 @@ class PlayItem : NSObject, NSCoding {
         if let trans : Int = dictionary[k.trans] as? Int, trans != self.trans {
             self.trans = trans
         }
+        if let agent : String = dictionary[k.agent] as? String, agent != self.agent {
+            self.agent = agent
+        }
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
@@ -448,8 +456,9 @@ class PlayItem : NSObject, NSCoding {
         let hover = coder.decodeBool(forKey: k.hover)
         let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
+        let agent = coder.decodeObject(forKey: k.agent) as! String
         self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
-                  plays: plays, label: label, hover: hover, alpha: alpha, trans: trans)
+                  plays: plays, label: label, hover: hover, alpha: alpha, trans: trans, agent: agent)
     }
     
     func encode(with coder: NSCoder) {
@@ -464,6 +473,7 @@ class PlayItem : NSObject, NSCoding {
         coder.encode(hover, forKey: k.hover)
         coder.encode(alpha, forKey: k.alpha)
         coder.encode(trans, forKey: k.trans)
+        coder.encode(agent, forKey: k.agent)
     }
     
     func dictionary() -> Dictionary<String,Any> {
@@ -479,6 +489,7 @@ class PlayItem : NSObject, NSCoding {
         dict[k.hover] = hover ? 1 : 0
         dict[k.alpha] = alpha
         dict[k.trans] = trans
+        dict[k.agent] = agent
         return dict
     }
 }
@@ -528,6 +539,7 @@ internal struct Settings {
     let time = Setup<TimeInterval>(k.time, value: 0.0)
     let rect = Setup<NSRect>(k.rect, value: NSMakeRect(0, 0, 0, 0))
     let plays = Setup<Int>(k.plays, value: 0)
+    let customUserAgent = Setup<String>("customUserAgent", value: UserSettings.UserAgent.value)
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -609,6 +621,7 @@ class Document : NSDocument {
         dict[k.hover] = settings.disabledFullScreenFloat.value
         dict[k.alpha] = settings.opacityPercentage.value
         dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
+        dict[k.agent] = settings.customUserAgent.value
         return dict
     }
     
@@ -625,6 +638,7 @@ class Document : NSDocument {
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = self.settings.opacityPercentage.value
         item.trans = self.settings.translucencyPreference.value.rawValue
+        item.agent = self.settings.customUserAgent.value
         return item
     }
     
@@ -684,6 +698,12 @@ class Document : NSDocument {
                 if let window = self.windowControllers.first?.window {
                     window.setFrameFrom(rect)
                 }
+            }
+        }
+        if let agent : String = dictionary[k.agent] as? String, agent != settings.customUserAgent.value {
+            self.settings.customUserAgent.value = agent
+            if let webView = (self.windowControllers.first?.contentViewController as? WebViewController)?.webView {
+                webView.customUserAgent = agent
             }
         }
     }
