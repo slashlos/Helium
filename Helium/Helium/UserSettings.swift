@@ -89,6 +89,9 @@ internal struct UserSettings {
     static let RestoreDocAttrs = Setting<Bool>("restoreDocAttrs", defaultValue: true)
     static let RestoreLocationSvcs = Setting<Bool>("restoreLocationSvcs", defaultValue: true)
     
+    //  User non-document windows to restore
+    static let KeepListName = Setting<String>("keepList", defaultValue: "Keep")
+    
     //  Search provider - must match k struct, menu item tags
     static let Search = Setting<Int>("search", defaultValue: 1) // Google
     static let Searches = Setting<Array<String>>("searches", defaultValue: [String]())

@@ -1032,14 +1032,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.UserAgent.default = WKWebView()._userAgent
 
         //  Restore our non-document (file://) windows if any via
-        //  asynchronous code running on the low priority queue
-        guard UserSettings.RestoreDocAttrs.value, let keep = defaults.array(forKey: UserSettings.KeepListName.value) else { return }
-
-        for item in keep {
-            guard let urlString = (item as? String) else { continue }
-            guard let url = URL.init(string: urlString ) else { continue }
-            self.openURLInNewWindow(url)
-            Swift.print("rest \(item)")
+        guard UserSettings.RestoreDocAttrs.value else { return }
+        if let keep = defaults.array(forKey: UserSettings.KeepListName.value) {
+            for item in keep {
+                guard let urlString = (item as? String) else { continue }
+                guard let url = URL.init(string: urlString ) else { continue }
+                self.openURLInNewWindow(url)
+                Swift.print("rest \(item)")
+            }
         }
     }
 
