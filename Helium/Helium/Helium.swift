@@ -591,7 +591,7 @@ class Document : NSDocument {
             }
             else
             {
-                return URL.init(string: UserSettings.HomePageURL.default)
+                return URL.init(string: UserSettings.HomePageURL.value)
             }
         }
     }
