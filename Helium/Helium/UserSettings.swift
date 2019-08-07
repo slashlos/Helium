@@ -28,6 +28,9 @@ internal struct UserSettings {
             get {
                 return self.defaultValue
             }
+            set (value) {
+                self.set(value)
+            }
         }
         var value: T {
             get {
