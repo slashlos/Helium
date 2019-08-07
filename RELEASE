@@ -22,6 +22,35 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4389</h2>
+888aa07|19/08/07 UI menu consistency tab, window<br>
+4e1b9c9|19/08/07 link allow look ahead preview - NYI?<br>
+70714b8|19/08/07 UI updates: cut, copy, paste, delete<br>
+dec00af|19/08/07 custom user agent support<br>
+a3e4a88|19/08/07 default to home page URL VALUE<br>
+556a17b|19/08/07 update re; user agent<br>
+8359501|19/08/07 activate app for dialog input<br>
+1b7d6e4|19/08/07 user agent changes<br>
+278d584|19/08/07 tab/window app menu UI changes<br>
+1a1a5a2|19/08/07 UI change: shift-window, option-tab<br>
+753b0d2|19/08/07 manage non-file window keep list<br>
+d339ca7|19/08/07 capture framework user agent as default<br>
+c06203b|19/08/07 allow defaults to updated<br>
+bcd690c|19/08/06 restore non-activating panel<br>
+26a1504|19/08/06 user agent - default,custom help<br>
+14b52aa|19/08/06 focus / activate before dialog<br>
+958e5e8|19/08/04 coordinate initial document w/ restore(s)<br>
+bd2dc41|19/08/04 reduce non-error noise<br>
+565f340|19/08/04 ignore cache updating unless document<br>
+ec19637|19/08/04 revert subPref menu naming<br>
+589880b|19/08/04 new window url/file handling<br>
+1497c75|19/08/04 function renamed<br>
+72020d8|19/08/04 create new windows as transient global<br>
+1708927|19/08/04 error handling update<br>
+13143f8|19/07/29 sync with master<br>
+7df2fc8|19/07/28 restore documents attributes fix<br>
+</p>
+
 <h2>Build 4162</h2>
 <p class="block">
 7d9fc10|19/07/28 window, playlist UI updates<br>
