@@ -60,6 +60,8 @@ document window title bar icon creates an alias to the document url.</p>
 <p>By default a window's origin is remembered when recalled and updated when moved.</p>
 <h4>Duration</h4>
 <p>For video and audio URLs, Helium will catalog the asset's duration.</p>
+<h4>User Agent</h4>
+<p>The global user agent preference is an inherited default which maybe altered to a custom user agent on a per view basis</p>
 
 <h3>WebView</h3>
 <p>Each document window is a browser window and by its contextual menu, can be alter its
@@ -117,14 +119,17 @@ can be local to the current space.&ebsp; Note that windows cannot be moved acros
 <p>It is <b>not</b> advised to choose a value too large.</p>
 
 <h4>User Agent</h4>
-<p>The Helium user agent string should not normally be modified.  With that said you may alter it as a default - affecting future windows:</p>
+<p>The Helium user agent string should not normally be modified.
+With that said however, you may need to alter it.</p>
+Helium maintains both a global preference <b>default user agent</b> - affecting future web views:</p>
 
 <center><img src="default-ua.png" style="width:80%" alt="default-UA" /></center>
 
-<p>or a custom setting - affecting the current window:</p>
+<p>or per web view attribute, <b>custom user agent</b> setting, affecting <i>the current view only</i>:</p>
 
 <center><img src="custom-ua.png" style="width:80%" alt="custom-UA" /></center>
-<p>This setting dialog may appear as a separate windor or sheet depending on the current key window if any, and whether the setting was invoked from menu bar (default) or contextual menu (custom).</p>
+<p>This setting dialog may appear as a separate window or an attached sheet depending on the current key window if any, and whether the dialog was invoked from menu bar (default) or status app or contextual menu (custom).</p>
+<b>Note:</b> <i>With the advent of tabs, a Helium window may contain several views, each with a distinct user agent.</i>
 
 <h4>Translucency</h4>
 <p>Helium can vary a document window opacity display when moving the pointer inside or
