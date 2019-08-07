@@ -617,6 +617,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        webView.becomeFirstResponder()
+        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(WebViewController.loadURL(urlFileURL:)),
@@ -866,6 +868,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         open.resolvesAliases = true
         open.canChooseFiles = true
         
+        //  Have window, but make it active
+        NSApp.activate(ignoringOtherApps: true)
+
         open.worksWhenModal = true
         open.beginSheetModal(for: window!, completionHandler: { (response: NSModalResponse) in
             if response == NSModalResponseOK {
