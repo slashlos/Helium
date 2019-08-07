@@ -383,6 +383,12 @@
                                                             <action selector="openLocationPress:" target="Voe-Tx-rLC" id="Z2e-hp-2tb"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="l" id="PJM-19-avb">
+                                                        <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                        <connections>
+                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="OIB-zR-gT2"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
                                                     <menuItem title="Recent" id="ijm-7H-tnN">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
