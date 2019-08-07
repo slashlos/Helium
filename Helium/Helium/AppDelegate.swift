@@ -640,17 +640,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	@IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
             currentURL: UserSettings.UserAgent.value,
-            alertMessageText:   "New user agent",
+            alertMessageText:   "Default user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.UserAgent.default),
                           onWindow: NSApp.keyWindow as? HeliumPanel,
-                          title: "User Agent",
+                          title: "Default User Agent",
                           acceptHandler: { (newUserAgent: String) in
                             UserSettings.UserAgent.value = newUserAgent
-                            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewUserAgentString"),
-                                                     object: newUserAgent);
-                            NotificationCenter.default.post(notif)
         }
         )
     }

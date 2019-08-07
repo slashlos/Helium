@@ -474,6 +474,10 @@ class MyWebView : WKWebView {
         item.target = hwc
         subPref.addItem(item)
         
+        item = NSMenuItem(title: "User Agent", action: #selector(wvc.userAgentPress(_:)), keyEquivalent: "")
+        item.target = wvc
+        subPref.addItem(item)
+        
         item = NSMenuItem(title: "Translucency", action: #selector(menuClicked(_:)), keyEquivalent: "")
         subPref.addItem(item)
         let subTranslucency = NSMenu()
@@ -623,11 +627,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
             object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(WebViewController.loadUserAgent(userAgentString:)),
-            name: NSNotification.Name(rawValue: "HeliumNewUserAgentString"),
-            object: nil)
         
         //  We want to be notified when a player is added
         let originalDidAddSubviewMethod = class_getInstanceMethod(NSView.self, #selector(NSView.didAddSubview(_:)))
@@ -694,7 +693,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.configuration.preferences.plugInsEnabled = true
         
         // Custom user agent string for Netflix HTML5 support
-        webView._customUserAgent = UserSettings.UserAgent.value
+        webView.customUserAgent = UserSettings.UserAgent.value
         
         // Allow zooming
         webView.allowsMagnification = true
@@ -942,6 +941,22 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     @IBAction fileprivate func resetZoomLevel(_ sender: AnyObject) {
         resetZoom()
     }
+    
+    @IBAction func userAgentPress(_ sender: AnyObject) {
+        appDelegate.didRequestUserAgent(RequestUserStrings (
+            currentURL: webView.customUserAgent,
+            alertMessageText:   "Custom user agent",
+            alertButton1stText: "Set",      alertButton1stInfo: nil,
+            alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
+            alertButton3rdText: "Default",  alertButton3rdInfo: UserSettings.UserAgent.default),
+                            onWindow: NSApp.keyWindow as? HeliumPanel,
+                            title: "Custom User Agent",
+                            acceptHandler: { (newUserAgent: String) in
+                                self.webView.customUserAgent = newUserAgent
+        }
+        )
+    }
+
     @IBAction fileprivate func zoomIn(_ sender: AnyObject) {
         zoomIn()
     }
@@ -961,10 +976,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         return webView.url?.absoluteString
     }
 
-    internal func loadUserAgent(userAgentString: Notification) {
-        webView._customUserAgent = UserSettings.UserAgent.value
-    }
-    
     internal func loadURL(text: String) {
         let text = UrlHelpers.ensureScheme(text)
         if let url = URL(string: text) {
