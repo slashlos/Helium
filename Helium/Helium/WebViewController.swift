@@ -744,6 +744,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         // Alow back and forth
         webView.allowsBackForwardNavigationGestures = true
         
+        // Allow look ahead views
+        webView.allowsLinkPreview = true
+        
         //  ditch loading indicator background
         loadingIndicator.appearance = NSAppearance.init(named: NSAppearanceNameAqua)
         
