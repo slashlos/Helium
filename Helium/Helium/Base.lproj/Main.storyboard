@@ -228,7 +228,7 @@
                                                     <menuItem title="User Agent" id="oRg-Z4-GTG">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
-                                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="maU-bZ-NeO"/>
+                                                            <action selector="userAgentPress:" target="Voe-Tx-rLC" id="cNI-RT-0C4"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="agM-n6-9Km"/>
@@ -362,9 +362,15 @@
                                                             <action selector="openFilePress:" target="Voe-Tx-rLC" id="f5f-OR-pBN"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="O" id="at8-06-y5R">
+                                                    <menuItem title="File in new tab…" tag="2" alternate="YES" keyEquivalent="O" id="at8-06-y5R">
                                                         <connections>
                                                             <action selector="openFilePress:" target="Voe-Tx-rLC" id="jT0-c7-Nhu"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="o" id="vEi-Jg-aIw">
+                                                        <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                        <connections>
+                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="fNJ-2b-kKL"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
@@ -372,7 +378,7 @@
                                                             <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="L" id="AWF-C8-zwA">
+                                                    <menuItem title="URL in new tab…" tag="2" alternate="YES" keyEquivalent="L" id="AWF-C8-zwA">
                                                         <connections>
                                                             <action selector="openLocationPress:" target="Voe-Tx-rLC" id="Z2e-hp-2tb"/>
                                                         </connections>
@@ -615,6 +621,12 @@ CA
                                                             </items>
                                                         </menu>
                                                     </menuItem>
+                                                    <menuItem title="User Agent" id="FUP-fV-Bla">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="userAgentPress:" target="Ady-hI-5gd" id="8U8-uc-xFn"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="Zoom" id="bdZ-3R-GDa">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <menu key="submenu" title="Zoom" id="fqm-ZV-dAN">
@@ -714,10 +726,16 @@ CA
                                             <action selector="openFilePress:" target="Ady-hI-5gd" id="U4H-Js-T9x"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="File in new window…" alternate="YES" id="opw-7V-Qjd">
-                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                    <menuItem title="File in new tab…" tag="2" alternate="YES" id="opw-7V-Qjd">
+                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                         <connections>
                                             <action selector="openFilePress:" target="Ady-hI-5gd" id="Vft-W5-ERd"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="File in new window…" tag="1" alternate="YES" id="bg5-Zc-Aoz">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <connections>
+                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="uRg-z4-gQi"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="URL…" id="u6q-4i-qrU">
@@ -726,10 +744,16 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="yDC-Kw-uEe"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="URL in new window…" alternate="YES" id="bPE-6p-LIF">
-                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                    <menuItem title="URL in new tab…" tag="2" alternate="YES" id="bPE-6p-LIF">
+                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                         <connections>
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="XBW-Qe-YgI"/>
+                                        </connections>
+                                    </menuItem>
+                                    <menuItem title="URL in new window…" tag="1" alternate="YES" id="Ncc-wt-zDo">
+                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <connections>
+                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="SOF-kG-5Xy"/>
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Window" id="VKa-yC-mZQ">

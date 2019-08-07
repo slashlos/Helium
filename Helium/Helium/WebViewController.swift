@@ -407,6 +407,14 @@ class MyWebView : WKWebView {
         item.tag = 1
         subOpen.addItem(item)
         
+        item = NSMenuItem(title: "File in new tab…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .option
+        item.representedObject = self.window
+        item.isAlternate = true
+        item.target = wvc
+        item.tag = 2
+        subOpen.addItem(item)
+        
         item = NSMenuItem(title: "URL…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
         item.target = wvc
@@ -420,15 +428,30 @@ class MyWebView : WKWebView {
         item.tag = 1
         subOpen.addItem(item)
         
+        item = NSMenuItem(title: "URL in new tab…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .option
+        item.representedObject = self.window
+        item.isAlternate = true
+        item.target = wvc
+        item.tag = 2
+        subOpen.addItem(item)
+        
         item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .shift
+        item.keyEquivalentModifierMask = .option
         item.target = appDelegate
         item.isAlternate = true
         item.tag = 1
+        subOpen.addItem(item)
+        
+        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
+        item.keyEquivalentModifierMask = .option
+        item.target = appDelegate
+        item.isAlternate = true
+        item.tag = 2
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")
