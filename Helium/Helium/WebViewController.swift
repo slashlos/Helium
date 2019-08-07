@@ -116,6 +116,32 @@ class MyWebView : WKWebView {
         return super.load(request)
     }
 */
+    @IBAction internal func cut(_ sender: Any) {
+        let pb = NSPasteboard.general()
+        pb.clearContents()
+        if let urlString = self.url?.absoluteString {
+            pb.setString(urlString, forType: NSStringPboardType)
+            (self.uiDelegate as! WebViewController).clear()
+        }
+    }
+    @IBAction internal func copy(_ sender: Any) {
+        let pb = NSPasteboard.general()
+        pb.clearContents()
+        if let urlString = self.url?.absoluteString {
+            pb.setString(urlString, forType: NSStringPboardType)
+        }
+    }
+    @IBAction internal func paste(_ sender: Any) {
+        let pb = NSPasteboard.general()
+        guard let rawString = pb.string(forType: NSStringPboardType), rawString.isValidURL() else { return }
+        
+        self.load(URLRequest.init(url: URL.init(string: rawString)!))
+    }
+    @IBAction internal func delete(_ sender: Any) {
+        self.cancelOperation(sender)
+        Swift.print("cancel")
+    }
+
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
         let newWindows = UserSettings.CreateNewWindows.value
@@ -389,6 +415,14 @@ class MyWebView : WKWebView {
         }
         var item: NSMenuItem
 
+        item = NSMenuItem(title: "Cut", action: #selector(MyWebView.cut(_:)), keyEquivalent: "")
+        menu.addItem(item)
+        item = NSMenuItem(title: "Copy", action: #selector(MyWebView.copy(_:)), keyEquivalent: "")
+        menu.addItem(item)
+        item = NSMenuItem(title: "Paste", action: #selector(MyWebView.paste(_:)), keyEquivalent: "")
+        menu.addItem(item)
+        menu.addItem(NSMenuItem.separator())
+
         item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
         menu.addItem(item)
         let subOpen = NSMenu()
@@ -581,6 +615,13 @@ class MyWebView : WKWebView {
         item = NSMenuItem(title: "Quit", action: #selector(NSApp.terminate(_:)), keyEquivalent: "")
         item.target = NSApp
         menu.addItem(item)
+    }
+    
+    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
+        switch menuItem.title {
+        default:
+            return true
+        }
     }
 }
 
