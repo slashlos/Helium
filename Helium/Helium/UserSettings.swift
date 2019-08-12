@@ -60,13 +60,10 @@ internal struct UserSettings {
     
     //  Global Defaults keys
     static let DisabledMagicURLs = Setting<Bool>("disabledMagicURLs", defaultValue: false)
-    static let CreateNewWindows = Setting<Bool>("createNewWindows", defaultValue: false)
     static let PlaylistThrottle = Setting<Int>("playlistThrottle", defaultValue: 32)
 
     static let HomePageURL = Setting<String>(
         "homePageURL",
-//      defaultValue: "https://cdn.rawgit.com/JadenGeller/Helium/master/helium_start.html"
-//      defaultValue: "https://cdn.rawgit.com/slashlos/Helium/master/helium_start.html"
         defaultValue: "https://slashlos.github.io/Helium/helium_start.html"
     )
     static let ReleaseNotesURL = Setting<String>(
