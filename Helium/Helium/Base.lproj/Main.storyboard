@@ -360,7 +360,7 @@
                                                 <items>
                                                     <menuItem title="File…" keyEquivalent="o" id="iba-HN-Jos">
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="f5f-OR-pBN"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="kab-s7-8J8"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="File in new tab…" tag="2" alternate="YES" keyEquivalent="o" id="at8-06-y5R">
@@ -376,7 +376,7 @@
                                                     </menuItem>
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="fDB-UK-nlH"/>
+                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="SQV-ho-ckr"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL in new tab…" tag="2" alternate="YES" keyEquivalent="l" id="AWF-C8-zwA">
@@ -696,6 +696,7 @@ CA
                 <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Helium" customModuleProvider="target">
                     <connections>
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
+                        <outlet property="autoSaveDocsMenuItem" destination="drc-ov-KJT" id="PAa-as-yFM"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
                     </connections>
                 </customObject>
