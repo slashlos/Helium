@@ -777,7 +777,7 @@ CA
                                         </connections>
                                     </menuItem>
                                     <menuItem title="Tab" tag="1" alternate="YES" id="Zfp-kU-JpI">
-                                        <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="dsw-vr-9iN"/>
                                         </connections>
