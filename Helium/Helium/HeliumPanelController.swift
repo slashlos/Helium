@@ -554,8 +554,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     fileprivate func docIconToggle() {
         let docIconButton = panel.standardWindowButton(.documentIconButton)
+        if !(NSApp.delegate as! AppDelegate).openForBusiness {
+            mouseOver = true
+        }
 
-        if settings.autoHideTitle.value == false || mouseOver {
+        if settings.autoHideTitle.value == true && !mouseOver {
+            docIconButton?.isHidden = true
+        }
+        else
+        {
             if let doc = self.document {
                 docIconButton?.image = (doc as! Document).displayImage
             }
@@ -563,14 +570,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             {
                 docIconButton?.image = NSApp.applicationIconImage
             }
-            docIconButton?.isHidden = !mouseOver//false
+            docIconButton?.isHidden = false
             if let url = self.webView?.url, url.isFileURL {
                 self.synchronizeWindowTitleWithDocumentName()
             }
-        }
-        else
-        {
-            docIconButton?.isHidden = !mouseOver//true
         }
         cacheSettings()
     }
