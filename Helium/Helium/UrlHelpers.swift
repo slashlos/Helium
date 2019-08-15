@@ -12,7 +12,7 @@ struct UrlHelpers {
     /// Prepends `http://` if scheme isn't `https?://` unless "file://"
     static func ensureScheme(_ urlString: String) -> String {
         if !(urlString.lowercased().hasPrefix("http://") || urlString.lowercased().hasPrefix("https://")) {
-            return urlString.hasPrefix("file://") ? urlString : "http://" + urlString
+            return urlString.lowercased().hasPrefix("file://") ? urlString : "http://" + urlString
         } else {
             return urlString
         }
@@ -21,6 +21,10 @@ struct UrlHelpers {
     // https://mathiasbynens.be/demo/url-regex
     static func isValid(urlString: String) -> Bool {
         // swiftlint:disable:next force_try
+        if urlString.lowercased().hasPrefix("file:"), let url = URL.init(string: urlString) {
+            return FileManager.default.fileExists(atPath:url.path)
+        }
+
         let regex = try! NSRegularExpression(pattern: "^(https?://)[^\\s/$.?#].[^\\s]*$")
         return (regex.firstMatch(in: urlString, range: urlString.nsrange) != nil)
     }
