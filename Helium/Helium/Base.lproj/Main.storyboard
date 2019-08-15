@@ -531,6 +531,12 @@ CA
                                                             <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="xZc-0b-LN6"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Show Tab Bar" keyEquivalent="t" id="Cno-aM-bke">
+                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                                        <connections>
+                                                            <action selector="toggleTabBar:" target="Ady-hI-5gd" id="0Zl-zZ-VVd"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="Translucency" id="yAu-DE-1jG" userLabel="Translucency">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <menu key="submenu" title="Translucency" systemMenu="window" id="kEP-We-47v">
