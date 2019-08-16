@@ -144,9 +144,31 @@ fileprivate class URLField: NSTextField {
     }
 }
 
+struct ViewOptions : OptionSet {
+    let rawValue: Int
+    
+    static let w_view            = ViewOptions(rawValue: 1 << 0)
+    static let t_view            = ViewOptions(rawValue: 1 << 1)
+}
+let sameWindow : ViewOptions = []
+
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationManagerDelegate {
 
+    //  return key state for external paths
+    var newViewOptions : ViewOptions = sameWindow
+    var getViewOptions : ViewOptions {
+        get {
+            var viewOptions = ViewOptions()
+            if shiftKeyDown {
+                viewOptions.insert(.w_view)
+            }
+            if optionKeyDown {
+                viewOptions.insert(.t_view)
+            }
+            return viewOptions
+        }
+    }
     //  For those site that require your location while we're active
     var locationManager : CLLocationManager?
     var isLocationEnabled : Bool {
@@ -246,7 +268,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     //  Restore operations are progress until open
-    var openForBusiness = false
+    dynamic var openForBusiness = false
     
     //  By defaut we show document title bar
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
@@ -254,24 +276,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
      }
 
     //  By default we auto save any document changes
+	@IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
 	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
-        UserSettings.AutoSaveDocs.value = (sender.state == NSOffState)
-        
-        //  if turning on, then we save all documents manually
-        if autoSaveDocs {
-            for doc in NSDocumentController.shared().documents {
-                if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
-                    DispatchQueue.main.async {
-                        (hwc as! HeliumPanelController).saveDocument(sender)
-                    }
-                }
-            }
-            NSDocumentController.shared().saveAllDocuments(sender)
-        }
+        autoSaveDocs = (sender.state == NSOffState)
 	}
 	var autoSaveDocs : Bool {
         get {
             return UserSettings.AutoSaveDocs.value
+        }
+        set (value) {
+            UserSettings.AutoSaveDocs.value = value
+            if value {
+                for doc in NSDocumentController.shared().documents {
+                    if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
+                        DispatchQueue.main.async {
+                            (hwc as! HeliumPanelController).saveDocument(self.autoSaveDocsMenuItem)
+                        }
+                    }
+                }
+                NSDocumentController.shared().saveAllDocuments(autoSaveDocsMenuItem)
+            }
         }
     }
     
@@ -315,19 +339,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
 	func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
-        let newWindows = UserSettings.CreateNewWindows.value
-        let dc = NSDocumentController.shared()
-        let fileType = fileURL.pathExtension
-        dc.noteNewRecentDocumentURL(fileURL)
-
+        
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
-            guard (newWindows && openForBusiness) || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
+            guard openForBusiness || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
                 let hwc = fromWindow?.windowController
                 let doc = hwc?.document
                 
                 //  If it's a "h3w" type read it and load it into defaults
                 if let wvc = thisWindow.contentViewController as? WebViewController {
-                    
+                    let fileType = fileURL.pathExtension
+
                     if fileType == "h3w" {
                         (doc as! Document).update(to: fileURL)
                         
@@ -347,13 +368,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         
         //  Open a new window
-        UserSettings.CreateNewWindows.value = false
         var status = false
         
         //  This could be anything so add/if a doc and initialize
         do {
             let doc = try Document.init(contentsOf: fileURL)
-            
+            let dc = NSDocumentController.shared()
+            dc.noteNewRecentDocumentURL(fileURL)
+
             if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
                 window.offsetFromKeyWindow()
                 window.makeKey()
@@ -364,7 +386,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             print("*** Error open file: \(error.localizedDescription)")
             status = false
         }
-        UserSettings.CreateNewWindows.value = newWindows
 
         return status
     }
@@ -393,14 +414,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let wc = doc.windowControllers.first
         let window : NSPanel = wc!.window as! NSPanel as NSPanel
         
-        //  Close down any observations before closure
+        //  Delegate for observation(s) run-down
         window.delegate = wc as? NSWindowDelegate
         doc.settings.rect.value = window.frame
         
-        //  SHIFT key down creates new tabs as tag=1
-        if ((NSApp.currentEvent?.modifierFlags.contains(.shift))! || (sender as! NSMenuItem).tag == 1), let keyWindow = NSApp.keyWindow,
+        //  OPTION key down creates new tabs as tag=3
+        if ((NSApp.currentEvent?.modifierFlags.contains(.option))! || (sender as! NSMenuItem).tag == 3), let keyWindow = NSApp.keyWindow,
             !(keyWindow.contentViewController?.isKind(of: AboutBoxController.self))! {
-            keyWindow.addTabbedWindow(window, ordered: .below)
+            keyWindow.addTabbedWindow(window, ordered: .above)
         }
         else
         {
@@ -414,7 +435,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
     
     @IBAction func openFilePress(_ sender: AnyObject) {
-        UserSettings.CreateNewWindows.value = sender.tag > 0
+        var viewOptions = ViewOptions(rawValue: sender.tag)
+        
         let open = NSOpenPanel()
         open.allowsMultipleSelection = true
         open.canChooseDirectories = false
@@ -428,42 +450,64 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
-                if UserSettings.CreateNewWindows.value {
-                    self.openURLInNewWindow(url)
+                if viewOptions.contains(.t_view) {
+                    openFileInNewWindow(url, attachTo: sender.representedObject as? NSWindow)
+                }
+                else
+                if viewOptions.contains(.w_view) {
+                    openFileInNewWindow(url)
                 }
                 else
                 {
                     _ = self.doOpenFile(fileURL: url)
                 }
-                
-                //  Multiple files implies new windows
-                UserSettings.CreateNewWindows.value = true
             }
+            //  Multiple files implies new windows
+            viewOptions.insert(.w_view)
         }
         return
     }
     
-    internal func openURLInNewWindow(_ newURL: URL) {
-        let newWindows = UserSettings.CreateNewWindows.value
-        UserSettings.CreateNewWindows.value = false
+    internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) {
         do {
-            let doc = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true)
-            if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.webViewController.loadURL(text: newURL.absoluteString)
+            let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
+                parent.addTabbedWindow(tabWindow, ordered: .above)
             }
+            else
+            if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                hpc.webViewController.webView.next(url: newURL)
+            }
+            doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
         } catch let error {
             NSApp.presentError(error)
         }
-        UserSettings.CreateNewWindows.value = newWindows
     }
+    
+    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) {
+        do {
+            let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
+                parent.addTabbedWindow(tabWindow, ordered: .above)
+            }
+            else
+            if let hpc = doc.windowControllers.first as? HeliumPanelController {
+                hpc.webViewController.webView.next(url: newURL)
+            }
+            doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
+        } catch let error {
+            NSApp.presentError(error)
+        }
+    }
+    
     @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
-            self.openURLInNewWindow(newURL as! URL)
+            self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
         }
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        UserSettings.CreateNewWindows.value = sender.tag > 0
+        let viewOptions = ViewOptions(rawValue: sender.tag)
         var urlString = UserSettings.HomePageURL.value
         
         //  No window, so load alert modally
@@ -478,54 +522,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.HomePageURL.value),
                           onWindow: nil,
                           title: "Enter URL",
-                          acceptHandler: { (location: String) in
-                            //  save for our error handler
-                            self.openURLInNewWindow(URL.init(string: location)!)
+                          acceptHandler: { (urlString: String) in
+                            guard let newURL = URL.init(string: urlString) else { return }
+                            
+                            if viewOptions.contains(.t_view), let parent = sender.representedObject {
+                                self.openURLInNewWindow(newURL, attachTo: parent as? NSWindow)
+                            }
+                            else
+                            {
+                                self.openURLInNewWindow(newURL)
+                            }
         })
     }
 
     @IBAction func openSearchPress(_ sender: AnyObject) {
-        UserSettings.CreateNewWindows.value = sender.tag > 0
         let name = k.searchNames[ UserSettings.Search.value ]
         let info = k.searchInfos[ UserSettings.Search.value ]
 
-        //  We have a window, create as sheet and load playlists there
-        guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
-            //  No window, so load alert modally
+        //  No window?, so load alert modally
             
-            didRequestSearch(RequestUserStrings (
-                currentURL: nil,
-                alertMessageText:   "Search",
-                alertButton1stText: name,         alertButton1stInfo: info,
-                alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
-                alertButton3rdText: nil,          alertButton3rdInfo: nil),
-                              onWindow: nil,
-                              title: "Web Search",
-                              acceptHandler: { (newWindow,searchURL: URL) in
-                                self.openURLInNewWindow(searchURL)
-            })
-            return
-        }
-        
-        if let wvc : WebViewController = window.contentViewController as? WebViewController {
-            didRequestSearch(RequestUserStrings (
-                currentURL: nil,
-                alertMessageText:   "Search",
-                alertButton1stText: name,         alertButton1stInfo: info,
-                alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
-                alertButton3rdText: "New Window", alertButton3rdInfo: "Results in new window"),
-                              onWindow: window as? HeliumPanel,
-                              title: "Web Search",
-                              acceptHandler: { (newWindow: Bool, searchURL: URL) in
-                                if newWindow {
-                                    self.openURLInNewWindow(searchURL)
-                                }
-                                else
-                                {
-                                    wvc.loadURL(url: searchURL)
-                                }
-            })
-        }
+        didRequestSearch(RequestUserStrings (
+            currentURL: nil,
+            alertMessageText:   "Search",
+            alertButton1stText: name,         alertButton1stInfo: info,
+            alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
+            alertButton3rdText: nil,          alertButton3rdInfo: nil),
+                         onWindow: nil,
+                         title: "Web Search",
+                         acceptHandler: { (newWindow,searchURL: URL) in
+                            self.openURLInNewWindow(searchURL, attachTo: sender.representedObject as? NSWindow)
+        })
     }
     
 	@IBAction func pickSearchPress(_ sender: NSMenuItem) {
@@ -581,10 +607,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
 	
 	@IBAction func showReleaseInfo(_ sender: Any) {
-        //  Temporarily disable new windows as we'll create one now
-        let newWindows = UserSettings.CreateNewWindows.value
         let urlString = UserSettings.ReleaseNotesURL.value
-        UserSettings.CreateNewWindows.value = false
 
         do
         {
@@ -601,9 +624,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             NSApp.presentError(error)
             Swift.print("Yoink, unable to load url (\(urlString))")
         }
-        
-        UserSettings.CreateNewWindows.value = newWindows
-        return
 	}
 	
 	var canRedo : Bool {
@@ -806,6 +826,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  We need our own to reopen our "document" urls
         _ = HeliumDocumentController.init()
         
+        //  We want automatic tab support
+        NSPanel.allowsAutomaticWindowTabbing = true
+        
         //  Wipe out defaults when OPTION+SHIFT is held down at startup
         if flags.contains([.shift,.option]) {
             Swift.print("shift+option at start")
@@ -879,6 +902,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             NotificationCenter.default.post(notif)
         }
     }
+    var optionKeyDown : Bool = false {
+        didSet {
+            let notif = Notification(name: Notification.Name(rawValue: "optionKeyDown"),
+                                     object: NSNumber(booleanLiteral: optionKeyDown));
+            NotificationCenter.default.post(notif)
+        }
+    }
     var commandKeyDown : Bool = false {
         didSet {
             let notif = Notification(name: Notification.Name(rawValue: "commandKeyDown"),
@@ -934,6 +964,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             
         case [.shift]:
             self.shiftKeyDown = true
+            return true
+            
+        case [.option]:
+            self.optionKeyDown = true
             return true
             
         case [.command]:
@@ -1033,11 +1067,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let keep = defaults.array(forKey: UserSettings.KeepListName.value) {
             for item in keep {
                 guard let urlString = (item as? String) else { continue }
+                if urlString == UserSettings.HomePageURL.value { continue }
                 guard let url = URL.init(string: urlString ) else { continue }
                 self.openURLInNewWindow(url)
                 Swift.print("rest \(item)")
             }
         }
+        
+        //  Restore auto save settings
+        autoSaveDocs = UserSettings.AutoSaveDocs.value
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1117,7 +1155,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         item.keyEquivalentModifierMask = .shift
         item.isAlternate = true
         item.target = self
-        item.tag = 1
+        item.tag = 3
         subOpen.addItem(item)
         return menu
     }
@@ -1481,7 +1519,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     // Called when the App opened via URL.
     @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        let newWindows = UserSettings.CreateNewWindows.value
+        let viewOptions = getViewOptions
 
         guard let keyDirectObject = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject)),
             let rawString = keyDirectObject.stringValue else {
@@ -1493,27 +1531,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let urlString = rawString.substring(from: index)
         
         //  Handle new window here to narrow cast to new or current hwc
-        if (!newWindows || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
+        if (viewOptions == sameWindow || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
             if let hwc : HeliumPanelController = wc as? HeliumPanelController {
                 (hwc.contentViewController as! WebViewController).loadURL(text: urlString)
                 return
             }
         }
-        
-        //  Temporarily disable new windows as we'll create one now
-        UserSettings.CreateNewWindows.value = false
-        do
+        else
         {
-            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-            let hwc = next.windowControllers.first?.window?.windowController
-            (hwc?.contentViewController as! WebViewController).loadURL(text: urlString)
+            openURLInNewWindow(URL.init(string: urlString)!)
         }
-        catch let error {
-            NSApp.presentError(error)
-            Swift.print("Yoink, unable to create new url doc for (\(urlString))")
-        }
-        UserSettings.CreateNewWindows.value = newWindows
-        return
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {

@@ -31,6 +31,7 @@ struct k {
     static let alpha = "alpha"
     static let trans = "trans"
     static let agent = "agent"
+    static let tabby = "tabby"
     static let view = "view"
     static let fini = "finish"
     static let vers = "vers"
@@ -166,18 +167,17 @@ extension Array where Element:PlayItem {
 }
 
 class PlayList : NSObject,NSCoding {
+    var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+
     //  Keep playlist names unique
     var name : String = k.list {
         didSet {
-            if let appDelegate: AppDelegate = NSApp.delegate as? AppDelegate {
-                //  Do not allow duplicate
-                if appDelegate.playlists.item(name) != self {
-                    name = oldValue
+            if appDelegate.playlists.item(name) != self {
+                name = oldValue
 
-                    //  tell controller we have reverted this edit
-                    let notif = Notification(name: Notification.Name(rawValue: "BadPlayListName"), object: self)
-                    NotificationCenter.default.post(notif)
-                }
+                //  tell controller we have reverted this edit
+                let notif = Notification(name: Notification.Name(rawValue: "BadPlayListName"), object: self)
+                NotificationCenter.default.post(notif)
             }
         }
     }
@@ -202,6 +202,12 @@ class PlayList : NSObject,NSCoding {
             return (NSApp.delegate as! AppDelegate).shiftKeyDown
         }
     }
+    dynamic var optionKeyDown : Bool {
+        get {
+            return (NSApp.delegate as! AppDelegate).optionKeyDown
+        }
+    }
+
     var tooltip : String {
         get {
             if shiftKeyDown {
@@ -229,11 +235,9 @@ class PlayList : NSObject,NSCoding {
         name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
  
         //  Make sure new items have unique name
-        if let appDelegate: AppDelegate = NSApp.delegate as? AppDelegate {
-            while appDelegate.playlists.has(name) {
-                suffix += 1
-                name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
-            }
+        while appDelegate.playlists.has(name) {
+            suffix += 1
+            name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
         }
         
         //  watch shift key changes affecting our playlist
@@ -241,6 +245,13 @@ class PlayList : NSObject,NSCoding {
             self,
             selector: #selector(shiftKeyDown(_:)),
             name: NSNotification.Name(rawValue: "shiftKeyDown"),
+            object: nil)
+
+        //  watch option key changes affecting our playlist
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(optionKeyDown(_:)),
+            name: NSNotification.Name(rawValue: "optionKeyDown"),
             object: nil)
     }
     
@@ -257,6 +268,19 @@ class PlayList : NSObject,NSCoding {
         }
     }
     
+    internal func optionKeyDown(_ note: Notification) {
+        let keyPaths = ["tooltip"]
+        for keyPath in (keyPaths)
+        {
+            self.willChangeValue(forKey: keyPath)
+        }
+        
+        for keyPath in (keyPaths)
+        {
+            self.didChangeValue(forKey: keyPath)
+        }
+    }
+
     convenience init(name:String, list:Array <PlayItem>) {
         self.init()
 
@@ -335,6 +359,7 @@ class PlayItem : NSObject, NSCoding {
     var alpha: Int
     var trans: Int
     var agent: String = UserSettings.UserAgent.value
+    var tabby: Bool
     var temp : String {
         get {
             return link.absoluteString
@@ -357,6 +382,7 @@ class PlayItem : NSObject, NSCoding {
         alpha = 60
         trans = 0
         agent = UserSettings.UserAgent.value
+        tabby = false
         super.init()
         
         let temp = NSString(format:"%p",self) as String
@@ -375,9 +401,10 @@ class PlayItem : NSObject, NSCoding {
         self.alpha = 60
         self.trans = 0
         self.agent = UserSettings.UserAgent.value
+        self.tabby = false
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int, agent: String) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int, agent: String, asTab: Bool) {
         self.name = name
         self.link = link
         self.date = date
@@ -390,6 +417,7 @@ class PlayItem : NSObject, NSCoding {
         self.alpha = alpha
         self.trans = trans
         self.agent = agent
+        self.tabby = asTab
         super.init()
     }
     convenience init(with dictionary: Dictionary<String,Any>) {
@@ -439,6 +467,9 @@ class PlayItem : NSObject, NSCoding {
         if let agent : String = dictionary[k.agent] as? String, agent != self.agent {
             self.agent = agent
         }
+        if let asTab : Bool = dictionary[k.tabby] as? Bool, asTab != self.tabby {
+            self.tabby = asTab
+        }
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
@@ -457,8 +488,9 @@ class PlayItem : NSObject, NSCoding {
         let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
         let agent = coder.decodeObject(forKey: k.agent) as! String
+        let tabby = coder.decodeBool(forKey: k.tabby)
         self.init(name: name, link: link!, date: date, time: time, rank: rank, rect: rect,
-                  plays: plays, label: label, hover: hover, alpha: alpha, trans: trans, agent: agent)
+                  plays: plays, label: label, hover: hover, alpha: alpha, trans: trans, agent: agent, asTab: tabby)
     }
     
     func encode(with coder: NSCoder) {
@@ -474,6 +506,7 @@ class PlayItem : NSObject, NSCoding {
         coder.encode(alpha, forKey: k.alpha)
         coder.encode(trans, forKey: k.trans)
         coder.encode(agent, forKey: k.agent)
+        coder.encode(tabby, forKey: k.tabby)
     }
     
     func dictionary() -> Dictionary<String,Any> {
@@ -490,6 +523,7 @@ class PlayItem : NSObject, NSCoding {
         dict[k.alpha] = alpha
         dict[k.trans] = trans
         dict[k.agent] = agent
+        dict[k.tabby] = tabby
         return dict
     }
 }
@@ -540,6 +574,7 @@ internal struct Settings {
     let rect = Setup<NSRect>(k.rect, value: NSMakeRect(0, 0, 0, 0))
     let plays = Setup<Int>(k.plays, value: 0)
     let customUserAgent = Setup<String>("customUserAgent", value: UserSettings.UserAgent.value)
+    let tabby = Setup<Bool>("tabby", value: false)
     
     // See values in HeliumPanelController.TranslucencyPreference
     let translucencyPreference = Setup<HeliumPanelController.TranslucencyPreference>("rawTranslucencyPreference", value: .never)
@@ -582,6 +617,7 @@ class HeliumDocumentController : NSDocumentController {
 
 class Document : NSDocument {
 
+    var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
     var autoSaveDocs : Bool {
         get {
@@ -622,6 +658,7 @@ class Document : NSDocument {
         dict[k.alpha] = settings.opacityPercentage.value
         dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
         dict[k.agent] = settings.customUserAgent.value
+        dict[k.tabby] = settings.tabby.value
         return dict
     }
     
@@ -639,12 +676,11 @@ class Document : NSDocument {
         item.alpha = self.settings.opacityPercentage.value
         item.trans = self.settings.translucencyPreference.value.rawValue
         item.agent = self.settings.customUserAgent.value
+        item.tabby = self.settings.tabby.value
         return item
     }
     
     func restoreSettings(with dictionary: Dictionary<String,Any>) {
-        let appDelegate = NSApp.delegate as! AppDelegate
-
         //  Wait until we're restoring after open or in intialization
         guard !appDelegate.openForBusiness || UserSettings.RestoreDocAttrs.value else { return }
         
@@ -686,7 +722,6 @@ class Document : NSDocument {
         }
 
         if self.settings.time.value == 0.0, let url = self.url, url.isFileURL {
-            let appDelegate = NSApp.delegate as! AppDelegate
             let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
             if let secs = attr?[kMDItemDurationSeconds] {
                 self.settings.time.value = secs as! TimeInterval
@@ -705,6 +740,9 @@ class Document : NSDocument {
             if let webView = (self.windowControllers.first?.contentViewController as? WebViewController)?.webView {
                 webView.customUserAgent = agent
             }
+        }
+        if let tabby : Bool = dictionary[k.tabby] as? Bool, tabby != self.settings.tabby.value {
+            self.settings.tabby.value = tabby
         }
     }
     

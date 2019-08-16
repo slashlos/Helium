@@ -31,6 +31,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         super.init(coder: coder)
         shouldCascadeWindows = true
     }
+    
+    func next(url: URL) {
+        if let webView = self.webView {
+            webView.next(url: url)
+        }
+    }
 
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
@@ -276,6 +282,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         didSet {
             updateTranslucency()
         }
+    }
+    
+    enum NewViewLocation : Int {
+        case same = 0
+        case window = 1
+        case tab = 2
     }
     
     var translucencyPreference: TranslucencyPreference = .never {

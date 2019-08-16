@@ -256,6 +256,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 object: nil)
             NotificationCenter.default.addObserver(
                 self,
+                selector: #selector(optionKeyDown(_:)),
+                name: NSNotification.Name(rawValue: "optionKeyDown"),
+                object: nil)
+            NotificationCenter.default.addObserver(
+                self,
                 selector: #selector(gotNewHistoryItem(_:)),
                 name: NSNotification.Name(rawValue: k.item),
                 object: nil)
@@ -276,6 +281,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     internal func shiftKeyDown(_ note: Notification) {
         let keyPaths = ["cornerImage","cornerTooltip"]
+        for keyPath in (keyPaths)
+        {
+            self.willChangeValue(forKey: keyPath)
+        }
+        
+        for keyPath in (keyPaths)
+        {
+            self.didChangeValue(forKey: keyPath)
+        }
+    }
+    
+    internal func optionKeyDown(_ note: Notification) {
+        let keyPaths = ["playTooltip"]
         for keyPath in (keyPaths)
         {
             self.willChangeValue(forKey: keyPath)
@@ -669,9 +687,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     internal func play(_ sender: Any, items: Array<PlayItem>, maxSize: Int) {
-        //  first window might be reused, others no
-        let newWindows = UserSettings.CreateNewWindows.value
-
         //  Unless we're the standalone helium playlist window dismiss all
         if !(self.view.window?.isKind(of: HeliumPanel.self))! {
             /// dismiss whatever got us here
@@ -684,10 +699,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 ppc.window?.orderOut(sender)
             }
         }
-        else
-        {
-            UserSettings.CreateNewWindows.value = true
-        }
         
         //  Try to restore item at its last known location
         for (i,item) in (items.enumerated()).prefix(maxSize) {
@@ -695,19 +706,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 print(String(format: "%3d %3d %@", i, item.rank, item.name))
             }
             
-            //  2nd item and on get a new window
-            UserSettings.CreateNewWindows.value = true
-        }
-        
-        //  Restore user settings
-        if UserSettings.CreateNewWindows.value != newWindows {
-            UserSettings.CreateNewWindows.value = newWindows
+            //  2nd item and on get a new view window
+            appDelegate.newViewOptions.insert(.w_view)
         }
     }
     
     //  MARK:- IBActions
     @IBAction func playPlaylist(_ sender: AnyObject) {
-        UserSettings.CreateNewWindows.value = shiftKeyDown
+        appDelegate.newViewOptions = appDelegate.getViewOptions
         
         //  first responder tells us who called so dispatch
         let whoAmI = self.view.window?.firstResponder
@@ -1140,6 +1146,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         return true
     }
     
+    func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        appDelegate.newViewOptions = appDelegate.getViewOptions
+//        Swift.print("draggingUpdated -> .copy")
+        return .copy
+    }
     func performDragOperation(info: NSDraggingInfo) -> Bool {
         let pboard: NSPasteboard = info.draggingPasteboard()
         let types = pboard.types

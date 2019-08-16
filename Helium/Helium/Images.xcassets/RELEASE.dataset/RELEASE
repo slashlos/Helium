@@ -22,6 +22,16 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4438</h2>
+62d2973|19/08/15 tab key modifier is option<br>
+51a4498|19/08/15 added Show Tab Bar menu item<br>
+9df2b3d|19/08/15 parse improvements re: file: scheme<br>
+50c4187|19/08/15 fix doc icon appearance handling<br>
+9caeb83|19/08/13 tab view encoding (1:window, 2:tab)<br>
+8338e68|19/08/12 1st responder re: file, URL; autosave<br>
+62ed909|19/08/12 removed deprecated defaults<br>
+</p>
+
 <h2>Build 4389</h2>
 888aa07|19/08/07 UI menu consistency tab, window<br>
 4e1b9c9|19/08/07 link allow look ahead preview - NYI?<br>

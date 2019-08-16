@@ -66,12 +66,12 @@ class MyWebView : WKWebView {
                 else
                 if title == "Open Link"
                 {
-                    item.representedObject = self.window
                     item.action = #selector(MyWebView.openLinkInWindow(_:))
                     item.target = self
                 }
                 else
                 {
+                    item.tag = ViewOptions.w_view.rawValue
                     item.action = #selector(MyWebView.openLinkInNewWindow(_:))
                     item.target = self
                 }
@@ -85,6 +85,7 @@ class MyWebView : WKWebView {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
             load(URLRequest.init(url: url))
         }
+        else
         if let url = self.selectedURL {
             load(URLRequest.init(url: url))
         }
@@ -92,10 +93,11 @@ class MyWebView : WKWebView {
     
     func openLinkInNewWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
-            appDelegate.openURLInNewWindow(url)
+            appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
         }
+        else
         if let url = self.selectedURL {
-            appDelegate.openURLInNewWindow(url)
+            appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
         }
     }
     
@@ -144,19 +146,11 @@ class MyWebView : WKWebView {
 
     func next(url: URL) {
         let doc = self.window?.windowController?.document as? Document
-        let newWindows = UserSettings.CreateNewWindows.value
-        let appDelegate = NSApp.delegate as! AppDelegate
         var nextURL = url
 
         //  Pick off request (non-file) urls first
         guard url.isFileURL else {
-            if appDelegate.openForBusiness && newWindows {
-                appDelegate.openURLInNewWindow(url)
-            }
-            else
-            {
-                self.load(URLRequest(url: url))
-            }
+            self.load(URLRequest(url: url))
             return
         }
         
@@ -168,21 +162,6 @@ class MyWebView : WKWebView {
             return
         }
         
-        if appDelegate.openForBusiness && newWindows && doc != nil {
-            do
-            {
-                let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
-                let oldWindow = self.window
-                let newWindow = next.windowControllers.first?.window
-                (newWindow?.contentView?.subviews.first as! MyWebView).load(URLRequest(url: nextURL))
-                newWindow?.offsetFromWindow(oldWindow!)
-            }
-            catch let error {
-                NSApp.presentError(error)
-                Swift.print("Yoink, unable to create new url doc for (\(url))")
-                return
-            }
-        }
         self.load(URLRequest(url: nextURL))
         doc?.update(to: nextURL)
     }
@@ -225,12 +204,14 @@ class MyWebView : WKWebView {
     
     // MARK: Drag and Drop - Before Release
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        UserSettings.CreateNewWindows.value = appDelegate.shiftKeyDown
+        appDelegate.newViewOptions = appDelegate.getViewOptions
 //        Swift.print("draggingUpdated -> .copy")
         return .copy
     }
     // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let viewOptions = appDelegate.newViewOptions
+
         let pboard = sender.draggingPasteboard()
         let items = pboard.pasteboardItems
 
@@ -252,7 +233,7 @@ class MyWebView : WKWebView {
                 }
                 else
                 if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
-                    if appDelegate.openForBusiness && UserSettings.CreateNewWindows.value, let itemURL = URL.init(string: urlString) {
+                    if appDelegate.openForBusiness && viewOptions != sameWindow, let itemURL = URL.init(string: urlString) {
                         _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
                         continue
                     }
@@ -429,13 +410,11 @@ class MyWebView : WKWebView {
         item.submenu = subOpen
 
         item = NSMenuItem(title: "File…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
-        item.representedObject = self.window
         item.target = wvc
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "File in new window…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = .shift
-        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
         item.tag = 1
@@ -443,20 +422,17 @@ class MyWebView : WKWebView {
         
         item = NSMenuItem(title: "File in new tab…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = .option
-        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
-        item.tag = 2
+        item.tag = 3
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "URL…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
-        item.representedObject = self.window
         item.target = wvc
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "URL in new window…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = .shift
-        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
         item.tag = 1
@@ -464,10 +440,9 @@ class MyWebView : WKWebView {
         
         item = NSMenuItem(title: "URL in new tab…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = .option
-        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
-        item.tag = 2
+        item.tag = 3
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
@@ -478,14 +453,14 @@ class MyWebView : WKWebView {
         item.keyEquivalentModifierMask = .option
         item.target = appDelegate
         item.isAlternate = true
-        item.tag = 1
+        item.tag = 3
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = .option
         item.target = appDelegate
         item.isAlternate = true
-        item.tag = 2
+        item.tag = 1
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")
@@ -601,9 +576,9 @@ class MyWebView : WKWebView {
         item.target = hwc
         menu.addItem(item)
         
-        item = NSMenuItem(title: "Search…", action: #selector(AppDelegate.openSearchPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Search…", action: #selector(WebViewController.openSearchPress(_:)), keyEquivalent: "")
         item.representedObject = self.window
-        item.target = appDelegate
+        item.target = wvc
         menu.addItem(item)
         
         item = NSMenuItem(title: "Close", action: #selector(NSApp.keyWindow?.performClose(_:)), keyEquivalent: "")
@@ -625,7 +600,7 @@ class MyWebView : WKWebView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, WKHTTPCookieStoreObserver {
+class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, NSTabViewDelegate, WKHTTPCookieStoreObserver {
 
     @available(OSX 10.13, *)
     public func cookiesDidChange(in cookieStore: WKHTTPCookieStore) {
@@ -680,7 +655,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         let newDidAddSubviewImplementationBlock: @convention(block) (AnyObject?, NSView) -> Void = { (view: AnyObject!, subview: NSView) -> Void in
             castedOriginalDidAddSubviewImplementation(view, Selector(("didAddsubview:")), subview)
-            Swift.print("view: \(subview.className)")
+//            Swift.print("view: \(subview.className)")
             if subview.className == "WKFlippedView" {
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "WKFlippedView"), object: subview)
             }
@@ -903,7 +878,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @IBAction func openFilePress(_ sender: AnyObject) {
-        var openFilesInNewWindows = sender.tag > 0
+        var viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
         let open = NSOpenPanel()
         
@@ -921,23 +896,27 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 let urls = open.urls
                 
                 for url in urls {
-                    if openFilesInNewWindows {
+                    if viewOptions.contains(.t_view) {
+                        self.appDelegate.openURLInNewWindow(url, attachTo: window)
+                    }
+                    else
+                    if viewOptions.contains(.w_view) {
                         self.appDelegate.openURLInNewWindow(url)
                     }
                     else
                     {
-                        _ = self.appDelegate.doOpenFile(fileURL: url, fromWindow: window)
+                        self.webView.next(url: url)
                     }
-                    
                     //  Multiple files implies new windows
-                    openFilesInNewWindows = true
+                    viewOptions.insert(.w_view)
                 }
             }
         })
     }
     
     @IBAction func openLocationPress(_ sender: AnyObject) {
-        UserSettings.CreateNewWindows.value = sender.tag > 0
+        let viewOptions = ViewOptions(rawValue: sender.tag)
+        let window = self.view.window
         var urlString = currentURL
         
         if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {
@@ -950,13 +929,28 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
             alertButton3rdText: "Home",     alertButton3rdInfo: UserSettings.HomePageURL.value),
-                                      onWindow: self.view.window as? HeliumPanel,
+                                      onWindow: window as? HeliumPanel,
                                       title: "Enter URL",
-                                      acceptHandler: { (newUrl: String) in
-                                        self.loadURL(text: newUrl)
+                                      acceptHandler: { (urlString: String) in
+                                        guard let newURL = URL.init(string: urlString) else { return }
+                                        
+                                        if viewOptions.contains(.t_view) {
+                                            self.appDelegate.openURLInNewWindow(newURL, attachTo: window)
+                                        }
+                                        else
+                                        if viewOptions.contains(.w_view) {
+                                            self.appDelegate.openURLInNewWindow(newURL)
+                                        }
+                                        else
+                                        {
+                                            self.loadURL(url: newURL)
+                                        }
         })
     }
     @IBAction func openSearchPress(_ sender: AnyObject) {
+        let viewOptions = ViewOptions(rawValue: sender.tag)
+        let window = self.view.window
+
         let name = k.searchNames[ UserSettings.Search.value ]
         let info = k.searchInfos[ UserSettings.Search.value ]
 
@@ -969,7 +963,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                      onWindow: self.view.window as? HeliumPanel,
                                      title: "Web Search",
                                      acceptHandler: { (newWindow: Bool, searchURL: URL) in
-                                        if newWindow {
+                                        if viewOptions.contains(.t_view) {
+                                            self.appDelegate.openURLInNewWindow(searchURL, attachTo: window)
+                                        }
+                                        else
+                                        if newWindow || viewOptions.contains(.w_view) {
                                             self.appDelegate.openURLInNewWindow(searchURL)
                                         }
                                         else
@@ -1028,7 +1026,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     internal func loadURL(text: String) {
         let text = UrlHelpers.ensureScheme(text)
         if let url = URL(string: text) {
-            loadURL(url: url)
+            webView.load(URLRequest.init(url: url))
         }
     }
 
@@ -1115,7 +1113,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     // MARK: Webview functions
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
-        loadURL(text: UserSettings.HomePageURL.value)
+        guard let url = URL.init(string: UserSettings.HomePageURL.value) else { return }
+        webView.load(URLRequest.init(url: url))
     }
 
 	@IBOutlet var webView: MyWebView!
@@ -1402,11 +1401,18 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        let viewOptions = appDelegate.getViewOptions
         var url = navigationAction.request.url!
         
         guard navigationAction.buttonNumber < 2 else {
             Swift.print("newWindow with url:\(String(describing: url))")
-            self.appDelegate.openURLInNewWindow(url)
+            if viewOptions.contains(.t_view) {
+                appDelegate.openURLInNewWindow(url, attachTo: webView.window )
+            }
+            else
+            {
+                appDelegate.openURLInNewWindow(url)
+            }
             decisionHandler(WKNavigationActionPolicy.cancel)
             return
         }
@@ -1416,7 +1422,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 url = selectedURL
             }
             if navigationAction.buttonNumber > 1 {
-                appDelegate.openURLInNewWindow(url)
+                if viewOptions.contains(.t_view) {
+                    appDelegate.openURLInNewWindow(url, attachTo: webView.window )
+                }
+                else
+                {
+                    appDelegate.openURLInNewWindow(url)
+                }
                 decisionHandler(WKNavigationActionPolicy.cancel)
             }
             else
@@ -1433,7 +1445,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             }
             if navigationAction.buttonNumber > 1
             {
-                appDelegate.openURLInNewWindow(newUrl)
+                if viewOptions.contains(.t_view) {
+                    appDelegate.openURLInNewWindow(newUrl, attachTo: webView.window )
+                }
+                else
+                {
+                    appDelegate.openURLInNewWindow(newUrl)
+                }
             }
             else
             {
@@ -1608,4 +1626,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         Swift.print("webViewDidClose")
     }
     
+    //  MARK: TabView Delegate
+    
+    func tabView(_ tabView: NSTabView, willSelect tabViewItem: NSTabViewItem?) {
+        if let item = tabViewItem {
+            Swift.print("willSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
+        }
+    }
+    
+    func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+        if let item = tabViewItem {
+            Swift.print("didSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
+        }
+    }
 }
