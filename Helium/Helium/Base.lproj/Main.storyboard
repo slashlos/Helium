@@ -275,13 +275,19 @@
                                                                 <menuItem title="Developer Extras" id="6vt-wO-AaU">
                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                     <connections>
-                                                                        <action selector="developerExtrasEnabledPress:" target="Ady-hI-5gd" id="Nlx-Pk-5Kz"/>
+                                                                        <action selector="developerExtrasEnabledPress:" target="Voe-Tx-rLC" id="9cU-cf-41k"/>
                                                                     </connections>
                                                                 </menuItem>
                                                                 <menuItem title="Hide zoom icon" id="2nN-CZ-MHD">
                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                     <connections>
                                                                         <action selector="hideZoomIconPress:" target="Voe-Tx-rLC" id="Ruk-Sf-kRt"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="HTTP -&gt; HTTPS Links" toolTip="promote http:// -&gt; https://" id="bu5-rW-TcR">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="promoteHTTPSPress:" target="Voe-Tx-rLC" id="a2r-gK-kwb"/>
                                                                     </connections>
                                                                 </menuItem>
                                                             </items>
