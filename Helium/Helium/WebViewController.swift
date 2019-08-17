@@ -766,8 +766,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         controller.addUserScript(script)
         
-        //  make http: -> https:
-        if #available(OSX 10.13, *) {
+        //  make http: -> https: guarded by preference
+        if #available(OSX 10.13, *), UserSettings.PromoteHTTPS.value {
             //  https://developer.apple.com/videos/play/wwdc2017/220/ 21:04
             let jsonString = """
                 [{

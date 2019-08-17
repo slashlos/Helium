@@ -300,7 +300,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        UserSettings.DeveloperExtrasEnabled.value = (sender.state == NSOnState)
+        UserSettings.DeveloperExtrasEnabled.value = (sender.state == NSOffState)
     }
     
     var fullScreen : NSRect? = nil
@@ -602,6 +602,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 	
+	@IBAction func promoteHTTPSPress(_ sender: NSMenuItem) {
+        UserSettings.PromoteHTTPS.value = (sender.state == NSOnState ? false : true)
+	}
+    
 	@IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
         UserSettings.RestoreDocAttrs.value = (sender.state == NSOnState ? false : true)
 	}
@@ -783,6 +787,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 break
             case "Magic URL Redirects":
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
+                break
+            case "HTTP -> HTTPS Links":
+                menuItem.state = UserSettings.PromoteHTTPS.value ? NSOnState : NSOffState
                 break
             case "Restore Doc Attributes":
                 menuItem.state = UserSettings.RestoreDocAttrs.value ? NSOnState : NSOffState
