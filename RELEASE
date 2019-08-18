@@ -22,7 +22,10 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
-<h2>Build 4438</h2>
+<h2>Build 4445</h2>
+c58d794|19/08/17 added http promotion pref<br>
+99c458d|19/08/17 prefs update: developer, http promotion<br>
+5078f78|19/08/17 added http -> https preference<br>
 62d2973|19/08/15 tab key modifier is option<br>
 51a4498|19/08/15 added Show Tab Bar menu item<br>
 9df2b3d|19/08/15 parse improvements re: file: scheme<br>
