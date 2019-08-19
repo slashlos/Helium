@@ -566,11 +566,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     
     fileprivate func docIconToggle() {
         let docIconButton = panel.standardWindowButton(.documentIconButton)
+        var mouseWasOver = mouseOver
         if !(NSApp.delegate as! AppDelegate).openForBusiness {
-            mouseOver = true
+            mouseWasOver = true
         }
 
-        if settings.autoHideTitle.value == true && !mouseOver {
+        if settings.autoHideTitle.value == true && !mouseWasOver {
             docIconButton?.isHidden = true
         }
         else
