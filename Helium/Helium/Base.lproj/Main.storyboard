@@ -532,7 +532,7 @@ CA
                                                             <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Full Screen" keyEquivalent="f" id="YB7-sd-Ej8" userLabel="Full Screen">
+                                                    <menuItem title="Full Screen" keyEquivalent="F" id="YB7-sd-Ej8" userLabel="Full Screen">
                                                         <connections>
                                                             <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="xZc-0b-LN6"/>
                                                         </connections>
@@ -998,7 +998,7 @@ CA
                                                                                 </connections>
                                                                             </textFieldCell>
                                                                             <connections>
-                                                                                <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.name" id="8HX-Ml-4RJ"/>
+                                                                                <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.pl_name" id="fcq-Ru-1u7"/>
                                                                                 <binding destination="mHz-pC-h6G" name="toolTip" keyPath="objectValue.tooltip" id="xZn-iF-bWk"/>
                                                                             </connections>
                                                                         </textField>
