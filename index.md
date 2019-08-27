@@ -24,7 +24,7 @@ is present.
 
 ![Preferences](/images/preferences.png)
 
-Helium provides convenient access to document and global preferences via the Finder, Stauts Icon, and Dock Icon menus.
+Helium provides convenient access to document and global preferences via the Finder, Status Icon, and Dock Icon menus.
 
 ### Dock Icon Menu
 
