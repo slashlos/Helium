@@ -4,6 +4,7 @@
 //
 //  Created by Viktor Oreshkin on 9.5.17.
 //  Copyright © 2017 Jaden Geller. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -126,13 +127,13 @@ extension UrlHelpers.Magic {
         let TwitchRegExp = try! NSRegularExpression(pattern: "https?://(?:www\\.)?twitch\\.tv/([\\w\\d\\_]+)(?:/(\\d+))?")
         
         if let match = TwitchRegExp.firstMatch(in: urlString, range: urlString.nsrange),
-            let channel = urlString.substring(with:match.rangeAt(1)) {
+            let channel = urlString.substring(with:match.range(at: 1)) {
             var magicd = false
             switch channel {
             case "directory", "products", "p", "user":
                 break
             case "videos":
-                if let idString = urlString.substring(with:match.rangeAt(2)) {
+                if let idString = urlString.substring(with:match.range(at: 2)) {
                     modified.query = "html5&video=v" + idString
                     magicd = true
                 }
@@ -184,12 +185,12 @@ extension UrlHelpers.Magic {
             // Enforce https
             self.modified.scheme = "https"
             self.modified.host = "youtube.com"
-            self.modified.path = "/embed/" + self.urlString.substring(with: match.rangeAt(1))!
+            self.modified.path = "/embed/" + self.urlString.substring(with: match.range(at: 1))!
             
             var start = 0
             var multiplier = 60 * 60
             for idx in 2...4 {
-                if let tStr = self.urlString.substring(with: match.rangeAt(idx)), let tInt = Int(tStr) {
+                if let tStr = self.urlString.substring(with: match.range(at: idx)), let tInt = Int(tStr) {
                     start += tInt * multiplier
                 }
                 multiplier /= 60

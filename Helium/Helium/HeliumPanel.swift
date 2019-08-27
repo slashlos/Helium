@@ -4,7 +4,7 @@
 //
 //  Created by shdwprince on 8/10/16.
 //  Copyright © 2016 Jaden Geller. All rights reserved.
-//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -34,11 +34,11 @@ class HeliumPanel: NSPanel {
         switch event.type {
         case .flagsChanged:
             // If modifier key was released, dragging should be disabled
-            if !event.modifierFlags.contains(.command) {
+            if !event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
                 previousMouseLocation = nil
             }
         case .leftMouseDown:
-            if event.modifierFlags.contains(.command) {
+            if event.modifierFlags.contains(NSEvent.ModifierFlags.command) {
                 previousMouseLocation = event.locationInWindow
             }
         case .leftMouseUp:
@@ -58,12 +58,23 @@ class HeliumPanel: NSPanel {
     }
 }
 
-class PlaylistsPanel : HeliumPanel {
+class PlaylistsPanel : NSPanel {
     
 }
 
 //  Offset a window from the current app key window
 extension NSWindow {
+    
+    var titlebarHeight : CGFloat {
+        if self.styleMask.contains(.fullSizeContentView), let svHeight = self.standardWindowButton(.closeButton)?.superview?.frame.height {
+            return svHeight
+        }
+
+        let contentHeight = contentRect(forFrameRect: frame).height
+        let titlebarHeight = frame.height - contentHeight
+        return titlebarHeight > k.TitleNormal ? k.TitleUtility : titlebarHeight
+    }
+    
     func offsetFromKeyWindow() {
         if let keyWindow = NSApp.keyWindow {
             self.offsetFromWindow(keyWindow)
@@ -75,9 +86,9 @@ extension NSWindow {
     }
 
     func offsetFromWindow(_ theWindow: NSWindow) {
+        let titleHeight = theWindow.titlebarHeight
         let oldRect = theWindow.frame
         let newRect = self.frame
-        let titleHeight = theWindow.isFloatingPanel ? k.TitleUtility : k.TitleNormal
         
         //	Offset this window from the window by title height pixels to right, just below
         //	either the title bar or the toolbar accounting for incons and/or text.
@@ -102,10 +113,6 @@ extension NSWindow {
                 }
                 y -= k.ToolbarItemSpacer;
             }
-        }
-        else
-        {
-            y -= k.ToolbarlessSpacer;
         }
         
         self.setFrameOrigin(NSMakePoint(x,y))
@@ -139,11 +146,6 @@ extension NSWindow {
                 y -= k.ToolbarItemSpacer;
             }
         }
-/*        else
-        {
-            y -= k.ToolbarlessSpacer;
-        }
-*/
         self.setFrameOrigin(NSMakePoint(x,y))
     }
 

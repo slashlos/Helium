@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 12/13/18
-//  Copyright © 2018 Carlos Santiaog. All rights reserved.
+//  Copyright © 2018 Carlos D. Santiaog. All rights reserved.
 //
 //	WindowButtonBar.swift - https://gist.github.com/icodeforlove/a334884e59784b4c2567
 //	Custom implementation of the OSX Yosemite close, miniaturize, zoom buttons.
@@ -34,10 +34,10 @@ class PanelButton : NSButton {
 			return self._individualized;
 		}
 	}
-	var type:NSWindowButton = NSWindowButton.miniaturizeButton;
+	var type:NSWindow.ButtonType = NSWindow.ButtonType.miniaturizeButton;
 	
 	
-	init(frame:NSRect, type:NSWindowButton, useTrackingArea:Bool = true) {
+	init(frame:NSRect, type:NSWindow.ButtonType, useTrackingArea:Bool = true) {
 		super.init(frame: frame);
 		
 		self.type = type;
@@ -53,17 +53,17 @@ class PanelButton : NSButton {
 		self.action = #selector(PanelButton.onClick);
 	}
 	
-	func onClick () {
-		if (type == NSWindowButton.closeButton), let target = self.target, let action = self.action {
+	@objc func onClick () {
+		if (type == NSWindow.ButtonType.closeButton), let target = self.target, let action = self.action {
 			_ = target.perform(action, with: self)
 		}
 		else
 		{
-			if (type == NSWindowButton.zoomButton) {
+			if (type == NSWindow.ButtonType.zoomButton) {
 				self.window?.zoom(self);
-			} else if (type == NSWindowButton.miniaturizeButton) {
+			} else if (type == NSWindow.ButtonType.miniaturizeButton) {
 				self.window?.miniaturize(self);
-			} else if (type == NSWindowButton.closeButton) {
+			} else if (type == NSWindow.ButtonType.closeButton) {
 				self.window?.close();
 			}
 		}
@@ -71,10 +71,10 @@ class PanelButton : NSButton {
 	
 	override func updateTrackingAreas() {
 		if (self.useTrackingArea) {
-			let options:NSTrackingAreaOptions = NSTrackingAreaOptions.activeInActiveApp
-				.union(NSTrackingAreaOptions.mouseEnteredAndExited)
-				.union(NSTrackingAreaOptions.assumeInside)
-				.union(NSTrackingAreaOptions.inVisibleRect);
+			let options:NSTrackingArea.Options = NSTrackingArea.Options.activeInActiveApp
+				.union(NSTrackingArea.Options.mouseEnteredAndExited)
+				.union(NSTrackingArea.Options.assumeInside)
+				.union(NSTrackingArea.Options.inVisibleRect);
 			
 			let trackingArea = NSTrackingArea(rect: self.bounds, options:options, owner: self, userInfo: nil)
 			self.addTrackingArea(trackingArea)
@@ -94,7 +94,7 @@ class PanelButton : NSButton {
 	
 	override func draw(_ dirtyRect: NSRect) {
 		if self.isHidden || !self.isMouseOver { return }
-		NSGraphicsContext.current()?.saveGraphicsState();
+		NSGraphicsContext.current?.saveGraphicsState();
 		var path = NSBezierPath();
 
 		if let image = self.image {
@@ -124,8 +124,8 @@ class PanelButton : NSButton {
 			if (self.isMouseOver) {
 				path = NSBezierPath();
 				
-				if (type == NSWindowButton.zoomButton) {
-					NSGraphicsContext.current()?.shouldAntialias = true;
+				if (type == NSWindow.ButtonType.zoomButton) {
+					NSGraphicsContext.current?.shouldAntialias = true;
 					
 					path.move(to: NSMakePoint(self.bounds.width / 2, self.bounds.height * 0.21));
 					path.line(to: NSMakePoint(self.bounds.width / 2, self.bounds.height * 0.79));
@@ -133,14 +133,14 @@ class PanelButton : NSButton {
 					path.move(to: NSMakePoint(self.bounds.width * 0.79, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.21, self.bounds.height / 2));
 					path.lineWidth = 1.25//0.75;
-				} else if (type == NSWindowButton.miniaturizeButton) {
-					NSGraphicsContext.current()?.shouldAntialias = true;
+				} else if (type == NSWindow.ButtonType.miniaturizeButton) {
+					NSGraphicsContext.current?.shouldAntialias = true;
 					
 					path.move(to: NSMakePoint(self.bounds.width * 0.80, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.20, self.bounds.height / 2));
 					path.lineWidth = 1.25//0.75;
-				} else if (type == NSWindowButton.closeButton) {
-					NSGraphicsContext.current()?.shouldAntialias = true;
+				} else if (type == NSWindow.ButtonType.closeButton) {
+					NSGraphicsContext.current?.shouldAntialias = true;
 
 					path.move(to: NSMakePoint(self.bounds.width * 0.27, self.bounds.height * 0.27));
 					path.line(to: NSMakePoint(self.bounds.width * 0.73, self.bounds.height * 0.73));
@@ -156,7 +156,7 @@ class PanelButton : NSButton {
 		}
 		
 		//	show our dirty mark (red dot)
-		if (type == NSWindowButton.closeButton), let window = self.window, window.isDocumentEdited {
+		if (type == NSWindow.ButtonType.closeButton), let window = self.window, window.isDocumentEdited {
 			let dotGradient = NSGradient(starting:NSColor.red, ending: NSColor.red)!;
 			let pt = NSMakePoint(self.bounds.width * 0.42, self.bounds.height * 0.42)
 			
@@ -171,7 +171,7 @@ class PanelButton : NSButton {
 			NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: 0.2).setFill();
 			path.fill();
 		}
-		NSGraphicsContext.current()?.restoreGraphicsState();
+		NSGraphicsContext.current?.restoreGraphicsState();
 	}
 }
 
@@ -191,15 +191,15 @@ public class PanelButtonBar : NSView {
 	}
 	
 	func setupViews (individualTrackingAreas ita:Bool) {
-		self.closeButton = PanelButton(frame: NSMakeRect(0, 0, 13, 13), type: NSWindowButton.closeButton, useTrackingArea: ita);
-		self.miniaturizeButton = PanelButton(frame: NSMakeRect(20, 0, 13, 13), type: NSWindowButton.miniaturizeButton, useTrackingArea: ita);
-		self.zoomButton = PanelButton(frame: NSMakeRect(40, 0, 13, 13), type: NSWindowButton.zoomButton, useTrackingArea: ita);
+		self.closeButton = PanelButton(frame: NSMakeRect(0, 0, 13, 13), type: NSWindow.ButtonType.closeButton, useTrackingArea: ita);
+		self.miniaturizeButton = PanelButton(frame: NSMakeRect(20, 0, 13, 13), type: NSWindow.ButtonType.miniaturizeButton, useTrackingArea: ita);
+		self.zoomButton = PanelButton(frame: NSMakeRect(40, 0, 13, 13), type: NSWindow.ButtonType.zoomButton, useTrackingArea: ita);
 		
 		self.addSubview(self.closeButton!);
 		self.addSubview(self.miniaturizeButton!);
 		self.addSubview(self.zoomButton!);
 		
-		let trackingArea = NSTrackingArea(rect: self.bounds, options: NSTrackingAreaOptions.mouseEnteredAndExited.union(NSTrackingAreaOptions.mouseMoved).union(NSTrackingAreaOptions.activeAlways), owner: self, userInfo: nil);
+		let trackingArea = NSTrackingArea(rect: self.bounds, options: NSTrackingArea.Options.mouseEnteredAndExited.union(NSTrackingArea.Options.mouseMoved).union(NSTrackingArea.Options.activeAlways), owner: self, userInfo: nil);
 		self.addTrackingArea(trackingArea);
 	}
 	

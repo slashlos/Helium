@@ -4,6 +4,7 @@
 //
 //  Created by Carlos D. Santiago on 6/24/17.
 //  Copyright © 2017 Jaden Geller. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -27,7 +28,7 @@ class AboutBoxController : NSViewController {
 	@IBOutlet var appNameButton: NSButton!
 	@IBAction func appButtonPress(_ sender: Any) {
         var info = Dictionary<String,Any>()
-        info[k.name] = appName!
+        info[k.name] = appName
         info[k.vers] = versionString!
         info[k.data] = versionData!
         info[k.link] = versionLink!
@@ -37,8 +38,8 @@ class AboutBoxController : NSViewController {
         let jsonString = String(data: json!, encoding: .utf8)
         
         let pasteboard = NSPasteboard.general
-        pasteboard().declareTypes([NSStringPboardType], owner: nil)
-        if pasteboard().setString(jsonString!, forType: NSStringPboardType) {
+        pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
+        if pasteboard.setString(jsonString!, forType: NSPasteboard.PasteboardType.string) {
             Swift.print("app info copied to pasteboard")
         }
 	}
@@ -48,7 +49,7 @@ class AboutBoxController : NSViewController {
         if let window = self.view.window {
             let oldSize = window.contentView?.bounds.size
             var frame = window.frame
-            if toggleButton.state == NSOffState {
+            if toggleButton.state == OffState {
                 
                 frame.origin.y += ((oldSize?.height)! - (hideRect?.size.height)!)
                 window.setFrameOrigin(frame.origin)
@@ -92,7 +93,7 @@ class AboutBoxController : NSViewController {
 
         AboutBoxController.creditsState += 1
 
-        if toggleButton.state == NSOffState {
+        if toggleButton.state == OffState {
             if AboutBoxController.creditsState >= AboutBoxController.creditsCount
             {
                 AboutBoxController.creditsState = 0
@@ -124,7 +125,11 @@ class AboutBoxController : NSViewController {
     var versionLink: String? = nil
     var versionDate: String? = nil
 
-    var appName: String? = nil
+    var appName: String {
+        get {
+            return (NSApp.delegate as! AppDelegate).appName
+        }
+    }
     var versionString: String? = nil
     var copyrightStrings: [String]? = nil
 
@@ -139,7 +144,7 @@ class AboutBoxController : NSViewController {
         //	We no need no sticking title!
         theWindow?.title = ""
 
-        appNameField.stringValue = appName!
+        appNameField.stringValue = appName
         versionButton.title = versionData!
         creditsButton.title = copyrightStrings![AboutBoxController.creditsState % AboutBoxController.creditsCount]
 
@@ -153,7 +158,7 @@ class AboutBoxController : NSViewController {
 
         //  Credit criteria initially hidden
         AboutBoxController.creditsState = 0-1
-        toggleButton.state = NSOffState
+        toggleButton.state = OffState
         cycleCredits(self)
         toggleContent(self)
         
@@ -168,14 +173,11 @@ class AboutBoxController : NSViewController {
     
     override func viewDidLoad() {
         //	Initially don't show history
-        toggleButton.state = NSOffState
+        toggleButton.state = OffState
  
         //	Get the info dictionary (Info.plist)
         let infoDictionary = (Bundle.main.infoDictionary)!
 
-        //	Get the app name field
-        appName = infoDictionary[kCFBundleExecutableKey as String] as? String
-        
         //	Setup the version to one we constrict
         versionString = String(format:"Version %@",
                                infoDictionary["CFBundleShortVersionString"] as! CVarArg)
@@ -192,7 +194,7 @@ class AboutBoxController : NSViewController {
 
         // Setup the copyrights field; each separated by "|"
         copyrightStrings = (infoDictionary["NSHumanReadableCopyright"] as? String)?.components(separatedBy: "|")
-        toggleButton.state = NSOffState
+        toggleButton.state = OffState
     }
     
 }

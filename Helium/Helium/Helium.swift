@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 6/27/17.
-//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -11,6 +11,7 @@ import QuickLook
 
 //  Global static strings
 struct k {
+    static let Helium = "Helium"
     static let Playlists = "playlists"
     static let Playitems = "playitems"
     static let Settings = "settings"
@@ -40,14 +41,12 @@ struct k {
     static let TitleUtility: CGFloat = 16.0
     static let TitleNormal: CGFloat = 22.0
     static let ToolbarItemHeight: CGFloat = 48.0
-    static let ToolbarItemSpacer: CGFloat = 4.0
+    static let ToolbarItemSpacer: CGFloat = 1.0
     static let ToolbarTextHeight: CGFloat = 12.0
-    static let ToolbarlessSpacer: CGFloat = 4.0
     static let docHelium = 0
     static let docRelease = 1
     static let docPlaylists = 2
     static let docReleaseName = "Helium Release Notes"
-    static let docPlaylistsName = "Helium Playlists"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
     static let bingLink = "https://search.bing.com/search?Q=%@"
@@ -101,7 +100,7 @@ func NewFileHandleForWriting(path: String, name: String, type: String, outFile: 
         }
         outFile = file!
         
-        if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey.extensionHidden.rawValue: true]) {
+        if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey(rawValue: FileAttributeKey.extensionHidden.rawValue): true]) {
             let fileHandle = try FileHandle.init(forWritingTo: fileURL!)
             print("\(file!) was opened for writing")
             return fileHandle
@@ -131,7 +130,7 @@ func NewFileURLForWriting(path: String, name: String, type: String) -> URL? {
         uniqueNum += 1;
     }
     
-    if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey.extensionHidden.rawValue: true]) {
+    if fm.createFile(atPath: file!, contents: nil, attributes: [FileAttributeKey(rawValue: FileAttributeKey.extensionHidden.rawValue): true]) {
         return fileURL
     } else {
         return nil
@@ -166,11 +165,11 @@ extension Array where Element:PlayItem {
     }
 }
 
-class PlayList : NSObject,NSCoding {
+class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboardReading {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
 
     //  Keep playlist names unique
-    var name : String = k.list {
+    @objc dynamic var name : String = k.list {
         didSet {
             if appDelegate.playlists.item(name) != self {
                 name = oldValue
@@ -181,14 +180,14 @@ class PlayList : NSObject,NSCoding {
             }
         }
     }
-    var list : Array <PlayItem> = Array()
-    var date : TimeInterval
-    var tally: Int {
+    @objc dynamic var list : Array <PlayItem> = Array()
+    @objc dynamic var date : TimeInterval
+    @objc dynamic var tally: Int {
         get {
             return self.list.count
         }
     }
-    var plays: Int {
+    @objc dynamic var plays: Int {
         get {
             var plays = 0
             for item in self.list {
@@ -197,26 +196,29 @@ class PlayList : NSObject,NSCoding {
             return plays
         }
     }
-    dynamic var shiftKeyDown : Bool {
+    @objc dynamic var shiftKeyDown : Bool {
         get {
             return (NSApp.delegate as! AppDelegate).shiftKeyDown
         }
     }
-    dynamic var optionKeyDown : Bool {
+    @objc dynamic var optionKeyDown : Bool {
         get {
             return (NSApp.delegate as! AppDelegate).optionKeyDown
         }
     }
 
-    var tooltip : String {
+    @IBOutlet weak var tooltip : NSString! {
         get {
             if shiftKeyDown {
-                return String(format: "%ld play(s)", self.plays)
+                return String(format: "%ld play(s)", self.plays) as NSString
             }
             else
             {
-                return String(format: "%ld item(s)", self.list.count)
+                return String(format: "%ld item(s)", self.list.count) as NSString
             }
+        }
+        set (value) {
+            
         }
     }
     override var description: String {
@@ -225,6 +227,53 @@ class PlayList : NSObject,NSCoding {
         }
     }
     
+    // MARK:- Columns
+    @IBOutlet weak var pl_name : NSString! {
+        get {
+            return self.name as NSString
+        }
+        set (value) {
+            self.name = value as String
+        }
+    }
+    @IBOutlet weak var pl_list : NSArray! {
+        get {
+            return NSArray.init(array: self.list)
+        }
+        set (value) {
+            self.list = Array()
+            
+            for item in value {
+                list.append(item as! PlayItem)
+            }
+        }
+    }
+    @IBOutlet weak var pl_date : NSDate! {
+        get {
+            return NSDate.init(timeIntervalSinceReferenceDate: self.date)
+        }
+        set (value) {
+            self.date = value.timeIntervalSinceReferenceDate
+        }
+    }
+    @IBOutlet weak var pl_tally : NSNumber! {
+        get {
+            return NSNumber.init(value: self.tally)
+        }
+        set (value) {
+            //self.tally = value.intValue
+        }
+    }
+    @IBOutlet weak var pl_plays : NSNumber! {
+        get {
+            return NSNumber.init(value: self.plays)
+        }
+        set (value) {
+            
+        }
+    }
+    
+    // MARK:- Functions
     override init() {
         date = Date().timeIntervalSinceReferenceDate
         super.init()
@@ -255,8 +304,8 @@ class PlayList : NSObject,NSCoding {
             object: nil)
     }
     
-    internal func shiftKeyDown(_ note: Notification) {
-        let keyPaths = ["tooltip"]
+    @objc internal func shiftKeyDown(_ note: Notification) {
+        let keyPaths = [k.tooltip]
         for keyPath in (keyPaths)
         {
             self.willChangeValue(forKey: keyPath)
@@ -268,8 +317,8 @@ class PlayList : NSObject,NSCoding {
         }
     }
     
-    internal func optionKeyDown(_ note: Notification) {
-        let keyPaths = ["tooltip"]
+    @objc internal func optionKeyDown(_ note: Notification) {
+        let keyPaths = [k.tooltip]
         for keyPath in (keyPaths)
         {
             self.willChangeValue(forKey: keyPath)
@@ -288,21 +337,6 @@ class PlayList : NSObject,NSCoding {
         self.name = name
     }
     
-    func writableTypes(for pasteboard: NSPasteboard) -> [String] {
-        return ["com.helium.playlist"]
-    }
-    
-    func pasteboardPropertyList(forType type: String) -> Any? {
-        if type == "com.helium.playlist" {
-            return [name, list, date]
-        }
-        else
-        {
-            Swift.print("pasteboardPropertyList:\(type) unknown")
-            return nil
-        }
-    }
-    
     func dictionary() -> Dictionary<String,Any> {
         var dict = Dictionary<String,Any>()
         var items: [Any] = Array()
@@ -315,19 +349,12 @@ class PlayList : NSObject,NSCoding {
         return dict
     }
     
-    required convenience init(coder: NSCoder) {
-        let name = coder.decodeObject(forKey: k.name) as! String
-        let list = coder.decodeObject(forKey: k.list) as! [PlayItem]
-        let date = coder.decodeDouble(forKey: k.date)
-        self.init(name: name, list: list)
-        self.date = date
-    }
     func update(with dictionary: Dictionary<String,Any>) {
         if let name : String = dictionary[k.name] as? String, name != self.name {
             self.name = name
         }
         if let plists : [Dictionary<String,Any>] = dictionary[k.list] as? [Dictionary<String,Any>] {
-
+            
             for plist in plists {
                 if let item : PlayItem = list.item(plist[k.link] as! String) {
                     item.update(with: plist)
@@ -338,29 +365,87 @@ class PlayList : NSObject,NSCoding {
             self.date = date
         }
     }
-
+    
+    // MARK:- NSCoder
+    required convenience init(coder: NSCoder) {
+        let name = coder.decodeObject(forKey: k.name) as! String
+        let list = coder.decodeObject(forKey: k.list) as! [PlayItem]
+        let date = coder.decodeDouble(forKey: k.date)
+        self.init(name: name, list: list)
+        self.date = date
+    }
+    
     func encode(with coder: NSCoder) {
         coder.encode(name, forKey: k.name)
         coder.encode(list, forKey: k.list)
         coder.encode(date, forKey: k.date)
     }
+    
+    // MARK:- NSCopying
+    convenience required init(_ with: PlayList) {
+        self.init()
+        
+        self.name = with.name
+        self.list = with.list
+        self.date = with.date
+    }
+    
+    func copy(with zone: NSZone? = nil) -> Any
+    {
+        return type(of:self).init(self)
+    }
+    
+    // MARK:- Pasteboard Reading
+    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        Swift.print("type: \(type.rawValue)")
+        guard type == NSPasteboard.PasteboardType(rawValue: PlayList.className()) else {
+            self.init()
+            
+            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.update(with: dict as! Dictionary<String, Any>)
+            return
+        }
+        
+        let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+        Swift.print("item: \(String(describing: item))")
+        self.init(item as! PlayList)
+    }
+    
+    static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        return [NSPasteboard.PasteboardType(rawValue: PlayList.className()),
+                NSPasteboard.PasteboardType(rawValue: PlayList.className() + ".dict")]
+    }
+    
+    // MARK:- Pasteboard Writing
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        guard type == NSPasteboard.PasteboardType(rawValue: PlayList.className()) else {
+            return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+        }
+        
+        return NSKeyedArchiver.archivedData(withRootObject: self)
+    }
+    
+    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        return [NSPasteboard.PasteboardType(rawValue: PlayList.className()),
+                NSPasteboard.PasteboardType(rawValue: PlayList.className() + ".dict")]
+    }
 }
 
-class PlayItem : NSObject, NSCoding {
-    var name : String = k.item
-    var link : URL = URL.init(string: "http://")!
-    var time : TimeInterval
-    var date : TimeInterval
-    var rank : Int
-    var rect : NSRect
-    var plays : Int
-    var label: Bool
-    var hover: Bool
-    var alpha: Int
-    var trans: Int
-    var agent: String = UserSettings.UserAgent.value
-    var tabby: Bool
-    var temp : String {
+class PlayItem : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboardReading {
+    @objc dynamic var name : String = k.item
+    @objc dynamic var link : URL = URL.init(string: "http://")!
+    @objc dynamic var time : TimeInterval
+    @objc dynamic var date : TimeInterval
+    @objc dynamic var rank : Int
+    @objc dynamic var rect : NSRect
+    @objc dynamic var plays : Int
+    @objc dynamic var label: Bool
+    @objc dynamic var hover: Bool
+    @objc dynamic var alpha: Int
+    @objc dynamic var trans: Int
+    @objc dynamic var agent: String = UserSettings.UserAgent.value
+    @objc dynamic var tabby: Bool
+    @objc dynamic var temp : String {
         get {
             return link.absoluteString
         }
@@ -369,6 +454,121 @@ class PlayItem : NSObject, NSCoding {
         }
     }
     
+    // MARK:- Columns
+    @IBOutlet weak var pi_name : NSString! {
+        get {
+            return self.name as NSString
+        }
+        set (value) {
+            self.name = value as String
+        }
+    }
+    @IBOutlet weak var pi_link : NSString! {
+        get {
+            return self.temp as NSString
+        }
+        set (value) {
+            self.temp = value as String
+        }
+    }
+    @IBOutlet weak var pi_time : NSNumber! {
+        get {
+            return NSNumber.init(value: self.time)
+        }
+        set (value) {
+            self.time = value.doubleValue
+        }
+    }
+    @IBOutlet weak var pi_date : NSDate! {
+        get {
+            return NSDate.init(timeIntervalSinceReferenceDate: self.date)
+        }
+        set (value) {
+            self.date = value.timeIntervalSinceReferenceDate
+        }
+    }
+    @IBOutlet weak var pi_rank : NSNumber! {
+        get {
+            return NSNumber.init(value: self.rank)
+        }
+        set (value) {
+            self.rank = value.intValue
+        }
+    }
+    @IBOutlet weak var pi_rect : NSString! {
+        get {
+            return NSStringFromRect(self.rect) as NSString
+        }
+        set (value) {
+            self.rect = NSRectFromString(value as String)
+        }
+    }
+    @IBOutlet weak var pi_plays : NSNumber! {
+        get {
+            return NSNumber.init(value: self.plays)
+        }
+        set (value) {
+            self.plays = value.intValue
+        }
+    }
+    @IBOutlet weak var pi_label : NSNumber! {
+        get {
+            return NSNumber.init(value: self.label)
+        }
+        set (value) {
+            self.label = value.boolValue
+        }
+    }
+    @IBOutlet weak var pi_hover : NSNumber! {
+        get {
+            return NSNumber.init(value: self.hover)
+        }
+        set (value) {
+            self.hover = value.boolValue
+        }
+    }
+    @IBOutlet weak var pi_alpha : NSNumber! {
+        get {
+            return NSNumber.init(value: self.alpha)
+        }
+        set (value) {
+            self.alpha = value.intValue
+        }
+    }
+    @IBOutlet weak var pi_trans : NSNumber! {
+        get {
+            return NSNumber.init(value: self.trans)
+        }
+        set (value) {
+            self.trans = value.intValue
+        }
+    }
+    @IBOutlet weak var pi_agent : NSString! {
+        get {
+            return self.agent as NSString
+        }
+        set (value) {
+            self.agent = value as String
+        }
+    }
+    @IBOutlet weak var pi_tabby : NSNumber! {
+        get {
+            return NSNumber.init(value: self.tabby)
+        }
+        set (value) {
+            self.tabby = value.boolValue
+        }
+    }
+    @IBOutlet weak var pi_temp : NSString! {
+        get {
+            return self.temp as NSString
+        }
+        set (value) {
+            self.temp = value as String
+        }
+    }
+
+    // MARK:- Functions
     override init() {
         name = k.item + "#"
         link = URL.init(string: "http://")!
@@ -467,14 +667,33 @@ class PlayItem : NSObject, NSCoding {
         if let agent : String = dictionary[k.agent] as? String, agent != self.agent {
             self.agent = agent
         }
-        if let asTab : Bool = dictionary[k.tabby] as? Bool, asTab != self.tabby {
-            self.tabby = asTab
+        if let tabby : Bool = dictionary[k.tabby] as? Bool, tabby != self.tabby {
+            self.tabby = tabby
         }
     }
     override var description : String {
         return String(format: "%@: %p '%@'", self.className, self, name)
     }
     
+    func dictionary() -> Dictionary<String,Any> {
+        var dict = Dictionary<String,Any>()
+        dict[k.name] = name
+        dict[k.link] = link.absoluteString
+        dict[k.date] = date
+        dict[k.time] = time
+        dict[k.rank] =  rank
+        dict[k.rect] = NSStringFromRect(rect)
+        dict[k.plays] = plays
+        dict[k.label] = label ? 1 : 0
+        dict[k.hover] = hover ? 1 : 0
+        dict[k.alpha] = alpha
+        dict[k.trans] = trans
+        dict[k.agent] = agent
+        dict[k.tabby] = tabby
+        return dict
+    }
+
+    // MARK:- NSCoder
     required convenience init(coder: NSCoder) {
         let name = coder.decodeObject(forKey: k.name) as! String
         let link = URL.init(string: coder.decodeObject(forKey: k.link) as! String)
@@ -495,7 +714,7 @@ class PlayItem : NSObject, NSCoding {
     
     func encode(with coder: NSCoder) {
         coder.encode(name, forKey: k.name)
-        coder.encode(link, forKey: k.link)
+        coder.encode(link.absoluteString, forKey: k.link)
         coder.encode(date, forKey: k.date)
         coder.encode(time, forKey: k.time)
         coder.encode(rank, forKey: k.rank)
@@ -509,22 +728,65 @@ class PlayItem : NSObject, NSCoding {
         coder.encode(tabby, forKey: k.tabby)
     }
     
-    func dictionary() -> Dictionary<String,Any> {
-        var dict = Dictionary<String,Any>()
-        dict[k.name] = name
-        dict[k.link] = link.absoluteString
-        dict[k.date] = date
-        dict[k.time] = time
-        dict[k.rank] =  rank
-        dict[k.rect] = NSStringFromRect(rect)
-        dict[k.plays] = plays
-        dict[k.label] = label ? 1 : 0
-        dict[k.hover] = hover ? 1 : 0
-        dict[k.alpha] = alpha
-        dict[k.trans] = trans
-        dict[k.agent] = agent
-        dict[k.tabby] = tabby
-        return dict
+    // MARK:- NSCopying
+    convenience required init(_ with: PlayItem) {
+        self.init()
+        
+        self.name  = with.name
+        self.link  = with.link
+        self.date  = with.date
+        self.time  = with.time
+        self.rank  = with.rank
+        self.rect  = with.rect
+        self.plays = with.plays
+        self.label = with.label
+        self.hover = with.hover
+        self.alpha = with.alpha
+        self.trans = with.trans
+        self.agent = with.agent
+        self.tabby = with.tabby
+    }
+    
+    func copy(with zone: NSZone? = nil) -> Any
+    {
+        return type(of:self).init(self)
+    }
+    
+    // MARK:- Pasteboard Reading
+    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        Swift.print("type: \(type.rawValue)")
+        guard type == NSPasteboard.PasteboardType(rawValue: PlayItem.className()) else {
+            self.init()
+
+            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.update(with: dict as! Dictionary<String, Any>)
+            return
+        }
+        
+        let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+        Swift.print("item: \(String(describing: item))")
+        self.init(item as! PlayItem)
+    }
+    
+    static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        return [NSPasteboard.PasteboardType(rawValue: PlayItem.className()),
+                NSPasteboard.PasteboardType(rawValue: PlayItem.className() + ".dict")]
+    }
+    
+    // MARK:- Pasteboard Writing
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        Swift.print("plist: \(type.rawValue)")
+        guard type == NSPasteboard.PasteboardType(rawValue: PlayItem.className()) else {
+           return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+        }
+        
+        return NSKeyedArchiver.archivedData(withRootObject: self.copy())
+    }
+    
+    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        Swift.print("wtypes: [\(PlayItem.className()), \(PlayItem.className()).dict]")
+        return [NSPasteboard.PasteboardType(rawValue: PlayItem.className()),
+                NSPasteboard.PasteboardType(rawValue: PlayItem.className() + ".dict")]
     }
 }
 
@@ -585,6 +847,7 @@ class HeliumDocumentController : NSDocumentController {
         var doc: Document
         do {
             doc = try Document.init(contentsOf: contentsURL)
+            doc.docType = (typeName == k.Playlists ? k.docPlaylists : k.docHelium)
             if (urlOrNil != nil) {
                 doc.fileURL = urlOrNil
                 doc.fileType = urlOrNil?.pathExtension
@@ -608,7 +871,19 @@ class HeliumDocumentController : NSDocumentController {
         return doc
     }
     
-    class override func restoreWindow(withIdentifier identifier: String, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
+    override func makeUntitledDocument(ofType typeName: String) throws -> NSDocument {
+        var doc: Document
+        do {
+            let url = URL.init(string: UserSettings.HomePageURL.value)!
+            doc = try Document.init(contentsOf: url, ofType: typeName)
+        } catch let error {
+            NSApp.presentError(error)
+            doc = Document.init()
+        }
+        return doc
+    }
+    
+    class override func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
         (NSApp.delegate as! AppDelegate).documentsToRestore = true
         
         super.restoreWindow(withIdentifier: identifier, state: state, completionHandler: completionHandler)
@@ -618,6 +893,11 @@ class HeliumDocumentController : NSDocumentController {
 class Document : NSDocument {
 
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+    var dc : NSDocumentController {
+        get {
+            return NSDocumentController.shared
+        }
+    }
     var defaults = UserDefaults.standard
     var autoSaveDocs : Bool {
         get {
@@ -784,15 +1064,19 @@ class Document : NSDocument {
         super.init()
     }
     
-    override class func autosavesInPlace() -> Bool {
+    override class var autosavesInPlace: Bool {
         return false
+    }
+    
+    override func defaultDraftName() -> String {
+        return docType == k.docPlaylists ? k.Playlists.capitalized : appDelegate.appName
     }
 
     var displayImage: NSImage? {
         get {
             switch docType {
             case k.docPlaylists, k.docRelease:
-                let tmpImage = NSImage.init(named: "appIcon")
+                let tmpImage = NSImage.init(named: NSImage.Name(rawValue: "appIcon"))
                 let appImage = tmpImage?.resize(w: 32, h: 32)
                 return appImage
 
@@ -806,7 +1090,7 @@ class Document : NSDocument {
                         return tmpIcon
                     }
                 }
-                let tmpImage = NSImage.init(named: "docIcon")
+                let tmpImage = NSImage.init(named: NSImage.Name(rawValue: "docIcon"))
                 let docImage = tmpImage?.resize(w: 32, h: 32)
                 return docImage
             }
@@ -819,6 +1103,7 @@ class Document : NSDocument {
                     return (justTheName as NSString).deletingPathExtension
                 }
             }
+            //  This includes playlists
             return super.displayName
         }
         set (newName) {
@@ -828,34 +1113,41 @@ class Document : NSDocument {
 
     convenience init(contentsOf url: URL) throws {
         do {
-            try self.init(contentsOf: url, ofType: "Helium")
+            try self.init(contentsOf: url, ofType: k.Helium)
         }
     }
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
         self.init()
-        self.docType = (typeName == k.Playlists ? k.docPlaylists : k.docHelium)
 
-        //  Read webloc url contents
-        if url.path.hasSuffix("webloc"), let webURL = url.webloc {
-            fileURL = webURL
+        //  Read webloc url contents unless a playlist
+        if typeName == k.Playlists {
+            self.docType = k.docPlaylists
         }
         else
         {
-            fileURL = url
+            if url.path.hasSuffix("webloc"), let webURL = url.webloc {
+                fileURL = webURL
+            }
+            else
+            {
+                fileURL = url
+            }
+            self.fileType = fileURL?.pathExtension
         }
-        self.fileType = fileURL?.pathExtension
         
         //  Record url and type, caller will load via notification
         do {
             self.makeWindowController(typeName)
-            NSDocumentController.shared().addDocument(self)
             
             //  Defer custom setups until we have a webView
             if typeName == k.Custom { return }
 
             //  Playlists in its view controller
             //  nothing to do for playlists here
-            if typeName == k.Playlists { return }
+            if typeName == k.Playlists {
+                NSApp.addWindowsItem((self.windowControllers.first?.window)!, title: self.displayName, filename: false)
+                return
+            }
             
             //  If we were seen before then restore settings
             if let hwc = self.windowControllers.first {
@@ -883,7 +1175,6 @@ class Document : NSDocument {
         do {
             let url = item.link
             self.makeWindowControllers()
-            NSDocumentController.shared().addDocument(self)
             
             if let hwc = self.windowControllers.first {
                 hwc.window?.orderFront(self)
@@ -892,14 +1183,6 @@ class Document : NSDocument {
                     hwc.window?.setFrameOrigin(item.rect.origin)
                 }
             }
-        }
-    }
-    
-    convenience init(withPlaylists item: [PlayList]) throws {
-        
-        do {
-            let homeURL = URL.init(string: UserSettings.HomePageURL.value)!
-            try self.init(contentsOf: homeURL, ofType: k.Playlists)
         }
     }
     
@@ -942,36 +1225,39 @@ class Document : NSDocument {
             hoverBar.closeButton?.setNeedsDisplay()
         }
     }
-    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSSaveOperationType) throws {
+    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
         do {
             try self.write(to: url, ofType: typeName)
         } catch let error {
             NSApp.presentError(error)
         }
     }
+    
+    override var shouldRunSavePanelWithAccessoryView: Bool {
+        get {
+            return docType != k.docPlaylists
+        }
+    }
+    
     //MARK:- Actions
     override func makeWindowControllers() {
-        makeWindowController("Helium")
+        makeWindowController(k.Helium)
     }
     func makeWindowController(_ typeName: String) {
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let identifier = (docType == k.docPlaylists || typeName == k.Playlists)
-            ? "PlaylistPanelController"
-            : String(format: "%@Controller", typeName)
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let identifier = String(format: "%@Controller", typeName.capitalized)
         
-        let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
+        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: identifier)) as! NSWindowController
         self.addWindowController(controller)
-        
-        //  Delegate will close down any observations before closure
-        controller.window?.delegate = controller as? NSWindowDelegate
+        dc.addDocument(self)
         
         //  Relocate to origin if any
-        if self.settings.rect.value != NSZeroRect, let window = controller.window {
-            window.setFrameOrigin(self.settings.rect.value.origin)
-        }
-        else
-        {
+        if let window = controller.window {
             controller.window?.offsetFromKeyWindow()
+
+            if self.settings.rect.value != NSZeroRect {
+                window.setFrameOrigin(self.settings.rect.value.origin)
+            }
         }
     }
 

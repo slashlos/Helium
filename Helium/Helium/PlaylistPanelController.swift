@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 2/15/17.
-//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -17,7 +17,7 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
     }
 
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
-        return k.docPlaylistsName
+        return (document?.displayName)!
     }
     
     override func windowDidLoad() {

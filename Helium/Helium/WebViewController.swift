@@ -4,7 +4,7 @@
 //
 //  Created by Jaden Geller on 4/9/15.
 //  Copyright (c) 2015 Jaden Geller. All rights reserved.
-//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Cocoa
@@ -49,7 +49,7 @@ class MyWebView : WKWebView {
     var selectedText : String?
     var selectedURL : URL?
     
-    internal func menuClicked(_ sender: AnyObject) {
+    @objc internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
         }
@@ -81,7 +81,7 @@ class MyWebView : WKWebView {
         publishApplicationMenu(menu);
     }
     
-    func openLinkInWindow(_ item: NSMenuItem) {
+    @objc func openLinkInWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
             load(URLRequest.init(url: url))
         }
@@ -91,7 +91,7 @@ class MyWebView : WKWebView {
         }
       }
     
-    func openLinkInNewWindow(_ item: NSMenuItem) {
+    @objc func openLinkInNewWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
             appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
         }
@@ -119,23 +119,23 @@ class MyWebView : WKWebView {
     }
 */
     @IBAction internal func cut(_ sender: Any) {
-        let pb = NSPasteboard.general()
+        let pb = NSPasteboard.general
         pb.clearContents()
         if let urlString = self.url?.absoluteString {
-            pb.setString(urlString, forType: NSStringPboardType)
+            pb.setString(urlString, forType: NSPasteboard.PasteboardType.string)
             (self.uiDelegate as! WebViewController).clear()
         }
     }
     @IBAction internal func copy(_ sender: Any) {
-        let pb = NSPasteboard.general()
+        let pb = NSPasteboard.general
         pb.clearContents()
         if let urlString = self.url?.absoluteString {
-            pb.setString(urlString, forType: NSStringPboardType)
+            pb.setString(urlString, forType: NSPasteboard.PasteboardType.string)
         }
     }
     @IBAction internal func paste(_ sender: Any) {
-        let pb = NSPasteboard.general()
-        guard let rawString = pb.string(forType: NSStringPboardType), rawString.isValidURL() else { return }
+        let pb = NSPasteboard.general
+        guard let rawString = pb.string(forType: NSPasteboard.PasteboardType.string), rawString.isValidURL() else { return }
         
         self.load(URLRequest.init(url: URL.init(string: rawString)!))
     }
@@ -218,7 +218,7 @@ class MyWebView : WKWebView {
         if (pboard.types?.contains(NSURLPboardType))! {
             for item in items! {
 
-                if let urlString = item.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/), !urlString.hasPrefix("file://") {
+                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)/*"public.utf8-plain-text"*/), !urlString.hasPrefix("file://") {
                     if let webloc = urlString.webloc {
                         self.next(url: webloc)
                     }
@@ -228,11 +228,11 @@ class MyWebView : WKWebView {
                     }
                 }
                 else
-                if let urlString = item.string(forType: kUTTypeURL as String/*"public.url"*/) {
+                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeURL as String)/*"public.url"*/) {
                     self.next(url: URL(string: urlString)!)
                 }
                 else
-                if let urlString = item.string(forType: kUTTypeFileURL as String/*"public.file-url"*/) {
+                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeFileURL as String)/*"public.file-url"*/) {
                     if appDelegate.openForBusiness && viewOptions != sameWindow, let itemURL = URL.init(string: urlString) {
                         _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
                         continue
@@ -240,7 +240,7 @@ class MyWebView : WKWebView {
                     self.next(url: URL(string: urlString)!)
                 }
                 else
-                if let urlString = item.string(forType: kUTTypeData as String), let url = urlString.webloc {
+                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeData as String)), let url = urlString.webloc {
                     self.next(url: url)
                 }
                 else
@@ -252,9 +252,9 @@ class MyWebView : WKWebView {
                 NSFilesPromisePboardType,
                 NSURLPboardType
 */
-                if let text = item.string(forType: "com.apple.pasteboard.promised-file-url") {
-                    let data = item.data(forType: "com.apple.pasteboard.promised-file-url")
-                    let list = item.propertyList(forType: "com.apple.pasteboard.promised-file-url")
+                if let text = item.string(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url")) {
+                    let data = item.data(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url"))
+                    let list = item.propertyList(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url"))
 
                     Swift.print("data \(String(describing: data))")
                     Swift.print("text \(String(describing: text))")
@@ -262,9 +262,9 @@ class MyWebView : WKWebView {
                     continue
                 }
                 else
-                if let text = item.string(forType: "com.apple.pasteboard.promised-file-content-type") {
-                    let data = item.data(forType: "com.apple.pasteboard.promised-file-content-type")
-                    let list = item.propertyList(forType: "com.apple.pasteboard.promised-file-content-type")
+                if let text = item.string(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type")) {
+                    let data = item.data(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type"))
+                    let list = item.propertyList(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type"))
 
                     Swift.print("data \(String(describing: data))")
                     Swift.print("text \(String(describing: text))")
@@ -287,13 +287,13 @@ class MyWebView : WKWebView {
             }
         }
         else
-        if (pboard.types?.contains(NSPasteboardURLReadingFileURLsOnlyKey))! {
+            if (pboard.types?.contains(NSPasteboard.PasteboardType(rawValue: "NSPasteboardURLReadingFileURLsOnlyKey")))! {
             Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
 //          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
         }
         else
-        if ((pboard.types?.contains(kUTTypeUTF8PlainText as String))!) {
-            if let urlString = pboard.string(forType: kUTTypeUTF8PlainText as String/*"public.utf8-plain-text"*/) {
+        if ((pboard.types?.contains(NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)))!) {
+            if let urlString = pboard.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)/*"public.utf8-plain-text"*/) {
                 if let webloc = urlString.webloc {
                     self.next(url: webloc)
                 }
@@ -390,7 +390,7 @@ class MyWebView : WKWebView {
                     item.action = #selector(self.playActionPress(_:))
                     item.target = self
                 }
-//                let state = item.state == NSOnState ? "yes" : "no"
+//                let state = item.state == OnState ? "yes" : "no"
 //                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
             }
         }
@@ -414,14 +414,14 @@ class MyWebView : WKWebView {
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "File in new window…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .shift
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.shift
         item.isAlternate = true
         item.target = wvc
         item.tag = 1
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "File in new tab…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .option
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.isAlternate = true
         item.target = wvc
         item.tag = 3
@@ -432,14 +432,14 @@ class MyWebView : WKWebView {
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "URL in new window…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .shift
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.shift
         item.isAlternate = true
         item.target = wvc
         item.tag = 1
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "URL in new tab…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .option
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.isAlternate = true
         item.target = wvc
         item.tag = 3
@@ -450,14 +450,14 @@ class MyWebView : WKWebView {
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .option
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.target = appDelegate
         item.isAlternate = true
         item.tag = 3
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .option
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.target = appDelegate
         item.isAlternate = true
         item.tag = 1
@@ -474,12 +474,12 @@ class MyWebView : WKWebView {
         item.submenu = subPref
 
         item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hwc.autoHideTitlePress(_:)), keyEquivalent: "")
-        item.state = doc.settings.autoHideTitle.value ? NSOnState : NSOffState
+        item.state = doc.settings.autoHideTitle.value ? OnState : OffState
         item.target = hwc
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
-        item.state = doc.settings.disabledFullScreenFloat.value ? NSOffState : NSOnState
+        item.state = doc.settings.disabledFullScreenFloat.value ? OffState : OnState
         item.target = hwc
         subPref.addItem(item)
         
@@ -499,75 +499,75 @@ class MyWebView : WKWebView {
         item.submenu = subOpacity
 
         item = NSMenuItem(title: "10%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (10 == opacity ? NSOnState : NSOffState)
+        item.state = (10 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 10
         subOpacity.addItem(item)
         item = NSMenuItem(title: "20%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
         item.isEnabled = translucency.rawValue > 0
-        item.state = (20 == opacity ? NSOnState : NSOffState)
+        item.state = (20 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 20
         subOpacity.addItem(item)
         item = NSMenuItem(title: "30%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (30 == opacity ? NSOnState : NSOffState)
+        item.state = (30 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 30
         subOpacity.addItem(item)
         item = NSMenuItem(title: "40%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (40 == opacity ? NSOnState : NSOffState)
+        item.state = (40 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 40
         subOpacity.addItem(item)
         item = NSMenuItem(title: "50%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (50 == opacity ? NSOnState : NSOffState)
+        item.state = (50 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 50
         subOpacity.addItem(item)
         item = NSMenuItem(title: "60%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (60 == opacity ? NSOnState : NSOffState)
+        item.state = (60 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 60
         subOpacity.addItem(item)
         item = NSMenuItem(title: "70%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (70 == opacity ? NSOnState : NSOffState)
+        item.state = (70 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 70
         subOpacity.addItem(item)
         item = NSMenuItem(title: "80%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (80 == opacity ? NSOnState : NSOffState)
+        item.state = (80 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 80
         subOpacity.addItem(item)
         item = NSMenuItem(title: "90%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (90 == opacity ? NSOnState : NSOffState)
+        item.state = (90 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 90
         subOpacity.addItem(item)
         item = NSMenuItem(title: "100%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (100 == opacity ? NSOnState : NSOffState)
+        item.state = (100 == opacity ? OnState : OffState)
         item.target = hwc
         item.tag = 100
         subOpacity.addItem(item)
 
         item = NSMenuItem(title: "Never", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.never.rawValue
-        item.state = translucency == .never ? NSOnState : NSOffState
+        item.state = translucency == .never ? OnState : OffState
         item.target = hwc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Always", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.always.rawValue
-        item.state = translucency == .always ? NSOnState : NSOffState
+        item.state = translucency == .always ? OnState : OffState
         item.target = hwc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Mouse Over", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOver.rawValue
-        item.state = translucency == .mouseOver ? NSOnState : NSOffState
+        item.state = translucency == .mouseOver ? OnState : OffState
         item.target = hwc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Mouse Outside", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOutside.rawValue
-        item.state = translucency == .mouseOutside ? NSOnState : NSOffState
+        item.state = translucency == .mouseOutside ? OnState : OffState
         item.target = hwc
         subTranslucency.addItem(item)
 
@@ -612,7 +612,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     var defaults = UserDefaults.standard
-    var trackingTag: NSTrackingRectTag? {
+    var trackingTag: NSView.TrackingRectTag? {
         get {
             return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
         }
@@ -648,7 +648,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         //  We want to be notified when a player is added
         let originalDidAddSubviewMethod = class_getInstanceMethod(NSView.self, #selector(NSView.didAddSubview(_:)))
-        let originalDidAddSubviewImplementation = method_getImplementation(originalDidAddSubviewMethod)
+        let originalDidAddSubviewImplementation = method_getImplementation(originalDidAddSubviewMethod!)
         
         typealias DidAddSubviewCFunction = @convention(c) (AnyObject, Selector, NSView) -> Void
         let castedOriginalDidAddSubviewImplementation = unsafeBitCast(originalDidAddSubviewImplementation, to: DidAddSubviewCFunction.self)
@@ -662,12 +662,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
-        method_setImplementation(originalDidAddSubviewMethod, newDidAddSubviewImplementation)
+        method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)
         
         NotificationCenter.default.addObserver(self, selector: #selector(wkFlippedView(_:)), name: NSNotification.Name(rawValue: "WKFlippedView"), object: nil)
     }
     
-    func wkFlippedView(_ note: NSNotification) {
+    @objc func wkFlippedView(_ note: NSNotification) {
         print("A Player \(String(describing: note.object)) will be opened now")
         guard let view = note.object as? NSView, let scrollView = view.enclosingScrollView else { return }
         
@@ -702,7 +702,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     fileprivate func setupWebView() {
         
-        webView.autoresizingMask = [NSAutoresizingMaskOptions.viewHeightSizable, NSAutoresizingMaskOptions.viewWidthSizable]
+        webView.autoresizingMask = [NSView.AutoresizingMask.height, NSView.AutoresizingMask.width]
         if webView.constraints.count == 0 {
             fit(webView, parentView: webView.superview!)
         }
@@ -723,7 +723,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.allowsLinkPreview = true
         
         //  ditch loading indicator background
-        loadingIndicator.appearance = NSAppearance.init(named: NSAppearanceNameAqua)
+        loadingIndicator.appearance = NSAppearance.init(named: NSAppearance.Name.aqua)
         
         //  Fetch, synchronize and observe data store for cookie changes
         if #available(OSX 10.13, *) {
@@ -752,7 +752,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
 
         //  Intercept Finder drags
-        webView.register(forDraggedTypes: [NSURLPboardType,NSStringPboardType])
+        webView.registerForDraggedTypes([NSURLPboardType,NSPasteboard.PasteboardType.string])
         
         //  Watch javascript selection messages unless already done
         let controller = webView.configuration.userContentController
@@ -785,7 +785,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
-    dynamic var observing : Bool = false
+    @objc dynamic var observing : Bool = false
     
     func setupTrackingAreas(_ establish: Bool) {
         if let tag = trackingTag {
@@ -833,7 +833,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         switch menuItem.title {
         case "Developer Extras":
             guard let state = webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else { return false }
-            menuItem.state = (state as? NSNumber)?.boolValue == true ? NSOnState : NSOffState
+            menuItem.state = (state as? NSNumber)?.boolValue == true ? OnState : OffState
             return true
 
         case "Back":
@@ -874,7 +874,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        self.webView?.configuration.preferences.setValue((sender.state != NSOnState), forKey: "developerExtrasEnabled")
+        self.webView?.configuration.preferences.setValue((sender.state != OnState), forKey: "developerExtrasEnabled")
     }
 
     @IBAction func openFilePress(_ sender: AnyObject) {
@@ -891,8 +891,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         NSApp.activate(ignoringOtherApps: true)
 
         open.worksWhenModal = true
-        open.beginSheetModal(for: window!, completionHandler: { (response: NSModalResponse) in
-            if response == NSModalResponseOK {
+        open.beginSheetModal(for: window!, completionHandler: { (response: NSApplication.ModalResponse) in
+            if response == NSApplication.ModalResponse.OK {
                 let urls = open.urls
                 
                 for url in urls {
@@ -919,7 +919,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let window = self.view.window
         var urlString = currentURL
         
-        if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {
+        if let rawString = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string), rawString.isValidURL() {
             urlString = rawString
         }
 
@@ -1034,7 +1034,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.next(url: url)
     }
 
-    internal func loadURL(urlFileURL: Notification) {
+    @objc internal func loadURL(urlFileURL: Notification) {
         if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
             if info["hwc"] as? NSWindowController == self.view.window?.windowController {
                 loadURL(url: fileURL as! URL)
@@ -1047,7 +1047,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
     
-    func loadURL(urlString: Notification) {
+    @objc func loadURL(urlString: Notification) {
         if let userInfo = urlString.userInfo {
             if userInfo["hwc"] as? NSWindowController != self.view.window?.windowController {
                 return
@@ -1068,7 +1068,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     // TODO: For now just log what we would play once we figure out how to determine when an item finishes so we can start the next
-    func playerDidFinishPlaying(_ note: Notification) {
+    @objc func playerDidFinishPlaying(_ note: Notification) {
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: note.object)
         print("Video Finished")
     }
@@ -1147,7 +1147,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         if let track = AVURLAsset(url: url, options: nil).tracks.first {
 
                             //    if it's a video file, get and set window content size to its dimentions
-                            if track.mediaType == AVMediaTypeVideo {
+                            if track.mediaType == AVMediaType.video {
                                 
                                 title = url.lastPathComponent as NSString
                                 webSize = track.naturalSize
@@ -1204,7 +1204,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                             restoreSettings(title as String)
                         }
                     } else {
-                        title = "Helium"
+                        title = appDelegate.appName as NSString
                     }
                     
                     self.view.window?.title = title as String
@@ -1288,47 +1288,27 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if idx == -1 {
             return url
         } else {
+            let timeIdx = idx.advanced(by: 3)
+            let hmsString = url[timeIdx...].replacingOccurrences(of: "h", with: ":").replacingOccurrences(of: "m", with: ":").replacingOccurrences(of: "s", with: ":")
+            
             var returnURL = url
-            let timing = url.substring(from: url.index(url.startIndex, offsetBy: idx+3))
-            let hoursDigits = timing.indexOf("h")
-            var minutesDigits = timing.indexOf("m")
-            let secondsDigits = timing.indexOf("s")
+            var final = 0
+            
+            let hms = hmsString.components(separatedBy: ":")
+            if hms.count > 2, let hrs = Int(hms[2]) {
+                final += 3600 * hrs
+            }
+            if hms.count > 1, let mins = Int(hms[1]) {
+                final += 60 * mins
+            }
+            if hms.count > 0, let secs = Int(hms[0]) {
+                final += secs
+            }
             
             returnURL.removeSubrange(returnURL.index(returnURL.startIndex, offsetBy: idx+1) ..< returnURL.endIndex)
             returnURL = "?start="
-            
-            //If there are no h/m/s params and only seconds (i.e. ...?t=89)
-            if (hoursDigits == -1 && minutesDigits == -1 && secondsDigits == -1) {
-                let onlySeconds = url.substring(from: url.index(url.startIndex, offsetBy: idx+3))
-                returnURL = returnURL + onlySeconds
-                return returnURL
-            }
-            
-            //Do check to see if there is an hours parameter.
-            var hours = 0
-            if (hoursDigits != -1) {
-                hours = Int(timing.substring(to: timing.index(timing.startIndex, offsetBy: hoursDigits)))!
-            }
-            
-            //Do check to see if there is a minutes parameter.
-            var minutes = 0
-            if (minutesDigits != -1) {
-                minutes = Int(timing.substring(with: timing.index(timing.startIndex, offsetBy: hoursDigits+1) ..< timing.index(timing.startIndex, offsetBy: minutesDigits)))!
-            }
-            
-            if minutesDigits == -1 {
-                minutesDigits = hoursDigits
-            }
-            
-            //Do check to see if there is a seconds parameter.
-            var seconds = 0
-            if (secondsDigits != -1) {
-                seconds = Int(timing.substring(with: timing.index(timing.startIndex, offsetBy: minutesDigits+1) ..< timing.index(timing.startIndex, offsetBy: secondsDigits)))!
-            }
-            
-            //Combine all to make seconds.
-            let secondsFinal = 3600*hours + 60*minutes + seconds
-            returnURL = returnURL + String(secondsFinal)
+
+            returnURL = returnURL + String(final)
             
             return returnURL
         }
@@ -1337,10 +1317,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     //Helper function to return the hash of the video for encoding a popout video that has a start time code.
     fileprivate func getVideoHash(_ url: String) -> String {
         let startOfHash = url.indexOf(".be/")
-        let endOfHash = url.indexOf("?t")
-        let hash = url.substring(with: url.index(url.startIndex, offsetBy: startOfHash+4) ..<
-            (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: endOfHash)))
-        return hash
+        let endOfHash = startOfHash.advanced(by: 4)
+        let restOfUrl = url.indexOf("?t")
+        let hash = url[url.index(url.startIndex, offsetBy: endOfHash) ..< (endOfHash == -1 ? url.endIndex : url.index(url.startIndex, offsetBy: restOfUrl))]
+        return String(hash)
     }
     /*
     func webView(webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: () -> Void) {
@@ -1579,7 +1559,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         if let newURL = navigationAction.request.url {
             do {
-                let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: k.Custom)
+                let doc = try NSDocumentController.shared.makeDocument(withContentsOf: newURL, ofType: k.Custom)
                 if let hpc = doc.windowControllers.first as? HeliumPanelController,
                     let window = hpc.window, let wvc = window.contentViewController as? WebViewController {
                     let newView = MyWebView.init(frame: webView.frame, configuration: configuration)

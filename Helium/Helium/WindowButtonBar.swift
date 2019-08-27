@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 12/13/18
-//  Copyright © 2018 Carlos Santiaog. All rights reserved.
+//  Copyright © 2018 Carlos D. Santiaog. All rights reserved.
 //
 //	WindowButtonBar.swift - https://gist.github.com/icodeforlove/a334884e59784b4c2567
 //	Custom implementation of the OSX Yosemite close, miniaturize, zoom buttons.

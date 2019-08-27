@@ -4,7 +4,7 @@
 //
 //  Created by Jaden Geller on 4/9/15.
 //  Copyright (c) 2015 Jaden Geller. All rights reserved.
-//  Copyright (c) 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 //  We have user IBAction centrally here, share by panel and webView controllers
 //  The design is to centrally house the preferences and notify these interested
@@ -13,6 +13,17 @@
 //
 import Cocoa
 import CoreLocation
+
+#if swift(>=4.0)
+let NSURLPboardType = NSPasteboard.PasteboardType(kUTTypeURL as String)
+let MixedState = NSControl.StateValue.mixed
+let OffState = NSControl.StateValue.off
+let OnState = NSControl.StateValue.on
+#else
+let MixedState = NSMixedState
+let OffState = NSOffState
+let OnState = NSOnState
+#endif
 
 struct RequestUserStrings {
     let currentURL: String?
@@ -64,23 +75,23 @@ fileprivate class SearchField : NSSearchField {
         var item : NSMenuItem
         
         item = NSMenuItem.init(title: "Clear", action: nil, keyEquivalent: "")
-        item.tag = NSSearchFieldClearRecentsMenuItemTag
+        item.tag = NSSearchField.clearRecentsMenuItemTag
         menu.addItem(item)
         
         item = NSMenuItem.separator()
-        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        item.tag = NSSearchField.recentsTitleMenuItemTag
         menu.addItem(item)
         
         item = NSMenuItem.init(title: "Recent Searches", action: nil, keyEquivalent: "")
-        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        item.tag = NSSearchField.recentsTitleMenuItemTag
         menu.addItem(item)
         
         item = NSMenuItem.init(title: "Recent", action: nil, keyEquivalent: "")
-        item.tag = NSSearchFieldRecentsTitleMenuItemTag
+        item.tag = NSSearchField.recentsTitleMenuItemTag
         menu.addItem(item)
         
         item = NSMenuItem.init(title: "Recent Searches", action: nil, keyEquivalent: "")
-        item.tag = NSSearchFieldRecentsMenuItemTag
+        item.tag = NSSearchField.recentsMenuItemTag
         menu.addItem(item)
         
         return menu
@@ -122,13 +133,13 @@ fileprivate class URLField: NSTextField {
             let infoDictionary = (Bundle.main.infoDictionary)!
             
             //    Get the app name field
-            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
+            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? k.Helium
             
             //    Setup the version to one we constrict
             self.title = String(format:"%@ %@", appName,
                                infoDictionary["CFBundleVersion"] as! CVarArg)
         }
-        self.lineBreakMode = NSLineBreakMode.byTruncatingHead
+        self.lineBreakMode = NSParagraphStyle.LineBreakMode.byTruncatingHead
         self.usesSingleLineMode = true
     }
     
@@ -154,6 +165,18 @@ let sameWindow : ViewOptions = []
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationManagerDelegate {
+
+    //  who we are from 'about'
+    var appName: String {
+        get {
+            let infoDictionary = (Bundle.main.infoDictionary)!
+            
+            //    Get the app name field
+            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? k.Helium
+            
+            return appName
+        }
+    }
 
     //  return key state for external paths
     var newViewOptions : ViewOptions = sameWindow
@@ -202,21 +225,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
+    var dc : NSDocumentController {
+        get {
+            return NSDocumentController.shared
+        }
+    }
+    
     var os = ProcessInfo().operatingSystemVersion
     @IBOutlet weak var magicURLMenu: NSMenuItem!
 
     //  MARK:- Global IBAction, but ship to keyWindow when able
     @IBOutlet weak var appMenu: NSMenu!
-	var appStatusItem:NSStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
-    fileprivate var searchField : SearchField = SearchField.init(withValue: "Helium", modalTitle: "Search")
+	var appStatusItem:NSStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    fileprivate var searchField : SearchField = SearchField.init(withValue: k.Helium, modalTitle: "Search")
     fileprivate var recentSearches = Array<String>()
     
     var title : String {
         get {
             let infoDictionary = (Bundle.main.infoDictionary)!
-            
-            //    Get the app name field
-            let appName = infoDictionary[kCFBundleExecutableKey as String] as? String ?? "Helium"
             
             //    Setup the version to one we constrict
             let title = String(format:"%@ %@", appName,
@@ -225,19 +251,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             return title
         }
     }
-    internal func menuClicked(_ sender: AnyObject) {
+    @objc internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu '\(menuItem.title)' clicked")
         }
     }
     internal func syncAppMenuVisibility() {
         if UserSettings.HideAppMenu.value {
-            NSStatusBar.system().removeStatusItem(appStatusItem)
+            NSStatusBar.system.removeStatusItem(appStatusItem)
         }
         else
         {
-            appStatusItem = NSStatusBar.system().statusItem(withLength: NSVariableStatusItemLength)
-            appStatusItem.image = NSImage.init(named: "statusIcon")
+            appStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+            appStatusItem.image = NSImage.init(named: NSImage.Name(rawValue: "statusIcon"))
             let menu : NSMenu = appMenu.copy() as! NSMenu
 
             //  add quit to status menu only - already is in dock
@@ -249,7 +275,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
-		UserSettings.HideAppMenu.value = (sender.state == NSOffState)
+		UserSettings.HideAppMenu.value = (sender.state == OffState)
         self.syncAppMenuVisibility()
 	}
     @IBAction func homePagePress(_ sender: AnyObject) {
@@ -268,17 +294,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     //  Restore operations are progress until open
-    dynamic var openForBusiness = false
+    @objc dynamic var openForBusiness = false
     
     //  By defaut we show document title bar
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        UserSettings.AutoHideTitle.value = (sender.state == NSOffState)
+        UserSettings.AutoHideTitle.value = (sender.state == OffState)
      }
 
     //  By default we auto save any document changes
 	@IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
 	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
-        autoSaveDocs = (sender.state == NSOffState)
+        autoSaveDocs = (sender.state == OffState)
 	}
 	var autoSaveDocs : Bool {
         get {
@@ -287,20 +313,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         set (value) {
             UserSettings.AutoSaveDocs.value = value
             if value {
-                for doc in NSDocumentController.shared().documents {
+                for doc in dc.documents {
                     if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
                         DispatchQueue.main.async {
                             (hwc as! HeliumPanelController).saveDocument(self.autoSaveDocsMenuItem)
                         }
                     }
                 }
-                NSDocumentController.shared().saveAllDocuments(autoSaveDocsMenuItem)
+                dc.saveAllDocuments(autoSaveDocsMenuItem)
             }
         }
     }
     
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        UserSettings.DeveloperExtrasEnabled.value = (sender.state == NSOffState)
+        UserSettings.DeveloperExtrasEnabled.value = (sender.state == OffState)
     }
     
     var fullScreen : NSRect? = nil
@@ -313,20 +339,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             else
             {
                 fullScreen = keyWindow.frame
-                keyWindow.setFrame(NSScreen.main()!.visibleFrame, display: true, animate: true)
+                keyWindow.setFrame(NSScreen.main!.visibleFrame, display: true, animate: true)
             }
         }
     }
 
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
-        UserSettings.DisabledMagicURLs.value = (sender.state == NSOnState)
+        UserSettings.DisabledMagicURLs.value = (sender.state == OnState)
     }
     
 	@IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
-        UserSettings.HideZoomIcon.value = (sender.state == NSOffState)
+        UserSettings.HideZoomIcon.value = (sender.state == OffState)
         
         //  sync all document zoom icons now - yuck
-        for doc in NSDocumentController.shared().documents {
+        for doc in dc.documents {
             if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
                 (hwc as! HeliumPanelController).zoomButton?.isHidden = hideZoomIcon
             }
@@ -373,11 +399,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  This could be anything so add/if a doc and initialize
         do {
             let doc = try Document.init(contentsOf: fileURL)
-            let dc = NSDocumentController.shared()
+            let dc = NSDocumentController.shared
             dc.noteNewRecentDocumentURL(fileURL)
 
             if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
-                window.offsetFromKeyWindow()
                 window.makeKey()
                 (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
                 status = true
@@ -407,10 +432,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @IBAction func newDocument(_ sender: Any) {
-        let dc = NSDocumentController.shared()
         let doc = Document.init()
         doc.makeWindowControllers()
-        dc.addDocument(doc)
         let wc = doc.windowControllers.first
         let window : NSPanel = wc!.window as! NSPanel as NSPanel
         
@@ -419,7 +442,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         doc.settings.rect.value = window.frame
         
         //  OPTION key down creates new tabs as tag=3
-        if ((NSApp.currentEvent?.modifierFlags.contains(.option))! || (sender as! NSMenuItem).tag == 3), let keyWindow = NSApp.keyWindow,
+        if ((NSApp.currentEvent?.modifierFlags.contains(NSEvent.ModifierFlags.option))! || (sender as! NSMenuItem).tag == 3), let keyWindow = NSApp.keyWindow,
             !(keyWindow.contentViewController?.isKind(of: AboutBoxController.self))! {
             keyWindow.addTabbedWindow(window, ordered: .above)
         }
@@ -446,7 +469,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  No window, so load panel modally
         NSApp.activate(ignoringOtherApps: true)
         
-        if open.runModal() == NSModalResponseOK {
+        if open.runModal() == NSApplication.ModalResponse.OK {
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
@@ -470,7 +493,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) {
         do {
-            let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            let doc = try NSDocumentController.shared.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
@@ -486,7 +509,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) {
         do {
-            let doc = try NSDocumentController.shared().makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
@@ -511,7 +534,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         var urlString = UserSettings.HomePageURL.value
         
         //  No window, so load alert modally
-        if let rawString = NSPasteboard.general().string(forType: NSPasteboardTypeString), rawString.isValidURL() {
+        if let rawString = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string), rawString.isValidURL() {
             urlString = rawString
         }
         didRequestUserUrl(RequestUserStrings (
@@ -565,13 +588,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
 	
 	@IBAction func presentPlaylistSheet(_ sender: Any) {
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
 
         //  If we have a window, present a sheet with playlists, otherwise ...
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No contextual window, load panel and its playlist controller
             do {
-                let doc = try Document.init(withPlaylists: playlists)
+                let doc = try dc.makeUntitledDocument(ofType: k.Playlists)
                 doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
             }
             catch let error {
@@ -591,7 +614,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             //  If a web view controller, fetch and present playlist here
             if let wvc: WebViewController = wvc as? WebViewController {
                 if wvc.presentedViewControllers?.count == 0 {
-                    let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
+                    let pvc = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "PlaylistViewController")) as! PlaylistViewController
                     
                     pvc.webViewController = wvc
                     wvc.presentViewControllerAsSheet(pvc)
@@ -603,11 +626,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 	
 	@IBAction func promoteHTTPSPress(_ sender: NSMenuItem) {
-        UserSettings.PromoteHTTPS.value = (sender.state == NSOnState ? false : true)
+        UserSettings.PromoteHTTPS.value = (sender.state == OnState ? false : true)
 	}
     
 	@IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
-        UserSettings.RestoreDocAttrs.value = (sender.state == NSOnState ? false : true)
+        UserSettings.RestoreDocAttrs.value = (sender.state == OnState ? false : true)
 	}
 	
 	@IBAction func showReleaseInfo(_ sender: Any) {
@@ -615,7 +638,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
         do
         {
-            let next = try NSDocumentController.shared().openUntitledDocumentAndDisplay(true) as! Document
+            let next = try dc.openUntitledDocumentAndDisplay(true) as! Document
             next.docType = k.docRelease
             
             let hwc = next.windowControllers.first?.window?.windowController
@@ -682,12 +705,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if info != nil {
             alert.informativeText = info!
         }
-        alert.alertStyle = NSAlertStyle.warning
+        alert.alertStyle = NSAlert.Style.warning
         alert.addButton(withTitle: "OK")
         alert.addButton(withTitle: "Cancel")
         let response = alert.runModal()
         switch response {
-        case NSAlertFirstButtonReturn:
+        case NSApplication.ModalResponse.alertFirstButtonReturn:
             return true
         default:
             return false
@@ -695,9 +718,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     func sheetOKCancel(_ message: String, info: String?,
-                       acceptHandler: @escaping (NSModalResponse) -> Void) {
+                       acceptHandler: @escaping (NSApplication.ModalResponse) -> Void) {
         let alert = NSAlert()
-        alert.alertStyle = NSAlertStyle.informational
+        alert.alertStyle = NSAlert.Style.informational
         alert.messageText = message
         alert.addButton(withTitle: "OK")
         alert.addButton(withTitle: "Cancel")
@@ -723,7 +746,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if info != nil {
             alert.informativeText = info!
         }
-        if let window = NSApp.mainWindow {
+        if let window = NSApp.keyWindow {
             alert.beginSheetModal(for: window, completionHandler: { response in
                 return
             })
@@ -750,49 +773,49 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 let group = menuItem.tag / 100
                 let index = (menuItem.tag - (group * 100)) % 3
                 
-                menuItem.state = UserSettings.Search.value == index ? NSOnState : NSOffState
+                menuItem.state = UserSettings.Search.value == index ? OnState : OffState
                 break
 
             case "Preferences":
                 break
             case "Auto-hide Title Bar":
-                menuItem.state = UserSettings.AutoHideTitle.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.AutoHideTitle.value ? OnState : OffState
                 break
             case "Auto save documents":
-                menuItem.state = UserSettings.AutoSaveDocs.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.AutoSaveDocs.value ? OnState : OffState
                 break;
             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hwc : HeliumPanelController = wc as? HeliumPanelController,
                         let state = hwc.webView?.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
-                            menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? NSOnState : NSOffState
+                            menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? OnState : OffState
                             break
                     }
-                    menuItem.state = (state as! NSNumber).boolValue ? NSOnState : NSOffState
+                    menuItem.state = (state as! NSNumber).boolValue ? OnState : OffState
                     break
                 }
-                menuItem.state = NSOnState
+                menuItem.state = OnState
                 break
             case "Hide Helium in menu bar":
-                menuItem.state = UserSettings.HideAppMenu.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.HideAppMenu.value ? OnState : OffState
                 break
             case "Hide zoom icon":
-                menuItem.state = UserSettings.HideZoomIcon.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.HideZoomIcon.value ? OnState : OffState
                 break
             case "Home Page":
                 break
             case "Location services":
-                menuItem.state = isLocationEnabled ? NSOnState : NSOffState
+                menuItem.state = isLocationEnabled ? OnState : OffState
                 break
             case "Magic URL Redirects":
-                menuItem.state = UserSettings.DisabledMagicURLs.value ? NSOffState : NSOnState
+                menuItem.state = UserSettings.DisabledMagicURLs.value ? OffState : OnState
                 break
             case "HTTP -> HTTPS Links":
-                menuItem.state = UserSettings.PromoteHTTPS.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.PromoteHTTPS.value ? OnState : OffState
                 break
             case "Restore Doc Attributes":
-                menuItem.state = UserSettings.RestoreDocAttrs.value ? NSOnState : NSOffState
+                menuItem.state = UserSettings.RestoreDocAttrs.value ? OnState : OffState
                 break
             case "User Agent":
                 break
@@ -807,7 +830,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     //  MARK:- Lifecyle
-    dynamic var documentsToRestore = false
+    @objc dynamic var documentsToRestore = false
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
         //  Now we're open for business
         self.openForBusiness = true
@@ -827,7 +850,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var launchedAsLogInItem : Bool = false
     
     func applicationWillFinishLaunching(_ notification: Notification) {
-        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
         let event = NSAppleEventDescriptor.currentProcess()
 
         //  We need our own to reopen our "document" urls
@@ -837,10 +860,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         NSPanel.allowsAutomaticWindowTabbing = true
         
         //  Wipe out defaults when OPTION+SHIFT is held down at startup
-        if flags.contains([.shift,.option]) {
+        if flags.contains([NSEvent.ModifierFlags.shift,NSEvent.ModifierFlags.option]) {
             Swift.print("shift+option at start")
             resetDefaults()
-            NSSound(named: "Purr")?.play()
+            NSSound(named: NSSound.Name(rawValue: "Purr"))?.play()
         }
         //  We were started as a login item startup save this
         launchedAsLogInItem = event.eventID == kAEOpenApplication &&
@@ -854,7 +877,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         )
 
         //  So they can interact everywhere with us without focus
-        appStatusItem.image = NSImage.init(named: "statusIcon")
+        appStatusItem.image = NSImage.init(named: NSImage.Name(rawValue: "statusIcon"))
         appStatusItem.menu = appMenu
 
         //  Initialize our h:m:s transformer
@@ -885,8 +908,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var itemActions = Dictionary<String, Any>()
 
     //  Keep playlist names unique by Array entension checking name
-    dynamic var playlists = [PlayList]()
-    dynamic var histories = [PlayItem]()
+    @objc dynamic var playlists = [PlayList]()
+    @objc dynamic var histories = [PlayItem]()
     var defaults = UserDefaults.standard
     var disableDocumentReOpening = false
     var hiddenWindows = Dictionary<String, Any>()
@@ -925,8 +948,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     func keyDownMonitor(event: NSEvent) -> Bool {
-        switch event.modifierFlags.intersection(.deviceIndependentFlagsMask) {
-        case [.control, .option, .command]:
+        switch event.modifierFlags.intersection(NSEvent.ModifierFlags.deviceIndependentFlagsMask) {
+        case [NSEvent.ModifierFlags.control, NSEvent.ModifierFlags.option, NSEvent.ModifierFlags.command]:
             print("control-option-command keys are pressed")
             if self.hiddenWindows.count > 0 {
 //                Swift.print("show all windows")
@@ -969,15 +992,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
             return true
             
-        case [.shift]:
+        case [NSEvent.ModifierFlags.shift]:
             self.shiftKeyDown = true
             return true
             
-        case [.option]:
+        case [NSEvent.ModifierFlags.option]:
             self.optionKeyDown = true
             return true
             
-        case [.command]:
+        case [NSEvent.ModifierFlags.command]:
             self.commandKeyDown = true
             return true
             
@@ -992,15 +1015,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     func applicationDidFinishLaunching(_ aNotification: Notification) {
 
         //  OPTION at startup disables reopening documents
-        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags().rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-        disableDocumentReOpening = flags.contains(.option)
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        disableDocumentReOpening = flags.contains(NSEvent.ModifierFlags.option)
 
         // Local/Global Monitor
         _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
-        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> Void in
+        globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.flagsChanged) { (event) -> Void in
             _ = self.keyDownMonitor(event: event)
         }
-        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEventMask.flagsChanged) { (event) -> NSEvent? in
+        localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEvent.EventTypeMask.flagsChanged) { (event) -> NSEvent? in
             return self.keyDownMonitor(event: event) ? nil : event
         }
         
@@ -1031,6 +1054,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     temp.hover = item[k.hover]?.boolValue ?? false
                     temp.alpha = item[k.alpha]?.intValue ?? 60
                     temp.trans = item[k.trans]?.intValue ?? 0
+                    temp.agent = item[k.agent] as? String ?? UserSettings.UserAgent.default
+                    temp.tabby = item[k.tabby]?.boolValue ?? false
                     
                     self.histories.append(temp)
                 }
@@ -1137,7 +1162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     func applicationDockMenu(sender: NSApplication) -> NSMenu? {
-        let menu = NSMenu(title: "Helium")
+        let menu = NSMenu(title: appName)
         var item: NSMenuItem
 
         item = NSMenuItem(title: "Open", action: #selector(menuClicked(_:)), keyEquivalent: "")
@@ -1159,7 +1184,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         subOpen.addItem(item)
 
         item = NSMenuItem(title: "Tab", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = .shift
+        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.shift
         item.isAlternate = true
         item.target = self
         item.tag = 3
@@ -1244,7 +1269,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             var dict : Dictionary<String,Any> = itemActions[name!] as? Dictionary<String,Any> ?? Dictionary<String,Any>()
             itemActions[name!] = dict
             if item.title == "Mute" {
-                dict["mute"] = item.state == NSOffState
+                dict["mute"] = item.state == OffState
             }
             else
             {
@@ -1265,7 +1290,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         // Create alert
         let alert = NSAlert()
-        alert.alertStyle = NSAlertStyle.informational
+        alert.alertStyle = NSAlert.Style.informational
         alert.messageText = strings.alertMessageText
         
         // Create urlField
@@ -1295,7 +1320,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let urlWindow = onWindow {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are accept, cancel, default
-                if response == NSAlertThirdButtonReturn {
+                if response == NSApplication.ModalResponse.alertThirdButtonReturn {
                     let newUA = (alert.accessoryView as! NSTextField).stringValue
                     if UAHelpers.isValid(uaString: newUA) {
                         acceptHandler(newUA)
@@ -1306,7 +1331,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     }
                 }
                 else
-                if response == NSAlertFirstButtonReturn {
+                if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                     // swiftlint:disable:next force_cast
                     let newUA = (alert.accessoryView as! NSTextField).stringValue
                     if UAHelpers.isValid(uaString: newUA) {
@@ -1322,7 +1347,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         else
         {
             switch alert.runModal() {
-            case NSAlertThirdButtonReturn:
+            case NSApplication.ModalResponse.alertThirdButtonReturn:
                 let newUA = (alert.accessoryView as! NSTextField).stringValue
                 if UAHelpers.isValid(uaString: newUA) {
                     acceptHandler(newUA)
@@ -1333,7 +1358,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 }
                 break
                 
-            case NSAlertFirstButtonReturn:
+            case NSApplication.ModalResponse.alertFirstButtonReturn:
                 let newUA = (alert.accessoryView as! NSTextField).stringValue
                 if UAHelpers.isValid(uaString: newUA) {
                     acceptHandler(newUA)
@@ -1359,7 +1384,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         // Create alert
         let alert = NSAlert()
-        alert.alertStyle = NSAlertStyle.informational
+        alert.alertStyle = NSAlert.Style.informational
         alert.messageText = strings.alertMessageText
         
         // Create our search field with recent searches
@@ -1392,12 +1417,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are user-search-url, cancel, google-search
                 switch response {
-                case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
+                case NSApplication.ModalResponse.alertFirstButtonReturn,NSApplication.ModalResponse.alertThirdButtonReturn:
                     let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
                     let rawString = (alert.accessoryView as! NSTextField).stringValue
                     let newUrlString = rawString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
                     var urlString = String(format: newUrlFormat, newUrlString!)
-                    let newWindow = (response == NSAlertThirdButtonReturn)
+                    let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
                     if UrlHelpers.isValid(urlString: urlString) {
@@ -1414,12 +1439,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         {
             let response = alert.runModal()
             switch response {
-            case NSAlertFirstButtonReturn,NSAlertThirdButtonReturn:
+            case NSApplication.ModalResponse.alertFirstButtonReturn,NSApplication.ModalResponse.alertThirdButtonReturn:
                 let newUrlFormat = k.searchLinks[ UserSettings.Search.value ]
                 let rawString = (alert.accessoryView as! NSTextField).stringValue
                 let newUrlString = rawString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)
                 var urlString = String(format: newUrlFormat, newUrlString!)
-                let newWindow = (response == NSAlertThirdButtonReturn)
+                let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
 
                 urlString = UrlHelpers.ensureScheme(urlString)
                 guard UrlHelpers.isValid(urlString: urlString), let searchURL = URL.init(string: urlString) else {
@@ -1445,7 +1470,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         // Create alert
         let alert = NSAlert()
-        alert.alertStyle = NSAlertStyle.informational
+        alert.alertStyle = NSAlert.Style.informational
         alert.messageText = strings.alertMessageText
         
         // Create urlField
@@ -1475,7 +1500,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let urlWindow = onWindow {
             alert.beginSheetModal(for: urlWindow, completionHandler: { response in
                 // buttons are accept, cancel, default
-                if response == NSAlertThirdButtonReturn {
+                if response == NSApplication.ModalResponse.alertThirdButtonReturn {
                     var newUrl = (alert.buttons[2] as NSButton).toolTip
                     newUrl = UrlHelpers.ensureScheme(newUrl!)
                     if UrlHelpers.isValid(urlString: newUrl!) {
@@ -1483,7 +1508,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     }
                 }
                 else
-                if response == NSAlertFirstButtonReturn {
+                if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                     // swiftlint:disable:next force_cast
                     var newUrl = (alert.accessoryView as! NSTextField).stringValue
                     newUrl = UrlHelpers.ensureScheme(newUrl)
@@ -1499,7 +1524,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             NSApp.activate(ignoringOtherApps: true)
 
             switch alert.runModal() {
-            case NSAlertThirdButtonReturn:
+            case NSApplication.ModalResponse.alertThirdButtonReturn:
                 var newUrl = (alert.buttons[2] as NSButton).toolTip
                 newUrl = UrlHelpers.ensureScheme(newUrl!)
                 if UrlHelpers.isValid(urlString: newUrl!) {
@@ -1508,7 +1533,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 
                 break
                 
-            case NSAlertFirstButtonReturn:
+            case NSApplication.ModalResponse.alertFirstButtonReturn:
                 var newUrl = (alert.accessoryView as! NSTextField).stringValue
                 newUrl = UrlHelpers.ensureScheme(newUrl)
                 if UrlHelpers.isValid(urlString: newUrl) {
@@ -1535,23 +1560,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
         //  strip helium://
         let index = rawString.index(rawString.startIndex, offsetBy: 9)
-        let urlString = rawString.substring(from: index)
+        let urlString = rawString.suffix(from: index)
         
         //  Handle new window here to narrow cast to new or current hwc
         if (viewOptions == sameWindow || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
             if let hwc : HeliumPanelController = wc as? HeliumPanelController {
-                (hwc.contentViewController as! WebViewController).loadURL(text: urlString)
+                (hwc.contentViewController as! WebViewController).loadURL(text: String(urlString))
                 return
             }
         }
         else
         {
-            openURLInNewWindow(URL.init(string: urlString)!)
+            openURLInNewWindow(URL.init(string: String(urlString))!)
         }
     }
 
     @objc func handleURLPboard(_ pboard: NSPasteboard, userData: NSString, error: NSErrorPointer) {
-        if let selection = pboard.string(forType: NSPasteboardTypeString) {
+        if let selection = pboard.string(forType: NSPasteboard.PasteboardType.string) {
 
             // Notice: string will contain whole selection, not just the urls
             // So this may (and will) fail. It should instead find url in whole
@@ -1680,7 +1705,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     {
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
-            if self.fetchBookmark(key: url, value: data) {
+            if self.fetchBookmark((key: url, value: data)) {
 //                Swift.print ("= \(url.absoluteString)")
                 return true
             }
@@ -1690,7 +1715,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             let options:URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
             let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
             bookmarks[url] = data
-            return self.fetchBookmark(key: url, value: data)
+            return self.fetchBookmark((key: url, value: data))
         }
         catch let error
         {

@@ -911,7 +911,7 @@ CA
         <!--Window Controller-->
         <scene sceneID="3rF-Wl-9by">
             <objects>
-                <windowController storyboardIdentifier="PlaylistPanelController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="PlaylistsController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" tabbingMode="disallowed" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
@@ -953,6 +953,7 @@ CA
                                         </buttonCell>
                                         <connections>
                                             <action selector="playPlaylist:" target="YAy-lX-dae" id="SZn-cv-787"/>
+                                            <binding destination="Vul-U2-GKW" name="enabled" keyPath="canRemove" id="vK7-nd-MFs"/>
                                             <binding destination="YAy-lX-dae" name="toolTip" keyPath="playButtonTooltip" id="PcZ-Bb-UAl"/>
                                         </connections>
                                     </button>
@@ -969,7 +970,7 @@ CA
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="name" width="121.04746736703925" minWidth="40" maxWidth="200" id="zpc-Ad-MEK">
+                                                        <tableColumn identifier="pl_name" width="121.04746736703925" minWidth="40" maxWidth="200" id="zpc-Ad-MEK">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Playlist">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -994,7 +995,7 @@ CA
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                 <connections>
-                                                                                    <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.name" id="PXy-GN-jqC"/>
+                                                                                    <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.pl_name" id="PXy-GN-jqC"/>
                                                                                 </connections>
                                                                             </textFieldCell>
                                                                             <connections>
@@ -1009,14 +1010,14 @@ CA
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                             <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="ftH-A8-ZDs">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pl_name" id="OLT-h5-EWm">
                                                                     <dictionary key="options">
                                                                         <bool key="NSValidatesImmediately" value="YES"/>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="date" width="40" minWidth="40" maxWidth="200" id="i0k-lz-NaQ">
+                                                        <tableColumn identifier="pl_date" width="40" minWidth="40" maxWidth="200" id="i0k-lz-NaQ">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1027,7 +1028,7 @@ CA
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 <connections>
-                                                                    <binding destination="Vul-U2-GKW" name="value" keyPath="selection.date" id="3ZF-tV-kig"/>
+                                                                    <binding destination="Vul-U2-GKW" name="value" keyPath="selection.pl_date" id="3ZF-tV-kig"/>
                                                                 </connections>
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
@@ -1046,11 +1047,11 @@ CA
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                 <connections>
-                                                                                    <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.date" id="M2O-cp-3w5"/>
+                                                                                    <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.pl_date" id="M2O-cp-3w5"/>
                                                                                 </connections>
                                                                             </textFieldCell>
                                                                             <connections>
-                                                                                <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.date" id="sTI-LR-R7F"/>
+                                                                                <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.pl_date" id="wm5-FA-yNa"/>
                                                                             </connections>
                                                                         </textField>
                                                                     </subviews>
@@ -1060,14 +1061,14 @@ CA
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                             <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="GbM-og-e2J">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pl_date" id="OET-MB-aGS">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="200" id="eTP-QM-9yi">
+                                                        <tableColumn identifier="pl_tally" width="40" minWidth="40" maxWidth="200" id="eTP-QM-9yi">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Count">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1095,7 +1096,7 @@ CA
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                             <connections>
-                                                                                <binding destination="qMa-V3-VMi" name="value" keyPath="objectValue.tally" id="iBD-JL-BqO"/>
+                                                                                <binding destination="qMa-V3-VMi" name="value" keyPath="objectValue.pl_tally" id="HbD-hQ-Izy"/>
                                                                             </connections>
                                                                         </textField>
                                                                     </subviews>
@@ -1105,14 +1106,14 @@ CA
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                             <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.tally" id="erv-H5-Ucy">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pl_tally" id="ggV-Q2-lYl">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="200" id="dxN-As-ZFj">
+                                                        <tableColumn identifier="pl_plays" width="40" minWidth="40" maxWidth="200" id="dxN-As-ZFj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Plays">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1140,7 +1141,7 @@ CA
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                             </textFieldCell>
                                                                             <connections>
-                                                                                <binding destination="8cd-fP-GVY" name="value" keyPath="objectValue.plays" id="ZfA-YZ-guc"/>
+                                                                                <binding destination="8cd-fP-GVY" name="value" keyPath="objectValue.pl_plays" id="vVa-jf-Lta"/>
                                                                             </connections>
                                                                         </textField>
                                                                     </subviews>
@@ -1150,7 +1151,7 @@ CA
                                                                 </tableCellView>
                                                             </prototypeCellViews>
                                                             <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.plays" id="b0Q-oK-G3c">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pl_plays" id="VeK-o0-Xos">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
@@ -1251,6 +1252,7 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="restorePlaylists:" target="YAy-lX-dae" id="zhn-cs-UOH"/>
+                                                    <binding destination="Vul-U2-GKW" name="enabled" keyPath="canRemove" id="Ddh-Lc-OwA"/>
                                                     <binding destination="YAy-lX-dae" name="toolTip" keyPath="restoreButtonTooltip" id="i23-zs-q1C"/>
                                                 </connections>
                                             </button>
@@ -1262,6 +1264,7 @@ CA
                                                 </buttonCell>
                                                 <connections>
                                                     <action selector="savePlaylists:" target="YAy-lX-dae" id="KLq-pb-ZJ7"/>
+                                                    <binding destination="Vul-U2-GKW" name="enabled" keyPath="canRemove" id="459-Bn-QTa"/>
                                                     <binding destination="YAy-lX-dae" name="toolTip" keyPath="saveButtonTooltip" id="Ac8-gP-1N5"/>
                                                 </connections>
                                             </button>
@@ -1334,7 +1337,7 @@ Gw
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="rank" width="40" minWidth="20" maxWidth="100" headerToolTip="play order" id="i8h-Lq-4L8">
+                                                        <tableColumn identifier="pi_rank" width="40" minWidth="20" maxWidth="100" headerToolTip="play order" id="i8h-Lq-4L8">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="#">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1347,10 +1350,14 @@ Gw
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.rank" id="0iW-kj-6jp"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_rank" id="0P9-sh-dPa">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="name" width="120" minWidth="40" maxWidth="400" id="FZ4-3v-Vfd">
+                                                        <tableColumn identifier="pi_name" width="120" minWidth="40" maxWidth="400" id="FZ4-3v-Vfd">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1363,10 +1370,10 @@ Gw
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.name" id="kUx-OS-IMQ"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_name" id="ZI0-D2-CB5"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="secs" width="60" minWidth="40" maxWidth="120" headerToolTip="" id="3W1-zN-OJV">
+                                                        <tableColumn identifier="pi_secs" width="60" minWidth="40" maxWidth="120" headerToolTip="" id="3W1-zN-OJV">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Time">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1377,10 +1384,10 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
-                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="time"/>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_time"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.time" id="LwQ-Y5-t28">
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_time" id="4Z9-v6-Sfk">
                                                                     <dictionary key="options">
                                                                         <string key="NSNullPlaceholder">n/a</string>
                                                                         <string key="NSValueTransformerName">hmsTransformer</string>
@@ -1388,7 +1395,7 @@ Gw
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="time" width="60" minWidth="40" maxWidth="160" id="vWm-ko-T1E">
+                                                        <tableColumn identifier="pi_date" width="60" minWidth="40" maxWidth="160" id="vWm-ko-T1E">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Added">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1400,13 +1407,13 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
-                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.date" id="CBL-I6-ace"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_date" id="40G-Yb-hud"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="link" width="120" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
+                                                        <tableColumn identifier="pi_link" width="120" minWidth="10" maxWidth="1000" id="uQe-2d-GQY">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="URL">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1419,10 +1426,10 @@ Gw
                                                             </textFieldCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.temp" id="6wd-Vt-k3V"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_temp" id="AQL-fi-GkZ"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="rect" width="80" minWidth="10" maxWidth="200" headerToolTip="size and location" id="mwR-gL-vIn">
+                                                        <tableColumn identifier="pi_rect" width="80" minWidth="10" maxWidth="200" headerToolTip="size and location" id="mwR-gL-vIn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Rect">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1433,18 +1440,17 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
-                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="rect"/>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_rect"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.rect" id="p4G-cg-lcu">
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_rect" id="gaF-5S-FTu">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                                        <string key="NSValueTransformerName">rectTransformer</string>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="plays" width="60" minWidth="10" maxWidth="120" headerToolTip="play count" id="etn-d3-AIr">
+                                                        <tableColumn identifier="pi_plays" width="60" minWidth="10" maxWidth="120" headerToolTip="play count" id="etn-d3-AIr">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Plays">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1455,17 +1461,17 @@ Gw
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
-                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="plays"/>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_plays"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.plays" id="afq-Oj-Hc8">
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_plays" id="mjy-GK-PFo">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
                                                                 </binding>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="label" width="60" minWidth="10" maxWidth="120" headerToolTip="auto hide label" id="ofy-Rm-Ytf">
+                                                        <tableColumn identifier="pi_label" width="60" minWidth="10" maxWidth="120" headerToolTip="auto hide label" id="ofy-Rm-Ytf">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Labelless">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1481,34 +1487,36 @@ Gw
                                                                     </items>
                                                                 </menu>
                                                             </popUpButtonCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_label"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.label" id="rDy-4y-bAQ"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.pi_label" id="ITi-ns-9Oc"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="alpha" width="60" minWidth="10" maxWidth="120" headerToolTip="" id="eyl-fn-AYC">
+                                                        <tableColumn identifier="pi_alpha" width="60" minWidth="10" maxWidth="120" headerToolTip="" id="eyl-fn-AYC">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Alpha">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                                             </tableHeaderCell>
                                                             <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="c4Q-JJ-Kx7">
-                                                                <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="percent" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" id="Izo-sz-EAQ">
-                                                                    <integer key="multiplier" value="100"/>
+                                                                <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="percent" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" id="Izo-sz-EAQ">
+                                                                    <integer key="multiplier" value="1"/>
                                                                 </numberFormatter>
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 <connections>
-                                                                    <binding destination="fqr-Ij-jQ9" name="value" keyPath="selection.alpha" id="3Er-oF-l2a"/>
+                                                                    <binding destination="fqr-Ij-jQ9" name="value" keyPath="selection.pi_alpha" id="3Er-oF-l2a"/>
                                                                 </connections>
                                                             </textFieldCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_alpha"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.alpha" id="olx-QT-k1G"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="value" keyPath="arrangedObjects.pi_alpha" id="gGV-hp-f2X"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="hover" width="60" minWidth="10" maxWidth="120" headerToolTip="above all windows" id="Fmz-cc-tVY">
+                                                        <tableColumn identifier="pi_hover" width="60" minWidth="10" maxWidth="120" headerToolTip="above all windows" id="Fmz-cc-tVY">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Spaces">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1524,12 +1532,13 @@ Gw
                                                                     </items>
                                                                 </menu>
                                                             </popUpButtonCell>
+                                                            <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="pi_hover"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.hover" id="Qwb-vL-z4j"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.pi_hover" id="rrL-gT-lAR"/>
                                                             </connections>
                                                         </tableColumn>
-                                                        <tableColumn identifier="trans" width="60" minWidth="10" maxWidth="120" headerToolTip="mouse translucency" id="a0x-FK-bxj">
+                                                        <tableColumn identifier="pi_trans" width="60" minWidth="10" maxWidth="120" headerToolTip="mouse translucency" id="a0x-FK-bxj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Translucency">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1547,12 +1556,12 @@ Gw
                                                                     </items>
                                                                 </menu>
                                                                 <connections>
-                                                                    <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="selection.trans" id="rGD-Kf-7qH"/>
+                                                                    <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="selection.pi_trans" id="fsq-MZ-8rg"/>
                                                                 </connections>
                                                             </popUpButtonCell>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.trans" id="DV2-cI-CyS"/>
+                                                                <binding destination="fqr-Ij-jQ9" name="selectedTag" keyPath="arrangedObjects.pi_trans" id="pEm-Ze-2cO"/>
                                                             </connections>
                                                         </tableColumn>
                                                     </tableColumns>
@@ -1639,17 +1648,12 @@ Gw
                 </customView>
                 <arrayController id="Vul-U2-GKW">
                     <connections>
-                        <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="C8x-qa-7XA"/>
+                        <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="PMF-ib-hIl"/>
                     </connections>
                 </arrayController>
                 <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9">
-                    <declaredKeys>
-                        <string>rank</string>
-                        <string>name</string>
-                        <string>link</string>
-                    </declaredKeys>
                     <connections>
-                        <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.list" id="u0L-KW-nSp"/>
+                        <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.pl_list" id="GSl-jI-ivW"/>
                     </connections>
                 </arrayController>
             </objects>

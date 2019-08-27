@@ -4,6 +4,7 @@
 //
 //  Created by Samuel Beek on 16/03/16.
 //  Copyright © 2016 Jaden Geller. All rights reserved.
+//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
@@ -12,7 +13,7 @@ import CoreAudioKit
 extension String {
     func replacePrefix(_ prefix: String, replacement: String) -> String {
         if hasPrefix(prefix) {
-            return replacement + substring(from: prefix.endIndex)
+            return replacement + suffix(from: prefix.endIndex)
         }
         else {
             return self
@@ -46,34 +47,16 @@ extension String {
     
     /// Returns a substring with the given `NSRange`,
     /// or `nil` if the range can't be converted.
-    func substring(with nsrange: NSRange) -> String? {
-        guard let range = nsrange.toRange()
+    func substring(with nsrange: NSRange) -> Substring? {
+        guard let range = Range(nsrange, in: self)
             else { return nil }
-    #if swift(>=4.0)
-        let start = UTF16Index(range.lowerBound)
-        let end = UTF16Index(range.upperBound)
-        return String(utf16[start..<end])
-    #else
-        return self[0..<range.count]
-    #endif
+        return self[range]
     }
     
     /// Returns a range equivalent to the given `NSRange`,
     /// or `nil` if the range can't be converted.
-    func range(from nsrange: NSRange) -> Range<Index>? {
-        guard let range = nsrange.toRange() else { return nil }
-    #if swift(>=4.0)
-        let utf16Start = UTF16Index(range.lowerBound)
-        let utf16End = UTF16Index(range.upperBound)
-        
-        guard let start = Index(utf16Start, within: self),
-            let end = Index(utf16End, within: self)
-            else { return nil }
-        
-        return start..<end
-    #else
-        return self.startIndex..<self.index(self.startIndex, offsetBy: range.count)
-    #endif
+    func range(from nsrange: NSRange) -> Range<String.Index>? {
+        return Range(nsrange, in: self)
     }
 }
 
@@ -88,6 +71,49 @@ extension String {
         let start = index(startIndex, offsetBy: bounds.lowerBound)
         let end = index(startIndex, offsetBy: bounds.upperBound)
         return String(self[start..<end])
+    }
+}
+
+// From https://stackoverflow.com/questions/45562662/how-can-i-use-string-slicing-subscripts-in-swift-4
+extension String {
+    subscript(value: NSRange) -> Substring {
+        return self[value.lowerBound..<value.upperBound]
+    }
+}
+
+extension String {
+    subscript(value: CountableClosedRange<Int>) -> Substring {
+        get {
+            return self[index(at: value.lowerBound)...index(at: value.upperBound)]
+        }
+    }
+    
+    subscript(value: CountableRange<Int>) -> Substring {
+        get {
+            return self[index(at: value.lowerBound)..<index(at: value.upperBound)]
+        }
+    }
+    
+    subscript(value: PartialRangeUpTo<Int>) -> Substring {
+        get {
+            return self[..<index(at: value.upperBound)]
+        }
+    }
+    
+    subscript(value: PartialRangeThrough<Int>) -> Substring {
+        get {
+            return self[...index(at: value.upperBound)]
+        }
+    }
+    
+    subscript(value: PartialRangeFrom<Int>) -> Substring {
+        get {
+            return self[index(at: value.lowerBound)...]
+        }
+    }
+    
+    func index(at offset: Int) -> String.Index {
+        return index(startIndex, offsetBy: offset)
     }
 }
 
@@ -248,7 +274,7 @@ extension Dictionary {
 
 extension NSString {
     class func string(fromAsset: String) -> String {
-        let asset = NSDataAsset.init(name: fromAsset)
+        let asset = NSDataAsset.init(name: NSDataAsset.Name(rawValue: fromAsset))
         let data = NSData.init(data: (asset?.data)!)
         let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
         
@@ -258,7 +284,7 @@ extension NSString {
 
 extension NSAttributedString {
     class func string(fromAsset: String) -> String {
-        let asset = NSDataAsset.init(name: fromAsset)
+        let asset = NSDataAsset.init(name: NSDataAsset.Name(rawValue: fromAsset))
         let data = NSData.init(data: (asset?.data)!)
         let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
         

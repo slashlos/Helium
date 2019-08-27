@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20190817.200057</string>
+	<string>20190827.152613</string>
 	<key>CFBuildIncrement</key>
-	<false/>
+	<true/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>4445</integer>
+	<integer>4654</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -24,7 +24,7 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
 			<key>CFBundleTypeName</key>
-			<string>DocumentType</string>
+			<string>Helium</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>????</string>
@@ -33,6 +33,12 @@
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).Document</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Playlist</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -94,7 +100,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.4445</string>
+	<string>3.0.4654</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

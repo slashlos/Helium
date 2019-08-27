@@ -3,7 +3,7 @@
 //  XHelium
 //
 //  Created by Carlos D. Santiago on 9/2/18.
-//  Copyright © 2018 Carlos D Santiago. All rights reserved.
+//  Copyright © 2018 Carlos D. Santiago. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
