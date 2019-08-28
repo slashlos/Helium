@@ -717,21 +717,37 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     internal func play(_ sender: Any, items: Array<PlayItem>, maxSize: Int) {
+        var firstHere : Bool = false
+        
         //  Unless we're the standalone helium playlist window dismiss all
         if !(self.view.window?.isKind(of: HeliumPanel.self))! {
             /// dismiss whatever got us here
             super.dismiss(sender)
-            
+
             //  If we were run modally as a window, close it
             //  current window to be reused for the 1st item
             if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
                 NSApp.abortModal()
                 ppc.window?.orderOut(sender)
             }
+            else
+            {
+                firstHere = true
+            }
         }
         
         //  Try to restore item at its last known location
         for (i,item) in (items.enumerated()).prefix(maxSize) {
+            if firstHere {
+                if let first = NSApp.keyWindow {
+                    if let hpc = first.windowController as? HeliumPanelController {
+                        hpc.webViewController.webView.next(url: item.link)
+                        firstHere = false
+                    }
+                }
+                if !firstHere { continue }
+            }
+
             if appDelegate.doOpenFile(fileURL: item.link) {
                 print(String(format: "%3d %3d %@", i, item.rank, item.name))
             }
