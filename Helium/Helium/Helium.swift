@@ -93,7 +93,7 @@ func NewFileHandleForWriting(path: String, name: String, type: String, outFile: 
             let unique = String(format: "%@%@.%@", name, tag, type)
             file = String(format: "%@/%@", path, unique)
             fileURL = URL.init(fileURLWithPath: file!)
-            if false == ((try? fileURL?.checkResourceIsReachable()) ?? false) { break }
+            if false == ((((try? fileURL?.checkResourceIsReachable()) as Bool??)) ?? false) { break }
             
             // Try another tag.
             uniqueNum += 1;
@@ -124,7 +124,7 @@ func NewFileURLForWriting(path: String, name: String, type: String) -> URL? {
         let unique = String(format: "%@%@.%@", name, tag, type)
         file = String(format: "%@/%@", path, unique)
         fileURL = URL.init(fileURLWithPath: file!)
-        if false == ((try? fileURL?.checkResourceIsReachable()) ?? false) { break }
+        if false == ((((try? fileURL?.checkResourceIsReachable()) as Bool??)) ?? false) { break }
         
         // Try another tag.
         uniqueNum += 1;
@@ -281,7 +281,7 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         var suffix = 0
         list = Array <PlayItem> ()
         let temp = NSString(format:"%p",self) as String
-        name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
+        name = String(format:"play#%@%@", temp.suffix(4) as CVarArg)
  
         //  Make sure new items have unique name
         while appDelegate.playlists.has(name) {
@@ -982,7 +982,7 @@ class Document : NSDocument {
         if let rect = dictionary[k.rect] as? String {
             self.settings.rect.value = NSRectFromString(rect)
             if let window = self.windowControllers.first?.window {
-                window.setFrameFrom(rect)
+                window.setFrame(from: rect)
             }
         }
         if let plays : Int = dictionary[k.plays] as? Int, plays != self.settings.plays.value {
@@ -1011,7 +1011,7 @@ class Document : NSDocument {
             if let rect = dict[k.rect] as? String {
                 self.settings.rect.value = NSRectFromString(rect)
                 if let window = self.windowControllers.first?.window {
-                    window.setFrameFrom(rect)
+                    window.setFrame(from: rect)
                 }
             }
         }
@@ -1076,7 +1076,7 @@ class Document : NSDocument {
         get {
             switch docType {
             case k.docPlaylists, k.docRelease:
-                let tmpImage = NSImage.init(named: NSImage.Name(rawValue: "appIcon"))
+                let tmpImage = NSImage.init(named: "appIcon")
                 let appImage = tmpImage?.resize(w: 32, h: 32)
                 return appImage
 
@@ -1090,7 +1090,7 @@ class Document : NSDocument {
                         return tmpIcon
                     }
                 }
-                let tmpImage = NSImage.init(named: NSImage.Name(rawValue: "docIcon"))
+                let tmpImage = NSImage.init(named: "docIcon")
                 let docImage = tmpImage?.resize(w: 32, h: 32)
                 return docImage
             }
@@ -1244,10 +1244,10 @@ class Document : NSDocument {
         makeWindowController(k.Helium)
     }
     func makeWindowController(_ typeName: String) {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
         let identifier = String(format: "%@Controller", typeName.capitalized)
         
-        let controller = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: identifier)) as! NSWindowController
+        let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
         dc.addDocument(self)
         

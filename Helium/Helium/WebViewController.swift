@@ -212,7 +212,7 @@ class MyWebView : WKWebView {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let viewOptions = appDelegate.newViewOptions
 
-        let pboard = sender.draggingPasteboard()
+        let pboard = sender.draggingPasteboard
         let items = pboard.pasteboardItems
 
         if (pboard.types?.contains(NSURLPboardType))! {
@@ -592,7 +592,7 @@ class MyWebView : WKWebView {
         menu.addItem(item)
     }
     
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
         switch menuItem.title {
         default:
             return true
@@ -829,7 +829,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     // MARK: Actions
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
         switch menuItem.title {
         case "Developer Extras":
             guard let state = webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else { return false }
@@ -1137,7 +1137,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 if percent == 100, let url = (self.webView.url) {
 
                     //  Initial recording of for this url session
-                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView])
+                    let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView as Any])
                     NotificationCenter.default.post(notif)
 
                     // once loaded update window title,size with video name,dimension
@@ -1186,7 +1186,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                             NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main, using: { (_) in
                                 DispatchQueue.main.async {
                                     Swift.print("restarting #1")
-                                    videoPlayer.seek(to: kCMTimeZero)
+                                    videoPlayer.seek(to: CMTime.zero)
                                     videoPlayer.play()
                                 }
                             })
@@ -1194,7 +1194,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                             NotificationCenter.default.addObserver(forName: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: item, queue: .main, using: { (_) in
                                 DispatchQueue.main.async {
                                     Swift.print("restarting #2")
-                                    videoPlayer.seek(to: kCMTimeZero)
+                                    videoPlayer.seek(to: CMTime.zero)
                                     videoPlayer.play()
                                 }
                             })

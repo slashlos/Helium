@@ -12,8 +12,8 @@ import AudioToolbox
 
 class PlayTableView : NSTableView {
     override func keyDown(with event: NSEvent) {
-        if event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSDeleteCharacter)!)) ||
-           event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSDeleteFunctionKey)!)) {
+        if event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSEvent.SpecialKey.delete.rawValue)!)) ||
+           event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSEvent.SpecialKey.deleteForward.rawValue)!)) {
             // Take action in the delegate.
             let delegate: PlaylistViewController = self.delegate as! PlaylistViewController
             
@@ -41,7 +41,7 @@ class PlayTableView : NSTableView {
         return NSApp.applicationIconImage.resize(w: 32, h: 32)
     }
     override func draggingEntered(_ info: NSDraggingInfo) -> NSDragOperation {
-        let pasteboard = info.draggingPasteboard()
+        let pasteboard = info.draggingPasteboard
         
         if pasteboard.canReadItem(withDataConformingToTypes: [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly.rawValue]) {
             return .copy
@@ -81,7 +81,7 @@ class PlayHeaderView : NSTableHeaderView {
             let state = col.isHidden
             
             item = NSMenuItem.init(title: title, action: action, keyEquivalent: "")
-            item.image = NSImage.init(named: NSImage.Name(rawValue: (state) ? "NSOnImage" : "NSOffImage"))
+            item.image = NSImage.init(named: (state) ? "NSOnImage" : "NSOffImage")
             item.state = (state ? OffState : OnState)
             item.representedObject = col
             item.isEnabled = true
@@ -372,7 +372,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc fileprivate func badPlayLitName(_ notification: Notification) {
         DispatchQueue.main.async {
             self.playlistTableView.reloadData()
-            NSSound(named: NSSound.Name(rawValue: "Sosumi"))?.play()
+            NSSound(named: "Sosumi")?.play()
          }
     }
     
@@ -651,7 +651,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         if playlistTableView == whoAmI {
             for item in (playlistArrayController.selectedObjects as! [PlayList]).reversed() {
-                let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
+                let index = (playlistArrayController.arrangedObjects as! [PlayList]).firstIndex(of: item)
                 self.remove(list: item, atIndex: index!)
             }
             return
@@ -659,7 +659,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         if playitemTableView == whoAmI {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]).reversed() {
-                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
+                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).firstIndex(of: item)
                 self.remove(item: item, atIndex: index!)
             }
             return
@@ -667,21 +667,21 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         
         if playitemArrayController.selectedObjects.count > 0 {
             for item in (playitemArrayController.selectedObjects as! [PlayItem]) {
-                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).index(of: item)
+                let index = (playitemArrayController.arrangedObjects as! [PlayItem]).firstIndex(of: item)
                 self.remove(item: item, atIndex: index!)
             }
         }
         else
         if playlistArrayController.selectedObjects.count > 0 {
             for item in (playlistArrayController.selectedObjects as! [PlayList]) {
-                let index = (playlistArrayController.arrangedObjects as! [PlayList]).index(of: item)
+                let index = (playlistArrayController.arrangedObjects as! [PlayList]).firstIndex(of: item)
                 self.remove(list: item, atIndex: index!)
             }
         }
         else
         {
             Swift.print("firstResponder: \(String(describing: whoAmI))")
-            NSSound(named: NSSound.Name(rawValue: "Sosumi"))?.play()
+            NSSound(named: "Sosumi")?.play()
         }
     }
     @IBOutlet weak var removeButtonTooltip: NSString! {
@@ -768,7 +768,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             Swift.print("firstResponder: \(String(describing: whoAmI))")
-            NSSound(named: NSSound.Name(rawValue: "Sosumi"))?.play()
+            NSSound(named: "Sosumi")?.play()
             return
         }
         
@@ -1036,7 +1036,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 break
             case false:
                 // Restore NON-HISTORY playlist(s) from cache
-                if let historyIndex = playCache.index(of: historyCache) {
+                if let historyIndex = playCache.firstIndex(of: historyCache) {
                     playCache.remove(at: historyIndex)
                 }
                 playlists = playCache
@@ -1056,7 +1056,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         col.isHidden = isHidden
     }
 
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.title.hasPrefix("Redo") {
             menuItem.isEnabled = self.canRedo
         }
@@ -1191,7 +1191,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         return .copy
     }
     func performDragOperation(info: NSDraggingInfo) -> Bool {
-        let pboard: NSPasteboard = info.draggingPasteboard()
+        let pboard: NSPasteboard = info.draggingPasteboard
         let types = pboard.types
     
         if (types?.contains(NSPasteboard.PasteboardType("NSFilenamesPboardType")))! {
@@ -1258,11 +1258,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int, proposedDropOperation dropOperation: NSTableView.DropOperation) -> NSDragOperation {
-        let sourceTableView = info.draggingSource() as? NSTableView
+        let sourceTableView = info.draggingSource as? NSTableView
 
         Swift.print("source \(String(describing: sourceTableView?.identifier))")
         if dropOperation == .above {
-            let pboard = info.draggingPasteboard();
+            let pboard = info.draggingPasteboard;
             let options = [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly : true,
                            NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes : [kUTTypeMovie as String]] as [NSPasteboard.ReadingOptionKey : Any]
             let items = pboard.readObjects(forClasses: [NSURL.classForCoder()], options: options)
@@ -1301,12 +1301,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo, row: Int, dropOperation: NSTableView.DropOperation) -> Bool {
-        let pasteboard = info.draggingPasteboard()
+        let pasteboard = info.draggingPasteboard
         let options = [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly : true,
                        //NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes : [kUTTypeMovie as String],
                        NSPasteboard.ReadingOptionKey(rawValue: PlayList.className()) : true,
                        NSPasteboard.ReadingOptionKey(rawValue: PlayItem.className()) : true]
-        let sourceTableView = info.draggingSource() as? NSTableView
+        let sourceTableView = info.draggingSource as? NSTableView
         let isSandboxed = appDelegate.isSandboxed()
         var play: PlayList? = nil
         var oldIndexes = [Int]()

@@ -274,7 +274,7 @@ extension Dictionary {
 
 extension NSString {
     class func string(fromAsset: String) -> String {
-        let asset = NSDataAsset.init(name: NSDataAsset.Name(rawValue: fromAsset))
+        let asset = NSDataAsset.init(name: fromAsset)
         let data = NSData.init(data: (asset?.data)!)
         let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
         
@@ -284,7 +284,7 @@ extension NSString {
 
 extension NSAttributedString {
     class func string(fromAsset: String) -> String {
-        let asset = NSDataAsset.init(name: NSDataAsset.Name(rawValue: fromAsset))
+        let asset = NSDataAsset.init(name: fromAsset)
         let data = NSData.init(data: (asset?.data)!)
         let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
         

@@ -139,7 +139,7 @@ fileprivate class URLField: NSTextField {
             self.title = String(format:"%@ %@", appName,
                                infoDictionary["CFBundleVersion"] as! CVarArg)
         }
-        self.lineBreakMode = NSParagraphStyle.LineBreakMode.byTruncatingHead
+        self.lineBreakMode = .byTruncatingHead
         self.usesSingleLineMode = true
     }
     
@@ -222,6 +222,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         case .authorizedAlways:
             print("location authorizedWhenInUse")
             break
+            
+        default:
+            fatalError()
         }
     }
 
@@ -263,7 +266,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         else
         {
             appStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-            appStatusItem.image = NSImage.init(named: NSImage.Name(rawValue: "statusIcon"))
+            appStatusItem.image = NSImage.init(named: "statusIcon")
             let menu : NSMenu = appMenu.copy() as! NSMenu
 
             //  add quit to status menu only - already is in dock
@@ -588,7 +591,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
 	
 	@IBAction func presentPlaylistSheet(_ sender: Any) {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
         //  If we have a window, present a sheet with playlists, otherwise ...
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
@@ -614,10 +617,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             //  If a web view controller, fetch and present playlist here
             if let wvc: WebViewController = wvc as? WebViewController {
                 if wvc.presentedViewControllers?.count == 0 {
-                    let pvc = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "PlaylistViewController")) as! PlaylistViewController
+                    let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
                     
                     pvc.webViewController = wvc
-                    wvc.presentViewControllerAsSheet(pvc)
+                    wvc.presentAsSheet(pvc)
                 }
                 return
             }
@@ -758,7 +761,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.title.hasPrefix("Redo") {
             menuItem.isEnabled = self.canRedo
         }
@@ -863,7 +866,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if flags.contains([NSEvent.ModifierFlags.shift,NSEvent.ModifierFlags.option]) {
             Swift.print("shift+option at start")
             resetDefaults()
-            NSSound(named: NSSound.Name(rawValue: "Purr"))?.play()
+            NSSound(named: "Purr")?.play()
         }
         //  We were started as a login item startup save this
         launchedAsLogInItem = event.eventID == kAEOpenApplication &&
@@ -877,7 +880,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         )
 
         //  So they can interact everywhere with us without focus
-        appStatusItem.image = NSImage.init(named: NSImage.Name(rawValue: "statusIcon"))
+        appStatusItem.image = NSImage.init(named: "statusIcon")
         appStatusItem.menu = appMenu
 
         //  Initialize our h:m:s transformer

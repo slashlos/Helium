@@ -166,7 +166,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
 
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
-        let pasteboard = sender.draggingPasteboard()
+        let pasteboard = sender.draggingPasteboard
         
         if pasteboard.canReadItem(withDataConformingToTypes: [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly.rawValue]) {
             return .copy
@@ -436,7 +436,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         willUpdateTranslucency()
     }
 
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
             break
