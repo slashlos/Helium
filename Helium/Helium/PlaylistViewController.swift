@@ -176,7 +176,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
                 else
                 {
-                    seen[item.name]?.plays += item.plays
+                    //  always take first date of items
+                    if let hist = seen[item.name] {
+                        hist.date = min(hist.date,item.date)
+                        hist.plays += item.plays
+                    }
                     self.remove(item: item, atIndex: row)
                 }
             }
@@ -717,7 +721,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var webViewController: WebViewController? = nil
     
     internal func play(_ sender: AnyObject, items: Array<PlayItem>, maxSize: Int) {
-        let viewOptions = ViewOptions.init(rawValue: sender.tag)
+        let viewOptions = appDelegate.newViewOptions
         var firstHere : Bool = false
         
         //  Unless we're the standalone helium playlist window dismiss all
@@ -761,7 +765,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  MARK:- IBActions
     @IBAction func playPlaylist(_ sender: AnyObject) {
-        (sender as! NSButton).tag = appDelegate.getViewOptions.rawValue
+        appDelegate.newViewOptions = appDelegate.getViewOptions
         
         //  first responder tells us who called so dispatch
         let whoAmI = self.view.window?.firstResponder
@@ -800,6 +804,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             appDelegate.sheetOKCancel(message, info: infoMsg,
                                       acceptHandler: { (button) in
                                         if button == NSApplication.ModalResponse.alertFirstButtonReturn {
+                                            self.appDelegate.newViewOptions = self.appDelegate.getViewOptions
                                             self.play(sender, items:list, maxSize: throttle)
                                         }
             })
