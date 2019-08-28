@@ -716,7 +716,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     // Our playlist panel return point if any
     var webViewController: WebViewController? = nil
     
-    internal func play(_ sender: Any, items: Array<PlayItem>, maxSize: Int) {
+    internal func play(_ sender: AnyObject, items: Array<PlayItem>, maxSize: Int) {
+        let viewOptions = ViewOptions.init(rawValue: sender.tag)
         var firstHere : Bool = false
         
         //  Unless we're the standalone helium playlist window dismiss all
@@ -732,7 +733,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             else
             {
-                firstHere = true
+                //  unless we want new windows/tabs instead
+                firstHere = viewOptions == sameWindow
             }
         }
         
@@ -759,7 +761,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     //  MARK:- IBActions
     @IBAction func playPlaylist(_ sender: AnyObject) {
-        appDelegate.newViewOptions = appDelegate.getViewOptions
+        (sender as! NSButton).tag = appDelegate.getViewOptions.rawValue
         
         //  first responder tells us who called so dispatch
         let whoAmI = self.view.window?.firstResponder
