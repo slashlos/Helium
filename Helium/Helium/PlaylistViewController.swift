@@ -731,7 +731,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
             //  If we were run modally as a window, close it
             //  current window to be reused for the 1st item
-            if let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
+            if sender.isKind(of: NSTableView.self),
+                let ppc = self.view.window?.windowController, ppc.isKind(of: PlaylistPanelController.self) {
                 NSApp.abortModal()
                 ppc.window?.orderOut(sender)
             }
