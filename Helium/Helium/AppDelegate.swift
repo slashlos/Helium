@@ -912,7 +912,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     //  Keep playlist names unique by Array entension checking name
     @objc dynamic var playlists = [PlayList]()
-    @objc dynamic var histories = [PlayItem]()
+    
+    //  Histories restore deferred until requested
+    @objc dynamic var _histories : [PlayItem]?
+    @objc dynamic var histories : [PlayItem] {
+        get {
+            if  _histories == nil {
+                _histories = [PlayItem]()
+                
+                // Restore history name change
+                if let historyName = self.defaults.value(forKey: UserSettings.HistoryName.keyPath) {
+                    UserSettings.HistoryName.value = historyName as! String
+                }
+                
+                if let items = self.defaults.array(forKey: UserSettings.HistoryList.keyPath) {
+                    let keep = UserSettings.HistoryKeep.value
+                    
+                    // Load histories from defaults up to their maximum
+                    for playitem in items.suffix(keep) {
+                        let item = playitem as! Dictionary <String,AnyObject>
+                        let name = item[k.name] as! String
+                        let path = item[k.link] as! String
+                        let time = item[k.time] as? TimeInterval
+                        let link = URL.init(string: path)
+                        let rank = item[k.rank] as! Int
+                        let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
+                        
+                        // Non-visible (tableView) cells
+                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
+                        temp.label = item[k.label]?.boolValue ?? false
+                        temp.hover = item[k.hover]?.boolValue ?? false
+                        temp.alpha = item[k.alpha]?.intValue ?? 60
+                        temp.trans = item[k.trans]?.intValue ?? 0
+                        temp.agent = item[k.agent] as? String ?? UserSettings.UserAgent.default
+                        temp.tabby = item[k.tabby]?.boolValue ?? false
+                        
+                        self._histories!.append(temp)
+                    }
+                    Swift.print("histories \(self._histories!.count) restored")
+                }
+            }
+            return _histories!
+        }
+        set (array) {
+            _histories = array
+        }
+    }
     var defaults = UserDefaults.standard
     var disableDocumentReOpening = false
     var hiddenWindows = Dictionary<String, Any>()
@@ -1033,38 +1078,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         // Asynchronous code running on the low priority queue
         DispatchQueue.global(qos: .utility).async {
 
-            // Restore history name change
-            if let historyName = self.defaults.value(forKey: UserSettings.HistoryName.keyPath) {
-                UserSettings.HistoryName.value = historyName as! String
-            }
-            
-            if let items = self.defaults.array(forKey: UserSettings.HistoryList.keyPath) {
-                let keep = UserSettings.HistoryKeep.value
-
-                // Load histories from defaults up to their maximum
-                for playitem in items.suffix(keep) {
-                    let item = playitem as! Dictionary <String,AnyObject>
-                    let name = item[k.name] as! String
-                    let path = item[k.link] as! String
-                    let time = item[k.time] as? TimeInterval
-                    let link = URL.init(string: path)
-                    let rank = item[k.rank] as! Int
-                    let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                    
-                    // Non-visible (tableView) cells
-                    temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                    temp.label = item[k.label]?.boolValue ?? false
-                    temp.hover = item[k.hover]?.boolValue ?? false
-                    temp.alpha = item[k.alpha]?.intValue ?? 60
-                    temp.trans = item[k.trans]?.intValue ?? 0
-                    temp.agent = item[k.agent] as? String ?? UserSettings.UserAgent.default
-                    temp.tabby = item[k.tabby]?.boolValue ?? false
-                    
-                    self.histories.append(temp)
-                }
-                Swift.print("histories \(self.histories.count) restored")
-            }
-            
             if let items = self.defaults.array(forKey: UserSettings.Searches.keyPath) {
                 for search in items {
                     self.recentSearches.append(search as! String)
