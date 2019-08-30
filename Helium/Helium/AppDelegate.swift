@@ -1221,7 +1221,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
-        guard let itemURL = notification.object as? URL, itemURL.scheme != "about" else {
+        guard let itemURL = notification.object as? URL, itemURL.scheme != "about",
+            itemURL.absoluteString != UserSettings.HomePageURL.value else {
             return
         }
         
