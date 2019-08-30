@@ -456,8 +456,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         self.restorePlaylists(nil)
 
         //  Restore hidden columns in tableviews using defaults
-        setupHiddenColumns(playlistTableView, hideit: ["pl_date","pl_tally"])
-        setupHiddenColumns(playitemTableView, hideit: ["pi_date","pi_link","pi_plays","pi_rect","pi_label","pi_hover","pi_alpha","pi_trans"])
+        setupHiddenColumns(playlistTableView, hideit: ["date","tally"])
+        setupHiddenColumns(playitemTableView, hideit: ["date","link","plays","rect","label","hover","alpha","trans"])
     }
 
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,

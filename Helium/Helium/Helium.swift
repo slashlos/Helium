@@ -165,6 +165,20 @@ extension Array where Element:PlayItem {
     }
 }
 
+extension NSObject {
+    func kvoTooltips(_ keyPaths : [String]) {
+        for keyPath in (keyPaths)
+        {
+            self.willChangeValue(forKey: keyPath)
+        }
+        
+        for keyPath in (keyPaths)
+        {
+            self.didChangeValue(forKey: keyPath)
+        }
+    }
+}
+
 class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboardReading {
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
 
@@ -227,52 +241,6 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         }
     }
     
-    // MARK:- Columns
-    @IBOutlet weak var pl_name : NSString! {
-        get {
-            return self.name as NSString
-        }
-        set (value) {
-            self.name = value as String
-        }
-    }
-    @IBOutlet weak var pl_list : NSArray! {
-        get {
-            return NSArray.init(array: self.list)
-        }
-        set (value) {
-            self.list = Array()
-            
-            for item in value {
-                list.append(item as! PlayItem)
-            }
-        }
-    }
-    @IBOutlet weak var pl_date : NSDate! {
-        get {
-            return NSDate.init(timeIntervalSinceReferenceDate: self.date)
-        }
-        set (value) {
-            self.date = value.timeIntervalSinceReferenceDate
-        }
-    }
-    @IBOutlet weak var pl_tally : NSNumber! {
-        get {
-            return NSNumber.init(value: self.tally)
-        }
-        set (value) {
-            //self.tally = value.intValue
-        }
-    }
-    @IBOutlet weak var pl_plays : NSNumber! {
-        get {
-            return NSNumber.init(value: self.plays)
-        }
-        set (value) {
-            
-        }
-    }
-    
     // MARK:- Functions
     override init() {
         date = Date().timeIntervalSinceReferenceDate
@@ -305,29 +273,11 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
     }
     
     @objc internal func shiftKeyDown(_ note: Notification) {
-        let keyPaths = [k.tooltip]
-        for keyPath in (keyPaths)
-        {
-            self.willChangeValue(forKey: keyPath)
-        }
-        
-        for keyPath in (keyPaths)
-        {
-            self.didChangeValue(forKey: keyPath)
-        }
+        self.kvoTooltips([k.tooltip])
     }
     
     @objc internal func optionKeyDown(_ note: Notification) {
-        let keyPaths = [k.tooltip]
-        for keyPath in (keyPaths)
-        {
-            self.willChangeValue(forKey: keyPath)
-        }
-        
-        for keyPath in (keyPaths)
-        {
-            self.didChangeValue(forKey: keyPath)
-        }
+        self.kvoTooltips([k.tooltip])
     }
 
     convenience init(name:String, list:Array <PlayItem>) {
@@ -451,120 +401,6 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         }
         set (value) {
             link = URL.init(string: value)!
-        }
-    }
-    
-    // MARK:- Columns
-    @IBOutlet weak var pi_name : NSString! {
-        get {
-            return self.name as NSString
-        }
-        set (value) {
-            self.name = value as String
-        }
-    }
-    @IBOutlet weak var pi_link : NSString! {
-        get {
-            return self.temp as NSString
-        }
-        set (value) {
-            self.temp = value as String
-        }
-    }
-    @IBOutlet weak var pi_time : NSNumber! {
-        get {
-            return NSNumber.init(value: self.time)
-        }
-        set (value) {
-            self.time = value.doubleValue
-        }
-    }
-    @IBOutlet weak var pi_date : NSDate! {
-        get {
-            return NSDate.init(timeIntervalSinceReferenceDate: self.date)
-        }
-        set (value) {
-            self.date = value.timeIntervalSinceReferenceDate
-        }
-    }
-    @IBOutlet weak var pi_rank : NSNumber! {
-        get {
-            return NSNumber.init(value: self.rank)
-        }
-        set (value) {
-            self.rank = value.intValue
-        }
-    }
-    @IBOutlet weak var pi_rect : NSString! {
-        get {
-            return NSStringFromRect(self.rect) as NSString
-        }
-        set (value) {
-            self.rect = NSRectFromString(value as String)
-        }
-    }
-    @IBOutlet weak var pi_plays : NSNumber! {
-        get {
-            return NSNumber.init(value: self.plays)
-        }
-        set (value) {
-            self.plays = value.intValue
-        }
-    }
-    @IBOutlet weak var pi_label : NSNumber! {
-        get {
-            return NSNumber.init(value: self.label)
-        }
-        set (value) {
-            self.label = value.boolValue
-        }
-    }
-    @IBOutlet weak var pi_hover : NSNumber! {
-        get {
-            return NSNumber.init(value: self.hover)
-        }
-        set (value) {
-            self.hover = value.boolValue
-        }
-    }
-    @IBOutlet weak var pi_alpha : NSNumber! {
-        get {
-            return NSNumber.init(value: self.alpha)
-        }
-        set (value) {
-            self.alpha = value.intValue
-        }
-    }
-    @IBOutlet weak var pi_trans : NSNumber! {
-        get {
-            return NSNumber.init(value: self.trans)
-        }
-        set (value) {
-            self.trans = value.intValue
-        }
-    }
-    @IBOutlet weak var pi_agent : NSString! {
-        get {
-            return self.agent as NSString
-        }
-        set (value) {
-            self.agent = value as String
-        }
-    }
-    @IBOutlet weak var pi_tabby : NSNumber! {
-        get {
-            return NSNumber.init(value: self.tabby)
-        }
-        set (value) {
-            self.tabby = value.boolValue
-        }
-    }
-    @IBOutlet weak var pi_temp : NSString! {
-        get {
-            return self.temp as NSString
-        }
-        set (value) {
-            self.temp = value as String
         }
     }
 
