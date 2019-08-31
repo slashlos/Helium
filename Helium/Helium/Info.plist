@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20190828.082956</string>
+	<string>20190831.172816</string>
 	<key>CFBuildIncrement</key>
-	<true/>
+	<false/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>4684</integer>
+	<integer>4798</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -100,7 +100,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.4684</string>
+	<string>3.0.4798</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

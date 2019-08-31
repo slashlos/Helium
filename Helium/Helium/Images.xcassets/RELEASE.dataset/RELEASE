@@ -22,6 +22,27 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 4796</h2>
+47ef0b2|19/08/31 publish plays across playlists<br>
+56a9a29|19/08/31 fix play uniqueness setup; drop NSString<br>
+64846f7|19/08/31 play list, item defaults improvements<br>
+2482dc2|19/08/31 fix variable name<br>
+abc86e8|19/08/30 skip home page in history cache<br>
+4bd34af|19/08/30 drop object columns<br>
+c218399|19/08/30 missing layout constraints<br>
+1eafb02|19/08/30 histories made on demand<br>
+b0f0bcc|19/08/29 dismiss window on double action<br>
+b88a222|19/08/28 play item UI new view options<br>
+c5093b5|19/08/28 capture new view options from last UI<br>
+6e999b3|19/08/28 play support key modifiers: shift, option<br>
+7944b0d|19/08/27 playlist sheet reuses 1st window<br>
+5516e9b|19/08/27 swift5<br>
+f1d1125|19/08/27 swift 4.1; playlist changes<br>
+314d093|19/08/27 typo<br>
+9407a0b|19/08/22 don't supersede web %F page search<br>
+4711445|19/08/19 fix getter loop<br>
+</p>
+
 <h2>Build 4445</h2>
 c58d794|19/08/17 added http promotion pref<br>
 99c458d|19/08/17 prefs update: developer, http promotion<br>

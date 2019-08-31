@@ -189,7 +189,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for  (name,hist) in seen {
                 Swift.print("update \(name) -> \(hist)");
                 for play in playlists {
-                    if let item = play.list.item(hist.link.absoluteString) {
+                    if let item = play.list.item(hist.link.absoluteString), item.plays != hist.plays {
                         item.plays = hist.plays
                     }
                 }
