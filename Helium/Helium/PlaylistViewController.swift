@@ -892,9 +892,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             //  If no playlist(s) selection restore from defaults
             if playArray.count == 0 {
-                if let playPlists = defaults.dictionary(forKey: k.Playlists) {
+                if let plists = defaults.dictionary(forKey: k.Playlists) {
                     playlists = [PlayList]()
-                    for (name,plist) in playPlists{
+                    for (name,plist) in plists{
                         guard let items = plist as? [Dictionary<String,Any>] else {
                             let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
                             let playlist = PlayList()
