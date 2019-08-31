@@ -1249,7 +1249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         let item : PlayItem = PlayItem.init()
         let info = notification.userInfo!
-        let fini = (info[k.fini] as AnyObject).boolValue == true
+        var fini = (info[k.fini] as AnyObject).boolValue == true
         
         //  If the title is already seen, update global and playlists
         if let dict = defaults.dictionary(forKey: itemURL.absoluteString) {
@@ -1271,22 +1271,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 item.link = itemURL
                 item.time = 0
             }
+            item.rank = histories.count
+            histories.append(item)
+            fini = false
         }
 
-        //  if not finished bump plays
-        if !fini {
-            item.plays += 1
-        }
-        else
-        {
+        //  if not finished bump plays for this item
+        if fini {
             //  move to next item in playlist
             Swift.print("move to next item in playlist")
         }
-
-        //  instantiate to histories on inception
-        if !fini { histories.append(item) }
-        item.rank = histories.count
-        
+        else
+        {
+            //  publish tally across playlists
+            for play in playlists {
+                guard let seen = play.list.item(item.link.absoluteString) else { continue }
+                seen.plays += 1
+            }
+        }
         //  always synchronize this item to defaults - lazily
         defaults.set(item.dictionary(), forKey: item.link.absoluteString)
         

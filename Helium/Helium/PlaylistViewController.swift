@@ -165,7 +165,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         // Renumber playlist items via array controller
         playitemTableView.beginUpdates()
         
-        //  True - prune duplicates, false resequence
+        //  True - prune duplicates & publish, false resequence
         switch shiftKeyDown {
         case true:
             var seen = [String:PlayItem]()
@@ -182,6 +182,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         hist.plays += item.plays
                     }
                     self.remove(item: item, atIndex: row)
+                }
+            }
+            
+            //  publish seen plays across playlists
+            for  (name,hist) in seen {
+                Swift.print("update \(name) -> \(hist)");
+                for play in playlists {
+                    if let item = play.list.item(hist.link.absoluteString) {
+                        item.plays = hist.plays
+                    }
                 }
             }
             self.cornerButton.setNeedsDisplay()
@@ -1132,6 +1142,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if tableView == playitemTableView
         {
             let item = (playitemArrayController.arrangedObjects as! [PlayItem])[row]
+            guard !shiftKeyDown else {
+                return String(format: "%d play(s)", item.plays) }
+            
             let temp = item.link.absoluteString
 
             if item.name == "search", let args = temp.split(separator: "=").last?.removingPercentEncoding
