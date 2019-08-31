@@ -911,11 +911,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var itemActions = Dictionary<String, Any>()
 
     //  Keep playlist names unique by Array entension checking name
-    @objc dynamic var playlists = [PlayList]()
+    @objc dynamic var _playlists : [PlayList]?
+    @objc dynamic var  playlists : [PlayList] {
+        get {
+            if  _playlists == nil {
+                _playlists = [PlayList]()
+                
+                if let plists = self.defaults.dictionary(forKey: k.Playlists) {
+                    for (name,plist) in plists{
+                        guard let items = plist as? [Dictionary<String,Any>] else {
+                            let playlist = PlayList.init(name: name, list: [PlayItem]())
+                            _playlists?.append(playlist)
+                            continue
+                        }
+                        var list : [PlayItem] = [PlayItem]()
+                        for plist in items {
+                            let item = PlayItem.init(with: plist)
+                            list.append(item)
+                        }
+                        let playlist = PlayList.init(name: name, list: list)
+                        _playlists?.append(playlist)
+                    }
+                }
+            }
+            return _playlists!
+        }
+        set (array) {
+            _playlists = array
+        }
+    }
     
     //  Histories restore deferred until requested
     @objc dynamic var _histories : [PlayItem]?
-    @objc dynamic var histories : [PlayItem] {
+    @objc dynamic var  histories : [PlayItem] {
         get {
             if  _histories == nil {
                 _histories = [PlayItem]()
@@ -930,24 +958,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     
                     // Load histories from defaults up to their maximum
                     for playitem in items.suffix(keep) {
-                        let item = playitem as! Dictionary <String,AnyObject>
-                        let name = item[k.name] as! String
-                        let path = item[k.link] as! String
-                        let time = item[k.time] as? TimeInterval
-                        let link = URL.init(string: path)
-                        let rank = item[k.rank] as! Int
-                        let temp = PlayItem(name:name, link:link!, time:time!, rank:rank)
-                        
-                        // Non-visible (tableView) cells
-                        temp.rect = item[k.rect]?.rectValue ?? NSZeroRect
-                        temp.label = item[k.label]?.boolValue ?? false
-                        temp.hover = item[k.hover]?.boolValue ?? false
-                        temp.alpha = item[k.alpha]?.intValue ?? 60
-                        temp.trans = item[k.trans]?.intValue ?? 0
-                        temp.agent = item[k.agent] as? String ?? UserSettings.UserAgent.default
-                        temp.tabby = item[k.tabby]?.boolValue ?? false
-                        
-                        self._histories!.append(temp)
+                        if let name : String = playitem as? String, let dict = defaults.dictionary(forKey: name) {
+                            self._histories?.append(PlayItem.init(with: dict))
+                        }
+                        else
+                        if let dict : Dictionary <String,AnyObject> = playitem as? Dictionary <String,AnyObject> {
+                            self._histories?.append(PlayItem.init(with: dict))
+                        }
+                        else
+                        {
+                            Swift.print("unknown history \(playitem)")
+                        }
                     }
                     Swift.print("histories \(self._histories!.count) restored")
                 }
