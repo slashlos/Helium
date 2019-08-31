@@ -243,18 +243,19 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
     
     // MARK:- Functions
     override init() {
+        let test = k.play + "#"
         date = Date().timeIntervalSinceReferenceDate
         super.init()
 
+         list = Array <PlayItem> ()
+        let temp = (String(format:"%p",self)).suffix(4)
+        name = test + temp
         var suffix = 0
-        list = Array <PlayItem> ()
-        let temp = NSString(format:"%p",self) as String
-        name = String(format:"play#%@%@", temp.suffix(4) as CVarArg)
- 
+
         //  Make sure new items have unique name
         while appDelegate.playlists.has(name) {
             suffix += 1
-            name = String(format:"play#%@%@", temp.suffix(4) as CVarArg, (suffix > 0 ? String(format:" %d",suffix) : ""))
+            name = String(format: "%@%@ %d", test, temp as CVarArg, suffix)
         }
         
         //  watch shift key changes affecting our playlist
@@ -421,7 +422,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         tabby = false
         super.init()
         
-        let temp = NSString(format:"%p",self) as String
+        let temp = String(format:"%p",self)
         name += String(temp.suffix(4))
     }
     init(name:String, link:URL, time:TimeInterval, rank:Int) {
