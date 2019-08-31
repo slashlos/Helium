@@ -22,7 +22,7 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
-<h2>Build 4796</h2>
+<h2>Build 4798</h2>
 47ef0b2|19/08/31 publish plays across playlists<br>
 56a9a29|19/08/31 fix play uniqueness setup; drop NSString<br>
 64846f7|19/08/31 play list, item defaults improvements<br>
