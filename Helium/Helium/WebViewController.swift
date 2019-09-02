@@ -190,8 +190,7 @@ class MyWebView : WKWebView {
                 (wvc as! WebViewController).loadAttributes(dict: json as! Dictionary<String, Any>)
                 return
             } catch let error as NSError {
-                NSApp.presentError(error)
-                Swift.print(error)
+                Swift.print("json: \(error.code):\(error.localizedDescription): \(text)")
             }
         }
         
@@ -285,7 +284,7 @@ class MyWebView : WKWebView {
                         
                         Swift.print("data \(String(describing: data))")
                         Swift.print("text \(String(describing: text))")
-                        Swift.print("list \(String(describing: list))")
+                        Swift.print("prop \(String(describing: list))")
                     }
                     continue
                 }
@@ -1055,8 +1054,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @objc internal func loadURL(urlFileURL: Notification) {
-        if let fileURL = urlFileURL.object, let info = urlFileURL.userInfo {
-            if info["hwc"] as? NSWindowController == self.view.window?.windowController {
+        if let fileURL = urlFileURL.object, let userInfo = urlFileURL.userInfo {
+            if userInfo["hwc"] as? NSWindowController == self.view.window?.windowController {
                 loadURL(url: fileURL as! URL)
             }
             else
@@ -1500,7 +1499,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     fileprivate func handleError(_ error: Error) {
         let message = error.localizedDescription
-        Swift.print("didFail?: \(message)")
+        Swift.print("didFail?: \((error as NSError).code): \(message)")
         if (error as NSError).code >= 400 {
             NSApp.presentError(error)
         }
