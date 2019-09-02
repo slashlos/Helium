@@ -150,6 +150,11 @@ class MyWebView : WKWebView {
 
         //  Pick off request (non-file) urls first
         guard url.isFileURL else {
+            
+            if doc.fileType == "h3w" {
+                doc.update(to: url)
+            }
+
             self.load(URLRequest(url: url))
             return
         }
@@ -333,8 +338,8 @@ class MyWebView : WKWebView {
     //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
         let wvc = self.window?.contentViewController as! WebViewController
-        let hwc = self.window?.windowController as! HeliumPanelController
-        let doc = hwc.document as! Document
+        let hpc = self.window?.windowController as! HeliumPanelController
+        let doc = hpc.document as! Document
         let translucency = doc.settings.translucencyPreference.value
         
         //  Remove item(s) we cannot support
@@ -473,14 +478,14 @@ class MyWebView : WKWebView {
         let subPref = NSMenu()
         item.submenu = subPref
 
-        item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hwc.autoHideTitlePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hpc.autoHideTitlePress(_:)), keyEquivalent: "")
         item.state = doc.settings.autoHideTitle.value ? OnState : OffState
-        item.target = hwc
+        item.target = hpc
         subPref.addItem(item)
 
-        item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hwc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hpc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
         item.state = doc.settings.disabledFullScreenFloat.value ? OffState : OnState
-        item.target = hwc
+        item.target = hpc
         subPref.addItem(item)
         
         item = NSMenuItem(title: "User Agent", action: #selector(wvc.userAgentPress(_:)), keyEquivalent: "")
@@ -498,82 +503,82 @@ class MyWebView : WKWebView {
         let subOpacity = NSMenu()
         item.submenu = subOpacity
 
-        item = NSMenuItem(title: "10%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "10%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (10 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 10
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "20%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "20%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.isEnabled = translucency.rawValue > 0
         item.state = (20 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 20
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "30%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "30%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (30 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 30
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "40%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "40%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (40 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 40
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "50%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "50%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (50 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 50
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "60%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "60%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (60 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 60
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "70%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "70%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (70 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 70
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "80%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "80%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (80 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 80
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "90%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "90%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (90 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 90
         subOpacity.addItem(item)
-        item = NSMenuItem(title: "100%", action: #selector(hwc.percentagePress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "100%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.state = (100 == opacity ? OnState : OffState)
-        item.target = hwc
+        item.target = hpc
         item.tag = 100
         subOpacity.addItem(item)
 
-        item = NSMenuItem(title: "Never", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Never", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.never.rawValue
         item.state = translucency == .never ? OnState : OffState
-        item.target = hwc
+        item.target = hpc
         subTranslucency.addItem(item)
-        item = NSMenuItem(title: "Always", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Always", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.always.rawValue
         item.state = translucency == .always ? OnState : OffState
-        item.target = hwc
+        item.target = hpc
         subTranslucency.addItem(item)
-        item = NSMenuItem(title: "Mouse Over", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Mouse Over", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOver.rawValue
         item.state = translucency == .mouseOver ? OnState : OffState
-        item.target = hwc
+        item.target = hpc
         subTranslucency.addItem(item)
-        item = NSMenuItem(title: "Mouse Outside", action: #selector(hwc.translucencyPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Mouse Outside", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOutside.rawValue
         item.state = translucency == .mouseOutside ? OnState : OffState
-        item.target = hwc
+        item.target = hpc
         subTranslucency.addItem(item)
 
-        item = NSMenuItem(title: "Save", action: #selector(hwc.saveDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Save", action: #selector(hpc.saveDocument(_:)), keyEquivalent: "")
         item.representedObject = self.window
-        item.target = hwc
+        item.target = hpc
         menu.addItem(item)
         
         item = NSMenuItem(title: "Search…", action: #selector(WebViewController.openSearchPress(_:)), keyEquivalent: "")
@@ -612,6 +617,21 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     var defaults = UserDefaults.standard
+    var document : Document? {
+        get {
+            if let document : Document = self.view.window?.windowController?.document as? Document {
+                return document
+            }
+            return nil
+        }
+    }
+    var heliumPanelController : HeliumPanelController? {
+        get {
+            guard let hpc : HeliumPanelController = self.view.window?.windowController as? HeliumPanelController else { return nil }
+            return hpc
+        }
+    }
+
     var trackingTag: NSView.TrackingRectTag? {
         get {
             return (self.webView.window?.windowController as? HeliumPanelController)?.viewTrackingTag
@@ -691,9 +711,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         //  the autolayout is complete only when the view has appeared.
         if self.webView != nil { setupWebView() }
         
-        // Final hwc updates, called by view, when document is available
-        if let hwc = self.view.window?.windowController {
-            (hwc as! HeliumPanelController).documentDidLoad()
+        // Final panel updates, called by view, when document is available
+        if let hpc = self.heliumPanelController {
+            hpc.documentDidLoad()
         }
         
         //  load developer panel if asked - initially no
@@ -1210,10 +1230,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     self.view.window?.title = title as String
 
                     // Remember for later restoration
-                    if let hwc = self.view.window?.windowController, let doc = self.view.window?.windowController?.document {
-                        (doc as! Document).update(to: url)
+                    if let doc = self.document, let hpc = doc.heliumPanelController {
+                        doc.update(to: url)
                         self.view.window?.representedURL = url
-                        (hwc as! HeliumPanelController).updateTitleBar(didChange: false)
+                        hpc.updateTitleBar(didChange: false)
                         NSApp.addWindowsItem(self.view.window!, title: url.lastPathComponent, filename: false)
                     }
                 }
@@ -1272,12 +1292,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 */
     fileprivate func restoreSettings(_ title: String) {
-        guard let dict = defaults.dictionary(forKey: title), let hwc = self.view.window?.windowController, let doc = hwc.document else
+        guard let dict = defaults.dictionary(forKey: title), let doc = self.document, let hpc = doc.heliumPanelController else
         {
             return
         }
-        (doc as! Document).restoreSettings(with: dict)
-        (hwc as! HeliumPanelController).documentDidLoad()
+        doc.restoreSettings(with: dict)
+        hpc.documentDidLoad()
     }
     
     //Convert a YouTube video url that starts at a certian point to popup/embedded design
@@ -1499,17 +1519,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-        let hwc = webView.window?.windowController as? HeliumPanelController
-        let doc = hwc?.document as? Document
+        let doc = self.document
+        let hpc = doc?.heliumPanelController
         
         guard let url = webView.url else {
             return
         }
         
         //  Restore setting not done by document controller
-        if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hwc = hwc {
+        if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hpc = hpc {
             doc.restoreSettings(with: dict)
-            hwc.documentDidLoad()
+            hpc.documentDidLoad()
         }
         
         //  Finish recording of for this url session

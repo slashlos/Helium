@@ -317,9 +317,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             UserSettings.AutoSaveDocs.value = value
             if value {
                 for doc in dc.documents {
-                    if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
+                    if let hpc = doc.windowControllers.first, hpc.isKind(of: HeliumPanelController.self) {
                         DispatchQueue.main.async {
-                            (hwc as! HeliumPanelController).saveDocument(self.autoSaveDocsMenuItem)
+                            (hpc as! HeliumPanelController).saveDocument(self.autoSaveDocsMenuItem)
                         }
                     }
                 }
@@ -356,8 +356,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  sync all document zoom icons now - yuck
         for doc in dc.documents {
-            if let hwc = doc.windowControllers.first, hwc.isKind(of: HeliumPanelController.self) {
-                (hwc as! HeliumPanelController).zoomButton?.isHidden = hideZoomIcon
+            if let hpc = doc.windowControllers.first, hpc.isKind(of: HeliumPanelController.self) {
+                (hpc as! HeliumPanelController).zoomButton?.isHidden = hideZoomIcon
             }
         }
 	}
@@ -371,22 +371,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
             guard openForBusiness || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
-                let hwc = fromWindow?.windowController
-                let doc = hwc?.document
-                
-                //  If it's a "h3w" type read it and load it into defaults
-                if let wvc = thisWindow.contentViewController as? WebViewController {
-                    let fileType = fileURL.pathExtension
-
-                    if fileType == "h3w" {
-                        (doc as! Document).update(to: fileURL)
-                        
-                        wvc.loadURL(url: (doc as! Document).fileURL!)
-                    }
-                    else
-                    {
-                        wvc.loadURL(url: fileURL)
-                    }
+                if let hpc = fromWindow?.windowController as? HeliumPanelController {
+                    hpc.next(url: fileURL)
                     return true
                 }
                 else
@@ -405,9 +391,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             let dc = NSDocumentController.shared
             dc.noteNewRecentDocumentURL(fileURL)
 
-            if let hwc = (doc as NSDocument).windowControllers.first, let window = hwc.window {
-                window.makeKey()
-                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL)
+            if let hpc = doc.heliumPanelController {
+                hpc.window?.makeKey()
+                hpc.next(url: fileURL)
                 status = true
             }
         } catch let error {
@@ -502,7 +488,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
             else
             if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.webViewController.webView.next(url: newURL)
+                hpc.next(url: newURL)
             }
             doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
         } catch let error {
@@ -518,7 +504,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
             else
             if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.webViewController.webView.next(url: newURL)
+                hpc.next(url: newURL)
             }
             doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
         } catch let error {
@@ -644,11 +630,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             let next = try dc.openUntitledDocumentAndDisplay(true) as! Document
             next.docType = k.docRelease
             
-            let hwc = next.windowControllers.first?.window?.windowController
+            let wc = next.windowControllers.first?.window?.windowController
             let relnotes = NSString.string(fromAsset: "RELEASE")
 
-            (hwc?.contentViewController as! WebViewController).webView.loadHTMLString(relnotes, baseURL: nil)
-            hwc?.window?.center()
+            if let hpc : HeliumPanelController = wc as? HeliumPanelController {
+                (hpc.contentViewController as! WebViewController).webView.loadHTMLString(relnotes, baseURL: nil)
+                hpc.window?.center()
+            }
         }
         catch let error {
             NSApp.presentError(error)
@@ -790,8 +778,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
-                        let hwc : HeliumPanelController = wc as? HeliumPanelController,
-                        let state = hwc.webView?.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
+                        let hpc : HeliumPanelController = wc as? HeliumPanelController,
+                        let state = hpc.webView?.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
                             menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? OnState : OffState
                             break
                     }
@@ -1602,10 +1590,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let index = rawString.index(rawString.startIndex, offsetBy: 9)
         let urlString = rawString.suffix(from: index)
         
-        //  Handle new window here to narrow cast to new or current hwc
+        //  Handle new window here to narrow cast to new or current panel controller
         if (viewOptions == sameWindow || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
-            if let hwc : HeliumPanelController = wc as? HeliumPanelController {
-                (hwc.contentViewController as! WebViewController).loadURL(text: String(urlString))
+            if let hpc : HeliumPanelController = wc as? HeliumPanelController {
+                (hpc.contentViewController as! WebViewController).loadURL(text: String(urlString))
                 return
             }
         }

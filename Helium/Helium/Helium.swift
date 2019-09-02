@@ -750,9 +750,9 @@ class Document : NSDocument {
                 return url
             }
             else
-            if let webView = self.windowControllers.first?.contentViewController?.view.subviews.first, webView.isKind(of: MyWebView.self)
+            if let hpc = heliumPanelController, let webView = hpc.webView
             {
-                return (webView as! MyWebView).url
+                return webView.url
             }
             else
             {
@@ -854,7 +854,7 @@ class Document : NSDocument {
         }
         if let agent : String = dictionary[k.agent] as? String, agent != settings.customUserAgent.value {
             self.settings.customUserAgent.value = agent
-            if let webView = (self.windowControllers.first?.contentViewController as? WebViewController)?.webView {
+            if let hpc = heliumPanelController, let webView = hpc.webView {
                 webView.customUserAgent = agent
             }
         }
@@ -987,19 +987,19 @@ class Document : NSDocument {
             }
             
             //  If we were seen before then restore settings
-            if let hwc = self.windowControllers.first {
+            if let hpc = heliumPanelController {
                 if let dict = defaults.dictionary(forKey: (fileURL?.absoluteString)!) {
                     self.restoreSettings(with: dict)
-                    (hwc as! HeliumPanelController).willUpdateTranslucency()
-                    (hwc as! HeliumPanelController).willUpdateAlpha()
+                    hpc.willUpdateTranslucency()
+                    hpc.willUpdateAlpha()
                 }
                 
-                if settings.rect.value != NSZeroRect, let window = hwc.window {
+                if settings.rect.value != NSZeroRect, let window = hpc.window {
                     window.setFrame(settings.rect.value, display: true)
                 }
 
-                hwc.window?.orderFront(self)
-                (hwc.contentViewController as! WebViewController).loadURL(url: fileURL!)
+                hpc.window?.orderFront(self)
+                hpc.next(url: fileURL!)
             }
         }
     }
@@ -1013,11 +1013,11 @@ class Document : NSDocument {
             let url = item.link
             self.makeWindowControllers()
             
-            if let hwc = self.windowControllers.first {
-                hwc.window?.orderFront(self)
-                (hwc.contentViewController as! WebViewController).loadURL(url: url)
+            if let hpc = heliumPanelController {
+                hpc.window?.orderFront(self)
+                hpc.next(url: url)
                 if item.rect != NSZeroRect {
-                    hwc.window?.setFrameOrigin(item.rect.origin)
+                    hpc.window?.setFrameOrigin(item.rect.origin)
                 }
             }
         }
@@ -1045,7 +1045,7 @@ class Document : NSDocument {
         
         //  Update UI (red dot in close button) immediately
         guard self.docType == k.docHelium else { return }
-        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+        if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()
         }
     }
@@ -1058,7 +1058,7 @@ class Document : NSDocument {
         UserDefaults.standard.synchronize()
 
         //  Update UI (red dot in close button) immediately
-        if let hwc = self.windowControllers.first, let hoverBar = (hwc as! HeliumPanelController).hoverBar {
+        if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()
         }
     }
@@ -1097,5 +1097,10 @@ class Document : NSDocument {
             }
         }
     }
-
+    var heliumPanelController : HeliumPanelController? {
+        get {
+            guard let hpc : HeliumPanelController = windowControllers.first as? HeliumPanelController else { return nil }
+            return hpc
+        }
+    }
 }
