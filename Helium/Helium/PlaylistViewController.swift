@@ -758,7 +758,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             if firstHere {
                 if let first = NSApp.keyWindow {
                     if let hpc = first.windowController as? HeliumPanelController {
-                        hpc.webViewController.webView.next(url: item.link)
+                        hpc.next(url: item.link)
                         firstHere = false
                     }
                 }
@@ -1124,7 +1124,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
-            return (item as! PlayItem).plays == 0 || tableColumn?.identifier.rawValue != k.link
+            return (item as! PlayItem).plays == 0 || tableColumn?.identifier.rawValue != k.plays
         }
         else
         {
@@ -1188,14 +1188,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 let dict = item.dictionary()
                 let promise = dict.xmlString(withElement: item.className, isFirstElement: true)
                 promises.append(promise)
-                //items.append(item.pasteboardPropertyList(forType: NSPasteboard.PasteboardType(rawValue: PlayList.className())) as AnyObject)
             }
             
-            //let data = NSKeyedArchiver.archivedData(withRootObject: items)
-            //pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayList.className()))
+            let data = NSKeyedArchiver.archivedData(withRootObject: items)
+            pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayList.className()))
             pboard.writeObjects(items)
             pboard.setPropertyList(promises, forType:NSPasteboard.PasteboardType.filePromise)
-            //pboard.writeObjects(promises as [NSPasteboardWriting])
         }
         else
         {
@@ -1209,15 +1207,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 let dict = item.dictionary()
                 let promise = dict.xmlString(withElement: item.className, isFirstElement: true)
                 promises.append(promise)
-                //items.append(item.pasteboardPropertyList(forType: NSPasteboard.PasteboardType(rawValue: PlayItem.className())) as AnyObject)
             }
             
-            //let data = NSKeyedArchiver.archivedData(withRootObject: items)
-            //pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayItem.className()))
-            // This write *all* writableTypes to types
+            let data = NSKeyedArchiver.archivedData(withRootObject: items)
+            pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayItem.className()))
             pboard.writeObjects(items)
             pboard.setPropertyList(promises, forType:NSPasteboard.PasteboardType.filePromise)
-            //pboard.writeObjects(promises as [NSPasteboardWriting])
         }
         return true
     }

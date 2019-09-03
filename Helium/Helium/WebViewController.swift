@@ -48,7 +48,13 @@ class MyWebView : WKWebView {
     }
     var selectedText : String?
     var selectedURL : URL?
-    
+    var chromeType: NSPasteboard.PasteboardType { return NSPasteboard.PasteboardType.init(rawValue: "org.chromium.drag-dummy-type") }
+    var finderNode: NSPasteboard.PasteboardType { return NSPasteboard.PasteboardType.init(rawValue: "com.apple.finder.node") }
+    var webarchive: NSPasteboard.PasteboardType { return NSPasteboard.PasteboardType.init(rawValue: "com.apple.webarchive") }
+    var acceptableTypes: Set<NSPasteboard.PasteboardType> { return [.URL, .fileURL, .pdf, .png, .rtf, .rtfd, .tiff, finderNode, webarchive] }
+    var filteringOptions = [NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes:NSImage.imageTypes]
+///                            NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly: NSURL.self]
+
     @objc internal func menuClicked(_ sender: AnyObject) {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
@@ -144,8 +150,13 @@ class MyWebView : WKWebView {
         Swift.print("cancel")
     }
 
+    func html(_ html : String) {
+        self.loadHTMLString(html, baseURL: nil)
+    }
+
+    var prev : MyWebView? = nil
     func next(url: URL) {
-        let doc = self.window?.windowController?.document as? Document
+        let doc = self.window?.windowController?.document as! Document
         var nextURL = url
 
         //  Pick off request (non-file) urls first
@@ -167,8 +178,8 @@ class MyWebView : WKWebView {
             return
         }
         
-        self.load(URLRequest(url: nextURL))
-        doc?.update(to: nextURL)
+        self.loadFileURL(nextURL, allowingReadAccessTo: nextURL)
+        doc.update(to: nextURL)
     }
     
     func text(_ text : String) {
@@ -179,8 +190,14 @@ class MyWebView : WKWebView {
         }
         
         if let url = URL.init(string: text) {
-            next(url: url)
-            return
+            do {
+                if try url.checkResourceIsReachable() {
+                    next(url: url)
+                    return
+                }
+            } catch let error as NSError {
+                Swift.print("url?: \(error.code):\(error.localizedDescription): \(text)")
+            }
         }
         
         if let data = text.data(using: String.Encoding.utf8) {
@@ -206,96 +223,185 @@ class MyWebView : WKWebView {
         self.loadHTMLString(html, baseURL: nil)
     }
     
+    func text(attrributedString text: NSAttributedString) {
+        do {
+            let docAttrs = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
+            let data = try text.data(from: NSMakeRange(0, text.length), documentAttributes: docAttrs)
+            if let attrs = String(data: data, encoding: .utf8) {
+                let html = String(format: """
+<html>
+<body>
+<code>
+%@
+</code>
+</body>
+</html>
+""", attrs);
+                self.loadHTMLString(html, baseURL: nil)
+            }
+        } catch let error as NSError {
+            Swift.print("attributedString -> html: \(error.code):\(error.localizedDescription): \(text)")
+        }
+    }
+    
     // MARK: Drag and Drop - Before Release
+    var isReceivingDrag = false {
+        didSet {
+            needsDisplay = true
+        }
+    }
+
+    func shouldAllowDrag(_ draggingInfo: NSDraggingInfo) -> Bool {
+        let pasteBoard = draggingInfo.draggingPasteboard
+        var canAccept = false
+        
+        let readableClasses = [NSURL.self, NSString.self, NSAttributedString.self, NSPasteboardItem.self]
+        
+        if pasteBoard.canReadObject(forClasses: readableClasses, options: filteringOptions) {
+            canAccept = true
+        }
+        else
+        {
+            for item in pasteBoard.pasteboardItems! {
+                Swift.print("item: \(item)")
+            }
+        }
+        return canAccept
+    }
+    
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let allow = shouldAllowDrag(sender)
+        isReceivingDrag = allow
+        
+        return allow ? .copy : NSDragOperation()
+    }
+    
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let allow = shouldAllowDrag(sender)
+        sender.animatesToDestination = true
+        return allow
+    }
+    
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        isReceivingDrag = false
+    }
+    
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
         appDelegate.newViewOptions = appDelegate.getViewOptions
 //        Swift.print("draggingUpdated -> .copy")
         return .copy
     }
+    
     // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        let viewOptions = appDelegate.newViewOptions
-
         let pboard = sender.draggingPasteboard
         let items = pboard.pasteboardItems
 
-        if (pboard.types?.contains(NSURLPboardType))! {
-            for item in items! {
-
-                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)/*"public.utf8-plain-text"*/), !urlString.hasPrefix("file://") {
-                    if let webloc = urlString.webloc {
-                        self.next(url: webloc)
-                    }
-                    else
-                    {
-                        self.text(urlString)
+        for type in pboard.types! {
+            switch type {
+            case .URL, .fileURL:
+                Swift.print("type: \(type)")
+                for item in items! {
+                    if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
+                        self.next(url: url)
                     }
                 }
-                else
-                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeURL as String)/*"public.url"*/) {
-                    self.next(url: URL(string: urlString)!)
+                return true
+                
+            case .pdf, .png:
+                Swift.print("type: \(type)")
+                return true
+                
+            case .rtf, .rtfd, .tiff:
+                Swift.print("type: \(type)")
+                for item in items! {
+                    if let data = item.data(forType: type), let text = NSAttributedString(rtf: data, documentAttributes: nil) {
+                        self.text(text.string)
+                    }
                 }
-                else
-                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeFileURL as String)/*"public.file-url"*/) {
-                    if appDelegate.openForBusiness && viewOptions != sameWindow, let itemURL = URL.init(string: urlString) {
-                        _ = appDelegate.doOpenFile(fileURL: itemURL, fromWindow: self.window)
+                return true
+                
+            case .string, .tabularText:
+                Swift.print("type: \(type)")
+                for item in items! {
+                    if let text = item.string(forType: type) {
+                        self.text(text)
+                    }
+                }
+                return true
+                
+            case webarchive:
+                for item in items! {
+                    if let data = item.data(forType: type) {
+                        let html = String(decoding: data, as: UTF8.self)
+                        self.html(html)
                         continue
                     }
-                    self.next(url: URL(string: urlString)!)
-                }
-                else
-                if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeData as String)), let url = urlString.webloc {
-                    self.next(url: url)
-                }
-                else
-/*
-                kUTTypeURL as String,
-                PlayList.className(),
-                PlayItem.className(),
-                NSFilenamesPboardType,
-                NSFilesPromisePboardType,
-                NSURLPboardType
-*/
-                if let text = item.string(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url")) {
-                    let data = item.data(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url"))
-                    let list = item.propertyList(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-url"))
-
-                    Swift.print("data \(String(describing: data))")
-                    Swift.print("text \(String(describing: text))")
-                    Swift.print("list \(String(describing: list))")
-                    continue
-                }
-                else
-                if let text = item.string(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type")) {
-                    let data = item.data(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type"))
-                    let list = item.propertyList(forType: NSPasteboard.PasteboardType(rawValue: "com.apple.pasteboard.promised-file-content-type"))
-
-                    Swift.print("data \(String(describing: data))")
-                    Swift.print("text \(String(describing: text))")
-                    Swift.print("list \(String(describing: list))")
-                    continue
-                }
-                else
-                {
-                    for type in item.types {
-                        let data = item.data(forType: type)
-                        let text = item.string(forType: type)
-                        let list = item.propertyList(forType: type)
-                        
-                        Swift.print("data \(String(describing: data))")
-                        Swift.print("text \(String(describing: text))")
-                        Swift.print("prop \(String(describing: list))")
+                    if let text = item.string(forType: type) {
+                        Swift.print("\(type) text \(String(describing: text))")
+                        self.text(text)
+                        continue
                     }
-                    continue
+                    if let prop = item.propertyList(forType: type) {
+                        if let html = String.init(data: prop as! Data, encoding: .utf8)  {
+                            self.html(html)
+                        }
+                        else
+                        {
+                            Swift.print("\(type) prop \(String(describing: prop))")
+                        }
+                    }
                 }
+                return true
+
+            case chromeType:
+                for item in items! {
+                    if let data = item.data(forType: type) {
+                        let html = String(decoding: data, as: UTF8.self)
+                        if html.count > 0 {
+                            self.html(html)
+                            continue
+                        }
+                    }
+                    if let text = item.string(forType: type) {
+                        Swift.print("\(type) text \(String(describing: text))")
+                        if text.count > 0 {
+                            self.text(text)
+                            continue
+                        }
+                    }
+                    if let prop = item.propertyList(forType: type) {
+                        if let html = String.init(data: prop as! Data, encoding: .utf8)  {
+                            self.html(html)
+                        }
+                        else
+                        {
+                            Swift.print("\(type) prop \(String(describing: prop))")
+                        }
+                    }
+                }
+                return true
+                /*
+            case finderNode:
+                Swift.print("type: \(type)")
+                for item in items! {
+                    if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
+                        if url.scheme == "file", let webloc = urlString.webloc {
+                            self.next(url: webloc)
+                        }
+                        else
+                        {
+                            self.text(urlString)
+                        }
+                    }
+                }
+//                return true
+                */
+           default:
+                Swift.print("unkn: \(type)")
             }
         }
-        else
-            if (pboard.types?.contains(NSPasteboard.PasteboardType(rawValue: "NSPasteboardURLReadingFileURLsOnlyKey")))! {
-            Swift.print("we have NSPasteboardURLReadingFileURLsOnlyKey")
-//          NSApp.delegate?.application!(NSApp, openFiles: items! as [String])
-        }
-        else
+        
         if ((pboard.types?.contains(NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)))!) {
             if let urlString = pboard.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeUTF8PlainText as String)/*"public.utf8-plain-text"*/) {
                 if let webloc = urlString.webloc {
@@ -307,6 +413,7 @@ class MyWebView : WKWebView {
                 }
             }
         }
+
         return true
     }
     
@@ -771,8 +878,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
 
         //  Intercept Finder drags
-        webView.registerForDraggedTypes([NSURLPboardType,NSPasteboard.PasteboardType.string])
-        
+        webView.registerForDraggedTypes(Array(webView.acceptableTypes))
+
         //  Watch javascript selection messages unless already done
         let controller = webView.configuration.userContentController
         if controller.userScripts.count > 0 { return }
@@ -924,7 +1031,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     }
                     else
                     {
-                        self.webView.next(url: url)
+                        self.heliumPanelController?.next(url: url)
                     }
                     //  Multiple files implies new windows
                     viewOptions.insert(.w_view)
@@ -1193,6 +1300,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                 default:
                                     //  Issue still to be resolved so leave as-is for now
                                     Swift.print("os \(os)")
+                                    if webSize != webView.fittingSize {
+                                        webView.bounds.size = webView.fittingSize
+                                        webSize = webView.bounds.size
+                                    }
                                 }
                             }
                             
