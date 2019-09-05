@@ -775,18 +775,6 @@ CA
                                             <action selector="openLocationPress:" target="Ady-hI-5gd" id="SOF-kG-5Xy"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Window" id="VKa-yC-mZQ">
-                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="newDocument:" target="Ady-hI-5gd" id="KUx-Wv-qtD"/>
-                                        </connections>
-                                    </menuItem>
-                                    <menuItem title="Tab" tag="1" alternate="YES" id="Zfp-kU-JpI">
-                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
-                                        <connections>
-                                            <action selector="newDocument:" target="Ady-hI-5gd" id="dsw-vr-9iN"/>
-                                        </connections>
-                                    </menuItem>
                                 </items>
                             </menu>
                         </menuItem>
@@ -922,7 +910,7 @@ CA
                         </connections>
                     </window>
                     <connections>
-                        <segue destination="YAy-lX-dae" kind="relationship" relationship="window.shadowedContentViewController" id="UQR-x0-MeW"/>
+                        <segue destination="YAy-lX-dae" kind="relationship" relationship="window.shadowedContentViewController" id="28h-dL-Bhy"/>
                     </connections>
                 </windowController>
                 <customObject id="jdB-Q2-r1e" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -1716,6 +1704,10 @@ Gw
                                     <outlet property="navigationDelegate" destination="XfG-lQ-9wD" id="MYA-iR-gA3"/>
                                 </connections>
                             </wkWebView>
+                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NM2-Mc-us4" customClass="WebBorderView" customModule="Helium" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </customView>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="nLf-K2-tyy">
                                 <rect key="frame" x="232" y="127" width="32" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -1734,45 +1726,14 @@ Gw
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="borderView" destination="NM2-Mc-us4" id="PPE-6p-CY7"/>
                         <outlet property="loadingIndicator" destination="nLf-K2-tyy" id="oX3-JJ-RLt"/>
                         <outlet property="webView" destination="4BQ-e7-oaJ" id="GYi-nj-AiB"/>
                     </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="454"/>
-        </scene>
-        <!--Window Controller-->
-        <scene sceneID="Nw5-MM-un9">
-            <objects>
-                <windowController storyboardIdentifier="CustomController" id="UVO-9J-w1E" customClass="HeliumPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="vzr-C3-QGe" customClass="HeliumPanel" customModule="Helium" customModuleProvider="target">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" utility="YES" nonactivatingPanel="YES" HUD="YES"/>
-                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="480" height="270"/>
-                        <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
-                        <connections>
-                            <outlet property="delegate" destination="UVO-9J-w1E" id="2vD-wD-OhA"/>
-                        </connections>
-                    </window>
-                    <connections>
-                        <segue destination="ZxL-zw-47r" kind="relationship" relationship="window.shadowedContentViewController" id="xsg-c9-IQx"/>
-                    </connections>
-                </windowController>
-                <customObject id="PeV-J8-seB" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-            </objects>
-        </scene>
-        <!--Web View Controller-->
-        <scene sceneID="gXn-bL-Xfn">
-            <objects>
-                <viewController id="ZxL-zw-47r" customClass="WebViewController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="4bL-ht-fTV">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </view>
-                </viewController>
-                <customObject id="Hmo-yv-zSZ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-            </objects>
+            <point key="canvasLocation" x="-25" y="420"/>
         </scene>
     </scenes>
     <resources>
