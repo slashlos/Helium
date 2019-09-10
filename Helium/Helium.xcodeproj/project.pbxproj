@@ -11,6 +11,7 @@
 		0F1035921F032E6A00327B30 /* Helium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F10354A1F0300DA00327B30 /* Helium.swift */; };
 		0F1B034221C691270050A7DC /* PanelButtonBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1B034121C691270050A7DC /* PanelButtonBar.swift */; };
 		0F5197402002CD0B0090C431 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 0F51973F2002CD0B0090C431 /* Help */; };
+		0F6BE02C2323DC3E00767105 /* docIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0F6BE02B2323DC3E00767105 /* docIcon.icns */; };
 		0F9AB2F1213C3E7A0096C19F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F0213C3E7A0096C19F /* AppDelegate.m */; };
 		0F9AB2F3213C3E7B0096C19F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F2213C3E7B0096C19F /* Assets.xcassets */; };
 		0F9AB2F6213C3E7B0096C19F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0F9AB2F4213C3E7B0096C19F /* MainMenu.xib */; };
@@ -105,6 +106,7 @@
 		0F2F92B121C325AD0089FF55 /* WindowButtonBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowButtonBar.swift; sourceTree = "<group>"; };
 		0F51973F2002CD0B0090C431 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Help; path = ../../Help; sourceTree = "<group>"; };
 		0F60517221612E470008977E /* Helium-dmg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Helium-dmg"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F6BE02B2323DC3E00767105 /* docIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = docIcon.icns; path = Helium/Assets/docIcon.icns; sourceTree = "<group>"; };
 		0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helium.entitlements; sourceTree = "<group>"; };
 		0F9AB2ED213C3E7A0096C19F /* XHelium.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XHelium.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F9AB2EF213C3E7A0096C19F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -229,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				0FDE23EC1F040484009D4B16 /* Helium.icns */,
+				0F6BE02B2323DC3E00767105 /* docIcon.icns */,
 				4D867CB31AD6781200681331 /* Helium */,
 				4D8DAEB01C3A427D00B212EC /* HeliumTests */,
 				27199AB11BE422AC00E02297 /* HeliumShareExtension */,
@@ -510,6 +513,7 @@
 			files = (
 				4D867CBB1AD6781200681331 /* Images.xcassets in Resources */,
 				0F5197402002CD0B0090C431 /* Help in Resources */,
+				0F6BE02C2323DC3E00767105 /* docIcon.icns in Resources */,
 				B34C1EC61ADE3CBE0094ADBA /* dsa_pub.pem in Resources */,
 				0FDE23ED1F040484009D4B16 /* Helium.icns in Resources */,
 				4D867CBE1AD6781200681331 /* Main.storyboard in Resources */,

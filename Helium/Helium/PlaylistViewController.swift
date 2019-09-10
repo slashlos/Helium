@@ -30,7 +30,7 @@ class PlayTableView : NSTableView {
         let dragPosition = self.convert(event.locationInWindow, to: nil)
         let imageLocation = NSMakeRect(dragPosition.x - 16.0, dragPosition.y - 16.0, 32.0, 32.0)
 
-        _ = self.dragPromisedFiles(ofTypes: ["h3w"], from: imageLocation, source: self, slideBack: true, event: event)
+        _ = self.dragPromisedFiles(ofTypes: [k.h3w], from: imageLocation, source: self, slideBack: true, event: event)
     }
 
     override func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
@@ -187,7 +187,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             //  publish seen plays across playlists
             for  (name,hist) in seen {
-                Swift.print("update \(name) -> \(hist)");
+                Swift.print("update '\(name)' -> \(hist)");
                 for play in playlists {
                     if let item = play.list.item(hist.link.absoluteString), item.plays != hist.plays {
                         item.plays = hist.plays
@@ -229,15 +229,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
 	//  delegate keeps our parsing dict to keeps names unique
     //  PlayList.name.willSet will track changes in playdicts
-    @objc dynamic var playlists : [PlayList] {
-        get {
-            return appDelegate.playlists
-        }
-        set (array) {
-            appDelegate.playlists = array
-        }
-    }
-
+    @objc dynamic var playlists = [PlayList]()
     @objc dynamic var playCache = [PlayList]()
     
     //  MARK:- Undo
@@ -298,7 +290,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 NotificationCenter.default.removeObserver(self)
             }
 
-            self.observe(self, keyArray: [k.Playlists], observing: state)
+            self.observe(self, keyArray: [k.playlists], observing: state)
             for playlist in playlists {
                 self.observe(playlist, keyArray: listIvars, observing: state)
                 for item in playlist.list {
@@ -342,7 +334,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         switch keyPath {
         
-        case k.Playlists?, k.list?:
+        case k.playlists?, k.list?:
             //  arrays handled by [add,remove]<List,Play> callback closure block
 
             if (newValue != nil) {
@@ -462,9 +454,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         playlistTableView.doubleAction = #selector(playPlaylist(_:))
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
         
-        //  Load playlists shared by all document; our delegate maintains history
-        self.restorePlaylists(nil)
-
         //  Restore hidden columns in tableviews using defaults
         setupHiddenColumns(playlistTableView, hideit: ["date","tally"])
         setupHiddenColumns(playitemTableView, hideit: ["date","link","plays","rect","label","hover","alpha","trans"])
@@ -473,17 +462,22 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
                                                list: [PlayItem]())
     override func viewWillAppear() {
-        // update existing history entry if any AVQueuePlayer
 
-        //  Do not allow duplicate history entries
-        while let oldHistory = appDelegate.playlists.item(UserSettings.HistoryName.value)
-        {
-             playlistArrayController.removeObject(oldHistory)
+        //  Leave non-global extractions contents intact
+        if let url = self.view.window?.windowController?.document?.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w {
+            //  For global playlists, load shared by all; app delegate keeps history
+            self.restorePlaylists(nil)
+            
+            //  For globals, prune duplicate history entries
+            while let oldHistory = playlists.item(UserSettings.HistoryName.value)
+            {
+                playlistArrayController.removeObject(oldHistory)
+            }
+            historyCache = PlayList.init(name: UserSettings.HistoryName.value,
+                                         list: appDelegate.histories)
+            
+            playlistArrayController.addObject(historyCache)
         }
-        historyCache = PlayList.init(name: UserSettings.HistoryName.value,
-                                     list: appDelegate.histories)
-
-        playlistArrayController.addObject(historyCache)
         
         // cache our list before editing
         playCache = playlists
@@ -757,8 +751,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         for (i,item) in (items.enumerated()).prefix(maxSize) {
             if firstHere {
                 if let first = NSApp.keyWindow {
-                    if let hpc = first.windowController as? HeliumPanelController {
-                        hpc.next(url: item.link)
+                    if let wvc = first.contentViewController as? WebViewController {
+                        wvc.webView.next(url: item.link)
                         firstHere = false
                     }
                 }
@@ -902,9 +896,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             //  If no playlist(s) selection restore from defaults
             if playArray.count == 0 {
-                if let plists = defaults.dictionary(forKey: k.Playlists) {
+                if let plists = defaults.dictionary(forKey: k.playlists) {
                     playlists = [PlayList]()
-                    for (name,plist) in plists{
+                    for (name,plist) in plists {
                         guard let items = plist as? [Dictionary<String,Any>] else {
                             let item = PlayItem.init(with: (plist as? Dictionary<String,Any>)!)
                             let playlist = PlayList()
@@ -1255,10 +1249,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     items.append(dict)
                 }
 
-                if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
+                if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.h3w) {
                     var dict = Dictionary<String,[Any]>()
-                    dict[k.Playitems] = items
-                    dict[k.Playlists] = [name as AnyObject]
+                    dict[k.playitems] = items
+                    dict[k.playlists] = [name as AnyObject]
                     dict[name] = items
                     (dict as NSDictionary).write(to: fileURL, atomically: true)
                     names.append(fileURL.absoluteString)
@@ -1269,7 +1263,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         {
             let selection = playlistArrayController.selectedObjects.first as! PlayList
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
-            let name = String(format: "%@+%ld", selection.name, indexSet.count)
+            let name = String(format: "%@(%ld)", selection.name, indexSet.count)
             var items: [AnyObject] = [AnyObject]()
 
             for index in indexSet {
@@ -1278,10 +1272,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 items.append(item.dictionary() as AnyObject)
             }
             
-            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: "h3w") {
+            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.h3w) {
                 var dict = Dictionary<String,[AnyObject]>()
-                dict[k.Playitems] = items
-                dict[k.Playlists] = [name as AnyObject]
+                dict[k.playitems] = items
+                dict[k.playlists] = [name as AnyObject]
                 dict[name] = items
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
             }

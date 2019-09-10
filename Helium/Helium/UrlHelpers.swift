@@ -212,14 +212,15 @@ extension URL {
         get {
             do {
                 let data = try Data.init(contentsOf: self) as Data
-                let dict = try! PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
-                let urlString = dict["URL"] as! String
-                return URL.init(string: urlString)
+                let dict = try PropertyListSerialization.propertyList(from:data, options: [], format: nil) as! [String:Any]
+                if let urlString = dict["URL"] as? String, let webloc = URL.init(string: urlString) {
+                    return webloc
+                }
             }
             catch
             {
-                return nil
             }
+            return nil
         }
     }
 }

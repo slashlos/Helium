@@ -228,9 +228,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-    var dc : NSDocumentController {
+    var dc : HeliumDocumentController {
         get {
-            return NSDocumentController.shared
+            return NSDocumentController.shared as! HeliumDocumentController
         }
     }
     
@@ -371,8 +371,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
             guard openForBusiness || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
-                if let hpc = fromWindow?.windowController as? HeliumPanelController {
-                    hpc.next(url: fileURL)
+                if let wvc = thisWindow.contentViewController as? WebViewController {
+                    wvc.webView.next(url: fileURL)
                     return true
                 }
                 else
@@ -387,15 +387,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  This could be anything so add/if a doc and initialize
         do {
-            let doc = try Document.init(contentsOf: fileURL)
-            let dc = NSDocumentController.shared
+            let typeName = fileURL.isFileURL && fileURL.pathExtension == k.h3w ? k.Playlists : k.Helium
+            let doc = try Document.init(contentsOf: fileURL, ofType: typeName)
             dc.noteNewRecentDocumentURL(fileURL)
 
-            if let hpc = doc.heliumPanelController {
-                hpc.window?.makeKey()
-                hpc.next(url: fileURL)
-                status = true
+            if let hpc = doc.heliumPanelController, let window = hpc.window {
+                window.makeKey()
+                hpc.webViewController.webView.next(url: fileURL)
             }
+            else
+            {
+                doc.showWindows()
+            }
+            status = true
+            
         } catch let error {
             print("*** Error open file: \(error.localizedDescription)")
             status = false
@@ -482,13 +487,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) {
         do {
-            let doc = try NSDocumentController.shared.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
             else
             if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.next(url: newURL)
+                hpc.webViewController.webView.next(url: newURL)
             }
             doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
         } catch let error {
@@ -498,14 +503,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) {
         do {
-            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
+            let types : Dictionary<String,String> = [ k.h3w : k.Helium ]
+            let type = types [ newURL.pathExtension ]
+            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: type ?? k.Helium)
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
-            else
-            if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.next(url: newURL)
-            }
+            
             doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
         } catch let error {
             NSApp.presentError(error)
@@ -583,7 +587,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No contextual window, load panel and its playlist controller
             do {
-                let doc = try dc.makeUntitledDocument(ofType: k.Playlists)
+                let doc = try Document.init(type: k.Playlists)
                 doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
             }
             catch let error {
@@ -604,7 +608,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if let wvc: WebViewController = wvc as? WebViewController {
                 if wvc.presentedViewControllers?.count == 0 {
                     let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
-                    
+                    pvc.playlists.append(contentsOf: playlists)
                     pvc.webViewController = wvc
                     wvc.presentAsSheet(pvc)
                 }
@@ -627,8 +631,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
         do
         {
-            let next = try dc.openUntitledDocumentAndDisplay(true) as! Document
-            next.docType = k.docRelease
+            let next = try Document.init(type: k.ReleaseNotes)
             
             let wc = next.windowControllers.first?.window?.windowController
             let relnotes = NSString.string(fromAsset: "RELEASE")
@@ -905,8 +908,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if  _playlists == nil {
                 _playlists = [PlayList]()
                 
-                if let plists = self.defaults.dictionary(forKey: k.Playlists) {
-                    for (name,plist) in plists{
+                if let plists = self.defaults.dictionary(forKey: k.playlists) {
+                    for (name,plist) in plists {
                         guard let items = plist as? [Dictionary<String,Any>] else {
                             let playlist = PlayList.init(name: name, list: [PlayItem]())
                             _playlists?.append(playlist)
@@ -1127,7 +1130,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if urlString == UserSettings.HomePageURL.value { continue }
                 guard let url = URL.init(string: urlString ) else { continue }
                 self.openURLInNewWindow(url)
-                Swift.print("rest \(item)")
+                Swift.print("restore \(item)")
             }
         }
         
@@ -1230,7 +1233,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
-        guard let itemURL = notification.object as? URL, itemURL.scheme != "about",
+        guard let itemURL = notification.object as? URL, itemURL.scheme != k.about,
             itemURL.absoluteString != UserSettings.HomePageURL.value else {
             return
         }

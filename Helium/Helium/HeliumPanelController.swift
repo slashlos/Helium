@@ -32,12 +32,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         shouldCascadeWindows = true
     }
     
-    func next(url: URL) {
-        if let webView = self.webView {
-            webView.next(url: url)
-        }
-    }
-
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
 
@@ -575,8 +569,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
         else
         {
-            if let doc = self.document {
-                docIconButton?.image = (doc as! Document).displayImage
+            if let doc = self.doc {
+                docIconButton?.image = doc.displayImage
             }
             else
             {
@@ -612,10 +606,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
-        switch (self.document as! Document).docType {
-        case k.docRelease:
-            return k.docReleaseName
-        case k.docPlaylists:
+        switch self.doc!.docType {
+        case .release:
+            return k.ReleaseNotes
+        case .playlist:
             return (document?.displayName)!
         default:
             if let length = self.webView?.title?.count, length > 0 {
