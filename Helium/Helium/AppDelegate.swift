@@ -15,14 +15,14 @@ import Cocoa
 import CoreLocation
 
 #if swift(>=4.0)
-let NSURLPboardType = NSPasteboard.PasteboardType(kUTTypeURL as String)
-let MixedState = NSControl.StateValue.mixed
-let OffState = NSControl.StateValue.off
-let OnState = NSControl.StateValue.on
+    let NSURLPboardType = NSPasteboard.PasteboardType(kUTTypeURL as String)
+    let MixedState = NSControl.StateValue.mixed
+    let OffState = NSControl.StateValue.off
+    let OnState = NSControl.StateValue.on
 #else
-let MixedState = NSMixedState
-let OffState = NSOffState
-let OnState = NSOnState
+    let MixedState = NSMixedState
+    let OffState = NSOffState
+    let OnState = NSOnState
 #endif
 
 struct RequestUserStrings {
