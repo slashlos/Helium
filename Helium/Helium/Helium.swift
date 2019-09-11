@@ -76,6 +76,8 @@ struct k {
     static let searchLinks = [k.bingLink, k.googleLink, k.yahooLink]
 }
 
+let docTypes = [k.Helium, k.Release, k.Playlists]
+
 extension NSImage {
     
     func resize(w: Int, h: Int) -> NSImage {
@@ -1019,8 +1021,17 @@ class Document : NSDocument {
         }
         
         do {
-            try self.write(to: fileURL!, ofType: fileType!)
-        } catch let error {
+            if docType == .helium {
+                try self.write(to: fileURL!, ofType: fileType!)
+            }
+            else
+            if docType == .playlist {
+                if let url = self.url, url.isFileURL {
+                    let type = docTypes[docType.rawValue]
+                    try self.writeSafely(to: url, ofType: type, for: .saveOperation)
+                }
+            }
+         } catch let error {
             NSApp.presentError(error)
         }
     }
