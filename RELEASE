@@ -22,6 +22,24 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 5006</h2>
+1591833|19/09/11 guard doc saving based on type<br>
+383fc10|19/09/11 whitespace indentation<br>
+c448916|19/09/11 restore @objc for validations, state changes<br>
+20e174d|19/09/11 added docType -> type name mapping<br>
+ee0d05a|19/09/11 modernize control state codes<br>
+9a321ae|19/09/11 whitespace formatting<br>
+34243d6|19/09/10 app event, playlist fixes<br>
+7b5904a|19/09/10 single playlist file drop; fixes<br>
+ebfa60e|19/09/10 return app status<br>
+48a1da6|19/09/10 show doc windows after creation<br>
+fa3a898|19/09/10 sync drag-n-drop modernizations<br>
+f77ba58|19/09/05 added border view; removed dup webView<br>
+04fe542|19/09/03 sync to pensieve<br>
+16e4544|19/09/02 minimum base target 10.13<br>
+6e21df7|19/09/02 readability variable name changes<br>
+</p>
+
 <h2>Build 4798</h2>
 47ef0b2|19/08/31 publish plays across playlists<br>
 56a9a29|19/08/31 fix play uniqueness setup; drop NSString<br>

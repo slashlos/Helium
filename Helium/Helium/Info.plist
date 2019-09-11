@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20190910.212600</string>
+	<string>20190911.190329</string>
 	<key>CFBuildIncrement</key>
-	<true/>
+	<false/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>4976</integer>
+	<integer>5006</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -37,6 +37,8 @@
 			<array>
 				<string>h3w</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>docIcon</string>
 			<key>CFBundleTypeName</key>
 			<string>Playlist</string>
 			<key>CFBundleTypeRole</key>
@@ -102,7 +104,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.4976</string>
+	<string>3.0.5006</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
