@@ -1088,11 +1088,11 @@ class Document : NSDocument {
         makeWindowController(k.Helium)
     }
     func makeWindowController(_ typeName: String) {
-        let typeName = typeName == "Any" ? k.Helium : typeName
-        let identifier = String(format: "%@Controller", typeName)
+        let type = docTypes[ (docTypes.firstIndex(of: typeName) ?? DocType.helium.rawValue) ]
+        let identifier = String(format: "%@Controller", type)
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         
-        self.docType = DocType(rawValue: [ k.Helium, k.Release, k.Playlists ].firstIndex(of: typeName)!)
+        self.docType = DocType(rawValue: [ k.Helium, k.Release, k.Playlists ].firstIndex(of: type) ?? DocType.helium.rawValue)
         
         let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
