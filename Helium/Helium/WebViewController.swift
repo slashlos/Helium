@@ -122,11 +122,11 @@ class MyWebView : WKWebView {
     
     @objc func openLinkInNewWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
-            appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
+            _ = appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
         }
         else
         if let url = self.selectedURL {
-            appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
+            _ = appDelegate.openURLInNewWindow(url, attachTo: item.representedObject as? NSWindow)
         }
     }
     
@@ -1075,11 +1075,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 
                 for url in urls {
                     if viewOptions.contains(.t_view) {
-                        self.appDelegate.openURLInNewWindow(url, attachTo: window)
+                        _ = self.appDelegate.openURLInNewWindow(url, attachTo: window)
                     }
                     else
                     if viewOptions.contains(.w_view) {
-                        self.appDelegate.openURLInNewWindow(url)
+                        _ = self.appDelegate.openURLInNewWindow(url)
                     }
                     else
                     {
@@ -1113,11 +1113,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                         guard let newURL = URL.init(string: urlString) else { return }
                                         
                                         if viewOptions.contains(.t_view) {
-                                            self.appDelegate.openURLInNewWindow(newURL, attachTo: window)
+                                            _ = self.appDelegate.openURLInNewWindow(newURL, attachTo: window)
                                         }
                                         else
                                         if viewOptions.contains(.w_view) {
-                                            self.appDelegate.openURLInNewWindow(newURL)
+                                            _ = self.appDelegate.openURLInNewWindow(newURL)
                                         }
                                         else
                                         {
@@ -1142,11 +1142,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                      title: "Web Search",
                                      acceptHandler: { (newWindow: Bool, searchURL: URL) in
                                         if viewOptions.contains(.t_view) {
-                                            self.appDelegate.openURLInNewWindow(searchURL, attachTo: window)
+                                            _ = self.appDelegate.openURLInNewWindow(searchURL, attachTo: window)
                                         }
                                         else
                                         if newWindow || viewOptions.contains(.w_view) {
-                                            self.appDelegate.openURLInNewWindow(searchURL)
+                                            _ = self.appDelegate.openURLInNewWindow(searchURL)
                                         }
                                         else
                                         {
@@ -1324,7 +1324,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     // once loaded update window title,size with video name,dimension
                     if let toolTip = (mwv.url?.absoluteString) {
                         title = url.isFileURL ? url.lastPathComponent : (url.path != "/" ? url.lastPathComponent : url.host) ?? toolTip
-                        self.heliumPanelController?.hoverBar?.toolTip = toolTip
+                        self.heliumPanelController?.hoverBar?.superview?.toolTip = toolTip
 
                         if let track = AVURLAsset(url: url, options: nil).tracks.first {
 
@@ -1571,11 +1571,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         guard navigationAction.buttonNumber < 2 else {
             Swift.print("newWindow with url:\(String(describing: url))")
             if viewOptions.contains(.t_view) {
-                appDelegate.openURLInNewWindow(url, attachTo: webView.window )
+                _ = appDelegate.openURLInNewWindow(url, attachTo: webView.window )
             }
             else
             {
-                appDelegate.openURLInNewWindow(url)
+                _ = appDelegate.openURLInNewWindow(url)
             }
             decisionHandler(WKNavigationActionPolicy.cancel)
             return
@@ -1587,11 +1587,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             }
             if navigationAction.buttonNumber > 1 {
                 if viewOptions.contains(.t_view) {
-                    appDelegate.openURLInNewWindow(url, attachTo: webView.window )
+                    _ = appDelegate.openURLInNewWindow(url, attachTo: webView.window )
                 }
                 else
                 {
-                    appDelegate.openURLInNewWindow(url)
+                    _ = appDelegate.openURLInNewWindow(url)
                 }
                 decisionHandler(WKNavigationActionPolicy.cancel)
             }
@@ -1610,11 +1610,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             if navigationAction.buttonNumber > 1
             {
                 if viewOptions.contains(.t_view) {
-                    appDelegate.openURLInNewWindow(newUrl, attachTo: webView.window )
+                    _ = appDelegate.openURLInNewWindow(newUrl, attachTo: webView.window )
                 }
                 else
                 {
-                    appDelegate.openURLInNewWindow(newUrl)
+                    _ = appDelegate.openURLInNewWindow(newUrl)
                 }
             }
             else
@@ -1733,7 +1733,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
 
         if navigationAction.targetFrame == nil {
-            appDelegate.openURLInNewWindow(navigationAction.request.url!)
+            _ = appDelegate.openURLInNewWindow(navigationAction.request.url!)
             return nil
         }
         

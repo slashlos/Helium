@@ -468,11 +468,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             let urls = open.urls
             for url in urls {
                 if viewOptions.contains(.t_view) {
-                    openFileInNewWindow(url, attachTo: sender.representedObject as? NSWindow)
+                    _ = openFileInNewWindow(url, attachTo: sender.representedObject as? NSWindow)
                 }
                 else
                 if viewOptions.contains(.w_view) {
-                    openFileInNewWindow(url)
+                    _ = openFileInNewWindow(url)
                 }
                 else
                 {
@@ -485,7 +485,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return
     }
     
-    internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) {
+    internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) -> Bool {
         do {
             let doc = try dc.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
@@ -500,9 +500,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         } catch let error {
             NSApp.presentError(error)
         }
+        return false
     }
     
-    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) {
+    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
         do {
             let types : Dictionary<String,String> = [ k.h3w : k.Helium ]
             let type = types [ newURL.pathExtension ]
@@ -515,11 +516,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         } catch let error {
             NSApp.presentError(error)
         }
+        return false
     }
     
     @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
-            self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
+            _ = self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
         }
     }
     
@@ -543,11 +545,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                             guard let newURL = URL.init(string: urlString) else { return }
                             
                             if viewOptions.contains(.t_view), let parent = sender.representedObject {
-                                self.openURLInNewWindow(newURL, attachTo: parent as? NSWindow)
+                                _ = self.openURLInNewWindow(newURL, attachTo: parent as? NSWindow)
                             }
                             else
                             {
-                                self.openURLInNewWindow(newURL)
+                                _ = self.openURLInNewWindow(newURL)
                             }
         })
     }
@@ -567,7 +569,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                          onWindow: nil,
                          title: "Web Search",
                          acceptHandler: { (newWindow,searchURL: URL) in
-                            self.openURLInNewWindow(searchURL, attachTo: sender.representedObject as? NSWindow)
+                            _ = self.openURLInNewWindow(searchURL, attachTo: sender.representedObject as? NSWindow)
         })
     }
     
@@ -1130,7 +1132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 guard let urlString = (item as? String) else { continue }
                 if urlString == UserSettings.HomePageURL.value { continue }
                 guard let url = URL.init(string: urlString ) else { continue }
-                self.openURLInNewWindow(url)
+                _ = self.openURLInNewWindow(url)
                 Swift.print("restore \(item)")
             }
         }
@@ -1603,7 +1605,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         else
         {
-            openURLInNewWindow(URL.init(string: String(urlString))!)
+            _ = openURLInNewWindow(URL.init(string: String(urlString))!)
         }
     }
 
@@ -1620,7 +1622,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     func application(_ sender: NSApplication, openFile: String) -> Bool {
         let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
         let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-        return self.doOpenFile(fileURL: fileURL)
+        return openFileInNewWindow(fileURL)
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
