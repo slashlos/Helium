@@ -49,7 +49,7 @@ class AboutBoxController : NSViewController {
         if let window = self.view.window {
             let oldSize = window.contentView?.bounds.size
             var frame = window.frame
-            if toggleButton.state == OffState {
+            if toggleButton.state == .off {
                 
                 frame.origin.y += ((oldSize?.height)! - (hideRect?.size.height)!)
                 window.setFrameOrigin(frame.origin)
@@ -93,7 +93,7 @@ class AboutBoxController : NSViewController {
 
         AboutBoxController.creditsState += 1
 
-        if toggleButton.state == OffState {
+        if toggleButton.state == .off {
             if AboutBoxController.creditsState >= AboutBoxController.creditsCount
             {
                 AboutBoxController.creditsState = 0
@@ -158,7 +158,7 @@ class AboutBoxController : NSViewController {
 
         //  Credit criteria initially hidden
         AboutBoxController.creditsState = 0-1
-        toggleButton.state = OffState
+        toggleButton.state = .off
         cycleCredits(self)
         toggleContent(self)
         
@@ -173,7 +173,7 @@ class AboutBoxController : NSViewController {
     
     override func viewDidLoad() {
         //	Initially don't show history
-        toggleButton.state = OffState
+        toggleButton.state = .off
  
         //	Get the info dictionary (Info.plist)
         let infoDictionary = (Bundle.main.infoDictionary)!
@@ -194,7 +194,7 @@ class AboutBoxController : NSViewController {
 
         // Setup the copyrights field; each separated by "|"
         copyrightStrings = (infoDictionary["NSHumanReadableCopyright"] as? String)?.components(separatedBy: "|")
-        toggleButton.state = OffState
+        toggleButton.state = .off
     }
     
 }

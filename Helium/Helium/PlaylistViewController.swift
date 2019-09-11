@@ -82,7 +82,7 @@ class PlayHeaderView : NSTableHeaderView {
             
             item = NSMenuItem.init(title: title, action: action, keyEquivalent: "")
             item.image = NSImage.init(named: (state) ? "NSOnImage" : "NSOffImage")
-            item.state = (state ? OffState : OnState)
+            item.state = (state ? .off : .on)
             item.representedObject = col
             item.isEnabled = true
             item.target = target
@@ -464,7 +464,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     override func viewWillAppear() {
         //  Leave non-global extractions contents intact
-        if let url = self.view.window?.windowController?.document?.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w {
+        if let doc = self.view.window?.windowController?.document, let url = doc.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w {
             
             //  update window close button with url as tooltip
             if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
@@ -1110,7 +1110,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             switch menuItem.title {
                 
             default:
-                menuItem.state = UserSettings.DisabledMagicURLs.value ? OffState : OnState
+                menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
                 break
             }
         }

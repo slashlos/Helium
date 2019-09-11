@@ -16,13 +16,6 @@ import CoreLocation
 
 #if swift(>=4.0)
     let NSURLPboardType = NSPasteboard.PasteboardType(kUTTypeURL as String)
-    let MixedState = NSControl.StateValue.mixed
-    let OffState = NSControl.StateValue.off
-    let OnState = NSControl.StateValue.on
-#else
-    let MixedState = NSMixedState
-    let OffState = NSOffState
-    let OnState = NSOnState
 #endif
 
 struct RequestUserStrings {
@@ -278,7 +271,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
-		UserSettings.HideAppMenu.value = (sender.state == OffState)
+		UserSettings.HideAppMenu.value = (sender.state == .off)
         self.syncAppMenuVisibility()
 	}
     @IBAction func homePagePress(_ sender: AnyObject) {
@@ -301,13 +294,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     //  By defaut we show document title bar
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        UserSettings.AutoHideTitle.value = (sender.state == OffState)
+        UserSettings.AutoHideTitle.value = (sender.state == .off)
      }
 
     //  By default we auto save any document changes
 	@IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
 	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
-        autoSaveDocs = (sender.state == OffState)
+        autoSaveDocs = (sender.state == .off)
 	}
 	var autoSaveDocs : Bool {
         get {
@@ -329,7 +322,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        UserSettings.DeveloperExtrasEnabled.value = (sender.state == OffState)
+        UserSettings.DeveloperExtrasEnabled.value = (sender.state == .off)
     }
     
     var fullScreen : NSRect? = nil
@@ -348,11 +341,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
-        UserSettings.DisabledMagicURLs.value = (sender.state == OnState)
+        UserSettings.DisabledMagicURLs.value = (sender.state == .on)
     }
     
 	@IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
-        UserSettings.HideZoomIcon.value = (sender.state == OffState)
+        UserSettings.HideZoomIcon.value = (sender.state == .off)
         
         //  sync all document zoom icons now - yuck
         for doc in dc.documents {
@@ -622,11 +615,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 	
 	@IBAction func promoteHTTPSPress(_ sender: NSMenuItem) {
-        UserSettings.PromoteHTTPS.value = (sender.state == OnState ? false : true)
+        UserSettings.PromoteHTTPS.value = (sender.state == .on ? false : true)
 	}
     
 	@IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
-        UserSettings.RestoreDocAttrs.value = (sender.state == OnState ? false : true)
+        UserSettings.RestoreDocAttrs.value = (sender.state == .on ? false : true)
 	}
 	
 	@IBAction func showReleaseInfo(_ sender: Any) {
@@ -770,49 +763,49 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 let group = menuItem.tag / 100
                 let index = (menuItem.tag - (group * 100)) % 3
                 
-                menuItem.state = UserSettings.Search.value == index ? OnState : OffState
+                menuItem.state = UserSettings.Search.value == index ? .on : .off
                 break
 
             case "Preferences":
                 break
             case "Auto-hide Title Bar":
-                menuItem.state = UserSettings.AutoHideTitle.value ? OnState : OffState
+                menuItem.state = UserSettings.AutoHideTitle.value ? .on : .off
                 break
             case "Auto save documents":
-                menuItem.state = UserSettings.AutoSaveDocs.value ? OnState : OffState
+                menuItem.state = UserSettings.AutoSaveDocs.value ? .on : .off
                 break;
             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hpc : HeliumPanelController = wc as? HeliumPanelController,
                         let state = hpc.webView?.configuration.preferences.value(forKey: "developerExtrasEnabled") else {
-                            menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? OnState : OffState
+                            menuItem.state = UserSettings.DeveloperExtrasEnabled.value ? .on : .off
                             break
                     }
-                    menuItem.state = (state as! NSNumber).boolValue ? OnState : OffState
+                    menuItem.state = (state as! NSNumber).boolValue ? .on : .off
                     break
                 }
-                menuItem.state = OnState
+                menuItem.state = .on
                 break
             case "Hide Helium in menu bar":
-                menuItem.state = UserSettings.HideAppMenu.value ? OnState : OffState
+                menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
                 break
             case "Hide zoom icon":
-                menuItem.state = UserSettings.HideZoomIcon.value ? OnState : OffState
+                menuItem.state = UserSettings.HideZoomIcon.value ? .on : .off
                 break
             case "Home Page":
                 break
             case "Location services":
-                menuItem.state = isLocationEnabled ? OnState : OffState
+                menuItem.state = isLocationEnabled ? .on : .off
                 break
             case "Magic URL Redirects":
-                menuItem.state = UserSettings.DisabledMagicURLs.value ? OffState : OnState
+                menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
                 break
             case "HTTP -> HTTPS Links":
-                menuItem.state = UserSettings.PromoteHTTPS.value ? OnState : OffState
+                menuItem.state = UserSettings.PromoteHTTPS.value ? .on : .off
                 break
             case "Restore Doc Attributes":
-                menuItem.state = UserSettings.RestoreDocAttrs.value ? OnState : OffState
+                menuItem.state = UserSettings.RestoreDocAttrs.value ? .on : .off
                 break
             case "User Agent":
                 break
@@ -1303,7 +1296,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             var dict : Dictionary<String,Any> = itemActions[name!] as? Dictionary<String,Any> ?? Dictionary<String,Any>()
             itemActions[name!] = dict
             if item.title == "Mute" {
-                dict["mute"] = item.state == OffState
+                dict["mute"] = item.state == .off
             }
             else
             {

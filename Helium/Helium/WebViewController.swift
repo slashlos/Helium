@@ -552,7 +552,7 @@ class MyWebView : WKWebView {
                     item.action = #selector(self.playActionPress(_:))
                     item.target = self
                 }
-//                let state = item.state == OnState ? "yes" : "no"
+//                let state = item.state == .on ? "yes" : "no"
 //                Swift.print("target: \(title) -> \(String(describing: item.action)) state: \(state) tag:\(item.tag)")
             }
         }
@@ -637,12 +637,12 @@ class MyWebView : WKWebView {
         item.submenu = subPref
 
         item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hpc.autoHideTitlePress(_:)), keyEquivalent: "")
-        item.state = doc.settings.autoHideTitle.value ? OnState : OffState
+        item.state = doc.settings.autoHideTitle.value ? .on : .off
         item.target = hpc
         subPref.addItem(item)
 
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hpc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
-        item.state = doc.settings.disabledFullScreenFloat.value ? OffState : OnState
+        item.state = doc.settings.disabledFullScreenFloat.value ? .off : .on
         item.target = hpc
         subPref.addItem(item)
         
@@ -662,75 +662,75 @@ class MyWebView : WKWebView {
         item.submenu = subOpacity
 
         item = NSMenuItem(title: "10%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (10 == opacity ? OnState : OffState)
+        item.state = (10 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 10
         subOpacity.addItem(item)
         item = NSMenuItem(title: "20%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
         item.isEnabled = translucency.rawValue > 0
-        item.state = (20 == opacity ? OnState : OffState)
+        item.state = (20 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 20
         subOpacity.addItem(item)
         item = NSMenuItem(title: "30%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (30 == opacity ? OnState : OffState)
+        item.state = (30 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 30
         subOpacity.addItem(item)
         item = NSMenuItem(title: "40%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (40 == opacity ? OnState : OffState)
+        item.state = (40 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 40
         subOpacity.addItem(item)
         item = NSMenuItem(title: "50%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (50 == opacity ? OnState : OffState)
+        item.state = (50 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 50
         subOpacity.addItem(item)
         item = NSMenuItem(title: "60%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (60 == opacity ? OnState : OffState)
+        item.state = (60 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 60
         subOpacity.addItem(item)
         item = NSMenuItem(title: "70%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (70 == opacity ? OnState : OffState)
+        item.state = (70 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 70
         subOpacity.addItem(item)
         item = NSMenuItem(title: "80%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (80 == opacity ? OnState : OffState)
+        item.state = (80 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 80
         subOpacity.addItem(item)
         item = NSMenuItem(title: "90%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (90 == opacity ? OnState : OffState)
+        item.state = (90 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 90
         subOpacity.addItem(item)
         item = NSMenuItem(title: "100%", action: #selector(hpc.percentagePress(_:)), keyEquivalent: "")
-        item.state = (100 == opacity ? OnState : OffState)
+        item.state = (100 == opacity ? .on : .off)
         item.target = hpc
         item.tag = 100
         subOpacity.addItem(item)
 
         item = NSMenuItem(title: "Never", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.never.rawValue
-        item.state = translucency == .never ? OnState : OffState
+        item.state = translucency == .never ? .on : .off
         item.target = hpc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Always", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.always.rawValue
-        item.state = translucency == .always ? OnState : OffState
+        item.state = translucency == .always ? .on : .off
         item.target = hpc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Mouse Over", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOver.rawValue
-        item.state = translucency == .mouseOver ? OnState : OffState
+        item.state = translucency == .mouseOver ? .on : .off
         item.target = hpc
         subTranslucency.addItem(item)
         item = NSMenuItem(title: "Mouse Outside", action: #selector(hpc.translucencyPress(_:)), keyEquivalent: "")
         item.tag = HeliumPanelController.TranslucencyPreference.mouseOutside.rawValue
-        item.state = translucency == .mouseOutside ? OnState : OffState
+        item.state = translucency == .mouseOutside ? .on : .off
         item.target = hpc
         subTranslucency.addItem(item)
 
@@ -1011,7 +1011,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         switch menuItem.title {
         case "Developer Extras":
             guard let state = webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else { return false }
-            menuItem.state = (state as? NSNumber)?.boolValue == true ? OnState : OffState
+            menuItem.state = (state as? NSNumber)?.boolValue == true ? .on : .off
             return true
 
         case "Back":
@@ -1052,7 +1052,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        self.webView?.configuration.preferences.setValue((sender.state != OnState), forKey: "developerExtrasEnabled")
+        self.webView?.configuration.preferences.setValue((sender.state != .on), forKey: "developerExtrasEnabled")
     }
 
     @IBAction func openFilePress(_ sender: AnyObject) {

@@ -380,11 +380,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        settings.autoHideTitle.value = (sender.state == OffState)
+        settings.autoHideTitle.value = (sender.state == .off)
         cacheSettings()
     }
     @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
-        settings.disabledFullScreenFloat.value = (sender.state == OnState)
+        settings.disabledFullScreenFloat.value = (sender.state == .on)
         setFloatOverFullScreenApps()
         cacheSettings()
     }
@@ -435,52 +435,52 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case "Preferences":
             break
         case "Auto-hide Title Bar":
-            menuItem.state = settings.autoHideTitle.value ? OnState : OffState
+            menuItem.state = settings.autoHideTitle.value ? .on : .off
             break
         //Transluceny Menu
         case "Enabled":
-            menuItem.state = canBeTranslucent() ? OnState : OffState
+            menuItem.state = canBeTranslucent() ? .on : .off
             break
         case "Never":
-            menuItem.state = settings.translucencyPreference.value == .never ? OnState : OffState
+            menuItem.state = settings.translucencyPreference.value == .never ? .on : .off
             break
         case "Always":
-            menuItem.state = settings.translucencyPreference.value == .always ? OnState : OffState
+            menuItem.state = settings.translucencyPreference.value == .always ? .on : .off
             break
         case "Mouse Over":
             let value = settings.translucencyPreference.value
             menuItem.state = value == .offOver
-                ? MixedState
-                : value == .mouseOver ? OnState : OffState
+                ? .mixed
+                : value == .mouseOver ? .on : .off
             break
         case "Mouse Outside":
             let value = settings.translucencyPreference.value
             menuItem.state = value == .offOutside
-                ? MixedState
-                : value == .mouseOutside ? OnState : OffState
+                ? .mixed
+                : value == .mouseOutside ? .on : .off
             break
         case "Float Above All Spaces":
-            menuItem.state = settings.disabledFullScreenFloat.value ? OffState : OnState
+            menuItem.state = settings.disabledFullScreenFloat.value ? .off : .on
             break;
         case "Hide Helium in menu bar":
-            menuItem.state = UserSettings.HideAppMenu.value ? OnState : OffState
+            menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
             break
         case "Home Page":
             break
         case "Magic URL Redirects":
-            menuItem.state = UserSettings.DisabledMagicURLs.value ? OffState : OnState
+            menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
             break
             
         default:
             // Opacity menu item have opacity as tag value
             if menuItem.tag >= 10 {
                 if let hwc = NSApp.keyWindow?.windowController {
-                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? OnState : OffState)
+                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? .on : .off)
                     menuItem.target = hwc
                 }
                 else
                 {
-                    menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? OnState : OffState)
+                    menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? .on : .off)
                     menuItem.target = self
                 }
             }
