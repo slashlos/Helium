@@ -1759,7 +1759,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     wvc.viewDidLoad()
 
                     //  Setups all done, make us visible
-                    window.makeKeyAndOrderFront(self)
+                    doc.showWindows()
                 }
             } catch let error {
                 NSApp.presentError(error)

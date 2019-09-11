@@ -704,11 +704,7 @@ class HeliumDocumentController : NSDocumentController {
         do {
             let typeName = contentsURL.isFileURL && contentsURL.pathExtension == k.h3w ? k.Playlists : typeName
             doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
-
-            if (urlOrNil != nil) {
-                doc.fileURL = urlOrNil
-                doc.fileType = urlOrNil?.pathExtension
-            }
+            doc.showWindows()
         } catch let error {
             NSApp.presentError(error)
             doc = try Document.init(contentsOf: contentsURL)

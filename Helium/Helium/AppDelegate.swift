@@ -391,8 +391,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             let doc = try Document.init(contentsOf: fileURL, ofType: typeName)
             dc.noteNewRecentDocumentURL(fileURL)
 
-            if let hpc = doc.heliumPanelController, let window = hpc.window {
-                window.makeKey()
+            if let hpc = doc.heliumPanelController {
+                doc.showWindows()
                 hpc.webViewController.webView.next(url: fileURL)
             }
             else
@@ -442,7 +442,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         else
         {
-            window.makeKeyAndOrderFront(sender)
+            doc.showWindows()
         }
     }
     
@@ -495,7 +495,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if let hpc = doc.windowControllers.first as? HeliumPanelController {
                 hpc.webViewController.webView.next(url: newURL)
             }
-            doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
+            doc.showWindows()
+            return true
         } catch let error {
             NSApp.presentError(error)
         }
@@ -509,8 +510,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
-            
-            doc.windowControllers.first?.window?.makeKeyAndOrderFront(self)
+            doc.showWindows()
+            return true
         } catch let error {
             NSApp.presentError(error)
         }
@@ -588,7 +589,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             //  No contextual window, load panel and its playlist controller
             do {
                 let doc = try Document.init(type: k.Playlists)
-                doc.windowControllers.first?.window?.makeKeyAndOrderFront(sender)
+                doc.showWindows()
             }
             catch let error {
                 NSApp.presentError(error)
