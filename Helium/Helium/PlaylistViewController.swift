@@ -370,7 +370,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     UserSettings.HistoryName.value = newValue as! String
                 }
             }
-            break
+        }
+        
+        if let doc = self.view.window?.windowController?.document {
+            doc.updateChangeCount(.changeDone)
         }
     }
     

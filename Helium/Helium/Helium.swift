@@ -1016,7 +1016,7 @@ class Document : NSDocument {
     }
     
     @objc @IBAction override func save(_ sender: (Any)?) {
-        guard fileURL != nil, fileURL?.scheme != k.about else {
+        guard fileURL != nil, fileURL?.scheme != k.about, docType != .release else {
             return
         }
         
@@ -1065,7 +1065,13 @@ class Document : NSDocument {
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
         do {
+            guard docType == .playlist else {
+                try self.write(to: fileURL!, ofType: fileType!)
+                return
+            }
+
             try self.write(to: url, ofType: typeName)
+            self.updateChangeCount(.changeCleared)
         } catch let error {
             NSApp.presentError(error)
         }
