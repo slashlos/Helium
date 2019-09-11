@@ -13,20 +13,20 @@ let	kTitleNormal =		22
 
 class AboutBoxController : NSViewController {
 	
-    @IBOutlet var toggleButton: NSButton!
-	@IBOutlet var appNameField: NSTextField!
-    @IBOutlet var creditScroll: NSScrollView!
-	@IBOutlet var creditsField: NSTextView!
-    @IBOutlet var creditsButton: NSButton!
-    @IBOutlet var versionButton: NSButton!
-    @IBOutlet var creditSeparatorBox: NSBox!
+    @objc @IBOutlet var toggleButton: NSButton!
+	@objc @IBOutlet var appNameField: NSTextField!
+    @objc @IBOutlet var creditScroll: NSScrollView!
+	@objc @IBOutlet var creditsField: NSTextView!
+    @objc @IBOutlet var creditsButton: NSButton!
+    @objc @IBOutlet var versionButton: NSButton!
+    @objc @IBOutlet var creditSeparatorBox: NSBox!
     
-    @IBOutlet var hideView: NSView!
+    @objc @IBOutlet var hideView: NSView!
     var hideRect: NSRect?
     var origRect: NSRect?
     
-	@IBOutlet var appNameButton: NSButton!
-	@IBAction func appButtonPress(_ sender: Any) {
+	@objc @IBOutlet var appNameButton: NSButton!
+	@objc @IBAction func appButtonPress(_ sender: Any) {
         var info = Dictionary<String,Any>()
         info[k.name] = appName
         info[k.vers] = versionString!
@@ -44,7 +44,7 @@ class AboutBoxController : NSViewController {
         }
 	}
 	
-	@IBAction func toggleContent(_ sender: Any) {
+    @objc @IBAction func toggleContent(_ sender: Any) {
         // Toggle content visibility
         if let window = self.view.window {
             let oldSize = window.contentView?.bounds.size
@@ -89,7 +89,7 @@ class AboutBoxController : NSViewController {
         creditsField.string = creditsString
     }
     
-	@IBAction func cycleCredits(_ sender: Any) {
+    @objc @IBAction func cycleCredits(_ sender: Any) {
 
         AboutBoxController.creditsState += 1
 
@@ -106,7 +106,7 @@ class AboutBoxController : NSViewController {
         }
     }
     
-    @IBAction func toggleVersion(_ sender: Any) {
+  @objc @IBAction func toggleVersion(_ sender: Any) {
         
         AboutBoxController.versionState += 1
         if AboutBoxController.versionState >= AboutBoxController.maxStates

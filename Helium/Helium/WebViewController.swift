@@ -160,7 +160,7 @@ class MyWebView : WKWebView {
         return super.load(request)
     }
 */
-    @IBAction internal func cut(_ sender: Any) {
+  @objc @IBAction internal func cut(_ sender: Any) {
         let pb = NSPasteboard.general
         pb.clearContents()
         if let urlString = self.url?.absoluteString {
@@ -168,20 +168,20 @@ class MyWebView : WKWebView {
             (self.uiDelegate as! WebViewController).clear()
         }
     }
-    @IBAction internal func copy(_ sender: Any) {
+  @objc @IBAction internal func copy(_ sender: Any) {
         let pb = NSPasteboard.general
         pb.clearContents()
         if let urlString = self.url?.absoluteString {
             pb.setString(urlString, forType: NSPasteboard.PasteboardType.string)
         }
     }
-    @IBAction internal func paste(_ sender: Any) {
+  @objc @IBAction internal func paste(_ sender: Any) {
         let pb = NSPasteboard.general
         guard let rawString = pb.string(forType: NSPasteboard.PasteboardType.string), rawString.isValidURL() else { return }
         
         self.load(URLRequest.init(url: URL.init(string: rawString)!))
     }
-    @IBAction internal func delete(_ sender: Any) {
+  @objc @IBAction internal func delete(_ sender: Any) {
         self.cancelOperation(sender)
         Swift.print("cancel")
     }
@@ -472,7 +472,7 @@ class MyWebView : WKWebView {
     //
     //  Intercepted actions; capture state needed for avToggle()
     var playPressMenuItem = NSMenuItem()
-    @IBAction func playActionPress(_ sender: NSMenuItem) {
+  @objc @IBAction func playActionPress(_ sender: NSMenuItem) {
 //        Swift.print("\(playPressMenuItem.title) -> target:\(String(describing: playPressMenuItem.target)) action:\(String(describing: playPressMenuItem.action)) tag:\(playPressMenuItem.tag)")
         _ = playPressMenuItem.target?.perform(playPressMenuItem.action, with: playPressMenuItem.representedObject)
         //  this releases original menu item
@@ -482,7 +482,7 @@ class MyWebView : WKWebView {
     }
     
     var mutePressMenuItem = NSMenuItem()
-    @IBAction func muteActionPress(_ sender: NSMenuItem) {
+  @objc @IBAction func muteActionPress(_ sender: NSMenuItem) {
 //        Swift.print("\(mutePressMenuItem.title) -> target:\(String(describing: mutePressMenuItem.target)) action:\(String(describing: mutePressMenuItem.action)) tag:\(mutePressMenuItem.tag)")
         _ = mutePressMenuItem.target?.perform(mutePressMenuItem.action, with: mutePressMenuItem.representedObject)
         //  this releases original menu item
@@ -755,8 +755,11 @@ class MyWebView : WKWebView {
         menu.addItem(item)
     }
     
-    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
         switch menuItem.title {
+        case "Save":
+            return self.window?.isDocumentEdited ?? false
+            
         default:
             return true
         }
@@ -1007,7 +1010,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     // MARK: Actions
-    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool{
         switch menuItem.title {
         case "Developer Extras":
             guard let state = webView.configuration.preferences.value(forKey: "developerExtrasEnabled") else { return false }
@@ -1018,16 +1021,20 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             return webView.canGoBack
         case "Forward":
             return webView.canGoForward
+            
+        case "Save":
+            return self.view.window?.isDocumentEdited ?? false
+
         default:
             return true
         }
     }
 
-    @IBAction func backPress(_ sender: AnyObject) {
+  @objc @IBAction func backPress(_ sender: AnyObject) {
         webView.goBack()
     }
     
-    @IBAction func forwardPress(_ sender: AnyObject) {
+  @objc @IBAction func forwardPress(_ sender: AnyObject) {
         webView.goForward()
     }
     
@@ -1051,11 +1058,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.magnification = 1
     }
 
-    @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+  @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
         self.webView?.configuration.preferences.setValue((sender.state != .on), forKey: "developerExtrasEnabled")
     }
 
-    @IBAction func openFilePress(_ sender: AnyObject) {
+  @objc @IBAction func openFilePress(_ sender: AnyObject) {
         var viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
         let open = NSOpenPanel()
@@ -1092,7 +1099,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         })
     }
     
-    @IBAction func openLocationPress(_ sender: AnyObject) {
+  @objc @IBAction func openLocationPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
         var urlString = currentURL
@@ -1125,7 +1132,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                         }
         })
     }
-    @IBAction func openSearchPress(_ sender: AnyObject) {
+  @objc @IBAction func openSearchPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
 
@@ -1155,19 +1162,19 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         })
     }
 
-    @IBAction fileprivate func reloadPress(_ sender: AnyObject) {
+  @objc @IBAction fileprivate func reloadPress(_ sender: AnyObject) {
         requestedReload()
     }
     
-    @IBAction fileprivate func clearPress(_ sender: AnyObject) {
+  @objc @IBAction fileprivate func clearPress(_ sender: AnyObject) {
         clear()
     }
     
-    @IBAction fileprivate func resetZoomLevel(_ sender: AnyObject) {
+  @objc @IBAction fileprivate func resetZoomLevel(_ sender: AnyObject) {
         resetZoom()
     }
     
-    @IBAction func userAgentPress(_ sender: AnyObject) {
+  @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         appDelegate.didRequestUserAgent(RequestUserStrings (
             currentURL: webView.customUserAgent,
             alertMessageText:   "Custom user agent",
@@ -1182,10 +1189,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         )
     }
 
-    @IBAction fileprivate func zoomIn(_ sender: AnyObject) {
+  @objc @IBAction fileprivate func zoomIn(_ sender: AnyObject) {
         zoomIn()
     }
-    @IBAction fileprivate func zoomOut(_ sender: AnyObject) {
+  @objc @IBAction fileprivate func zoomOut(_ sender: AnyObject) {
         zoomOut()
     }
     
@@ -1295,12 +1302,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.load(URLRequest.init(url: url))
     }
 
-	@IBOutlet var webView: MyWebView!
+    @objc @IBOutlet var webView: MyWebView!
 	var webSize = CGSize(width: 0,height: 0)
     
-	@IBOutlet weak var borderView: WebBorderView!
+    @objc @IBOutlet weak var borderView: WebBorderView!
 	
-	@IBOutlet weak var loadingIndicator: NSProgressIndicator!
+    @objc @IBOutlet weak var loadingIndicator: NSProgressIndicator!
 	
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
@@ -1418,9 +1425,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
 /*
-    @IBOutlet weak var tableView: NSTableView!
-    @IBOutlet weak var arrayController: NSArrayController!
-    @IBOutlet weak var progressIndicator: NSProgressIndicator!
+    @objc @IBOutlet weak var tableView: NSTableView!
+    @objc @IBOutlet weak var arrayController: NSArrayController!
+    @objc @IBOutlet weak var progressIndicator: NSProgressIndicator!
     
     let fetcher = ScheduleFetcher()
     dynamic var courses: [Course] = []

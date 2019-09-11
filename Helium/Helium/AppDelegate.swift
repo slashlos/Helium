@@ -228,10 +228,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     var os = ProcessInfo().operatingSystemVersion
-    @IBOutlet weak var magicURLMenu: NSMenuItem!
+    @objc @IBOutlet weak var magicURLMenu: NSMenuItem!
 
     //  MARK:- Global IBAction, but ship to keyWindow when able
-    @IBOutlet weak var appMenu: NSMenu!
+    @objc @IBOutlet weak var appMenu: NSMenu!
 	var appStatusItem:NSStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     fileprivate var searchField : SearchField = SearchField.init(withValue: k.Helium, modalTitle: "Search")
     fileprivate var recentSearches = Array<String>()
@@ -270,11 +270,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             appStatusItem.menu = menu
         }
     }
-	@IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
+	@objc @IBAction func hideAppStatusItem(_ sender: NSMenuItem) {
 		UserSettings.HideAppMenu.value = (sender.state == .off)
         self.syncAppMenuVisibility()
 	}
-    @IBAction func homePagePress(_ sender: AnyObject) {
+  @objc @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.HomePageURL.value,
             alertMessageText:   "New home page",
@@ -293,13 +293,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc dynamic var openForBusiness = false
     
     //  By defaut we show document title bar
-    @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
+  @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         UserSettings.AutoHideTitle.value = (sender.state == .off)
      }
 
     //  By default we auto save any document changes
-	@IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
-	@IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
+    @objc @IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
+    @objc @IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
         autoSaveDocs = (sender.state == .off)
 	}
 	var autoSaveDocs : Bool {
@@ -321,12 +321,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+  @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
         UserSettings.DeveloperExtrasEnabled.value = (sender.state == .off)
     }
     
     var fullScreen : NSRect? = nil
-    @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
+  @objc @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
         if let keyWindow = NSApp.keyWindow {
             if let last_rect = fullScreen {
                 keyWindow.setFrame(last_rect, display: true, animate: true)
@@ -340,11 +340,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-    @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
+  @objc @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
         UserSettings.DisabledMagicURLs.value = (sender.state == .on)
     }
     
-	@IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
+    @objc @IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
         UserSettings.HideZoomIcon.value = (sender.state == .off)
         
         //  sync all document zoom icons now - yuck
@@ -402,7 +402,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return status
     }
     
-    @IBAction func locationServicesPress(_ sender: NSMenuItem) {
+  @objc @IBAction func locationServicesPress(_ sender: NSMenuItem) {
         if isLocationEnabled {
             locationManager?.stopMonitoringSignificantLocationChanges()
             locationManager?.stopUpdatingLocation()
@@ -418,7 +418,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.RestoreLocationSvcs.value = isLocationEnabled
     }
     
-    @IBAction func newDocument(_ sender: Any) {
+  @objc @IBAction func newDocument(_ sender: Any) {
         let doc = Document.init()
         doc.makeWindowControllers()
         let wc = doc.windowControllers.first
@@ -440,11 +440,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
 
-	@IBAction func openDocument(_ sender: Any) {
+    @objc @IBAction func openDocument(_ sender: Any) {
 		self.openFilePress(sender as AnyObject)
 	}
     
-    @IBAction func openFilePress(_ sender: AnyObject) {
+  @objc @IBAction func openFilePress(_ sender: AnyObject) {
         var viewOptions = ViewOptions(rawValue: sender.tag)
         
         let open = NSOpenPanel()
@@ -512,13 +512,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return false
     }
     
-    @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
+  @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
             _ = self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
         }
     }
     
-    @IBAction func openLocationPress(_ sender: AnyObject) {
+  @objc @IBAction func openLocationPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         var urlString = UserSettings.HomePageURL.value
         
@@ -547,7 +547,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         })
     }
 
-    @IBAction func openSearchPress(_ sender: AnyObject) {
+  @objc @IBAction func openSearchPress(_ sender: AnyObject) {
         let name = k.searchNames[ UserSettings.Search.value ]
         let info = k.searchInfos[ UserSettings.Search.value ]
 
@@ -566,7 +566,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         })
     }
     
-	@IBAction func pickSearchPress(_ sender: NSMenuItem) {
+    @objc @IBAction func pickSearchPress(_ sender: NSMenuItem) {
         //  This needs to match validateMenuItem below
 		let group = sender.tag / 100
 		let index = (sender.tag - (group * 100)) % 3
@@ -576,7 +576,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 //        Swift.print("\(key) -> \(index)")
 	}
 	
-	@IBAction func presentPlaylistSheet(_ sender: Any) {
+    @objc @IBAction func presentPlaylistSheet(_ sender: Any) {
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
 
         //  If we have a window, present a sheet with playlists, otherwise ...
@@ -614,15 +614,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 	
-	@IBAction func promoteHTTPSPress(_ sender: NSMenuItem) {
+    @objc @IBAction func promoteHTTPSPress(_ sender: NSMenuItem) {
         UserSettings.PromoteHTTPS.value = (sender.state == .on ? false : true)
 	}
     
-	@IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
+    @objc @IBAction func restoreDocAttrsPress(_ sender: NSMenuItem) {
         UserSettings.RestoreDocAttrs.value = (sender.state == .on ? false : true)
 	}
 	
-	@IBAction func showReleaseInfo(_ sender: Any) {
+    @objc @IBAction func showReleaseInfo(_ sender: Any) {
         let urlString = UserSettings.ReleaseNotesURL.value
 
         do
@@ -652,7 +652,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             return false
         }
     }
-	@IBAction func redo(_ sender: Any) {
+    @objc @IBAction func redo(_ sender: Any) {
 		if let window = NSApp.keyWindow, let undo = window.undoManager, undo.canRedo {
             Swift.print("redo:");
 		}
@@ -668,13 +668,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-    @IBAction func undo(_ sender: Any) {
+  @objc @IBAction func undo(_ sender: Any) {
         if let window = NSApp.keyWindow, let undo = window.undoManager, undo.canUndo {
             Swift.print("undo:");
         }
 	}
     
-	@IBAction func userAgentPress(_ sender: AnyObject) {
+    @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
             currentURL: UserSettings.UserAgent.value,
             alertMessageText:   "Default user agent",
@@ -748,7 +748,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.title.hasPrefix("Redo") {
             menuItem.isEnabled = self.canRedo
         }

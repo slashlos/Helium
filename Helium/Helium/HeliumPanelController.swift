@@ -379,28 +379,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             doc.cacheSettings(url)
         }
     }
-    @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
+  @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == .off)
         cacheSettings()
     }
-    @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
+  @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == .on)
         setFloatOverFullScreenApps()
         cacheSettings()
     }
-    @IBAction func percentagePress(_ sender: NSMenuItem) {
+  @objc @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
         cacheSettings()
     }
     
-    @IBAction func saveDocument(_ sender: NSMenuItem) {
+  @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
         if let doc = self.doc {
             doc.save(sender)
         }
     }
     
-    @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
+  @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
         case .never:
             translucencyPreference = .always
@@ -424,13 +424,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         willUpdateTranslucency()
     }
 
-    @IBAction func translucencyPress(_ sender: NSMenuItem) {
+  @objc @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         translucencyPreference = settings.translucencyPreference.value
         willUpdateTranslucency()
     }
 
-    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.title {
         case "Preferences":
             break

@@ -124,12 +124,12 @@ extension NSURL {
 
 class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableViewDelegate,NSMenuDelegate,NSWindowDelegate {
 
-    @IBOutlet weak var playlistArrayController: NSArrayController!
-    @IBOutlet weak var playitemArrayController: NSArrayController!
+    @objc @IBOutlet weak var playlistArrayController: NSArrayController!
+    @objc @IBOutlet weak var playitemArrayController: NSArrayController!
 
-    @IBOutlet weak var playlistTableView: PlayTableView!
-    @IBOutlet weak var playitemTableView: PlayTableView!
-    @IBOutlet weak var playlistSplitView: NSSplitView!
+    @objc @IBOutlet weak var playlistTableView: PlayTableView!
+    @objc @IBOutlet weak var playitemTableView: PlayTableView!
+    @objc @IBOutlet weak var playlistSplitView: NSSplitView!
 
     //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -151,7 +151,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
         }
     }
-    @IBOutlet weak var cornerImage : NSImage! {
+    @objc @IBOutlet weak var cornerImage : NSImage! {
         get {
             return NSImage.init(imageLiteralResourceName: self.menuIconName)
         }
@@ -160,8 +160,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
-	@IBOutlet weak var cornerButton : PlayItemCornerButton!
-	@IBAction func cornerAction(_ sender: Any) {
+	@objc @IBOutlet weak var cornerButton : PlayItemCornerButton!
+	@objc @IBAction func cornerAction(_ sender: Any) {
         // Renumber playlist items via array controller
         playitemTableView.beginUpdates()
         
@@ -212,7 +212,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         playitemTableView.endUpdates()
 	}
-    @IBOutlet weak var cornerTooltip : NSString! {
+    @objc @IBOutlet weak var cornerTooltip : NSString! {
         get {
             if shiftKeyDown {
                 return "Consolidate"
@@ -391,7 +391,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             return false
         }
     }
-    @IBAction func redo(_ sender: Any) {
+  @objc @IBAction func redo(_ sender: Any) {
         if let undo = self.undoManager, undo.canRedo {
             undo.redo()
             Swift.print("redo:");
@@ -408,7 +408,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
-    @IBAction func undo(_ sender: Any) {
+  @objc @IBAction func undo(_ sender: Any) {
         if let undo = self.undoManager, undo.canUndo {
             undo.undo()
             Swift.print("undo:");
@@ -470,6 +470,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
                 titleView.toolTip = url?.absoluteString.removingPercentEncoding
             }
+            
+            //  Start us of cleanly re: change count
+            self.undoManager?.removeAllActions()
         }
         else
         {
@@ -621,7 +624,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     //  published actions - first responder tells us who called
-    @IBAction func addPlaylist(_ sender: AnyObject) {
+  @objc @IBAction func addPlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to add to existing play item list
@@ -645,7 +648,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             Swift.print("firstResponder: \(String(describing: whoAmI))")
         }
     }
-    @IBOutlet weak var addButtonTooltip : NSString! {
+    @objc @IBOutlet weak var addButtonTooltip : NSString! {
         get {
             let whoAmI = self.view.window?.firstResponder
             
@@ -662,7 +665,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
 	}
 
-    @IBAction func removePlaylist(_ sender: AnyObject) {
+  @objc @IBAction func removePlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
 
         if playlistTableView == whoAmI {
@@ -700,7 +703,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             NSSound(named: "Sosumi")?.play()
         }
     }
-    @IBOutlet weak var removeButtonTooltip: NSString! {
+    @objc @IBOutlet weak var removeButtonTooltip: NSString! {
         get {
             let whoAmI = self.view.window?.firstResponder
             
@@ -777,7 +780,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     //  MARK:- IBActions
-    @IBAction func playPlaylist(_ sender: AnyObject) {
+  @objc @IBAction func playPlaylist(_ sender: AnyObject) {
         appDelegate.newViewOptions = appDelegate.getViewOptions
         
         //  first responder tells us who called so dispatch
@@ -827,7 +830,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             play(sender, items:list, maxSize: list.count)
         }
     }
-    @IBOutlet weak var playButtonTooltip: NSString! {
+    @objc @IBOutlet weak var playButtonTooltip: NSString! {
         get {
             let whoAmI = self.view.window?.firstResponder
             
@@ -864,8 +867,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    @IBOutlet weak var restoreButton: NSButton!
-    @IBOutlet weak var restoreButtonTooltip: NSString! {
+    @objc @IBOutlet weak var restoreButton: NSButton!
+    @objc @IBOutlet weak var restoreButtonTooltip: NSString! {
         get {
             let whoAmI = self.view.window?.firstResponder
 
@@ -893,7 +896,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         }
 	}
-    @IBAction func restorePlaylists(_ sender: NSButton?) {
+  @objc @IBAction func restorePlaylists(_ sender: NSButton?) {
         let whoAmI = self.view.window?.firstResponder
 
         //  We want to restore to existing play item or list or global playlists
@@ -976,8 +979,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
 
-    @IBOutlet weak var saveButton: NSButton!
-    @IBOutlet weak var saveButtonTooltip: NSString! {
+    @objc @IBOutlet weak var saveButton: NSButton!
+    @objc @IBOutlet weak var saveButtonTooltip: NSString! {
         get {
             let whoAmI = self.view.window?.firstResponder
             
@@ -1006,7 +1009,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
 	}
     
-    @IBAction func savePlaylists(_ sender: AnyObject) {
+  @objc @IBAction func saveDocument(_ sender: AnyObject) {
+        Swift.print("saveDocument");
+        if let doc = self.view.window?.windowController?.document {
+            (doc as! Document).save(sender)
+            
+            //  We would throw if any errors so clear redo now
+            self.undoManager?.removeAllActions()
+        }
+    }
+    
+  @objc @IBAction func savePlaylists(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to save to existing play item or list
@@ -1056,7 +1069,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         defaults.synchronize()
     }
     
-    @IBAction override func dismiss(_ sender: Any?) {
+  @objc @IBAction override func dismiss(_ sender: Any?) {
         super.dismiss(sender)
         
         //  If we were run as a window, close it
@@ -1080,7 +1093,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     @objc dynamic var hiddenColumns = Dictionary<String, Any>()
-    @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
+  @objc @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
         let col = sender.representedObject as! NSTableColumn
         let table : String = (col.tableView?.identifier)!.rawValue
         let column = col.identifier.rawValue
@@ -1092,7 +1105,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         col.isHidden = isHidden
     }
 
-    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.title.hasPrefix("Redo") {
             menuItem.isEnabled = self.canRedo
         }
@@ -1108,7 +1121,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             switch menuItem.title {
-                
+            
+            case "Save":
+                guard let doc = self.view.window?.windowController?.document, let url = doc.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w else { return false }
+                return self.undoManager?.canUndo ?? false
+
             default:
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
                 break

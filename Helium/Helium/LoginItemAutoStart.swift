@@ -12,9 +12,9 @@ import ServiceManagement
 
 class MainWindowController: NSWindowController {
 	
-	@IBAction func set(sender: NSButton) {
+	@objc @IBAction func set(sender: NSButton) {
 		let appBundleIdentifier = "com.slashlos.XHelium"
-		let autoLaunch = (sender.state == OnState)
+		let autoLaunch = (sender.state == .on)
 		
 		if SMLoginItemSetEnabled(appBundleIdentifier as CFString, autoLaunch) {
 			if autoLaunch {

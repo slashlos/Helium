@@ -238,7 +238,7 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         }
     }
 
-    @IBOutlet weak var tooltip : NSString! {
+    @objc @IBOutlet weak var tooltip : NSString! {
         get {
             if shiftKeyDown {
                 return String(format: "%ld play(s)", self.plays) as NSString
@@ -1015,7 +1015,7 @@ class Document : NSDocument {
         }
     }
     
-    @IBAction override func save(_ sender: (Any)?) {
+  @objc @IBAction override func save(_ sender: (Any)?) {
         guard fileURL != nil, fileURL?.scheme != k.about else {
             return
         }
