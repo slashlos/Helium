@@ -379,28 +379,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             doc.cacheSettings(url)
         }
     }
-  @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
+    @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         settings.autoHideTitle.value = (sender.state == .off)
         cacheSettings()
     }
-  @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
+    @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         settings.disabledFullScreenFloat.value = (sender.state == .on)
         setFloatOverFullScreenApps()
         cacheSettings()
     }
-  @objc @IBAction func percentagePress(_ sender: NSMenuItem) {
+    @objc @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
         cacheSettings()
     }
     
-  @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
+    @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
         if let doc = self.doc {
             doc.save(sender)
         }
     }
     
-  @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
+    @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
         case .never:
             translucencyPreference = .always
@@ -424,7 +424,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         willUpdateTranslucency()
     }
 
-  @objc @IBAction func translucencyPress(_ sender: NSMenuItem) {
+    @objc @IBAction func translucencyPress(_ sender: NSMenuItem) {
         settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         translucencyPreference = settings.translucencyPreference.value
         willUpdateTranslucency()
@@ -470,7 +470,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         case "Magic URL Redirects":
             menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
             break
-            
+        case "Save":
+            return self.window?.isDocumentEdited ?? false
+
         default:
             // Opacity menu item have opacity as tag value
             if menuItem.tag >= 10 {

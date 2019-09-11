@@ -106,7 +106,7 @@ class AboutBoxController : NSViewController {
         }
     }
     
-  @objc @IBAction func toggleVersion(_ sender: Any) {
+    @objc @IBAction func toggleVersion(_ sender: Any) {
         
         AboutBoxController.versionState += 1
         if AboutBoxController.versionState >= AboutBoxController.maxStates

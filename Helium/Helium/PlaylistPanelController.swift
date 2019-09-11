@@ -29,7 +29,7 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
         }
     }
     
-  @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
+    @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
         if let doc = self.document {
             (doc as! Document).save(sender)
         }

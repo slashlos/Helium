@@ -274,7 +274,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 		UserSettings.HideAppMenu.value = (sender.state == .off)
         self.syncAppMenuVisibility()
 	}
-  @objc @IBAction func homePagePress(_ sender: AnyObject) {
+    @objc @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
             currentURL: UserSettings.HomePageURL.value,
             alertMessageText:   "New home page",
@@ -293,7 +293,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc dynamic var openForBusiness = false
     
     //  By defaut we show document title bar
-  @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
+    @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
         UserSettings.AutoHideTitle.value = (sender.state == .off)
      }
 
@@ -321,12 +321,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-  @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+    @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
         UserSettings.DeveloperExtrasEnabled.value = (sender.state == .off)
     }
     
     var fullScreen : NSRect? = nil
-  @objc @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
+    @objc @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
         if let keyWindow = NSApp.keyWindow {
             if let last_rect = fullScreen {
                 keyWindow.setFrame(last_rect, display: true, animate: true)
@@ -340,7 +340,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-  @objc @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
+    @objc @IBAction func magicURLRedirectPress(_ sender: NSMenuItem) {
         UserSettings.DisabledMagicURLs.value = (sender.state == .on)
     }
     
@@ -402,7 +402,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return status
     }
     
-  @objc @IBAction func locationServicesPress(_ sender: NSMenuItem) {
+    @objc @IBAction func locationServicesPress(_ sender: NSMenuItem) {
         if isLocationEnabled {
             locationManager?.stopMonitoringSignificantLocationChanges()
             locationManager?.stopUpdatingLocation()
@@ -418,7 +418,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.RestoreLocationSvcs.value = isLocationEnabled
     }
     
-  @objc @IBAction func newDocument(_ sender: Any) {
+    @objc @IBAction func newDocument(_ sender: Any) {
         let doc = Document.init()
         doc.makeWindowControllers()
         let wc = doc.windowControllers.first
@@ -444,7 +444,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 		self.openFilePress(sender as AnyObject)
 	}
     
-  @objc @IBAction func openFilePress(_ sender: AnyObject) {
+    @objc @IBAction func openFilePress(_ sender: AnyObject) {
         var viewOptions = ViewOptions(rawValue: sender.tag)
         
         let open = NSOpenPanel()
@@ -512,13 +512,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return false
     }
     
-  @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
+    @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
             _ = self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
         }
     }
     
-  @objc @IBAction func openLocationPress(_ sender: AnyObject) {
+    @objc @IBAction func openLocationPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         var urlString = UserSettings.HomePageURL.value
         
@@ -547,7 +547,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         })
     }
 
-  @objc @IBAction func openSearchPress(_ sender: AnyObject) {
+    @objc @IBAction func openSearchPress(_ sender: AnyObject) {
         let name = k.searchNames[ UserSettings.Search.value ]
         let info = k.searchInfos[ UserSettings.Search.value ]
 
@@ -668,7 +668,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-  @objc @IBAction func undo(_ sender: Any) {
+    @objc @IBAction func undo(_ sender: Any) {
         if let window = NSApp.keyWindow, let undo = window.undoManager, undo.canUndo {
             Swift.print("undo:");
         }

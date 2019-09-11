@@ -1015,7 +1015,7 @@ class Document : NSDocument {
         }
     }
     
-  @objc @IBAction override func save(_ sender: (Any)?) {
+    @objc @IBAction override func save(_ sender: (Any)?) {
         guard fileURL != nil, fileURL?.scheme != k.about else {
             return
         }

@@ -44,7 +44,7 @@ class ShareViewController: NSViewController {
         self.extensionContext!.cancelRequest(withError: error)
     }
     
-  @objc @IBAction func send(_ sender: AnyObject?) {
+    @objc @IBAction func send(_ sender: AnyObject?) {
         let outputItem = NSExtensionItem()
         // Complete implementation by setting the appropriate value on the output item
         
@@ -52,7 +52,7 @@ class ShareViewController: NSViewController {
         self.extensionContext!.completeRequest(returningItems: outputItems, completionHandler: nil)
     }
     
-  @objc @IBAction func cancel(_ sender: AnyObject?) {
+    @objc @IBAction func cancel(_ sender: AnyObject?) {
         let cancelError = NSError(domain: NSCocoaErrorDomain, code: NSUserCancelledError, userInfo: nil)
         self.extensionContext!.cancelRequest(withError: cancelError)
     }

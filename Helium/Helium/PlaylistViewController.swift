@@ -391,7 +391,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             return false
         }
     }
-  @objc @IBAction func redo(_ sender: Any) {
+    @objc @IBAction func redo(_ sender: Any) {
         if let undo = self.undoManager, undo.canRedo {
             undo.redo()
             Swift.print("redo:");
@@ -408,7 +408,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
-  @objc @IBAction func undo(_ sender: Any) {
+    @objc @IBAction func undo(_ sender: Any) {
         if let undo = self.undoManager, undo.canUndo {
             undo.undo()
             Swift.print("undo:");
@@ -624,7 +624,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     //  published actions - first responder tells us who called
-  @objc @IBAction func addPlaylist(_ sender: AnyObject) {
+    @objc @IBAction func addPlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to add to existing play item list
@@ -665,7 +665,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
 	}
 
-  @objc @IBAction func removePlaylist(_ sender: AnyObject) {
+    @objc @IBAction func removePlaylist(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
 
         if playlistTableView == whoAmI {
@@ -780,7 +780,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     //  MARK:- IBActions
-  @objc @IBAction func playPlaylist(_ sender: AnyObject) {
+    @objc @IBAction func playPlaylist(_ sender: AnyObject) {
         appDelegate.newViewOptions = appDelegate.getViewOptions
         
         //  first responder tells us who called so dispatch
@@ -896,7 +896,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
         }
 	}
-  @objc @IBAction func restorePlaylists(_ sender: NSButton?) {
+    @objc @IBAction func restorePlaylists(_ sender: NSButton?) {
         let whoAmI = self.view.window?.firstResponder
 
         //  We want to restore to existing play item or list or global playlists
@@ -1009,7 +1009,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
 	}
     
-  @objc @IBAction func saveDocument(_ sender: AnyObject) {
+    @objc @IBAction func saveDocument(_ sender: AnyObject) {
         Swift.print("saveDocument");
         if let doc = self.view.window?.windowController?.document {
             (doc as! Document).save(sender)
@@ -1019,7 +1019,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
     }
     
-  @objc @IBAction func savePlaylists(_ sender: AnyObject) {
+    @objc @IBAction func savePlaylists(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
         //  We want to save to existing play item or list
@@ -1069,7 +1069,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         defaults.synchronize()
     }
     
-  @objc @IBAction override func dismiss(_ sender: Any?) {
+    @objc @IBAction override func dismiss(_ sender: Any?) {
         super.dismiss(sender)
         
         //  If we were run as a window, close it
@@ -1093,7 +1093,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     @objc dynamic var hiddenColumns = Dictionary<String, Any>()
-  @objc @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
+    @objc @IBAction func toggleColumnVisiblity(_ sender: NSMenuItem) {
         let col = sender.representedObject as! NSTableColumn
         let table : String = (col.tableView?.identifier)!.rawValue
         let column = col.identifier.rawValue
