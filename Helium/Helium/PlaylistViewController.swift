@@ -460,11 +460,19 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     var historyCache: PlayList = PlayList.init(name: UserSettings.HistoryName.value,
-                                               list: [PlayItem]())
+                                                 list: [PlayItem]())
+    
     override func viewWillAppear() {
-
         //  Leave non-global extractions contents intact
         if let url = self.view.window?.windowController?.document?.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w {
+            
+            //  update window close button with url as tooltip
+            if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
+                titleView.toolTip = url?.absoluteString.removingPercentEncoding
+            }
+        }
+        else
+        {
             //  For global playlists, load shared by all; app delegate keeps history
             self.restorePlaylists(nil)
             
@@ -1236,11 +1244,20 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     func tableView(_ tableView: NSTableView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedRowsWith indexSet: IndexSet) -> [String] {
-        var names: [String] = [String]()
-        //	Always marshall an array of items regardless of item count
+        var dict = Dictionary<String,[Any]>()
+        var names : [String] = [String]()
+        let count = indexSet.count
+        
+        //	Always marshall an array regardless of count
         if tableView == playlistTableView {
             let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
-            for index in indexSet {
+            var promise : String!
+
+            for (i,index) in indexSet.enumerated() {
+                if i == 0 {
+                    promise = String(format: "%@%@", objects[index].name,
+                                     count > 2 ? String(format: "+%d", (count - 1)) : "")
+                }
                 let playlist = objects[index]
                 var items: [Any] = [Any]()
                 let name = playlist.name
@@ -1248,15 +1265,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     let dict = item.dictionary()
                     items.append(dict)
                 }
-
-                if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.h3w) {
-                    var dict = Dictionary<String,[Any]>()
-                    dict[k.playitems] = items
-                    dict[k.playlists] = [name as AnyObject]
-                    dict[name] = items
-                    (dict as NSDictionary).write(to: fileURL, atomically: true)
-                    names.append(fileURL.absoluteString)
-                }
+                dict[name] = items
+            }
+            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: promise, type: k.h3w) {
+                (dict as NSDictionary).write(to: fileURL, atomically: true)
+                names.append(fileURL.absoluteString)
             }
         }
         else
@@ -1274,8 +1287,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.h3w) {
                 var dict = Dictionary<String,[AnyObject]>()
-                dict[k.playitems] = items
-                dict[k.playlists] = [name as AnyObject]
                 dict[name] = items
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
             }
@@ -1549,7 +1560,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
                     let path = fileURL!.absoluteString//.stringByRemovingPercentEncoding
                     let attr = appDelegate.metadataDictionaryForFileAt((fileURL?.path)!)
-                    let time = attr?[kMDItemDurationSeconds] as! Double
+                    let time = attr?[kMDItemDurationSeconds] as? Double ?? 0.0
                     let fuzz = (itemURL as AnyObject).deletingPathExtension!!.lastPathComponent as NSString
                     let name = fuzz.removingPercentEncoding
                     let list: Array<PlayItem> = play!.list.sorted(by: { (lhs, rhs) -> Bool in
