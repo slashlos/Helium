@@ -1258,10 +1258,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 item.link = itemURL
                 item.time = 0
             }
-            item.rank = histories.count
-            histories.append(item)
             fini = false
         }
+        item.rank = histories.count + 1
+        histories.append(item)
 
         //  if not finished bump plays for this item
         if fini {
