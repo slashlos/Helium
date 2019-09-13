@@ -1163,7 +1163,7 @@ CA
                                                         </tableColumn>
                                                     </tableColumns>
                                                     <connections>
-                                                        <outlet property="dataSource" destination="YAy-lX-dae" id="khl-A5-RrM"/>
+                                                        <outlet property="dataSource" destination="Vul-U2-GKW" id="MFA-Hp-jAe"/>
                                                         <outlet property="delegate" destination="YAy-lX-dae" id="SNy-zj-Srg"/>
                                                         <outlet property="nextKeyView" destination="IBh-ZH-TR3" id="ek1-Wu-p5t"/>
                                                     </connections>
@@ -1571,7 +1571,7 @@ Gw
                                                     </tableColumns>
                                                     <connections>
                                                         <outlet property="cornerView" destination="sMV-Oo-qve" id="Cf2-dM-Lol"/>
-                                                        <outlet property="dataSource" destination="YAy-lX-dae" id="lVh-zQ-0l9"/>
+                                                        <outlet property="dataSource" destination="fqr-Ij-jQ9" id="501-js-PQC"/>
                                                         <outlet property="delegate" destination="YAy-lX-dae" id="IZJ-Ly-FFW"/>
                                                         <outlet property="nextKeyView" destination="PML-r0-Bx7" id="vDQ-Zl-vd8"/>
                                                     </connections>
