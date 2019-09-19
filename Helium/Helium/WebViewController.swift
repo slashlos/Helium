@@ -766,6 +766,21 @@ class MyWebView : WKWebView {
     }
 }
 
+extension NSView {
+    func fit(_ parentView: NSView) {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        self.topAnchor.constraint(equalTo: parentView.topAnchor).isActive = true
+        self.leadingAnchor.constraint(equalTo: parentView.leadingAnchor).isActive = true
+        self.trailingAnchor.constraint(equalTo: parentView.trailingAnchor).isActive = true
+        self.bottomAnchor.constraint(equalTo: parentView.bottomAnchor).isActive = true
+    }
+    func center(_ parentView: NSView) {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        self.centerXAnchor.constraint(equalTo: parentView.centerXAnchor).isActive = true
+        self.centerYAnchor.constraint(equalTo: parentView.centerYAnchor).isActive = true
+    }
+}
+
 class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, NSTabViewDelegate, WKHTTPCookieStoreObserver {
 
     @available(OSX 10.13, *)
@@ -885,7 +900,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         webView.autoresizingMask = [NSView.AutoresizingMask.height, NSView.AutoresizingMask.width]
         if webView.constraints.count == 0 {
-            fit(webView, parentView: webView.superview!)
+            webView.fit(webView.superview!)
         }
         
         // Allow plug-ins such as silverlight

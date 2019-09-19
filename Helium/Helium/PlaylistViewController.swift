@@ -508,6 +508,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         //  Start observing any changes
         self.observing = true
+        
+        //  Pin the playitem corner view to the header and scroll bar views
+        guard let cornerView = playitemTableView.cornerView else { return }
+		cornerView.addSubview(cornerButton)
+        cornerButton.center(cornerView)
     }
     
     override func viewWillDisappear() {

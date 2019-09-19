@@ -1623,33 +1623,6 @@ Gw
                     </connections>
                 </viewController>
                 <customObject id="Yq6-uq-zTr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <customView toolTip="Resequence or consolidate" id="sMV-Oo-qve" customClass="PlayItemCornerView" customModule="Helium" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="0.0" width="16" height="16"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <subviews>
-                        <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
-                            <rect key="frame" x="3" y="-2" width="11" height="11"/>
-                            <constraints>
-                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="8" id="M0e-Jn-aca"/>
-                                <constraint firstAttribute="width" constant="11" id="hp3-tD-W1v"/>
-                                <constraint firstAttribute="height" constant="11" id="xFE-lp-ss6"/>
-                            </constraints>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRefreshTemplate" imagePosition="only" alignment="center" alternateImage="NSActionTemplate" controlSize="mini" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="xGp-AG-fk9">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="miniSystem"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="cornerAction:" target="YAy-lX-dae" id="P79-wh-d8z"/>
-                                <binding destination="YAy-lX-dae" name="image" keyPath="cornerImage" id="Act-jF-EZH"/>
-                                <binding destination="YAy-lX-dae" name="toolTip" keyPath="cornerTooltip" previousBinding="Act-jF-EZH" id="N8o-NH-blU"/>
-                            </connections>
-                        </button>
-                    </subviews>
-                    <constraints>
-                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="leading" secondItem="sMV-Oo-qve" secondAttribute="leading" constant="3" id="Z3E-WB-AQU"/>
-                        <constraint firstItem="r0H-gG-FQJ" firstAttribute="top" secondItem="sMV-Oo-qve" secondAttribute="top" constant="7" id="uBx-dC-o7l"/>
-                    </constraints>
-                </customView>
                 <arrayController id="Vul-U2-GKW">
                     <connections>
                         <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="PMF-ib-hIl"/>
@@ -1660,6 +1633,23 @@ Gw
                         <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.list" id="YLG-Or-2uO"/>
                     </connections>
                 </arrayController>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="11" height="11"/>
+                    <constraints>
+                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="8" id="M0e-Jn-aca"/>
+                        <constraint firstAttribute="width" constant="11" id="hp3-tD-W1v"/>
+                        <constraint firstAttribute="height" constant="11" id="xFE-lp-ss6"/>
+                    </constraints>
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRefreshTemplate" imagePosition="only" alignment="center" alternateImage="NSActionTemplate" controlSize="mini" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="xGp-AG-fk9">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="cornerAction:" target="YAy-lX-dae" id="P79-wh-d8z"/>
+                        <binding destination="YAy-lX-dae" name="image" keyPath="cornerImage" id="Act-jF-EZH"/>
+                        <binding destination="YAy-lX-dae" name="toolTip" keyPath="cornerTooltip" previousBinding="Act-jF-EZH" id="N8o-NH-blU"/>
+                    </connections>
+                </button>
             </objects>
             <point key="canvasLocation" x="720" y="455"/>
         </scene>
