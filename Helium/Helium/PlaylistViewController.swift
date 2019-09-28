@@ -206,7 +206,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for  (name,hist) in seen {
                 Swift.print("update '\(name)' -> \(hist)");
                 for play in playlists {
-                    if let item = play.list.item(hist.link.absoluteString), item.plays != hist.plays {
+                    if let item = play.list.link(hist.link.absoluteString), item.plays != hist.plays {
                         item.plays = hist.plays
                     }
                 }
@@ -381,6 +381,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 Swift.print(String.init(format: "%@ %@ -> %@", keyPath!, oldValue as! CVarArg, newValue as! CVarArg))
             }
             
+            // playlist names must be unique
+            if let play = (object as? PlayList), keyPath == k.name,  playlists.list(newValue as! String).count > 1 {
+                Swift.print("duplicate playlist.name \(newValue as! String)")
+                play.name = oldValue as! String
+                NSSound(named: "Sosumi")?.play()
+            }
+            
             // Save history info which might have changed
             if let play = (object as? PlayList), keyPath == k.name, play == historyCache {
                 if UserSettings.HistoryName.value == oldValue as? String {
@@ -481,7 +488,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.restorePlaylists(nil)
             
             //  Prune duplicate history entries
-            while let oldHistory = playlists.item(UserSettings.HistoryName.value)
+            while let oldHistory = playlists.name(UserSettings.HistoryName.value)
             {
                 playlistArrayController.removeObject(oldHistory)
             }
