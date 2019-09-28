@@ -76,7 +76,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             object: nil)
 
         //  We allow drag from title's document icon to self or Finder
-        panel.registerForDraggedTypes([NSURLPboardType])
+        panel.registerForDraggedTypes([.URL, .fileURL])
     }
 
     func documentDidLoad() {
@@ -471,7 +471,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
             break
         case "Save":
-            return self.window?.isDocumentEdited ?? false
+            break
 
         default:
             // Opacity menu item have opacity as tag value
@@ -592,15 +592,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.2
                     panel.animator().titleVisibility = NSWindow.TitleVisibility.hidden
-///                    panel.animator().titlebarAppearsTransparent = true
-///                    panel.animator().styleMask.formUnion(.fullSizeContentView)
                 }, completionHandler: nil)
             } else {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.2
                     panel.animator().titleVisibility = NSWindow.TitleVisibility.visible
-///                    panel.animator().titlebarAppearsTransparent = false
-///                    panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
                 }, completionHandler: nil)
             }
         }
@@ -608,11 +604,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     }
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
+        guard let doc = self.doc else {
+            return displayName }
+        
         switch self.doc!.docType {
-        case .release:
-            return k.ReleaseNotes
-        case .playlist:
-            return (document?.displayName)!
+        case .playlist, .release:
+            return doc.displayName
         default:
             if let length = self.webView?.title?.count, length > 0 {
                 return self.webView!.title!
@@ -650,3 +647,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         alpha = CGFloat(intAlpha) / 100.0
     }
 }
+
+class ReleasePanelController : HeliumPanelController {
+
+}
+

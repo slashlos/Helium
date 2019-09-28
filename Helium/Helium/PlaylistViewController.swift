@@ -5,18 +5,25 @@
 //  Created by Carlos D. Santiago on 2/15/17.
 //  Copyright © 2017 Carlos D. Santiago. All rights reserved.
 //
+//  Kudos to Nate Thompson: Using Drag and Drop with NSTableview
+//  https://www.natethompson.io/2019/03/23/nstableview-drag-and-drop.html
 
 import Foundation
 import AVFoundation
 import AudioToolbox
 
 class PlayTableView : NSTableView {
+    var appDelegate : AppDelegate {
+        get {
+            return NSApp.delegate as! AppDelegate
+        }
+    }
     override func keyDown(with event: NSEvent) {
         if event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSEvent.SpecialKey.delete.rawValue)!)) ||
            event.charactersIgnoringModifiers! == String(Character(UnicodeScalar(NSEvent.SpecialKey.deleteForward.rawValue)!)) {
+            
             // Take action in the delegate.
             let delegate: PlaylistViewController = self.delegate as! PlaylistViewController
-            
             delegate.removePlaylist(self)
         }
         else
@@ -25,12 +32,22 @@ class PlayTableView : NSTableView {
             super.keyDown(with: event)
         }
     }
-
+    
     override func mouseDragged(with event: NSEvent) {
-        let dragPosition = self.convert(event.locationInWindow, to: nil)
-        let imageLocation = NSMakeRect(dragPosition.x - 16.0, dragPosition.y - 16.0, 32.0, 32.0)
-
-        _ = self.dragPromisedFiles(ofTypes: [k.h3w], from: imageLocation, source: self, slideBack: true, event: event)
+        let delegate = self.delegate as! PlaylistViewController
+        let arrayController = [delegate.playlistArrayController,delegate.playitemArrayController][self.tag]!
+        let objects = arrayController.arrangedObjects as! [NSPasteboardWriting]
+        let indexSet = self.selectedRowIndexes
+        var items = [NSDraggingItem]()
+        
+        for index in indexSet {
+            let dragImage = (delegate.view.window?.windowController?.document as! Document).displayImage!
+            let item = NSDraggingItem.init(pasteboardWriter: objects[index])
+            item.setDraggingFrame(self.rect(ofRow: index), contents: dragImage)
+            item.draggingFrame = self.rect(ofRow: index)
+            items.append(item)
+        }
+        self.beginDraggingSession(with: items, event: event, source: self)
     }
 
     override func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
@@ -60,9 +77,6 @@ class PlayTableView : NSTableView {
 }
 
 class PlayItemCornerButton : NSButton {
-}
-
-class PlayItemCornerView : NSView {
 }
 
 class PlayHeaderView : NSTableHeaderView {
@@ -131,6 +145,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc @IBOutlet weak var playitemTableView: PlayTableView!
     @objc @IBOutlet weak var playlistSplitView: NSSplitView!
 
+    //  we are managing the globals playlist, which includes app delegate histories
+    var isGlobalPlaylist : Bool = false
+    
     //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
@@ -257,7 +274,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 item.removeObserver(self, forKeyPath: keyPath)
             }
         }
-        Swift.print(item, (state ? "YES" : "NO"))
+        //Swift.print(item, (state ? "YES" : "NO"))
     }
     
     //  Start or forget observing any changes
@@ -442,17 +459,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
     
     override func viewDidLoad() {
-        let types = [NSPasteboard.PasteboardType(kUTTypeData as String),
-                     NSPasteboard.PasteboardType(kUTTypeURL as String),
-                     NSPasteboard.PasteboardType(kUTTypeFileURL as String),
-                     NSPasteboard.PasteboardType(PlayList.className() as String),
-                     NSPasteboard.PasteboardType(PlayItem.className() as String),
-                     NSPasteboard.PasteboardType("NSFilenamesPboardType"),
-                     NSPasteboard.PasteboardType.filePromise,
-                     NSURLPboardType]
-
-        playlistTableView.registerForDraggedTypes(types)
-        playitemTableView.registerForDraggedTypes(types)
+        playlistTableView.registerForDraggedTypes([.list,.data,.fileURL,.filePromise,.files,.string,.URL])
+        playitemTableView.registerForDraggedTypes([.item,.data,.fileURL,.filePromise,.files,.string,.URL])
 
         playlistTableView.doubleAction = #selector(playPlaylist(_:))
         playitemTableView.doubleAction = #selector(playPlaylist(_:))
@@ -467,22 +475,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     override func viewWillAppear() {
         //  Leave non-global extractions contents intact
-        if let doc = self.view.window?.windowController?.document, let url = doc.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w {
+        if isGlobalPlaylist {
             
-            //  update window close button with url as tooltip
-            if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
-                titleView.toolTip = url?.absoluteString.removingPercentEncoding
-            }
-            
-            //  Start us of cleanly re: change count
-            self.undoManager?.removeAllActions()
-        }
-        else
-        {
-            //  For global playlists, load shared by all; app delegate keeps history
+            //  Load global pp delegate keep history
             self.restorePlaylists(nil)
             
-            //  For globals, prune duplicate history entries
+            //  Prune duplicate history entries
             while let oldHistory = playlists.item(UserSettings.HistoryName.value)
             {
                 playlistArrayController.removeObject(oldHistory)
@@ -491,6 +489,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                                          list: appDelegate.histories)
             
             playlistArrayController.addObject(historyCache)
+        }
+        else
+        if let doc = self.webViewController?.document, let url = doc.fileURL
+        {
+            //  Set window titleView with url as tooltip like .helium type
+            if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
+                titleView.toolTip = url.absoluteString.removingPercentEncoding
+            }
+            
+            //  Start us of cleanly re: change count
+            doc.updateChangeCount(.changeCleared)
+            self.undoManager?.removeAllActions()
         }
         
         // cache our list before editing
@@ -869,8 +879,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
     // Return notification from webView controller
     @objc func gotNewHistoryItem(_ note: Notification) {
+        guard let playlist = playlistArrayController.selectedObjects.first as? PlayList else { return }
+
         //  If history is current playplist, add to the history
-        if historyCache.name == (playlistArrayController.selectedObjects.first as! PlayList).name {
+        if historyCache.name == playlist.name {
             self.add(item: note.object as! PlayItem, atIndex: -1)
         }
     }
@@ -1023,7 +1035,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             (doc as! Document).save(sender)
             
             //  We would throw if any errors so clear redo now
-            self.undoManager?.removeAllActions()
+            if 0 == doc.changeCount {
+                self.undoManager?.removeAllActions()
+            }
         }
     }
     
@@ -1049,7 +1063,16 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             //  If no selection we saved *all* to global to be restored
             if saveArray.count == playlists.count {
-                appDelegate.userAlertMessage("Saved playlists(*)", info: "Playlists list global updated")
+// TODO: convert playlists to dictionary
+//                defaults.set(playlists.allKeys, forKey: k.playlists)
+                var names = Array<String>()
+                
+                for playlist in saveArray {
+                    names.append(playlist.name)
+                }
+                defaults.set(names, forKey: k.playlists)
+
+                appDelegate.userAlertMessage("Saved playlists", info: "Playlists globals updated")
             }
             else
             {
@@ -1059,14 +1082,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         else
         {
-            var itemArray = playitemArrayController.selectedObjects as! [PlayItem]
+            var saveArray = playitemArrayController.selectedObjects as! [PlayItem]
             var names = Array<String>()
 
-            if itemArray.count == 0 {
-                itemArray = playitemArrayController.arrangedObjects as! [PlayItem]
+            if saveArray.count == 0 {
+                saveArray = playitemArrayController.arrangedObjects as! [PlayItem]
             }
 
-            for playitem in itemArray {
+            for playitem in saveArray {
                 defaults.set(playitem.dictionary(), forKey: playitem.link.absoluteString)
                 names.append(playitem.name)
             }
@@ -1090,6 +1113,11 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             case true:
                 // Save to the cache
                 playCache = playlists
+                
+                // If we're global save that too
+                if isGlobalPlaylist {
+                    appDelegate.playlists = playlists
+                }
                 break
             case false:
                 // Restore NON-HISTORY playlist(s) from cache
@@ -1129,11 +1157,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         else
         {
             switch menuItem.title {
-            
-            case "Save":
-                guard let doc = self.view.window?.windowController?.document, let url = doc.fileURL, url?.isFileURL ?? false, url?.pathExtension == k.h3w else { return false }
-                return self.undoManager?.canUndo ?? false
-
+                
             default:
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
                 break
@@ -1158,6 +1182,37 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             return false
         }
     }
+    /*
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let item = ([playlistArrayController,playitemArrayController][tableView.tag]?.arrangedObjects as! [AnyObject])[row]
+        //let item = ((tableView.dataSource as! NSArrayController).arrangedObjects as! [AnyObject])[row]
+        var view = tableView.makeView(withIdentifier: tableColumn!.identifier, owner: self)
+        if view ==  nil {
+            Swift.print("tag: \(tableView.tag) ident: \(tableColumn!.identifier.rawValue)")
+            view = NSTableCellView.init()
+            view?.identifier = tableColumn?.identifier
+        }
+        
+        guard tableView.tag == 0 else { return view }
+
+        guard isGlobalPlaylist, item.name == UserSettings.HistoryName.value,
+            let identifier = tableColumn?.identifier,
+            identifier.rawValue == k.name else { return view }
+
+        if let cellView = view as? NSTableCellView {
+            if tableView.selectedRowIndexes.intersection(IndexSet.init(integer: row)).count > 0 {
+                cellView.textField?.font = .boldSystemFont(ofSize: -1)
+                cellView.textField?.textColor = .white
+            }
+            else
+            {
+                cellView.textField?.font = .systemFont(ofSize: -1)
+                cellView.textField?.textColor = .blue
+            }
+        }
+        return view
+    }
+    */
     func tableView(_ tableView: NSTableView, toolTipFor cell: NSCell, rect: NSRectPointer, tableColumn: NSTableColumn?, row: Int, mouseLocation: NSPoint) -> String {
         if tableView == playlistTableView
         {
@@ -1203,7 +1258,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
     // MARK:- Drag-n-Drop
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
-
+        Swift.print("\(tableView.tag) writeRowsWith: \(rowIndexes.count)")
         if tableView == playlistTableView {
             let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
             var items: [NSPasteboardWriting] = [NSPasteboardWriting]()
@@ -1217,8 +1272,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 promises.append(promise)
             }
             
-            let data = NSKeyedArchiver.archivedData(withRootObject: items)
-            pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayList.className()))
+            //let data = NSKeyedArchiver.archivedData(withRootObject: items)
+//            pboard.setPropertyList(items, forType: NSPasteboard.PasteboardType(rawValue: PlayList.className()))
             pboard.writeObjects(items)
             pboard.setPropertyList(promises, forType:NSPasteboard.PasteboardType.filePromise)
         }
@@ -1236,36 +1291,27 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 promises.append(promise)
             }
             
-            let data = NSKeyedArchiver.archivedData(withRootObject: items)
-            pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayItem.className()))
+            //let data = NSKeyedArchiver.archivedData(withRootObject: items)
+//            pboard.setPropertyList(data, forType: NSPasteboard.PasteboardType(rawValue: PlayItem.className()))
             pboard.writeObjects(items)
             pboard.setPropertyList(promises, forType:NSPasteboard.PasteboardType.filePromise)
         }
         return true
     }
     
-    func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        appDelegate.newViewOptions = appDelegate.getViewOptions
-//        Swift.print("draggingUpdated -> .copy")
+    var dragSequenceNo = 0
+    func draggingUpdated(_ info: NSDraggingInfo) -> NSDragOperation {
+        if dragSequenceNo != info.draggingSequenceNumber {
+            let sourceTableView = info.draggingSource as? NSTableView
+            let pboard: NSPasteboard = info.draggingPasteboard
+            let items = pboard.pasteboardItems!
+
+            Swift.print("\(String(describing: sourceTableView?.identifier)) draggingUpdate \(items.count) item(s)")
+
+            appDelegate.newViewOptions = appDelegate.getViewOptions
+            dragSequenceNo = info.draggingSequenceNumber
+        }
         return .copy
-    }
-    func performDragOperation(info: NSDraggingInfo) -> Bool {
-        let pboard: NSPasteboard = info.draggingPasteboard
-        let types = pboard.types
-    
-        if (types?.contains(NSPasteboard.PasteboardType("NSFilenamesPboardType")))! {
-            let names = info.namesOfPromisedFilesDropped(atDestination: URL.init(string: "file://~/Desktop/")!)
-            // Perform operation using the files’ names, but without the
-            // files actually existing yet
-            Swift.print("performDragOperation: NSFilenamesPboardType \(String(describing: names))")
-        }
-        if (types?.contains(NSPasteboard.PasteboardType.filePromise))! {
-            let names = info.namesOfPromisedFilesDropped(atDestination: URL.init(string: "file://~/Desktop/")!)
-            // Perform operation using the files’ names, but without the
-            // files actually existing yet
-            Swift.print("performDragOperation: NSFilesPromisePboardType \(String(describing: names))")
-        }
-        return true
     }
 
     func tableView(_ tableView: NSTableView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedRowsWith indexSet: IndexSet) -> [String] {
@@ -1378,6 +1424,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
         //  tableView is our destination; act depending on source
         tableView.beginUpdates()
+
+        guard let items = info.draggingPasteboard.pasteboardItems else { return false }
+        Swift.print("\(items.count) item(s)")
 
         // We have intra tableView drag-n-drop ?
         if tableView == sourceTableView {

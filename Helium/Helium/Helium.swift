@@ -77,6 +77,16 @@ struct k {
 }
 
 let docTypes = [k.Helium, k.Release, k.Playlists]
+let docNames = [k.Helium, k.ReleaseNotes, k.Playlists]
+
+extension NSPasteboard.PasteboardType {
+    static let data    = NSPasteboard.PasteboardType(kUTTypeData as String)
+    static let dict    = NSPasteboard.PasteboardType(NSDictionary.className())
+    static let item    = NSPasteboard.PasteboardType(PlayItem.className())
+    static let list    = NSPasteboard.PasteboardType(PlayList.className())
+    static let files   = NSPasteboard.PasteboardType("NSFilenamesPboardType")
+    static let promise = NSPasteboard.PasteboardType(kPasteboardTypeFileURLPromise)
+}
 
 extension NSImage {
     
@@ -196,23 +206,16 @@ extension NSObject {
     }
 }
 
-class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboardReading {
+class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDestination, NSPasteboardWriting, NSPasteboardReading {
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        return .copy
+    }
+    
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
 
-    //  Keep playlist names unique
-    @objc dynamic var name : String = k.list {
-        didSet {
-            if appDelegate.playlists.item(name) != self {
-                name = oldValue
-
-                //  tell controller we have reverted this edit
-                let notif = Notification(name: Notification.Name(rawValue: "BadPlayListName"), object: self)
-                NotificationCenter.default.post(notif)
-            }
-        }
-    }
+    @objc dynamic var name : String = k.name
     @objc dynamic var list : Array <PlayItem> = Array()
-    @objc dynamic var date : TimeInterval
+    @objc dynamic var date : TimeInterval = Date.timeIntervalSinceReferenceDate
     @objc dynamic var tally: Int {
         get {
             return self.list.count
@@ -264,7 +267,7 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
         date = Date().timeIntervalSinceReferenceDate
         super.init()
 
-         list = Array <PlayItem> ()
+        list = Array <PlayItem> ()
         let temp = (String(format:"%p",self)).suffix(4)
         name = test + temp
         var suffix = 0
@@ -308,28 +311,33 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
     func dictionary() -> Dictionary<String,Any> {
         var dict = Dictionary<String,Any>()
         var items: [Any] = Array()
-        for item in list {
+        for item in self.list {
             items.append(item.dictionary())
         }
-        dict[k.name] = name
+        dict[k.name] = self.name
         dict[k.list] = items
-        dict[k.date] = date
+        dict[k.date] = self.date
         return dict
     }
-    convenience init(with dictionary: Dictionary<String,Any>) {
+    convenience init(with dictionary: Dictionary<String,Any>, createMissingItems: Bool = false) {
         self.init()
         
-        self.update(with: dictionary)
+        self.update(with: dictionary, createMissingItems: createMissingItems)
     }
-    func update(with dictionary: Dictionary<String,Any>) {
+    func update(with dictionary: Dictionary<String,Any>, createMissingItems: Bool = false) {
         if let name : String = dictionary[k.name] as? String, name != self.name {
             self.name = name
         }
         if let plists : [Dictionary<String,Any>] = dictionary[k.list] as? [Dictionary<String,Any>] {
             
             for plist in plists {
-                if let item : PlayItem = list.item(plist[k.link] as! String) {
+                if let item : PlayItem = list.item(plist[k.name] as! String) {
                     item.update(with: plist)
+                }
+                else
+                if createMissingItems
+                {
+                    list.append(PlayItem.init(with: plist))
                 }
             }
         }
@@ -368,42 +376,111 @@ class PlayList : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
     }
     
     // MARK:- Pasteboard Reading
-    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
-        Swift.print("type: \(type.rawValue)")
-        guard type == NSPasteboard.PasteboardType(rawValue: PlayList.className()) else {
-            self.init()
+    static func readingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.ReadingOptions {
+        Swift.print("listRO type: \(type.rawValue)")
+        switch type {
+        case .list:
+            return .asPropertyList
             
-            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
-            self.update(with: dict as! Dictionary<String, Any>)
-            return
+        case .data:
+            return .asData
+
+        case .dict:
+            return .asKeyedArchive
+            
+         case .string:
+            return .asString
+            
+        default:
+            return .asKeyedArchive
         }
-        
-        let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
-        Swift.print("item: \(String(describing: item))")
-        self.init(item as! PlayList)
+     }
+
+    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        Swift.print("listR type: \(type.rawValue)")
+        switch type {
+        case .list:
+            self.init(with: propertyList as! Dictionary, createMissingItems: true)
+            break
+            
+        case .data:
+            let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.init(item as! PlayList)
+            break
+            
+        case .dict:
+            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.init(with: dict as! Dictionary, createMissingItems: true)
+
+        case .string:
+            self.init()
+            if let xmlString = propertyList as? String {
+                Swift.print("convert \(xmlString) to playlist")
+            }
+            break
+            
+        default:
+            Swift.print("unknown \(type)")
+            self.init()
+        }
     }
     
     static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        return [NSPasteboard.PasteboardType(rawValue: PlayList.className()),
-                NSPasteboard.PasteboardType(rawValue: PlayList.className() + ".dict")]
+        return [.list, .data, .dict, .string]
     }
     
     // MARK:- Pasteboard Writing
-    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
-        guard type == NSPasteboard.PasteboardType(rawValue: PlayList.className()) else {
-            return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+    func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.WritingOptions {
+        Swift.print("listWO type: \(type.rawValue)")
+        switch type {
+        case .list:
+            return .promised
+            
+        case .data:
+            return .promised
+
+        case .dict:
+            return .promised
+            
+         case .string:
+            return .promised
+            
+        default:
+            return .promised
         }
-        
-        return NSKeyedArchiver.archivedData(withRootObject: self)
+    }
+
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        Swift.print("listW type: \(type.rawValue)")
+        switch type {
+        case .list:
+            return self.dictionary()
+
+        case .data:
+            return NSKeyedArchiver.archivedData(withRootObject: self)
+            
+        case .dict:
+            return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+            
+        case .string:
+            return self.dictionary().xmlString(withElement: self.className, isFirstElement: true)
+            
+        default:
+            Swift.print("unknown \(type)")
+            return nil
+        }
     }
     
     func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        return [NSPasteboard.PasteboardType(rawValue: PlayList.className()),
-                NSPasteboard.PasteboardType(rawValue: PlayList.className() + ".dict")]
+        return [.list, .data, .dict, .string]
     }
 }
 
-class PlayItem : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboardReading {
+class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDestination, NSPasteboardWriting, NSPasteboardReading {
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        return .copy
+    }
+    
     @objc dynamic var name : String = k.item
     @objc dynamic var link : URL = URL.init(string: "http://")!
     @objc dynamic var time : TimeInterval
@@ -611,40 +688,107 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSPasteboardWriting, NSPasteboar
     }
     
     // MARK:- Pasteboard Reading
-    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
-        Swift.print("type: \(type.rawValue)")
-        guard type == NSPasteboard.PasteboardType(rawValue: PlayItem.className()) else {
-            self.init()
+    static func readingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.ReadingOptions {
+        Swift.print("itemRO type: \(type.rawValue)")
+        switch type {
+        case .item:
+            return .asPropertyList
+            
+        case .data:
+            return .asData
 
-            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
-            self.update(with: dict as! Dictionary<String, Any>)
-            return
+        case .dict:
+            return .asKeyedArchive
+            
+         case .string:
+            return .asString
+            
+        default:
+            return .asKeyedArchive
         }
-        
-        let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
-        Swift.print("item: \(String(describing: item))")
-        self.init(item as! PlayItem)
+     }
+    
+    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        Swift.print("itemR type: \(type.rawValue)")
+        switch type {
+        case .item:
+            self.init(with: propertyList as! Dictionary)
+            break
+            
+        case .data:
+            let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.init(item as! PlayItem)
+            break
+            
+        case .dict:
+            let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
+            self.init(with: dict as! Dictionary)
+            break
+            
+        case .string:
+            self.init()
+            if let xmlString = propertyList as? String {
+                Swift.print("convert \(xmlString) to playitem")
+            }
+            break
+            
+        default:
+            Swift.print("unknown \(type)")
+            self.init()
+        }
     }
     
     static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        return [NSPasteboard.PasteboardType(rawValue: PlayItem.className()),
-                NSPasteboard.PasteboardType(rawValue: PlayItem.className() + ".dict")]
+        return [.item, .data, .dict, .string, .URL]
     }
     
     // MARK:- Pasteboard Writing
-    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
-        Swift.print("plist: \(type.rawValue)")
-        guard type == NSPasteboard.PasteboardType(rawValue: PlayItem.className()) else {
-           return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+    func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.WritingOptions {
+        Swift.print("itemWO type: \(type.rawValue)")
+        switch type {
+        case .item:
+            return .promised
+            
+        case .data:
+            return .promised
+
+        case .dict:
+            return .promised
+            
+         case .string:
+            return .promised
+            
+        default:
+            return .promised
         }
+     }
+
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        Swift.print("itemW type: \(type.rawValue)")
+        switch type {
+        case .item:
+            return self.dictionary()
+            
+        case .data:
+            return NSKeyedArchiver.archivedData(withRootObject: self)
+            
+        case .dict:
+            return NSKeyedArchiver.archivedData(withRootObject: self.dictionary())
+            
+        case .string:
+            return self.dictionary().xmlString(withElement: self.className, isFirstElement: true)
         
-        return NSKeyedArchiver.archivedData(withRootObject: self.copy())
+        case .URL, .fileURL:
+            return link.absoluteString
+
+        default:
+            Swift.print("unknown \(type)")
+            return nil
+        }
     }
     
     func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        Swift.print("wtypes: [\(PlayItem.className()), \(PlayItem.className()).dict]")
-        return [NSPasteboard.PasteboardType(rawValue: PlayItem.className()),
-                NSPasteboard.PasteboardType(rawValue: PlayItem.className() + ".dict")]
+        return [.item, .data, .dict, .fileURL, .string, .URL]
     }
 }
 
@@ -898,7 +1042,7 @@ class Document : NSDocument {
     }
     
     override func defaultDraftName() -> String {
-        return docType == .playlist ? k.Playlists : k.Helium
+        return docNames[docType.rawValue]
     }
 
     var displayImage: NSImage? {
@@ -937,7 +1081,7 @@ class Document : NSDocument {
                     return (justTheName as NSString).deletingPathExtension
                 }
             }
-            //  This includes playlists
+            //  This includes release & playlists (use draft name)
             return super.displayName
         }
         set (newName) {
@@ -968,7 +1112,7 @@ class Document : NSDocument {
             dc.addDocument(self)
             
             //  Defer custom setups until we have a webView
-            if [k.Custom, k.Playlists,k.ReleaseNotes].contains(typeName) { return }
+            if [k.Custom, k.Playlists, k.Release].contains(typeName) { return }
 
             //  If we were seen before then restore settings
             if let hpc = heliumPanelController {
@@ -1079,7 +1223,7 @@ class Document : NSDocument {
     
     override var shouldRunSavePanelWithAccessoryView: Bool {
         get {
-            return docType != .playlist
+            return docType == .helium
         }
     }
     
@@ -1088,17 +1232,18 @@ class Document : NSDocument {
         makeWindowController(k.Helium)
     }
     func makeWindowController(_ typeName: String) {
-        let type = docTypes[ (docTypes.firstIndex(of: typeName) ?? DocType.helium.rawValue) ]
+        self.docType = DocType(rawValue: docTypes.firstIndex(of: typeName) ?? DocType.helium.rawValue)
+        let type = [ k.Helium, k.Release, k.Playlists ][docType.rawValue]
         let identifier = String(format: "%@Controller", type)
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        
-        self.docType = DocType(rawValue: [ k.Helium, k.Release, k.Playlists ].firstIndex(of: type) ?? DocType.helium.rawValue)
         
         let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
         dc.addDocument(self)
         
-        if docType == .playlist {
+        switch docType {
+
+        case .playlist:
             let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
             
             if let url = self.url, url.pathExtension == k.h3w, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
@@ -1120,14 +1265,29 @@ class Document : NSDocument {
             else
             {
                 pvc.playlists.append(contentsOf: appDelegate.playlists)
+                pvc.isGlobalPlaylist = true
             }
 
             NSApp.addWindowsItem(controller.window!, title: self.displayName, filename: false)
+            break
+            
+        case .release:
+            let relnotes = NSString.string(fromAsset: "RELEASE")
+            let wvc = (controller as! HeliumPanelController).webViewController
+            if let webView = wvc.webView {
+                webView.loadHTMLString(relnotes, baseURL: nil)
+            }
+            break
+            
+        default:
+            let wvc = (controller as! HeliumPanelController).webViewController
+            wvc.clear()
+            break
         }
  
         //  Relocate to origin if any
         if let window = controller.window {
-            controller.window?.offsetFromKeyWindow()
+            window.offsetFromKeyWindow()
 
             if self.settings.rect.value != NSZeroRect {
                 window.setFrameOrigin(self.settings.rect.value.origin)

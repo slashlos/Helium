@@ -14,7 +14,7 @@ Contributors:
 
 History
 
-  4, August, 2018
+  June 23, 2017
     Carlos D Santiago
       document windows,
       playlists - global / shared, savable items

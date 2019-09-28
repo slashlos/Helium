@@ -14,10 +14,6 @@
 import Cocoa
 import CoreLocation
 
-#if swift(>=4.0)
-    let NSURLPboardType = NSPasteboard.PasteboardType(kUTTypeURL as String)
-#endif
-
 struct RequestUserStrings {
     let currentURL: String?
     let alertMessageText: String
@@ -496,7 +492,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return false
     }
     
-    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
+    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Document? {
         do {
             let types : Dictionary<String,String> = [ k.h3w : k.Helium ]
             let type = types [ newURL.pathExtension ]
@@ -505,11 +501,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
             doc.showWindows()
-            return true
+            return doc
         } catch let error {
             NSApp.presentError(error)
         }
-        return false
+        return nil
     }
     
     @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
@@ -623,23 +619,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
 	
     @objc @IBAction func showReleaseInfo(_ sender: Any) {
-        let urlString = UserSettings.ReleaseNotesURL.value
-
         do
         {
-            let next = try Document.init(type: k.ReleaseNotes)
-            
-            let wc = next.windowControllers.first?.window?.windowController
-            let relnotes = NSString.string(fromAsset: "RELEASE")
-
-            if let hpc : HeliumPanelController = wc as? HeliumPanelController {
-                (hpc.contentViewController as! WebViewController).webView.loadHTMLString(relnotes, baseURL: nil)
-                hpc.window?.center()
-            }
+            let doc = try Document.init(type: k.Release)
+            doc.showWindows()
         }
         catch let error {
             NSApp.presentError(error)
-            Swift.print("Yoink, unable to load url (\(urlString))")
         }
 	}
 	
@@ -904,6 +890,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if  _playlists == nil {
                 _playlists = [PlayList]()
                 
+                //  read back playlists as [Dictionary] or [String] keys to each [PlayItem]
                 if let plists = self.defaults.dictionary(forKey: k.playlists) {
                     for (name,plist) in plists {
                         guard let items = plist as? [Dictionary<String,Any>] else {
@@ -920,12 +907,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                         _playlists?.append(playlist)
                     }
                 }
+                else
+                if let plists = self.defaults.array(forKey: k.playlists) as? [String] {
+                    for name in plists {
+                        guard let plist = self.defaults.dictionary(forKey: name) else {
+                            let playlist = PlayList.init(name: name, list: [PlayItem]())
+                            _playlists?.append(playlist)
+                            continue
+                        }
+                        let playlist = PlayList.init(with: plist, createMissingItems: true)
+                        _playlists?.append(playlist)
+                    }
+                }
+                else
+                {
+                    self.defaults.set([Dictionary<String,Any>](), forKey: k.playlists)
+                }
             }
             return _playlists!
         }
         set (array) {
             _playlists = array
         }
+    }
+    
+    @objc @IBAction func savePlaylists(_ sender: Any) {
+        var plists = [Dictionary<String,Any>]()
+        
+        for plist in playlists {
+            plists.append(plist.dictionary())
+        }
+        
+        self.defaults.set(plists, forKey: k.playlists)
     }
     
     //  Histories restore deferred until requested
@@ -1117,6 +1130,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  Capture default user agent string for this platform
         UserSettings.UserAgent.default = WKWebView()._userAgent
+        
+        
+        //  Restore auto save settings
+        autoSaveDocs = UserSettings.AutoSaveDocs.value
 
         //  Restore our non-document (file://) windows if any via
         guard UserSettings.RestoreDocAttrs.value else { return }
@@ -1129,9 +1146,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 Swift.print("restore \(item)")
             }
         }
-        
-        //  Restore auto save settings
-        autoSaveDocs = UserSettings.AutoSaveDocs.value
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1152,6 +1166,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             Swift.print("Yoink, unable to save booksmarks")
         }
 
+        // Save play;sits to defaults - no maximum
+        savePlaylists(self)
+        
         // Save histories to defaults up to their maxiumum
         let keep = UserSettings.HistoryKeep.value
         var temp = Array<Any>()
@@ -1638,6 +1655,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 {
                     print("Yoink \(error.localizedDescription)")
                 }
+            }
+        }
+    }
+    
+    func application(_ application: NSApplication, openURL: URL) -> Bool {
+        return openURLInNewWindow(openURL) != nil
+    }
+
+    @available(OSX 10.13, *)
+    func application(_ application: NSApplication, open urls: [URL]) {
+        
+        for url in urls {
+            
+            if !self.application(application, openURL: url) {
+                print("Yoink unablel to open \(url)")
             }
         }
     }

@@ -62,6 +62,10 @@ class PlaylistsPanel : NSPanel {
     
 }
 
+class ReleasePanel : HeliumPanel {
+    
+}
+
 //  Offset a window from the current app key window
 extension NSWindow {
     
