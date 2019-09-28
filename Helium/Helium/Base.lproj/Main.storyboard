@@ -754,8 +754,7 @@ CA
                                                 <action selector="showHelp:" target="Ady-hI-5gd" id="y7X-2Q-9no"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Release Info" id="jCx-kC-uHJ">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        <menuItem title="Release Info" keyEquivalent="i" id="jCx-kC-uHJ">
                                             <connections>
                                                 <action selector="showReleaseInfo:" target="Voe-Tx-rLC" id="vww-tX-KDW"/>
                                             </connections>
