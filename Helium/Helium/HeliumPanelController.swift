@@ -36,14 +36,17 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     var hoverBar : PanelButtonBar?
 
     override func windowDidLoad() {
+        //  Default to not dragging by content
+        panel.isMovableByWindowBackground = false
+        panel.isFloatingPanel = true
+        
+        //  Set up hover & buttons unless we're not a helium document
+        guard !self.isKind(of: ReleasePanelController.self) else { return }
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
 
         // place the hover bar
         hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
         self.titleView?.superview?.addSubview(hoverBar!)
-        
-        //  Default to no dragging by content
-        panel.isMovableByWindowBackground = false
         
         //  We do not support a miniaturize button at this time; statically hide zoom
         miniaturizeButton?.isHidden = true
@@ -54,8 +57,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             panelButton.target = windowButton.target
             panelButton.action = windowButton.action
         }
-        
-        panel.isFloatingPanel = true
         
         setupTrackingAreas(true)
         
@@ -533,7 +534,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         wpc.setupTrackingAreas(false)
         
         //  Halt anything in progress
-        let delegate = webView.navigationDelegate as! NSObject
+        guard let delegate = webView.navigationDelegate as? NSObject else { return true }
         assert(delegate == wvc, "webView delegate mismatch")
 
         //  Stop whatever is going on by brute force

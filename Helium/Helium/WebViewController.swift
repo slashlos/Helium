@@ -1114,18 +1114,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     override func viewWillDisappear() {
-        if let navDelegate = webView.navigationDelegate as? NSObject {
+        guard let wc = self.view.window?.windowController, !wc.isKind(of: ReleasePanelController.self) else { return }
+        let navDelegate = webView.navigationDelegate as! NSObject
         
-            //  Halt anything in progress
-            webView.stopLoading()
-            webView.loadHTMLString("about:blank", baseURL: nil)
-            
-            // Wind down all observations
-            if observing {
-                webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
-                webView.removeObserver(navDelegate, forKeyPath: "title")
-                observing = false
-            }
+        // Wind down all observations
+        if observing {
+            webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
+            webView.removeObserver(navDelegate, forKeyPath: "title")
+            observing = false
         }
     }
 
