@@ -122,6 +122,7 @@
 		0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistPanelController.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD6C7371E62286000D6F836 /* PlaylistViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistViewController.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FDE23EC1F040484009D4B16 /* Helium.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Helium.icns; path = Helium/Assets/Helium.icns; sourceTree = "<group>"; };
+		0FEF956C232C51FA0016F119 /* Helium */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Helium; sourceTree = "<group>"; };
 		0FF0BB391EAA25FE009952D4 /* ValueTransformers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueTransformers.swift; sourceTree = "<group>"; usesTabs = 0; };
 		27199AB01BE422AC00E02297 /* HeliumShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HeliumShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		27199AB31BE422AC00E02297 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
@@ -265,6 +266,7 @@
 				4D867CB81AD6781200681331 /* WebViewController.swift */,
 				0FD6C7371E62286000D6F836 /* PlaylistViewController.swift */,
 				0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */,
+				0FEF956C232C51FA0016F119 /* Helium */,
 				4DEAB8FE1ADBD98600A2FC2B /* WKWebViewPrivate.h */,
 				4D867CBA1AD6781200681331 /* Images.xcassets */,
 				4D867CBC1AD6781200681331 /* Main.storyboard */,
@@ -420,7 +422,7 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "Carlos Santiaog";
 				TargetAttributes = {
 					0F60517121612E470008977E = {
@@ -676,6 +678,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -695,6 +698,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VQYGYPHYGE;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
