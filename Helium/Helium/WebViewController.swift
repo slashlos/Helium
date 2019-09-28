@@ -364,7 +364,7 @@ class MyWebView : WKWebView {
         let pboard = info.draggingPasteboard
         let items = pboard.pasteboardItems!
         let allow = shouldAllowDrag(info)
-        isReceivingDrag = allow
+        if uiDelegate != nil { isReceivingDrag = allow }
         
         let dragOperation = allow ? .copy : NSDragOperation()
         Swift.print("web draggingEntered -> \(dragOperation) \(items.count) item(s)")
@@ -380,7 +380,7 @@ class MyWebView : WKWebView {
     
     override func draggingExited(_ sender: NSDraggingInfo?) {
         Swift.print("web draggingExited")
-        isReceivingDrag = false
+        if uiDelegate != nil { isReceivingDrag = false }
     }
     
     var lastDragSequence : Int = 0
