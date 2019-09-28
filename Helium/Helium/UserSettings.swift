@@ -66,8 +66,8 @@ internal struct UserSettings {
         "homePageURL",
         defaultValue: "https://slashlos.github.io/Helium/helium_start.html"
     )
-    static let ReleaseNotesURL = Setting<String>(
-        "releaseNotesURL",
+    static let HelpPageURL = Setting<String>(
+        "helpPageURL",
         defaultValue: "https://slashlos.github.io/Helium/Help/index.html"
     )
     static let HomePageName = Setting<String>("homePageName", defaultValue: "helium_start")
