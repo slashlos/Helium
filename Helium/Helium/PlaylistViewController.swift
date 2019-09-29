@@ -1125,6 +1125,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 if isGlobalPlaylist {
                     appDelegate.playlists = playlists
                 }
+                else
+                {
+                    saveDocument(self)
+                }
                 break
             case false:
                 // Restore NON-HISTORY playlist(s) from cache
