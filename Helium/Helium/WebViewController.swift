@@ -220,34 +220,35 @@ class MyWebView : WKWebView {
         }
         
         //  We could have 3 keys: <source-name>, k.playlists, k.playitems or promise file of playlists
-        var playlists = [PlayList]()
+        var playlists = Dictionary<String,Array<PlayItem>>()
+        
         if let names : [String] = dict.value(forKey: k.playlists) as? [String] {
             for name in names {
                 if let items = dict.value(forKey: name) as? [Dictionary<String,Any>] {
-                    let playlist = PlayList.init(name: name, list: [PlayItem]())
+                    var list = [PlayItem]()
                     for item in items {
-                        playlist.list.append(PlayItem.init(with: item))
+                        list.append(PlayItem.init(with: item))
                     }
-                    playlists.append(playlist)
+                    playlists[name] = list
                 }
             }
         }
         else
         if let items = dict.value(forKey: k.playitems) as? [Dictionary<String,Any>] {
-            let playlist = PlayList.init(name: nextURL.lastPathComponent, list: [PlayItem]())
+            var list = [PlayItem]()
             for item in items {
-                playlist.list.append(PlayItem.init(with: item))
+                list.append(PlayItem.init(with: item))
             }
-            playlists.append(playlist)
+            playlists[nextURL.lastPathComponent] = list
         }
         else
         {
-            for (name,list) in dict {
-                let playlist = PlayList.init(name: name as! String, list: [PlayItem]())
-                for item in (list as? [Dictionary<String,Any>])! {
-                    playlist.list.append(PlayItem.init(with: item))
+            for (name,items) in dict {
+                var list = [PlayItem]()
+                for item in ((items as? [Dictionary<String,Any>])!) {
+                    list.append(PlayItem.init(with: item))
                 }
-                playlists.append(playlist)
+                playlists[name as! String] = list
             }
         }
         
@@ -255,7 +256,7 @@ class MyWebView : WKWebView {
             let storyboard = NSStoryboard(name: "Main", bundle: nil)
             
             let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
-            pvc.playlists.append(contentsOf: playlists)
+            pvc.playlists.merge(playlists, uniquingKeysWith: { (_,new) in new })
             pvc.webViewController = self.webViewController
             wvc.presentAsSheet(pvc)
         }
