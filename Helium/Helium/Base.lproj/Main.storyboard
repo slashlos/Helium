@@ -115,7 +115,7 @@
                                         </textView>
                                     </subviews>
                                 </clipView>
-                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="kwe-eA-EL8">
+                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="kwe-eA-EL8">
                                     <rect key="frame" x="1" y="59" width="0.0" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -1008,18 +1008,17 @@ CA
                                         </buttonCell>
                                         <connections>
                                             <action selector="playPlaylist:" target="YAy-lX-dae" id="SZn-cv-787"/>
-                                            <binding destination="Vul-U2-GKW" name="enabled" keyPath="canRemove" id="vK7-nd-MFs"/>
                                             <binding destination="YAy-lX-dae" name="toolTip" keyPath="playButtonTooltip" id="PcZ-Bb-UAl"/>
                                         </connections>
                                     </button>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KRs-AT-9D8">
                                         <rect key="frame" x="0.0" y="39" width="126" height="233"/>
                                         <clipView key="contentView" drawsBackground="NO" id="Noe-Za-eMO">
-                                            <rect key="frame" x="1" y="0.0" width="124" height="217"/>
+                                            <rect key="frame" x="1" y="0.0" width="124" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playlistTableView.prefs" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="253" height="192"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="253" height="207"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1068,13 +1067,6 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
-                                                            <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="v11-uD-Oea">
-                                                                    <dictionary key="options">
-                                                                        <bool key="NSValidatesImmediately" value="YES"/>
-                                                                    </dictionary>
-                                                                </binding>
-                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="date" width="40" minWidth="40" maxWidth="200" id="i0k-lz-NaQ">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
@@ -1086,9 +1078,6 @@ CA
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                <connections>
-                                                                    <binding destination="Vul-U2-GKW" name="value" keyPath="selection.date" id="3ZF-tV-kig"/>
-                                                                </connections>
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
@@ -1123,13 +1112,6 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
-                                                            <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pdate" id="Xk4-D7-NdX">
-                                                                    <dictionary key="options">
-                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                                    </dictionary>
-                                                                </binding>
-                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="200" id="eTP-QM-9yi">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Count">
@@ -1172,13 +1154,6 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
-                                                            <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.tally" id="hjQ-jH-uln">
-                                                                    <dictionary key="options">
-                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                                    </dictionary>
-                                                                </binding>
-                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="200" id="dxN-As-ZFj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Plays">
@@ -1221,13 +1196,6 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
-                                                            <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.plays" id="c6f-KZ-jMz">
-                                                                    <dictionary key="options">
-                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
-                                                                    </dictionary>
-                                                                </binding>
-                                                            </connections>
                                                         </tableColumn>
                                                     </tableColumns>
                                                     <connections>
@@ -1240,7 +1208,7 @@ CA
                                             <nil key="backgroundColor"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="atn-XO-QDu">
-                                            <rect key="frame" x="1" y="217" width="124" height="15"/>
+                                            <rect key="frame" x="1" y="216" width="124" height="16"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="phY-te-dcT">
@@ -1396,11 +1364,11 @@ Gw
                                     <scrollView horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lou-k5-Ctb">
                                         <rect key="frame" x="0.0" y="39" width="314" height="233"/>
                                         <clipView key="contentView" drawsBackground="NO" id="Ix6-nN-7A8">
-                                            <rect key="frame" x="1" y="0.0" width="297" height="217"/>
+                                            <rect key="frame" x="1" y="0.0" width="312" height="232"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView identifier="playitems" verticalHuggingPriority="750" tag="1" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playitemTableView.prefs" headerView="YTX-gj-uhH" id="IBh-ZH-TR3" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="813" height="192"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="813" height="207"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1645,11 +1613,11 @@ Gw
                                             <nil key="backgroundColor"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="1e4-tR-Cc8">
-                                            <rect key="frame" x="1" y="217" width="297" height="15"/>
+                                            <rect key="frame" x="1" y="216" width="312" height="16"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="aSB-Wi-46z">
-                                            <rect key="frame" x="298" y="25" width="15" height="192"/>
+                                            <rect key="frame" x="297" y="25" width="16" height="207"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="YTX-gj-uhH" customClass="PlayHeaderView" customModule="Helium">
@@ -1680,7 +1648,7 @@ Gw
                         <outlet property="cornerButton" destination="r0H-gG-FQJ" id="rTT-q5-UVf"/>
                         <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="pJ4-3Y-cGG"/>
                         <outlet property="playitemTableView" destination="IBh-ZH-TR3" id="bkT-Zc-tEa"/>
-                        <outlet property="playlistArrayController" destination="Vul-U2-GKW" id="E5T-QI-zZZ"/>
+                        <outlet property="playlistArrayController" destination="rHK-0D-rHw" id="RLo-hf-vBJ"/>
                         <outlet property="playlistSplitView" destination="1fw-gA-tie" id="qsH-X3-vUD"/>
                         <outlet property="playlistTableView" destination="PML-r0-Bx7" id="8A5-Ov-NRE"/>
                         <outlet property="restoreButton" destination="DNq-eF-IsJ" id="cg5-Uu-58n"/>
@@ -1688,16 +1656,12 @@ Gw
                     </connections>
                 </viewController>
                 <customObject id="Yq6-uq-zTr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <arrayController id="Vul-U2-GKW">
+                <dictionaryController objectClassName="_NSDictionaryControllerKeyValuePair" id="rHK-0D-rHw">
                     <connections>
-                        <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="PMF-ib-hIl"/>
+                        <binding destination="YAy-lX-dae" name="contentDictionary" keyPath="playlists" id="VIq-Fc-XdV"/>
                     </connections>
-                </arrayController>
-                <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9">
-                    <connections>
-                        <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.list" id="YLG-Or-2uO"/>
-                    </connections>
-                </arrayController>
+                </dictionaryController>
+                <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9"/>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="11" height="11"/>
                     <constraints>

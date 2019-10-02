@@ -255,7 +255,7 @@ class MyWebView : WKWebView {
             let storyboard = NSStoryboard(name: "Main", bundle: nil)
             
             let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
-            pvc.playlists.append(contentsOf: playlists)
+            pvc.playlists.merge(playlists, uniquingKeysWith: { (_,new) in new })
             pvc.webViewController = self.webViewController
             wvc.presentAsSheet(pvc)
         }

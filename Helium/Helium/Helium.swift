@@ -207,6 +207,14 @@ extension Array where Element:PlayItem {
         }
         return nil
     }
+    func url(_ url: URL) -> PlayItem? {
+        for item in self {
+            if item.link == url {
+                return item
+            }
+        }
+        return nil
+    }
 }
 
 extension NSObject {
