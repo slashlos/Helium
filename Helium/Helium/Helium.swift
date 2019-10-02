@@ -178,35 +178,13 @@ extension Array where Element:PlayList {
     }
 }
 
-extension Array where Element:NSDictionaryControllerKeyValuePair {
-    func has(_ name: String) -> Bool {
-        return self.name(name) != nil
-    }
-    func name(_ name: String) -> NSDictionaryControllerKeyValuePair? {
-        for play in self {
-            if play.key == name {
-                return play
-            }
-        }
-        return nil
-    }
-}
-
 extension Array where Element:PlayItem {
     func has(_ name: String) -> Bool {
-        return self.name(name) != nil
+        return self.item(name) != nil
     }
-    func name(_ name: String) -> PlayItem? {
+    func item(_ name: String) -> PlayItem? {
         for item in self {
             if item.link.absoluteString == name {
-                return item
-            }
-        }
-        return nil
-    }
-    func url(_ url: URL) -> PlayItem? {
-        for item in self {
-            if item.link == url {
                 return item
             }
         }
@@ -228,29 +206,15 @@ extension NSObject {
     }
 }
 
-class PlayList : NSDictionaryControllerKeyValuePair, NSCoding, NSCopying, NSDraggingSource, NSDraggingDestination, NSPasteboardWriting, NSPasteboardReading {
+class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDestination, NSPasteboardWriting, NSPasteboardReading {
     func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
         return .copy
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
 
-    @objc dynamic var name : String {
-        get {
-            return key!
-        }
-        set (value) {
-            self.key = value
-        }
-    }
-    @objc dynamic var list : Array <PlayItem> {
-        get {
-            return value as! [PlayItem]
-        }
-        set (value) {
-            self.value = value
-        }
-    }
+    @objc dynamic var name : String = k.name
+    @objc dynamic var list : Array <PlayItem> = Array()
     @objc dynamic var date : TimeInterval = Date.timeIntervalSinceReferenceDate
     @objc dynamic var tally: Int {
         get {
@@ -298,12 +262,21 @@ class PlayList : NSDictionaryControllerKeyValuePair, NSCoding, NSCopying, NSDrag
     }
     
     // MARK:- Functions
-    convenience init(_ name: String = k.play, list:Array <PlayItem>? = [PlayItem]()) {
-        self.init()
+    override init() {
+        let test = k.play + "#"
+        date = Date().timeIntervalSinceReferenceDate
+        super.init()
 
-        self.list = list!
-        self.name = name
-        self.date = Date().timeIntervalSinceReferenceDate
+        list = Array <PlayItem> ()
+        let temp = (String(format:"%p",self)).suffix(4)
+        name = test + temp
+        var suffix = 0
+
+        //  Make sure new items have unique name
+        while appDelegate.playlists.has(name) {
+            suffix += 1
+            name = String(format: "%@%@ %d", test, temp as CVarArg, suffix)
+        }
         
         //  watch shift key changes affecting our playlist
         NotificationCenter.default.addObserver(
@@ -319,10 +292,7 @@ class PlayList : NSDictionaryControllerKeyValuePair, NSCoding, NSCopying, NSDrag
             name: NSNotification.Name(rawValue: "optionKeyDown"),
             object: nil)
     }
-    convenience init(name: String, list: [PlayItem]) {
-        self.init(name: name, list: list)
-    }
-
+    
     @objc internal func shiftKeyDown(_ note: Notification) {
         self.kvoTooltips([k.tooltip])
     }
@@ -331,6 +301,13 @@ class PlayList : NSDictionaryControllerKeyValuePair, NSCoding, NSCopying, NSDrag
         self.kvoTooltips([k.tooltip])
     }
 
+    convenience init(name:String, list:Array <PlayItem>) {
+        self.init()
+
+        self.list = list
+        self.name = name
+    }
+    
     func dictionary() -> Dictionary<String,Any> {
         var dict = Dictionary<String,Any>()
         var items: [Any] = Array()

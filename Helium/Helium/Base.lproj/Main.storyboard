@@ -115,7 +115,7 @@
                                         </textView>
                                     </subviews>
                                 </clipView>
-                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="kwe-eA-EL8">
+                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="kwe-eA-EL8">
                                     <rect key="frame" x="1" y="59" width="0.0" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -1009,6 +1009,7 @@ CA
                                         </buttonCell>
                                         <connections>
                                             <action selector="playPlaylist:" target="YAy-lX-dae" id="SZn-cv-787"/>
+                                            <binding destination="Vul-U2-GKW" name="enabled" keyPath="canRemove" id="vK7-nd-MFs"/>
                                             <binding destination="YAy-lX-dae" name="toolTip" keyPath="playButtonTooltip" id="PcZ-Bb-UAl"/>
                                         </connections>
                                     </button>
@@ -1068,6 +1069,13 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="v11-uD-Oea">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSValidatesImmediately" value="YES"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="date" width="40" minWidth="40" maxWidth="200" id="i0k-lz-NaQ">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date">
@@ -1079,6 +1087,9 @@ CA
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                <connections>
+                                                                    <binding destination="Vul-U2-GKW" name="value" keyPath="selection.date" id="3ZF-tV-kig"/>
+                                                                </connections>
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
@@ -1113,6 +1124,13 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pdate" id="Xk4-D7-NdX">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="tally" width="40" minWidth="40" maxWidth="200" id="eTP-QM-9yi">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Count">
@@ -1155,6 +1173,13 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.tally" id="hjQ-jH-uln">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
                                                         </tableColumn>
                                                         <tableColumn identifier="plays" width="40" minWidth="40" maxWidth="200" id="dxN-As-ZFj">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Plays">
@@ -1197,6 +1222,13 @@ CA
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>
+                                                            <connections>
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.plays" id="c6f-KZ-jMz">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSConditionallySetsEditable" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
                                                         </tableColumn>
                                                     </tableColumns>
                                                     <connections>
@@ -1649,7 +1681,7 @@ Gw
                         <outlet property="cornerButton" destination="r0H-gG-FQJ" id="rTT-q5-UVf"/>
                         <outlet property="playitemArrayController" destination="fqr-Ij-jQ9" id="pJ4-3Y-cGG"/>
                         <outlet property="playitemTableView" destination="IBh-ZH-TR3" id="bkT-Zc-tEa"/>
-                        <outlet property="playlistArrayController" destination="rHK-0D-rHw" id="RLo-hf-vBJ"/>
+                        <outlet property="playlistArrayController" destination="Vul-U2-GKW" id="E5T-QI-zZZ"/>
                         <outlet property="playlistSplitView" destination="1fw-gA-tie" id="qsH-X3-vUD"/>
                         <outlet property="playlistTableView" destination="PML-r0-Bx7" id="8A5-Ov-NRE"/>
                         <outlet property="restoreButton" destination="DNq-eF-IsJ" id="cg5-Uu-58n"/>
@@ -1657,12 +1689,16 @@ Gw
                     </connections>
                 </viewController>
                 <customObject id="Yq6-uq-zTr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <dictionaryController objectClassName="_NSDictionaryControllerKeyValuePair" id="rHK-0D-rHw">
+                <arrayController id="Vul-U2-GKW">
                     <connections>
-                        <binding destination="YAy-lX-dae" name="contentDictionary" keyPath="playlists" id="VIq-Fc-XdV"/>
+                        <binding destination="YAy-lX-dae" name="contentArray" keyPath="playlists" id="PMF-ib-hIl"/>
                     </connections>
-                </dictionaryController>
-                <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9"/>
+                </arrayController>
+                <arrayController objectClassName="PlayItem" id="fqr-Ij-jQ9">
+                    <connections>
+                        <binding destination="Vul-U2-GKW" name="contentArray" keyPath="selection.list" id="YLG-Or-2uO"/>
+                    </connections>
+                </arrayController>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r0H-gG-FQJ" customClass="PlayItemCornerButton" customModule="Helium" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="11" height="11"/>
                     <constraints>

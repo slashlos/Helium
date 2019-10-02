@@ -592,13 +592,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let wvc = window.windowController?.contentViewController {
 
             //  We're already here so exit
-            if wvc.isKind(of: PlaylistViewController.self) { return }
+            if wvc.isKind(of: PlaylistViewController.self) {
+                return
+            }
             
             //  If a web view controller, fetch and present playlist here
             if let wvc: WebViewController = wvc as? WebViewController {
                 if wvc.presentedViewControllers?.count == 0 {
                     let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
-                    pvc.playlists.merge(playlists, uniquingKeysWith: { (old,new) in (old,new) })
+                    pvc.playlists.append(contentsOf: playlists)
                     pvc.webViewController = wvc
                     wvc.presentAsSheet(pvc)
                 }
@@ -882,17 +884,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var itemActions = Dictionary<String, Any>()
 
     //  Keep playlist names unique by Array entension checking name
-    @objc dynamic var _playlists : Dictionary<String,[PlayItem]>?
-    @objc dynamic var  playlists : Dictionary<String,[PlayItem]> {
+    @objc dynamic var _playlists : [PlayList]?
+    @objc dynamic var  playlists : [PlayList] {
         get {
             if  _playlists == nil {
-                _playlists = Dictionary<String,[PlayItem]>()
+                _playlists = [PlayList]()
                 
                 //  read back playlists as [Dictionary] or [String] keys to each [PlayItem]
                 if let plists = self.defaults.dictionary(forKey: k.playlists) {
                     for (name,plist) in plists {
                         guard let items = plist as? [Dictionary<String,Any>] else {
-                            _playlists![name] = [PlayItem]()
+                            let playlist = PlayList.init(name: name, list: [PlayItem]())
+                            _playlists?.append(playlist)
                             continue
                         }
                         var list : [PlayItem] = [PlayItem]()
@@ -900,18 +903,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                             let item = PlayItem.init(with: plist)
                             list.append(item)
                         }
-                        _playlists![name] = list
+                        let playlist = PlayList.init(name: name, list: list)
+                        _playlists?.append(playlist)
                     }
                 }
                 else
                 if let plists = self.defaults.array(forKey: k.playlists) as? [String] {
                     for name in plists {
                         guard let plist = self.defaults.dictionary(forKey: name) else {
-                            _playlists![name] = [PlayItem]()
+                            let playlist = PlayList.init(name: name, list: [PlayItem]())
+                            _playlists?.append(playlist)
                             continue
                         }
                         let playlist = PlayList.init(with: plist, createMissingItems: true)
-                        _playlists![playlist.name] = playlist.list
+                        _playlists?.append(playlist)
                     }
                 }
                 else
