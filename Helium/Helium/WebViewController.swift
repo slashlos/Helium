@@ -431,6 +431,7 @@ class MyWebView : WKWebView {
                             //  Multiple files implies new windows
                             if latest != nil { parent = latest?.windowControllers.first?.window }
                             viewOptions.insert(.w_view)
+                            handled += 1
                         }
                     }
                     break
@@ -487,6 +488,12 @@ class MyWebView : WKWebView {
                     }
                     break
                     
+                case .iTunes:
+                    if let data = item.data(forType: type) {
+                        Swift.print("iTunes: \(data)")
+                    }
+                    break
+                    
                 case .data:
                     if let data = item.data(forType: type), let item = NSKeyedUnarchiver.unarchiveObject(with: data) {
                         if let playlist = item as? PlayList {
@@ -533,6 +540,7 @@ class MyWebView : WKWebView {
                     if let prop = item.propertyList(forType: type) {
                         if let html = String.init(data: prop as! Data, encoding: .utf8)  {
                             self.html(html)
+                            handled += 1
                         }
                         else
                         {
@@ -559,6 +567,7 @@ class MyWebView : WKWebView {
                     if let prop = item.propertyList(forType: type) {
                         if let html = String.init(data: prop as! Data, encoding: .utf8)  {
                             self.html(html)
+                            handled += 1
                         }
                         else
                         {
