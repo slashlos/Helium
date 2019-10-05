@@ -874,6 +874,7 @@ class HeliumDocumentController : NSDocumentController {
     class override func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
         (NSApp.delegate as! AppDelegate).documentsToRestore = true
         
+        guard identifier.rawValue == k.Helium else { return }
         super.restoreWindow(withIdentifier: identifier, state: state, completionHandler: completionHandler)
     }
 }
