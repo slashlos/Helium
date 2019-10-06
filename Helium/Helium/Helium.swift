@@ -166,15 +166,24 @@ func NewFileURLForWriting(path: String, name: String, type: String) -> URL? {
 
 extension Array where Element:PlayList {
     func has(_ name: String) -> Bool {
-        return self.item(name) != nil
+        return self.name(name) != nil
     }
-    func item(_ name: String) -> PlayList? {
+    func name(_ name: String) -> PlayList? {
         for play in self {
             if play.name == name {
                 return play
             }
         }
         return nil
+    }
+    func list(_ name: String) -> [PlayList] {
+        var list = [PlayList]()
+        for play in self {
+            if play.name == name {
+                list.append(play)
+            }
+        }
+        return list
     }
 }
 
@@ -184,7 +193,15 @@ extension Array where Element:PlayItem {
     }
     func item(_ name: String) -> PlayItem? {
         for item in self {
-            if item.link.absoluteString == name {
+            if item.name == name {
+                return item
+            }
+        }
+        return nil
+    }
+    func link(_ urlString: String) -> PlayItem? {
+        for item in self {
+            if item.link.absoluteString == urlString {
                 return item
             }
         }
@@ -331,7 +348,7 @@ class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         if let plists : [Dictionary<String,Any>] = dictionary[k.list] as? [Dictionary<String,Any>] {
             
             for plist in plists {
-                if let item : PlayItem = list.item(plist[k.name] as! String) {
+                if let item : PlayItem = list.link(plist[k.link] as! String) {
                     item.update(with: plist)
                 }
                 else
@@ -873,13 +890,13 @@ class HeliumDocumentController : NSDocumentController {
     
     class override func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
         (NSApp.delegate as! AppDelegate).documentsToRestore = true
-        
-        if identifier.rawValue  == k.Helium {
+
+        if identifier.rawValue == k.Helium {
             super.restoreWindow(withIdentifier: identifier, state: state, completionHandler: completionHandler)
         }
         else
         {
-            Swift.print("restore? \(identifier.rawValue)")
+            Swift.print("restoreWindow! \(identifier.rawValue)")
         }
     }
 }

@@ -1289,7 +1289,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         {
             //  publish tally across playlists
             for play in playlists {
-                guard let seen = play.list.item(item.link.absoluteString) else { continue }
+                guard let seen = play.list.link(item.link.absoluteString) else { continue }
                 seen.plays += 1
             }
         }

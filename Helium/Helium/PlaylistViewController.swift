@@ -57,6 +57,7 @@ class PlayTableView : NSTableView {
     override func dragImageForRows(with dragRows: IndexSet, tableColumns: [NSTableColumn], event dragEvent: NSEvent, offset dragImageOffset: NSPointPointer) -> NSImage {
         return NSApp.applicationIconImage.resize(w: 32, h: 32)
     }
+    
     override func draggingEntered(_ info: NSDraggingInfo) -> NSDragOperation {
         let pasteboard = info.draggingPasteboard
         
@@ -206,7 +207,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for  (name,hist) in seen {
                 Swift.print("update '\(name)' -> \(hist)");
                 for play in playlists {
-                    if let item = play.list.item(hist.link.absoluteString), item.plays != hist.plays {
+                    if let item = play.list.link(hist.link.absoluteString), item.plays != hist.plays {
                         item.plays = hist.plays
                     }
                 }
@@ -381,6 +382,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 Swift.print(String.init(format: "%@ %@ -> %@", keyPath!, oldValue as! CVarArg, newValue as! CVarArg))
             }
             
+            // playlist names must be unique
+            if let play = (object as? PlayList), keyPath == k.name,  playlists.list(newValue as! String).count > 1 {
+                Swift.print("duplicate playlist.name \(newValue as! String)")
+                play.name = oldValue as! String
+                NSSound(named: "Sosumi")?.play()
+            }
+            
             // Save history info which might have changed
             if let play = (object as? PlayList), keyPath == k.name, play == historyCache {
                 if UserSettings.HistoryName.value == oldValue as? String {
@@ -481,7 +489,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             self.restorePlaylists(nil)
             
             //  Prune duplicate history entries
-            while let oldHistory = playlists.item(UserSettings.HistoryName.value)
+            while let oldHistory = playlists.name(UserSettings.HistoryName.value)
             {
                 playlistArrayController.removeObject(oldHistory)
             }
@@ -923,7 +931,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         if whoAmI == playlistTableView || whoAmI == nil {
             Swift.print("restore playlist(s)")
             
-            let playArray = playlistArrayController.selectedObjects as! [PlayList]
+            let restArray = playlistArrayController.selectedObjects as! [PlayList]
             
             //  If no playlist(s) selection restore from defaults
             if playArray.count == 0 {
@@ -1117,6 +1125,10 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 // If we're global save that too
                 if isGlobalPlaylist {
                     appDelegate.playlists = playlists
+                }
+                else
+                {
+                    saveDocument(self)
                 }
                 break
             case false:

@@ -51,6 +51,7 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate {
 
+class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseProviderDelegate,NSDraggingSource,NSPasteboardWriting {
     var webViewController: WebViewController {
         get {
             return self.window?.contentViewController as! WebViewController
@@ -76,6 +77,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
     var hoverBar : PanelButtonBar?
     var titleDragButton : HeliumTitleDragButton?
     override func windowDidLoad() {
+        //  Default to not dragging by content
+        panel.isMovableByWindowBackground = false
+        panel.isFloatingPanel = true
+        
+        //  Set up hover & buttons unless we're not a helium document
+        guard !self.isKind(of: ReleasePanelController.self) else { return }
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
         
         //  Overlay title with our drag title button
@@ -88,9 +95,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
         self.titleView?.superview?.addSubview(hoverBar!)
         
-        //  Default to no dragging by content
-        panel.isMovableByWindowBackground = false
-        
         //  We do not support a miniaturize button at this time; statically hide zoom
         miniaturizeButton?.isHidden = true
         zoomButton?.isHidden = UserSettings.HideZoomIcon.value
@@ -100,8 +104,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
             panelButton.target = windowButton.target
             panelButton.action = windowButton.action
         }
-        
-        panel.isFloatingPanel = true
         
         setupTrackingAreas(true)
         
@@ -205,6 +207,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         }
     }
 
+    // MARK:- Dragging
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        return .copy
+    }
+
     func draggingEntered(_ sender: NSDraggingInfo!) -> NSDragOperation {
         let pasteboard = sender.draggingPasteboard
         
@@ -214,16 +221,97 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         return .copy
     }
     
-    func window(_ window: NSWindow, shouldDragDocumentWith event: NSEvent, from dragImageLocation: NSPoint, with pasteboard: NSPasteboard) -> Bool {
-        return true
-    }
-    
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
         let webView = self.window?.contentView?.subviews.first as! MyWebView
         
         return webView.performDragOperation(sender)
     }
-        
+
+    func window(_ window: NSWindow, shouldDragDocumentWith event: NSEvent, from dragImageLocation: NSPoint, with pasteboard: NSPasteboard) -> Bool {
+        pasteboard.clearContents()
+        pasteboard.writeObjects([self])
+        //let dragImage = document?.draggedImage ?? NSImage.init(named: k.Helium)
+        //window.drag(dragImage!.resize(w: 32, h: 32), at: dragImageLocation, offset: .zero, event: event, pasteboard: pasteboard, source: self, slideBack: true)
+        return true
+    }
+    
+    // MARK:- Promise Provider
+    public override func namesOfPromisedFilesDropped(atDestination dropDestination: URL) -> [String]? {
+        let url = window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)
+        let urlString = url!.lastPathComponent
+        let fileName = String(format: "%@.webloc", urlString)
+        return [fileName]
+    }
+
+    func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.WritingOptions {
+        Swift.print("heliumWO type: \(type.rawValue)")
+        switch type {
+        default:
+            return .promised
+        }
+    }
+
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        Swift.print("listW type: \(type.rawValue)")
+        switch type {
+        case .data:
+            return NSKeyedArchiver.archivedData(withRootObject: window?.representedURL as Any)
+            
+        case .promise:
+            let promise = HeliumPromiseProvider.init(fileType: kUTTypeInternetLocation as String, delegate: self)
+            return promise
+
+        case .string:
+            return window?.representedURL?.absoluteString
+            
+        default:
+            Swift.print("unknown \(type)")
+            return nil
+        }
+    }
+    
+
+    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        return [.data, .promise, .string]
+    }
+    
+    // MARK: - NSFilePromiseProviderDelegate
+    var promiseFilename : String {
+        get {
+            let url = window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)!
+            return url.lastPathComponent
+        }
+    }
+    
+    public func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, fileNameForType fileType: String) -> String {
+        let urlString = promiseFilename
+        let fileName = String(format: "%@.webloc", urlString)
+        return fileName
+    }
+
+    public func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider,
+                                    writePromiseTo url: URL,
+                                    completionHandler: @escaping (Error?) -> Void) {
+        let urlString = String(format: """
+    <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+    <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+    <plist version=\"1.0\">
+    <dict>
+    <key>URL</key>
+    <string>%@</string>
+    </dict>
+    </plist>
+    """, window?.representedURL?.absoluteString ?? UserSettings.HomePageURL.value)
+        Swift.print("WindowDelegate -filePromiseProvider\n \(urlString)")
+
+        do {
+            try urlString.write(to: url, atomically: true, encoding: .utf8)
+            completionHandler(nil)
+        } catch let error {
+            completionHandler(error)
+        }
+    }
+
     override func mouseEntered(with theEvent: NSEvent) {
         let hideTitle = (doc?.settings.autoHideTitle.value == true)
         if theEvent.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
@@ -580,7 +668,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate {
         wpc.setupTrackingAreas(false)
         
         //  Halt anything in progress
-        let delegate = webView.navigationDelegate as! NSObject
+        guard let delegate = webView.navigationDelegate as? NSObject else { return true }
         assert(delegate == wvc, "webView delegate mismatch")
 
         //  Stop whatever is going on by brute force
