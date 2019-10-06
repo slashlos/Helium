@@ -57,6 +57,7 @@ class PlayTableView : NSTableView {
     override func dragImageForRows(with dragRows: IndexSet, tableColumns: [NSTableColumn], event dragEvent: NSEvent, offset dragImageOffset: NSPointPointer) -> NSImage {
         return NSApp.applicationIconImage.resize(w: 32, h: 32)
     }
+    
     override func draggingEntered(_ info: NSDraggingInfo) -> NSDragOperation {
         let pasteboard = info.draggingPasteboard
         
