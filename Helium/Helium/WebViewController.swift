@@ -488,12 +488,6 @@ class MyWebView : WKWebView {
                     }
                     break
                     
-                case .iTunes:
-                    if let data = item.data(forType: type) {
-                        Swift.print("iTunes: \(data)")
-                    }
-                    break
-                    
                 case .data:
                     if let data = item.data(forType: type), let item = NSKeyedUnarchiver.unarchiveObject(with: data) {
                         if let playlist = item as? PlayList {
