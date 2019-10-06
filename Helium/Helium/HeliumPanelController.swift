@@ -32,6 +32,21 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
                 case .leftMouseDragged:
                     // track mouse drags, and if more than a few points are moved we start a drag
                     let currentPoint = event!.locationInWindow
+                    if let window = self.window,
+                        let docIconButton = window.standardWindowButton(.documentIconButton),
+                        let iconBasePoint = docIconButton.superview?.superview?.frame.origin {
+                        let docIconFrame = docIconButton.frame
+                        let iconFrame = NSMakeRect(iconBasePoint.x + docIconFrame.origin.x,
+                                                   iconBasePoint.y + docIconFrame.origin.y,
+                                                   docIconFrame.size.width, docIconFrame.size.height)
+                        //  If we're over the docIconButton send event to it
+                        if iconFrame.contains(startingPoint) {
+                            let dragItem = NSDraggingItem.init(pasteboardWriter: self.window)
+                            docIconButton.beginDraggingSession(with: [dragItem], event: event, source: self.window)
+                            break
+                        }
+                     }
+                    
                     if (abs(currentPoint.x - startingPoint.x) >= 5 || abs(currentPoint.y - startingPoint.y) >= 5) {
                         self.highlight(false)
                         stop.pointee = true
@@ -49,7 +64,15 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
     }
 }
 
-class HeliumPanelController : NSWindowController,NSWindowDelegate {
+class HeliumPanelController : NSWindowController,NSWindowDelegate,NSPasteboardWriting {
+    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+        <#code#>
+    }
+    
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+        <#code#>
+    }
+    
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseProviderDelegate,NSDraggingSource,NSPasteboardWriting {
     var webViewController: WebViewController {
