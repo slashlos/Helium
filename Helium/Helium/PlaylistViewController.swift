@@ -934,7 +934,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let restArray = playlistArrayController.selectedObjects as! [PlayList]
             
             //  If no playlist(s) selection restore from defaults
-            if playArray.count == 0 {
+            if restArray.count == 0 {
                 if let plists = defaults.dictionary(forKey: k.playlists) {
                     playlists = [PlayList]()
                     for (name,plist) in plists {
@@ -957,7 +957,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             }
             else
             {
-                for playlist in playArray {
+                for playlist in restArray {
                     if let plists = defaults.dictionary(forKey: playlist.name as String) {
                         
                         //  First update matching playitems

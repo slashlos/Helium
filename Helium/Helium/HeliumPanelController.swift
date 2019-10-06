@@ -9,6 +9,10 @@
 
 import AppKit
 
+class HeliumPromiseProvider : NSFilePromiseProvider {
+    
+}
+
 class HeliumTitleDragButton : NSButton {
 // https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/Photo_Editor_WindowDraggableButton_swift.html#//apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
 override func mouseDown(with mouseDownEvent: NSEvent) {
@@ -41,8 +45,9 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
                                                    docIconFrame.size.width, docIconFrame.size.height)
                         //  If we're over the docIconButton send event to it
                         if iconFrame.contains(startingPoint) {
-                            let dragItem = NSDraggingItem.init(pasteboardWriter: self.window)
-                            docIconButton.beginDraggingSession(with: [dragItem], event: event, source: self.window)
+                            let hpc = self.window?.windowController as! HeliumPanelController
+                            let dragItem = NSDraggingItem.init(pasteboardWriter: hpc)
+                            docIconButton.beginDraggingSession(with: [dragItem], event: event!, source: hpc)
                             break
                         }
                      }
@@ -63,16 +68,6 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
         }
     }
 }
-
-class HeliumPanelController : NSWindowController,NSWindowDelegate,NSPasteboardWriting {
-    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        <#code#>
-    }
-    
-    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
-        <#code#>
-    }
-    
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseProviderDelegate,NSDraggingSource,NSPasteboardWriting {
     var webViewController: WebViewController {
