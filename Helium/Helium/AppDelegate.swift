@@ -949,8 +949,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 _histories = [PlayItem]()
                 
                 // Restore history name change
-                if let historyName = self.defaults.value(forKey: UserSettings.HistoryName.keyPath) {
-                    UserSettings.HistoryName.value = historyName as! String
+                if let historyName = self.defaults.string(forKey: UserSettings.HistoryName.keyPath), historyName != UserSettings.HistoryName.value {
+                    UserSettings.HistoryName.value = historyName    
                 }
                 
                 if let items = self.defaults.array(forKey: UserSettings.HistoryList.keyPath) {
