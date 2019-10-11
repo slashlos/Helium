@@ -287,14 +287,7 @@ class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         list = Array <PlayItem> ()
         let temp = (String(format:"%p",self)).suffix(4)
         name = test + temp
-        var suffix = 0
 
-        //  Make sure new items have unique name
-        while appDelegate.playlists.has(name) {
-            suffix += 1
-            name = String(format: "%@%@ %d", test, temp as CVarArg, suffix)
-        }
-        
         //  watch shift key changes affecting our playlist
         NotificationCenter.default.addObserver(
             self,
