@@ -99,6 +99,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
         
+        //  make sure we float above Keynote
+        panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
+        
         //  Set up hover & buttons unless we're not a helium document
         guard !self.isKind(of: ReleasePanelController.self) else { return }
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
