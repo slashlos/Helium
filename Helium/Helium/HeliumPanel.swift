@@ -17,14 +17,46 @@ extension NSPoint {
     }
 }
 
-class HeliumPanel: NSPanel {
-    
-    override var canBecomeKey: Bool {
-        return true
+class HeliumDocPromise : NSFilePromiseProvider {
+    func pasteboardWriter(forPanel panel: HeliumPanel) -> NSPasteboardWriting {
+        let provider = NSFilePromiseProvider(fileType: kUTTypeJPEG as String, delegate: panel.heliumPanelController)
+        provider.userInfo = (provider.delegate as! HeliumPanelController).promiseContents
+        return provider
     }
     
-    override var canBecomeMain: Bool {
-        return true
+    // MARK: - NSFilePromiseProviderDelegate
+    
+    /// - Tag: ProvideFileName
+    func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, fileNameForType fileType: String) -> String {
+        return (delegate as! HeliumPanelController).filePromiseProvider(filePromiseProvider, fileNameForType: fileType)
+    }
+    
+    /// - Tag: ProvideOperationQueue
+    func operationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue {
+        return (delegate as! HeliumPanelController).workQueue
+     }
+    
+    /// - Tag: PerformFileWriting
+    func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, writePromiseTo url: URL, completionHandler: @escaping (Error?) -> Void) {
+        (delegate as! HeliumPanelController).filePromiseProvider(filePromiseProvider, writePromiseTo: url, completionHandler: completionHandler)
+    }
+}
+
+class HeliumPanel: NSPanel, NSPasteboardWriting, NSDraggingSource {
+    var heliumPanelController : HeliumPanelController {
+        get {
+            return delegate as! HeliumPanelController
+        }
+    }
+    var promiseFilename : String {
+        get {
+            return heliumPanelController.promiseFilename
+        }
+    }
+    var promiseURL : URL {
+        get {
+            return heliumPanelController.promiseURL
+        }
     }
     
     // nil when not dragging
@@ -55,6 +87,61 @@ class HeliumPanel: NSPanel {
         }
         
         super.sendEvent(event)
+    }
+    
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        return (context == .outsideApplication) ? [.copy] : []
+    }
+    
+    func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        return heliumPanelController.performDragOperation(sender)
+    }
+    
+    required convenience init(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        Swift.print("ppl type: \(type.rawValue)")
+        self.init()
+    }
+
+    func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
+       Swift.print("ppl type: \(type.rawValue)")
+       switch type {
+       case .promise:
+           return promiseURL.absoluteString as NSString
+           
+       case .fileURL, .URL:
+           return NSKeyedArchiver.archivedData(withRootObject: promiseURL)
+           
+       case .string:
+           return promiseURL.absoluteString
+           
+       default:
+           Swift.print("unknown \(type)")
+           return nil
+       }
+    }
+
+    func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+       var types : [NSPasteboard.PasteboardType] = [.fileURL, .URL, .string]
+
+       types.append((promiseURL.isFileURL ? .files : .promise))
+       Swift.print("wtp \(types)")
+       return types
+    }
+    
+    func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.WritingOptions {
+        Swift.print("wtp type: \(type.rawValue)")
+        switch type {
+        default:
+            return .promised
+        }
+    }
+    
+    override var canBecomeKey: Bool {
+        return true
+    }
+    
+    override var canBecomeMain: Bool {
+        return true
     }
 }
 
