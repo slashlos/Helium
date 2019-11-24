@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20191006.150634</string>
+	<string>20191124.090749</string>
 	<key>CFBuildIncrement</key>
-	<true/>
+	<false/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>5389</integer>
+	<integer>5711</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -112,7 +112,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.5389</string>
+	<string>3.0.5711</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
@@ -136,6 +136,23 @@
 	<string>https://raw.githubusercontent.com/slashlos/Helium/master/HeliumUpdatesSparkleFeed.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.html</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeIdentifier</key>
+			<string>com.helium.webloc</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<string>webloc</string>
+			</dict>
+		</dict>
+	</array>
 	<key>Use Legacy Swift Language Version</key>
 	<true/>
 </dict>

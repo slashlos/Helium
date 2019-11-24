@@ -22,8 +22,38 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
-<h2>Build 5264</h2>
+<h2>Build 5711</h2>
 <p class="block">
+5a66bc5|19/11/24 initial promise provider support<br>
+71e8be2|19/11/24 drag-n-drop changes<br>
+d3bd86d|19/11/24 float above Keynote etc<br>
+e7a5db6|19/10/27 update app icon<br>
+4538701|19/10/11 uniqueness moved to view controller<br>
+9a9ee53|19/10/11 history name pref is a string<br>
+32ee980|19/10/06 merge doc icon drag #2<br>
+668b5e5|19/10/06 doc icon drag merge<br>
+387542f|19/10/06 doc icon drag check-in<br>
+b6c1b81|19/10/06 default auto hide transparent titlebar<br>
+9091221|19/10/06 removed iTunes triage<br>
+9b2bd78|19/10/06 restore Helium windows only<br>
+1b7e972|19/10/06 updated and defaulted auto hide title<br>
+cea48e7|19/10/05 adjust start page<br>
+47e3856|19/10/02 added window identifier to prune restorations<br>
+e41570d|19/10/02 fix handled count for supported types<br>
+0b27780|19/10/02 Revert "pensieve sync"<br>
+888d240|19/10/01 sync to master from branch changes<br>
+c1489e5|19/09/30 pensieve sync<br>
+3981fbf|19/09/29 do not restore release or playlist windows<br>
+9e4c896|19/09/28 save h3w doc on dismiss<br>
+522a466|19/09/28 ensure playlist names are unique<br>
+2958d16|19/09/28 ignore isReceivingDrag if nil uiDelegate<br>
+4038261|19/09/28 added %I key mod for Release Info<br>
+19a04c5|19/09/28 hoverBar, observing for helium controller only<br>
+e4f7c21|19/09/28 unless navDelegate don't run-down<br>
+a6597cc|19/09/28 5264; UI, drag-n-drop, swift5<br>
+6d5717c|19/09/28 drag-n-drop, Swift5, UI improvements<br>
+8075883|19/09/28 update copyright<br>
+2381265|19/09/28 fix release notes URL<br>
 acdb3b6|19/09/18 center corner button within corner view</br>
 4e353f0|19/09/12 updated icon shadow</br>
 9f9eec3|19/09/12 make array controller data source</br>

@@ -288,7 +288,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         pasteboard.clearContents()
         pasteboard.writeObjects([self.panel])
         let dragImage = doc?.displayImage ?? NSImage.init(named: k.Helium)
-        window.drag(dragImage!.resize(w: 32, h: 32), at: dragImageLocation, offset: .zero, event: event, pasteboard: pasteboard, source: self.panel, slideBack: true)
+        window.drag(dragImage!.resize(w: 32, h: 32), at: dragImageLocation, offset: .zero, event: event, pasteboard: pasteboard, source: window, slideBack: true)
         ///window.standardWindowButton(.documentIconButton)?.dragPromisedFiles(ofTypes: ["fileloc","webloc"], from: dragImage!.alignmentRect, source: self, slideBack: true, event: event)
 
         return false
