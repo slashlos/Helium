@@ -9,12 +9,13 @@
 
 import AppKit
 
-class HeliumPromiseProvider : NSFilePromiseProvider {
-    
-}
-
 class HeliumTitleDragButton : NSButton {
-// https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/Photo_Editor_WindowDraggableButton_swift.html#//apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
+/* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
+ *  Photo_Editor_WindowDraggableButton_swift.html#//
+ *  apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
+ */
+    var hpc : HeliumPanelController?
+    
 override func mouseDown(with mouseDownEvent: NSEvent) {
     let window = self.window!
     let startingPoint = mouseDownEvent.locationInWindow
@@ -44,13 +45,13 @@ override func mouseDown(with mouseDownEvent: NSEvent) {
                                                    iconBasePoint.y + docIconFrame.origin.y,
                                                    docIconFrame.size.width, docIconFrame.size.height)
                         //  If we're over the docIconButton send event to it
-                        if iconFrame.contains(startingPoint) {
-                            let hpc = self.window?.windowController as! HeliumPanelController
+                        if iconFrame.contains(startingPoint), let hpc = hpc {
                             let dragItem = NSDraggingItem.init(pasteboardWriter: hpc)
+                            dragItem.draggingFrame.size = NSMakeSize(32.0,32.0)
                             docIconButton.beginDraggingSession(with: [dragItem], event: event!, source: hpc)
                             break
                         }
-                     }
+                    }
                     
                     if (abs(currentPoint.x - startingPoint.x) >= 5 || abs(currentPoint.y - startingPoint.y) >= 5) {
                         self.highlight(false)
@@ -107,13 +108,20 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
         
         //  Overlay title with our drag title button
-        titleDragButton = HeliumTitleDragButton.init(frame: titleView!.frame)
-        self.titleView?.superview?.addSubview(titleDragButton!)
-        titleDragButton?.fit((titleView?.superview)!)
+        var dragFrame = titleView?.frame
+        dragFrame?.size.height += 2
+        titleDragButton = HeliumTitleDragButton.init(frame: dragFrame!)
+        self.contentViewController?.view.addSubview(titleDragButton!)
+        titleDragButton?.top((titleDragButton?.superview)!)
+        titleDragButton?.addSubview(titleView!)
         titleDragButton?.isTransparent = true
-        
+        titleDragButton?.isBordered = false
+        titleView?.fit(titleDragButton!)
+        titleDragButton?.hpc = self;
+        titleDragButton?.title = ""
+
         // place the hover bar
-        hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, 3, 80, 19))
+        hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, -3, 80, 19))
         self.titleView?.superview?.addSubview(hoverBar!)
         
         //  We do not support a miniaturize button at this time; statically hide zoom
@@ -145,7 +153,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             object: nil)
 
         //  We allow drag from title's document icon to self or Finder
-        panel.registerForDraggedTypes([.URL, .fileURL])
+        panel.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
+        panel.registerForDraggedTypes([.promise, .URL, .fileURL])
     }
 
     func documentDidLoad() {
@@ -243,27 +252,121 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     func performDragOperation(_ sender: NSDraggingInfo!) -> Bool {
-        let webView = self.window?.contentView?.subviews.first as! MyWebView
-        
-        return webView.performDragOperation(sender)
+        let options : [NSPasteboard.ReadingOptionKey: Any] =
+            [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly : true,
+             NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes : [
+                kUTTypeImage, kUTTypeVideo, kUTTypeMovie]]
+        let classes = [NSFilePromiseReceiver.self, NSURL.self]
+        let pboard = sender.draggingPasteboard
+        let items = pboard.pasteboardItems
+        var handled = 0
+
+        //  Handle promises first
+        sender.enumerateDraggingItems(options: [], for: nil, classes: classes, searchOptions: options) {(draggingItem, _, _) in
+            switch draggingItem.item {
+            case let filePromiseReceiver as NSFilePromiseReceiver:
+                filePromiseReceiver.receivePromisedFiles(atDestination: self.destinationURL, options: [:],
+                                                         operationQueue: self.workQueue) { (fileURL, error) in
+                    if let error = error {
+                        self.handleError(error)
+                    } else {
+                        self.handleFile(at: fileURL)
+                        handled += 1
+                    }
+                }
+            case let fileURL as URL:
+                self.handleFile(at: fileURL)
+                handled += 1
+            default: break
+            }
+        }
+        return handled == items?.count ? true : false
     }
 
     func window(_ window: NSWindow, shouldDragDocumentWith event: NSEvent, from dragImageLocation: NSPoint, with pasteboard: NSPasteboard) -> Bool {
+        if promiseURL.isFileURL { return true }
         pasteboard.clearContents()
-        pasteboard.writeObjects([self])
-        //let dragImage = document?.draggedImage ?? NSImage.init(named: k.Helium)
-        //window.drag(dragImage!.resize(w: 32, h: 32), at: dragImageLocation, offset: .zero, event: event, pasteboard: pasteboard, source: self, slideBack: true)
-        return true
+        pasteboard.writeObjects([self.panel])
+        let dragImage = doc?.displayImage ?? NSImage.init(named: k.Helium)
+        window.drag(dragImage!.resize(w: 32, h: 32), at: dragImageLocation, offset: .zero, event: event, pasteboard: pasteboard, source: self.panel, slideBack: true)
+        ///window.standardWindowButton(.documentIconButton)?.dragPromisedFiles(ofTypes: ["fileloc","webloc"], from: dragImage!.alignmentRect, source: self, slideBack: true, event: event)
+
+        return false
     }
     
     // MARK:- Promise Provider
-    public override func namesOfPromisedFilesDropped(atDestination dropDestination: URL) -> [String]? {
-        let url = window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)
-        let urlString = url!.lastPathComponent
-        let fileName = String(format: "%@.webloc", urlString)
-        return [fileName]
+    lazy var workQueue : OperationQueue = {
+        let providerQueue = OperationQueue()
+        providerQueue.qualityOfService = .userInitiated
+        return providerQueue
+    }()
+    
+    var promiseURL : URL {
+        get {
+            return window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)!
+        }
+    }
+    
+    // directory URL used for accepting file promises
+    private lazy var destinationURL: URL = {
+        let destinationURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("Drops")
+        try? FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
+        return destinationURL
+    }()
+
+    /// updates the canvas with a given image file
+    private func handleFile(at url: URL) {
+        ///let data = NSImageRep.init(contentsOf: url)
+        let data = NSKeyedArchiver.archivedData(withRootObject: NSImage(contentsOf: url) as Any)
+        OperationQueue.main.addOperation {
+            self.webView?.load(data, mimeType: data.mimeType, characterEncodingName: "UTF16", baseURL: url)
+        }
+    }
+        
+    /// displays an error
+    private func handleError(_ error: Error) {
+        OperationQueue.main.addOperation {
+            if let window = self.window {
+                self.presentError(error, modalFor: window, delegate: nil, didPresent: nil, contextInfo: nil)
+            } else {
+                self.presentError(error)
+            }
+        }
     }
 
+    //  MARK: Promise Handling
+
+    var promiseContents : String {
+        let htmlString = String(format: """
+        <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+        <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+        <plist version=\"1.0\">
+        <dict>
+        <key>URL</key>
+        <string>%@</string>
+        </dict>
+        </plist>
+        """, promiseURL.absoluteString)
+        return htmlString
+    }
+    var promiseFilename : String {
+        get {
+            let url = self.promiseURL
+            
+            return url.isFileURL ? url.lastPathComponent : url.absoluteString
+        }
+    }
+    var promiseType : String {
+        get {
+            return ((promiseURL.isFileURL ? kUTTypeSymLink : kUTTypeHTML) as String)
+        }
+    }
+    
+    override func namesOfPromisedFilesDropped(atDestination dropDestination: URL) -> [String]? {
+        let fileName = String(format: "%@.webloc", promiseFilename)
+        return [fileName]
+    }
+    /*
     func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard) -> NSPasteboard.WritingOptions {
         Swift.print("heliumWO type: \(type.rawValue)")
         switch type {
@@ -271,19 +374,26 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             return .promised
         }
     }
+     https://www.google.com/search?q=big%20kid%20deluxe%20muslin%20fleece%20blanket
+    */
+    func pasteboardWriter(forPanel panel: HeliumPanel) -> NSPasteboardWriting {
+        return promiseFilename as NSString
+    }
 
     func pasteboardPropertyList(forType type: NSPasteboard.PasteboardType) -> Any? {
-        Swift.print("listW type: \(type.rawValue)")
+        Swift.print("ppl type: \(type.rawValue)")
         switch type {
-        case .data:
-            return NSKeyedArchiver.archivedData(withRootObject: window?.representedURL as Any)
-            
         case .promise:
-            let promise = HeliumPromiseProvider.init(fileType: kUTTypeInternetLocation as String, delegate: self)
-            return promise
-
+            return NSKeyedArchiver.archivedData(withRootObject: promiseURL.absoluteString as NSString)
+            
+        case .files:
+            return [promiseFilename]
+ 
+        case .fileURL, .URL:
+            return NSKeyedArchiver.archivedData(withRootObject: self.promiseURL)
+            
         case .string:
-            return window?.representedURL?.absoluteString
+            return self.promiseURL.absoluteString
             
         default:
             Swift.print("unknown \(type)")
@@ -291,38 +401,25 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
-
     func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        return [.data, .promise, .string]
+        var types : [NSPasteboard.PasteboardType] = [.fileURL, .URL, .string]
+
+        types.append((promiseURL.isFileURL ? .files : .promise))
+        Swift.print("wtp \(types)")
+        return types
     }
     
     // MARK: - NSFilePromiseProviderDelegate
-    var promiseFilename : String {
-        get {
-            let url = window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)!
-            return url.lastPathComponent
-        }
-    }
-    
     public func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, fileNameForType fileType: String) -> String {
         let urlString = promiseFilename
-        let fileName = String(format: "%@.webloc", urlString)
+        let fileName = String(format: "%@.%@", urlString, promiseURL.isFileURL ? "fileloc" : "webloc")
         return fileName
     }
-
+    
     public func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider,
                                     writePromiseTo url: URL,
                                     completionHandler: @escaping (Error?) -> Void) {
-        let urlString = String(format: """
-    <?xml version=\"1.0\" encoding=\"UTF-8\"?>
-    <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-    <plist version=\"1.0\">
-    <dict>
-    <key>URL</key>
-    <string>%@</string>
-    </dict>
-    </plist>
-    """, window?.representedURL?.absoluteString ?? UserSettings.HomePageURL.value)
+        let urlString = promiseContents
         Swift.print("WindowDelegate -filePromiseProvider\n \(urlString)")
 
         do {
@@ -332,9 +429,13 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             completionHandler(error)
         }
     }
-
+    
+    public func promiseOperationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue {
+        return self.workQueue
+    }
+    
     override func mouseEntered(with theEvent: NSEvent) {
-        let hideTitle = (doc?.settings.autoHideTitle.value == true)
+        let hideTitle = autoHideTitlePreference != .never
         if theEvent.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -372,7 +473,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     override func mouseExited(with theEvent: NSEvent) {
-        let hideTitle = (doc?.settings.autoHideTitle.value == true)
+        let hideTitle = autoHideTitlePreference != .never
         let location : NSPoint = theEvent.locationInWindow
         let tag = theEvent.trackingNumber
 
@@ -415,12 +516,42 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
+    // MARK:- Titling
+    var autoHideTitlePreference: AutoHideTitlePreference {
+        get {
+            guard let doc : Document = self.doc else { return .never }
+            return doc.settings.autoHideTitlePreference.value
+        }
+        set (value) {
+            doc?.settings.autoHideTitlePreference.value = value
+            updateTitleBar(didChange: true)
+        }
+    }
+    enum AutoHideTitlePreference: Int {
+        case never = 0
+        case outside = 1
+     }
+
     // MARK:- Translucency
     fileprivate var mouseOver: Bool = false {
         didSet {
-            if (doc?.settings.autoHideTitle.value)! {
-                updateTitleBar(didChange: true)
+            if let window = self.webView?.window {
+                if autoHideTitlePreference == .outside {
+                    window.titleVisibility =
+                        (autoHideTitlePreference != .never)
+                            ? mouseOver ? .visible : .hidden
+                            : .visible
+                    titleDragButton?.isHidden = !mouseOver
+                    titleDragButton?.isBordered = mouseOver
+                }
+                else
+                {
+                    window.titleVisibility = .visible
+                    titleDragButton?.isHidden = false
+                    titleDragButton?.isBordered = true
+                }
             }
+            docIconVisibiity(mouseOver)
         }
     }
     
@@ -436,9 +567,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         case tab = 2
     }
     
-    var translucencyPreference: TranslucencyPreference = .never {
-        didSet {
-             updateTranslucency()
+    var translucencyPreference: TranslucencyPreference {
+        get {
+            guard let doc : Document = self.doc else { return .never }
+            return doc.settings.translucencyPreference.value
+        }
+        set (value) {
+            doc?.settings.translucencyPreference.value = value
+            updateTitleBar(didChange: true)
         }
     }
     
@@ -497,18 +633,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     fileprivate func shouldBeVisible() -> Bool {
-        if doc?.settings.autoHideTitle.value == false {
+        /* Implicit Arguments
+         * - mouseOver
+         * - autoHideTitlePreference
+         */
+
+        switch autoHideTitlePreference {
+        case .never:
             return true
-        }
-        else
-        if ((self.contentViewController?.view.hitTest((NSApp.currentEvent?.locationInWindow)!)) != nil) {
-            return false
-        }
-        else
-        {
-            return true
+        case .outside:
+            return !mouseOver
         }
     }
+    
     //MARK:- IBActions
     
     fileprivate var doc: Document? {
@@ -532,10 +669,36 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             doc.cacheSettings(url)
         }
     }
+    
     @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        settings.autoHideTitle.value = (sender.state == .off)
-        self.panel.titlebarAppearsTransparent = (sender.state == .off)
+        guard autoHideTitlePreference.rawValue != sender.tag else { return }
+        
+        let newTitlePref = HeliumPanelController.AutoHideTitlePreference(rawValue: sender.tag)!
+        if autoHideTitlePreference == .outside {
+            //self.panel.styleMask.formUnion(.fullSizeContentView)
+            self.panel.titlebarAppearsTransparent = false
+            self.titleDragButton?.isTransparent = false
+            self.titleDragButton?.isBordered = true
+        }
+        else
+        {
+            //self.panel.styleMask.formSymmetricDifference(.fullSizeContentView)
+            self.panel.titlebarAppearsTransparent = true
+            self.titleDragButton?.isTransparent = true
+            self.titleDragButton?.isBordered = false
+        }
+        
+        //  Presume false so our action result is immediate
+        autoHideTitlePreference = newTitlePref
         mouseOver = false
+
+        if sender.tag > 0 {
+            panel.titleVisibility = .visible
+        }
+        else
+        if sender.tag < 0 {
+            panel.titleVisibility = .hidden
+        }
         updateTitleBar(didChange: true)
         cacheSettings()
     }
@@ -576,44 +739,55 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         case .offOutside:
             translucencyPreference = .mouseOutside
         }
-        settings.translucencyPreference.value = translucencyPreference
         willUpdateTranslucency()
     }
 
     @objc @IBAction func translucencyPress(_ sender: NSMenuItem) {
-        settings.translucencyPreference.value = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
-        translucencyPreference = settings.translucencyPreference.value
+        translucencyPreference = HeliumPanelController.TranslucencyPreference(rawValue: sender.tag)!
         willUpdateTranslucency()
     }
 
     @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        let autoHideTitleBarMenu = menuItem.menu?.title == "Auto-hide Title Bar"
+        let translucenceMenu = menuItem.menu?.title == "Translucency"
+        
         switch menuItem.title {
         case "Preferences":
-            break
-        case "Auto-hide Title Bar":
-            menuItem.state = settings.autoHideTitle.value ? .on : .off
             break
         //Transluceny Menu
         case "Enabled":
             menuItem.state = canBeTranslucent() ? .on : .off
             break
+        //AutoHide / Transluceny Menu
         case "Never":
-            menuItem.state = settings.translucencyPreference.value == .never ? .on : .off
+            if autoHideTitleBarMenu {
+                menuItem.state = autoHideTitlePreference == .never ? .on : .off
+            }
+            else
+            if translucenceMenu
+            {
+                menuItem.state = translucencyPreference == .never ? .on : .off
+            }
             break
-        case "Always":
-            menuItem.state = settings.translucencyPreference.value == .always ? .on : .off
+        case "Outside":
+            if autoHideTitleBarMenu {
+                menuItem.state = autoHideTitlePreference == .outside ? .on : .off
+            }
+            else
+            if translucenceMenu
+            {
+                menuItem.state = translucencyPreference == .always ? .on : .off
+            }
             break
         case "Mouse Over":
-            let value = settings.translucencyPreference.value
-            menuItem.state = value == .offOver
+            menuItem.state = translucencyPreference == .offOver
                 ? .mixed
-                : value == .mouseOver ? .on : .off
+                : translucencyPreference == .mouseOver ? .on : .off
             break
         case "Mouse Outside":
-            let value = settings.translucencyPreference.value
-            menuItem.state = value == .offOutside
+            menuItem.state = translucencyPreference == .offOutside
                 ? .mixed
-                : value == .mouseOutside ? .on : .off
+                : translucencyPreference == .mouseOutside ? .on : .off
             break
         case "Float Above All Spaces":
             menuItem.state = settings.disabledFullScreenFloat.value ? .off : .on
@@ -653,16 +827,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         cacheSettings()
     }
     func willUpdateTitleBar() {
-        guard let doc = self.doc else {
-            return
-        }
         
         //  synchronize prefs to document's panel state
-        if doc.settings.autoHideTitle.value != (panel.titleVisibility != .hidden), !self.shouldBeVisible(){
+        let hideableTitle = autoHideTitlePreference != HeliumPanelController.AutoHideTitlePreference.never
+        if hideableTitle != (panel.titleVisibility != .hidden), !self.shouldBeVisible() {
             updateTitleBar(didChange:true)
         }
-        
-
     }
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
@@ -684,7 +854,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             let wvc = vindow.contentViewController as? WebViewController,
             let wpc = vindow.windowController as? HeliumPanelController,
             let webView = wvc.webView else { return false }
-        
+
+        wvc.clear()
+
         vindow.ignoresMouseEvents = true
         wpc.setupTrackingAreas(false)
         
@@ -715,50 +887,54 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
-    fileprivate func docIconToggle() {
-        let docIconButton = panel.standardWindowButton(.documentIconButton)
-        var mouseWasOver = mouseOver
-        if !(NSApp.delegate as! AppDelegate).openForBusiness {
-            mouseWasOver = true
-        }
-
-        if settings.autoHideTitle.value == true && !mouseWasOver {
-            docIconButton?.isHidden = true
-        }
-        else
-        {
+    fileprivate func docIconVisibiity(_ mouseWasOver: Bool) {
+        if let docIconButton = panel.standardWindowButton(.documentIconButton) {
+            //  initially keep doc & title vertically aligned
+            if 0 == docIconButton.constraints.count, let titleView = self.titleView {
+                docIconButton.vCenter(titleView)
+            }
+            
             if let doc = self.doc {
-                docIconButton?.image = doc.displayImage
+                 docIconButton.image = doc.displayImage.resize(w: 12, h: 12)
             }
             else
             {
-                docIconButton?.image = NSApp.applicationIconImage
+                 docIconButton.image = NSApp.applicationIconImage.resize(w: 12, h: 12)
             }
-            docIconButton?.isHidden = false
-            if let url = self.webView?.url, url.isFileURL {
-                self.synchronizeWindowTitleWithDocumentName()
+
+            if autoHideTitlePreference == .outside {
+                docIconButton.isHidden = !mouseWasOver
+            }
+            else
+            {
+                docIconButton.isHidden = false
+                if let url = self.webView?.url, url.isFileURL {
+                    self.synchronizeWindowTitleWithDocumentName()
+                }
             }
         }
         cacheSettings()
     }
     
     @objc func updateTitleBar(didChange: Bool) {
-        if didChange {/*
-            if settings.autoHideTitle.value == true && !mouseOver {
+        if didChange {
+            if autoHideTitlePreference != .never && !mouseOver {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.5
-                    panel.animator().titleVisibility = NSWindow.TitleVisibility.hidden
+                    panel.animator().titleVisibility = .hidden
+                    //panel.animator().styleMask.formUnion(.fullSizeContentView)
+                    self.titleView?.isHidden = true
                 }, completionHandler: nil)
             } else {
                 NSAnimationContext.runAnimationGroup({ (context) -> Void in
                     context.duration = 0.5
-                    panel.animator().titleVisibility = NSWindow.TitleVisibility.visible
+                    panel.animator().titleVisibility = .visible
+                    //panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
+                    self.titleView?.isHidden = false
                 }, completionHandler: nil)
-            }*/
-            self.titleView?.isHidden = !mouseOver
-            self.titleDragButton?.isHidden = !mouseOver
-         }
-        docIconToggle()
+            }
+        }
+        docIconVisibiity(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {

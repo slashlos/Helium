@@ -754,7 +754,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
             case "Preferences":
                 break
-            case "Auto-hide Title Bar":
+            case "Never":
+                menuItem.state = !UserSettings.AutoHideTitle.value ? .on : .off
+                break
+            case "Outside":
                 menuItem.state = UserSettings.AutoHideTitle.value ? .on : .off
                 break
             case "Auto save documents":
@@ -1628,11 +1631,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             NotificationCenter.default.post(name: Notification.Name(rawValue: "HeliumLoadURLString"), object: selection)
         }
     }
+    
     // MARK: Application Events
+    dynamic var appEventSeen = false
     func application(_ sender: NSApplication, openFile: String) -> Bool {
         let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
         let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-        return openFileInNewWindow(fileURL)
+        appEventSeen = true
+        let status = openFileInNewWindow(fileURL)
+        appEventSeen = false
+        return status
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
@@ -1660,7 +1668,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     func application(_ application: NSApplication, openURL: URL) -> Bool {
-        return openURLInNewWindow(openURL) != nil
+        appEventSeen = true
+        let status = openURLInNewWindow(openURL) != nil
+        appEventSeen = false
+        return status
     }
 
     @available(OSX 10.13, *)

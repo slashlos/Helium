@@ -41,7 +41,7 @@ class PlayTableView : NSTableView {
         var items = [NSDraggingItem]()
         
         for index in indexSet {
-            let dragImage = (delegate.view.window?.windowController?.document as! Document).displayImage!
+            let dragImage = (delegate.view.window?.windowController?.document as! Document).dragImage
             let item = NSDraggingItem.init(pasteboardWriter: objects[index])
             item.setDraggingFrame(self.rect(ofRow: index), contents: dragImage)
             item.draggingFrame = self.rect(ofRow: index)

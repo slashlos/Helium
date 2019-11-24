@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14868"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="14868"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15400"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15400"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -263,11 +263,24 @@
                                         <menuItem title="Preferences..." id="MMM-uX-MFR">
                                             <menu key="submenu" title="Preferences..." id="BdD-B4-azf">
                                                 <items>
-                                                    <menuItem title="Auto-hide Title Bar" id="bwA-Ka-6Ou">
+                                                    <menuItem title="Auto-hide Title Bar" id="YwZ-rC-uSP">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="eyA-Hl-bel"/>
-                                                        </connections>
+                                                        <menu key="submenu" title="Auto-hide Title Bar" id="Idu-DN-Q3K">
+                                                            <items>
+                                                                <menuItem title="Never" id="dPV-DX-9Z0">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="KXa-IE-aWZ"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Outside" tag="1" toolTip="hide when mouse outside" id="LI0-hH-3UE">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="Sfm-6V-Crr"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
                                                     </menuItem>
                                                     <menuItem title="Hide Helium in menu bar" id="2GK-ox-Nku" userLabel="Hide Helium in menu bar">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -589,10 +602,30 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Appearance" id="2N0-Zn-jSm">
                                                 <items>
-                                                    <menuItem title="Auto-hide Title Bar" keyEquivalent="b" id="D5w-CV-8ur">
-                                                        <connections>
-                                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="NB2-z3-ghY"/>
-                                                        </connections>
+                                                    <menuItem title="Auto-hide Title Bar" id="74Q-YM-yXr">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Auto-hide Title Bar" id="cR7-xG-evQ">
+                                                            <items>
+                                                                <menuItem title="Never" id="1W4-LV-atP">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="YZS-4h-CTK"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Always" tag="1" id="e8c-51-6y0">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="Slz-Lc-bmO"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Transparent" tag="-1" id="9hZ-rR-xzU">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="dyL-4D-qqO"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
                                                     </menuItem>
                                                     <menuItem title="Float Above All Spaces" id="4hh-G0-MfV">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -856,11 +889,24 @@ CA
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <menu key="submenu" title="Preferences" id="t9b-07-eWX">
                                 <items>
-                                    <menuItem title="Auto-hide Title Bar" id="Tpr-Be-Saa">
+                                    <menuItem title="Auto-hide Title Bar" id="yXY-XY-hZL">
                                         <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="TWO-Et-uNB"/>
-                                        </connections>
+                                        <menu key="submenu" title="Auto-hide Title Bar" id="fXM-hL-jbP">
+                                            <items>
+                                                <menuItem title="Never" id="X5R-oI-SM5">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="4bJ-Oh-mMA"/>
+                                                    </connections>
+                                                </menuItem>
+                                                <menuItem title="Outside" tag="1" toolTip="hide when mouse outside" id="Ht4-HV-To1">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="VQb-RV-8xl"/>
+                                                    </connections>
+                                                </menuItem>
+                                            </items>
+                                        </menu>
                                     </menuItem>
                                     <menuItem title="Float Above All Spaces" id="4Lx-l2-xwH">
                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -890,39 +936,74 @@ CA
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <menu key="submenu" title="Translucency" id="0Lo-4S-2Ic">
                                             <items>
-                                                <menuItem title="Opacity" id="5Cn-08-3QP" userLabel="Percentage Menu">
+                                                <menuItem title="Enabled" keyEquivalent="t" id="VvM-pB-ajT">
+                                                    <connections>
+                                                        <action selector="toggleTranslucencyPress:" target="Ady-hI-5gd" id="IBx-MD-jvG"/>
+                                                    </connections>
+                                                </menuItem>
+                                                <menuItem title="Opacity" id="5Cn-08-3QP">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <menu key="submenu" title="Opacity" systemMenu="window" id="FOP-ge-VpZ">
                                                         <items>
                                                             <menuItem title="10%" tag="10" id="7KZ-Aw-XMs">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="Ce7-qr-Yo2"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="20%" tag="20" id="L7z-C8-QAV">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="C7M-nC-VUC"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="30%" tag="30" id="VTB-u2-WWS">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="2sd-Mt-ShB"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="40%" tag="40" id="TVG-RB-l7B">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="qGz-lk-dSz"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="50%" tag="50" id="aWf-of-x0c">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="C3l-aE-XFJ"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="60%" state="on" tag="60" id="qsy-wD-pT7">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="3Ih-SY-Jw8"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="70%" tag="70" id="Dhr-76-sji">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="QCG-dr-pE9"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="80%" tag="80" id="Jh8-gF-Rfc">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="MY3-hI-hzs"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="90%" tag="90" id="n62-oR-N94">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="ite-UZ-6gu"/>
+                                                                </connections>
                                                             </menuItem>
                                                             <menuItem title="100%" tag="100" id="3ES-N4-386">
                                                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                                                <connections>
+                                                                    <action selector="percentagePress:" target="Ady-hI-5gd" id="OzA-aa-jTY"/>
+                                                                </connections>
                                                             </menuItem>
                                                         </items>
                                                     </menu>
@@ -930,15 +1011,27 @@ CA
                                                 <menuItem isSeparatorItem="YES" id="3kH-I6-lnj"/>
                                                 <menuItem title="Never" id="Ug7-73-SB8" userLabel="Never">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="eEJ-0J-GzP"/>
+                                                    </connections>
                                                 </menuItem>
                                                 <menuItem title="Always" state="on" tag="1" id="E7u-n2-bML" userLabel="Always">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="T78-2y-zjT"/>
+                                                    </connections>
                                                 </menuItem>
                                                 <menuItem title="Mouse Over" tag="2" id="NXO-1v-BRR">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="AUh-z8-10x"/>
+                                                    </connections>
                                                 </menuItem>
                                                 <menuItem title="Mouse Outside" tag="3" id="d9E-iu-Dbr">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="translucencyPress:" target="Ady-hI-5gd" id="VQG-DO-Avd"/>
+                                                    </connections>
                                                 </menuItem>
                                             </items>
                                         </menu>

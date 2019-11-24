@@ -498,7 +498,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
     @objc dynamic var rank : Int
     @objc dynamic var rect : NSRect
     @objc dynamic var plays : Int
-    @objc dynamic var label: Bool
+    @objc dynamic var label: Int
     @objc dynamic var hover: Bool
     @objc dynamic var alpha: Int
     @objc dynamic var trans: Int
@@ -522,7 +522,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         rank = 0
         rect = NSZeroRect
         plays = 0
-        label = false
+        label = 0
         hover = false
         alpha = 60
         trans = 0
@@ -541,7 +541,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         self.rank = rank
         self.rect = NSZeroRect
         self.plays = 1
-        self.label = false
+        self.label = 0
         self.hover = false
         self.alpha = 60
         self.trans = 0
@@ -549,7 +549,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         self.tabby = false
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Bool, hover:Bool, alpha:Int, trans: Int, agent: String, asTab: Bool) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Int, hover:Bool, alpha:Int, trans: Int, agent: String, asTab: Bool) {
         self.name = name
         self.link = link
         self.date = date
@@ -597,7 +597,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
             self.plays = plays
         }
         self.plays = (self.plays == 0) ? 1 : self.plays // default missing value
-        if let label : Bool = dictionary[k.label] as? Bool, label != self.label  {
+        if let label : Int = dictionary[k.label] as? Int, label != self.label  {
             self.label  = label
         }
         if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.hover {
@@ -629,7 +629,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         dict[k.rank] =  rank
         dict[k.rect] = NSStringFromRect(rect)
         dict[k.plays] = plays
-        dict[k.label] = label ? 1 : 0
+        dict[k.label] = label
         dict[k.hover] = hover ? 1 : 0
         dict[k.alpha] = alpha
         dict[k.trans] = trans
@@ -647,7 +647,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         let rank = coder.decodeInteger(forKey: k.rank)
         let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
         let plays = coder.decodeInteger(forKey: k.plays)
-        let label = coder.decodeBool(forKey: k.label)
+        let label = coder.decodeInteger(forKey: k.label)
         let hover = coder.decodeBool(forKey: k.hover)
         let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
@@ -839,7 +839,7 @@ internal struct Settings {
         }
     }
     
-    let autoHideTitle = Setup<Bool>("autoHideTitle", value: UserSettings.AutoHideTitle.value)
+    let autoHideTitlePreference = Setup<HeliumPanelController.AutoHideTitlePreference>("rawAutoHideTitle", value: .never)
     let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let rank = Setup<Int>(k.rank, value: 0)
@@ -937,7 +937,7 @@ class Document : NSDocument {
         dict[k.rank] = settings.rank.value
         dict[k.rect] = NSStringFromRect(settings.rect.value)
         dict[k.plays] = settings.plays.value
-        dict[k.label] = settings.autoHideTitle.value
+        dict[k.label] = settings.autoHideTitlePreference.value.rawValue as AnyObject
         dict[k.hover] = settings.disabledFullScreenFloat.value
         dict[k.alpha] = settings.opacityPercentage.value
         dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
@@ -955,7 +955,7 @@ class Document : NSDocument {
         item.rank = self.settings.rank.value
         item.rect = self.settings.rect.value
         item.plays = self.settings.plays.value
-        item.label = self.settings.autoHideTitle.value
+        item.label = self.settings.autoHideTitlePreference.value.rawValue
         item.hover = self.settings.disabledFullScreenFloat.value
         item.alpha = self.settings.opacityPercentage.value
         item.trans = self.settings.translucencyPreference.value.rawValue
@@ -992,8 +992,8 @@ class Document : NSDocument {
         if let plays : Int = dictionary[k.plays] as? Int, plays != self.settings.plays.value {
             self.settings.plays.value = plays
         }
-        if let label : Bool = dictionary[k.label] as? Bool, label != self.settings.autoHideTitle.value  {
-            self.settings.autoHideTitle.value = label
+        if let label : Int = dictionary[k.label] as? Int, label != self.settings.autoHideTitlePreference.value.rawValue  {
+            self.settings.autoHideTitlePreference.value = HeliumPanelController.AutoHideTitlePreference(rawValue: label)!
         }
         if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.settings.disabledFullScreenFloat.value {
             self.settings.disabledFullScreenFloat.value = hover
@@ -1061,33 +1061,34 @@ class Document : NSDocument {
         return docNames[docType.rawValue]
     }
 
-    var displayImage: NSImage? {
+    var displayImage: NSImage {
         get {
             switch docType {
             case .playlist:
-                let tmpImage = NSImage.init(named: "docIcon")
-                let appImage = tmpImage?.resize(w: 32, h: 32)
-                return appImage
+                return NSImage.init(named: "docIcon")!
 
             case .release:
-                let tmpImage = NSImage.init(named: "appIcon")
-                let appImage = tmpImage?.resize(w: 32, h: 32)
-                return appImage
+                return NSImage.init(named: "appIcon")!
                 
             default:
                 if (self.fileURL?.isFileURL) != nil {
-                    let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
+                    ///let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
+                    let size = NSMakeSize(32.0, 32.0)
                     
                     let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
                     if let tmpImage = tmp?.takeUnretainedValue() {
-                        let tmpIcon = NSImage(cgImage: tmpImage, size: size)
-                        return tmpIcon
+                        ///let tmpIcon = NSImage(cgImage: tmpImage, size: size)
+                        ///return tmpIcon
+                        return NSImage(cgImage: tmpImage, size: size)
                     }
                 }
-                let tmpImage = NSImage.init(named: k.docIcon)
-                let docImage = tmpImage?.resize(w: 32, h: 32)
-                return docImage
+                return NSImage.init(named: k.docIcon)!
             }
+        }
+    }
+    var dragImage : NSImage {
+        get {
+            return displayImage.resize(w: 32, h: 32)
         }
     }
     override var displayName: String! {

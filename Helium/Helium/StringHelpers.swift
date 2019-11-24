@@ -4,11 +4,31 @@
 //
 //  Created by Samuel Beek on 16/03/16.
 //  Copyright © 2016 Jaden Geller. All rights reserved.
-//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017-2019 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
 import CoreAudioKit
+
+//https://stackoverflow.com/questions/21789770/determine-mime-type-from-nsdata
+extension Data {
+    private static let mimeTypeSignatures: [UInt8 : String] = [
+        0xFF : "image/jpeg",
+        0x89 : "image/png",
+        0x47 : "image/gif",
+        0x49 : "image/tiff",
+        0x4D : "image/tiff",
+        0x25 : "application/pdf",
+        0xD0 : "application/vnd",
+        0x46 : "text/plain",
+        ]
+
+    var mimeType: String {
+        var c: UInt8 = 0
+        copyBytes(to: &c, count: 1)
+        return Data.mimeTypeSignatures[c] ?? "application/octet-stream"
+    }
+}
 
 extension String {
     func replacePrefix(_ prefix: String, replacement: String) -> String {

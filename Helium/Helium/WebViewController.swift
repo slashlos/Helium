@@ -396,26 +396,76 @@ class MyWebView : WKWebView {
     
     // MARK: Drag and Drop - After Release
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        let options = [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly : true,
-                       //NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes : [kUTTypeMovie as String],
-            NSPasteboard.ReadingOptionKey(rawValue: PlayList.className()) : true,
-            NSPasteboard.ReadingOptionKey(rawValue: PlayItem.className()) : true]
         var viewOptions = appDelegate.newViewOptions
+        let options : [NSPasteboard.ReadingOptionKey: Any] =
+            [NSPasteboard.ReadingOptionKey.urlReadingFileURLsOnly : true,
+             NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes : [
+                kUTTypeImage, kUTTypeVideo, kUTTypeMovie],
+             NSPasteboard.ReadingOptionKey(rawValue: PlayList.className()) : true,
+             NSPasteboard.ReadingOptionKey(rawValue: PlayItem.className()) : true]
         let pboard = sender.draggingPasteboard
         let items = pboard.pasteboardItems
+        var parent : NSWindow? = self.window
+        var latest : Document?
         var handled = 0
- 
+        
         for item in items! {
             if handled == items!.count { break }
             
+            if let urlString = item.string(forType: NSPasteboard.PasteboardType(rawValue: kUTTypeURL as String)) {
+                self.next(url: URL(string: urlString)!)
+                handled += 1
+                continue
+            }
+
             for type in pboard.types! {
                 Swift.print("web type: \(type)")
 
                 switch type {
+                case .files:
+                    if let files = pboard.propertyList(forType: type) {
+                        Swift.print("files \(files)")
+                    }
+                    break
+                    
                 case .URL, .fileURL:
+                    if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
+                         if viewOptions.contains(.t_view) {
+                             latest = self.appDelegate.openURLInNewWindow(url, attachTo: parent)
+                         }
+                         else
+                         if viewOptions.contains(.w_view) {
+                             latest = self.appDelegate.openURLInNewWindow(url)
+                         }
+                         else
+                         {
+                             self.next(url: url)
+                         }
+                         //  Multiple files implies new windows
+                         if latest != nil { parent = latest?.windowControllers.first?.window }
+                         viewOptions.insert(.w_view)
+                         handled += 1
+                    }
+                    else
+                    if let data = item.data(forType: type), let url = NSKeyedUnarchiver.unarchiveObject(with: data) {
+                        if viewOptions.contains(.t_view) {
+                            latest = self.appDelegate.openURLInNewWindow(url as! URL , attachTo: parent)
+                        }
+                        else
+                        if viewOptions.contains(.w_view) {
+                            latest = self.appDelegate.openURLInNewWindow(url as! URL)
+                        }
+                        else
+                        {
+                            self.next(url: url as! URL)
+                        }
+                        //  Multiple files implies new windows
+                        if latest != nil { parent = latest?.windowControllers.first?.window }
+                        viewOptions.insert(.w_view)
+                        handled += 1
+                    }
+                    else
                     if let urls: Array<AnyObject> = pboard.readObjects(forClasses: [NSURL.classForCoder()], options: options) as Array<AnyObject>? {
-                        var parent : NSWindow? = self.window
-                        var latest : Document?
                         for url in urls as! [URL] {
                             if viewOptions.contains(.t_view) {
                                 latest = self.appDelegate.openURLInNewWindow(url , attachTo: parent)
@@ -614,8 +664,9 @@ class MyWebView : WKWebView {
     func publishApplicationMenu(_ menu: NSMenu) {
         let wvc = self.window?.contentViewController as! WebViewController
         let hpc = self.window?.windowController as! HeliumPanelController
-        let doc = hpc.document as! Document
-        let translucency = doc.settings.translucencyPreference.value
+        let settings = (hpc.document as! Document).settings
+        let autoHideTitle = hpc.autoHideTitlePreference
+        let translucency = hpc.translucencyPreference
         
         //  Remove item(s) we cannot support
         for title in ["Enter Picture in Picture", "Download Video"] {
@@ -627,9 +678,10 @@ class MyWebView : WKWebView {
         for title in ["Enter Full Screen", "Open Video in New Window"] {
             if let item = menu.item(withTitle: title) {
 //                Swift.print("old: \(title) -> target:\(String(describing: item.target)) action:\(String(describing: item.action)) tag:\(item.tag)")
-                if item.title == "Enter Full Screen" {
+                if item.title.hasSuffix("Enter Full Screen") {
                     item.target = appDelegate
                     item.action = #selector(appDelegate.toggleFullScreen(_:))
+                    item.state = appDelegate.fullScreen != nil ? .on : .off
                 }
                 else
                 if self.url != nil {
@@ -684,12 +736,12 @@ class MyWebView : WKWebView {
         menu.addItem(item)
         menu.addItem(NSMenuItem.separator())
 
-        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "New Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         item.tag = 1
         menu.addItem(item)
         
-        item = NSMenuItem(title: "Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "New Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.target = appDelegate
         item.isAlternate = true
@@ -737,7 +789,7 @@ class MyWebView : WKWebView {
         item.tag = 3
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "New Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
         item.target = appDelegate
         item.isAlternate = true
@@ -754,13 +806,24 @@ class MyWebView : WKWebView {
         let subPref = NSMenu()
         item.submenu = subPref
 
-        item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(hpc.autoHideTitlePress(_:)), keyEquivalent: "")
-        item.state = doc.settings.autoHideTitle.value ? .on : .off
-        item.target = hpc
+        item = NSMenuItem(title: "Auto-hide Title Bar", action: #selector(menuClicked(_:)), keyEquivalent: "")
         subPref.addItem(item)
+        let subAuto = NSMenu()
+        item.submenu = subAuto
+        
+        item = NSMenuItem(title: "Never", action: #selector(hpc.autoHideTitlePress(_:)), keyEquivalent: "")
+        item.tag = HeliumPanelController.AutoHideTitlePreference.never.rawValue
+        item.state = autoHideTitle == .never ? .on : .off
+        item.target = hpc
+        subAuto.addItem(item)
+        item = NSMenuItem(title: "Outside", action: #selector(hpc.autoHideTitlePress(_:)), keyEquivalent: "")
+        item.tag = HeliumPanelController.AutoHideTitlePreference.outside.rawValue
+        item.state = autoHideTitle == .outside ? .on : .off
+        item.target = hpc
+        subAuto.addItem(item)
 
         item = NSMenuItem(title: "Float Above All Spaces", action: #selector(hpc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
-        item.state = doc.settings.disabledFullScreenFloat.value ? .off : .on
+        item.state = settings.disabledFullScreenFloat.value ? .off : .on
         item.target = hpc
         subPref.addItem(item)
         
@@ -774,7 +837,7 @@ class MyWebView : WKWebView {
         item.submenu = subTranslucency
 
         item = NSMenuItem(title: "Opacity", action: #selector(menuClicked(_:)), keyEquivalent: "")
-        let opacity = doc.settings.opacityPercentage.value
+        let opacity = settings.opacityPercentage.value
         subTranslucency.addItem(item)
         let subOpacity = NSMenu()
         item.submenu = subOpacity
@@ -893,6 +956,16 @@ extension NSView {
         self.translatesAutoresizingMaskIntoConstraints = false
         self.centerXAnchor.constraint(equalTo: parentView.centerXAnchor).isActive = true
         self.centerYAnchor.constraint(equalTo: parentView.centerYAnchor).isActive = true
+    }
+    func vCenter(_ parentView: NSView) {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        self.centerYAnchor.constraint(equalTo: parentView.centerYAnchor).isActive = true
+    }
+    func top(_ parentView: NSView) {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        self.topAnchor.constraint(equalTo: parentView.topAnchor).isActive = true
+        self.leadingAnchor.constraint(equalTo: parentView.leadingAnchor).isActive = true
+        self.trailingAnchor.constraint(equalTo: parentView.trailingAnchor).isActive = true
     }
 }
 
@@ -1057,6 +1130,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)
 
         //  Intercept drags
+        webView.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
+        webView.registerForDraggedTypes([NSPasteboard.PasteboardType.fileURL])
         webView.registerForDraggedTypes(Array(webView.acceptableTypes))
 
         //  Watch javascript selection messages unless already done
@@ -1442,7 +1517,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 var title = String(format: "Loading... %.2f%%", percent)
                 if percent == 100, let url = (self.webView.url) {
 
-                    //  Initial recording of for this url session
+                    //  Initial recording for this url session
                     let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView as Any])
                     NotificationCenter.default.post(notif)
 
