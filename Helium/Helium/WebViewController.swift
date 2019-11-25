@@ -1021,7 +1021,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
             object: nil)
-        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(wkFlippedView(_:)),
+            name: NSNotification.Name(rawValue: "WKFlippedView"),
+            object: nil)
+
         //  We want to be notified when a player is added
         let originalDidAddSubviewMethod = class_getInstanceMethod(NSView.self, #selector(NSView.didAddSubview(_:)))
         let originalDidAddSubviewImplementation = method_getImplementation(originalDidAddSubviewMethod!)
@@ -1039,8 +1044,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
         method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(wkFlippedView(_:)), name: NSNotification.Name(rawValue: "WKFlippedView"), object: nil)
     }
     
     @objc func wkFlippedView(_ note: NSNotification) {
