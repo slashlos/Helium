@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15400"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15400"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -627,16 +627,23 @@ CA
                                                             </items>
                                                         </menu>
                                                     </menuItem>
-                                                    <menuItem title="Float Above All Spaces" id="4hh-G0-MfV">
+                                                    <menuItem title="Float Above" id="oHk-Z0-ePj">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Full Screen" keyEquivalent="F" id="YB7-sd-Ej8" userLabel="Full Screen">
-                                                        <connections>
-                                                            <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="xZc-0b-LN6"/>
-                                                        </connections>
+                                                        <menu key="submenu" title="Float Above" id="Wnn-bR-ZBk">
+                                                            <items>
+                                                                <menuItem title="All Spaces Disabled" tag="1" id="4hh-G0-MfV">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Full Screen" tag="2" keyEquivalent="F" id="YB7-sd-Ej8" userLabel="Full Screen">
+                                                                    <connections>
+                                                                        <action selector="toggleFullScreen:" target="Voe-Tx-rLC" id="xZc-0b-LN6"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
                                                     </menuItem>
                                                     <menuItem title="Show Tab Bar" keyEquivalent="t" id="Cno-aM-bke">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES"/>
@@ -908,11 +915,24 @@ CA
                                             </items>
                                         </menu>
                                     </menuItem>
-                                    <menuItem title="Float Above All Spaces" id="4Lx-l2-xwH">
+                                    <menuItem title="Float Above" id="xJh-90-iZo">
                                         <modifierMask key="keyEquivalentModifierMask"/>
-                                        <connections>
-                                            <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="t0z-PL-VwO"/>
-                                        </connections>
+                                        <menu key="submenu" title="Float Above" id="i2O-n3-Ony">
+                                            <items>
+                                                <menuItem title="All Spaces Disabled" tag="1" id="4Lx-l2-xwH">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="floatOverAllSpacesPress:" target="Ady-hI-5gd" id="FWt-hS-9hm"/>
+                                                    </connections>
+                                                </menuItem>
+                                                <menuItem title="Full Screen" tag="2" id="0Qb-CB-MgU">
+                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                    <connections>
+                                                        <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="J9J-55-PHg"/>
+                                                    </connections>
+                                                </menuItem>
+                                            </items>
+                                        </menu>
                                     </menuItem>
                                     <menuItem title="Hide Helium in menu bar" id="ptj-37-2Ce" userLabel="Hide Helium in menu bar">
                                         <modifierMask key="keyEquivalentModifierMask"/>

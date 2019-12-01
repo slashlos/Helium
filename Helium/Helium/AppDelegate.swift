@@ -323,16 +323,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     var fullScreen : NSRect? = nil
     @objc @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
-        if let keyWindow = NSApp.keyWindow {
-            if let last_rect = fullScreen {
-                keyWindow.setFrame(last_rect, display: true, animate: true)
-                fullScreen = nil;
-            }
-            else
-            {
-                fullScreen = keyWindow.frame
-                keyWindow.setFrame(NSScreen.main!.visibleFrame, display: true, animate: true)
-            }
+        if let keyWindow : HeliumPanel = NSApp.keyWindow as? HeliumPanel {
+            keyWindow.heliumPanelController.floatOverFullScreenAppsPress(sender)
         }
     }
 

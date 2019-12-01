@@ -100,9 +100,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
         
-        //  make sure we float above Keynote
-        panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
-        
         //  Set up hover & buttons unless we're not a helium document
         guard !self.isKind(of: ReleasePanelController.self) else { return }
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
@@ -516,6 +513,25 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
+    // MARK:- Floating
+    var floatAboveAllPreference: FloatAboveAllPreference {
+        get {
+            guard let doc : Document = self.doc else { return .spaces }
+            return doc.settings.floatAboveAllPreference.value
+        }
+        set (value) {
+            doc?.settings.floatAboveAllPreference.value = value
+        }
+    }
+    struct FloatAboveAllPreference: OptionSet {
+        let rawValue: Int
+        
+        static let spaces   = FloatAboveAllPreference(rawValue: 0)
+        static let disabled = FloatAboveAllPreference(rawValue: 1)
+        static let screen   = FloatAboveAllPreference(rawValue: 2)
+    }
+    let floatAboveAllSpaces : FloatAboveAllPreference = []
+
     // MARK:- Titling
     var autoHideTitlePreference: AutoHideTitlePreference {
         get {
@@ -702,11 +718,30 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         updateTitleBar(didChange: true)
         cacheSettings()
     }
-    @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
-        settings.disabledFullScreenFloat.value = (sender.state == .on)
+    
+    @objc @IBAction func floatOverAllSpacesPress(_ sender: NSMenuItem) {
+        if sender.state == .on {
+            settings.floatAboveAllPreference.value.remove(.disabled)
+        }
+        else
+        {
+            settings.floatAboveAllPreference.value.insert(.disabled)
+        }
         setFloatOverFullScreenApps()
         cacheSettings()
     }
+    @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
+        if sender.state == .on {
+            settings.floatAboveAllPreference.value.remove(.screen)
+        }
+        else
+        {
+            settings.floatAboveAllPreference.value.insert(.screen)
+        }
+        setFloatOverFullScreenApps()
+        cacheSettings()
+    }
+    
     @objc @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
@@ -789,8 +824,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 ? .mixed
                 : translucencyPreference == .mouseOutside ? .on : .off
             break
-        case "Float Above All Spaces":
-            menuItem.state = settings.disabledFullScreenFloat.value ? .off : .on
+        case "All Spaces Disabled":
+            menuItem.state = settings.floatAboveAllPreference.value.contains(.disabled) ? .on : .off
+            break;
+        case "Full Screen":
+            menuItem.state = settings.floatAboveAllPreference.value.contains(.screen) ? .on : .off
             break;
         case "Hide Helium in menu bar":
             menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
@@ -952,10 +990,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     @objc func setFloatOverFullScreenApps() {
-        if settings.disabledFullScreenFloat.value {
+        if settings.floatAboveAllPreference.value.contains(.disabled) {
             panel.collectionBehavior = [NSWindow.CollectionBehavior.moveToActiveSpace, NSWindow.CollectionBehavior.fullScreenAuxiliary]
         } else {
             panel.collectionBehavior = [NSWindow.CollectionBehavior.canJoinAllSpaces, NSWindow.CollectionBehavior.fullScreenAuxiliary]
+        }
+        if settings.floatAboveAllPreference.value.contains(.screen) {
+            panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
+        } else {
+            panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
         }
         cacheSettings()
     }

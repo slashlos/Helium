@@ -497,9 +497,9 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
     @objc dynamic var date : TimeInterval
     @objc dynamic var rank : Int
     @objc dynamic var rect : NSRect
-    @objc dynamic var plays : Int
+    @objc dynamic var plays: Int
     @objc dynamic var label: Int
-    @objc dynamic var hover: Bool
+    @objc dynamic var hover: Int
     @objc dynamic var alpha: Int
     @objc dynamic var trans: Int
     @objc dynamic var agent: String = UserSettings.UserAgent.value
@@ -523,7 +523,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         rect = NSZeroRect
         plays = 0
         label = 0
-        hover = false
+        hover = 0
         alpha = 60
         trans = 0
         agent = UserSettings.UserAgent.value
@@ -542,14 +542,14 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         self.rect = NSZeroRect
         self.plays = 1
         self.label = 0
-        self.hover = false
+        self.hover = 0
         self.alpha = 60
         self.trans = 0
         self.agent = UserSettings.UserAgent.value
         self.tabby = false
         super.init()
     }
-    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Int, hover:Bool, alpha:Int, trans: Int, agent: String, asTab: Bool) {
+    init(name:String, link:URL, date:TimeInterval, time:TimeInterval, rank:Int, rect:NSRect, plays:Int, label:Int, hover:Int, alpha:Int, trans: Int, agent: String, asTab: Bool) {
         self.name = name
         self.link = link
         self.date = date
@@ -600,7 +600,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         if let label : Int = dictionary[k.label] as? Int, label != self.label  {
             self.label  = label
         }
-        if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.hover {
+        if let hover : Int = dictionary[k.hover] as? Int, hover != self.hover {
             self.hover = hover
         }
         if let alpha : Int = dictionary[k.alpha] as? Int, alpha != self.alpha {
@@ -630,7 +630,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         dict[k.rect] = NSStringFromRect(rect)
         dict[k.plays] = plays
         dict[k.label] = label
-        dict[k.hover] = hover ? 1 : 0
+        dict[k.hover] = hover
         dict[k.alpha] = alpha
         dict[k.trans] = trans
         dict[k.agent] = agent
@@ -648,7 +648,7 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         let rect = NSRectFromString(coder.decodeObject(forKey: k.rect) as! String)
         let plays = coder.decodeInteger(forKey: k.plays)
         let label = coder.decodeInteger(forKey: k.label)
-        let hover = coder.decodeBool(forKey: k.hover)
+        let hover = coder.decodeInteger(forKey: k.hover)
         let alpha = coder.decodeInteger(forKey: k.alpha)
         let trans = coder.decodeInteger(forKey: k.trans)
         let agent = coder.decodeObject(forKey: k.agent) as! String
@@ -840,7 +840,7 @@ internal struct Settings {
     }
     
     let autoHideTitlePreference = Setup<HeliumPanelController.AutoHideTitlePreference>("rawAutoHideTitle", value: .never)
-    let disabledFullScreenFloat = Setup<Bool>("disabledFullScreenFloat", value: false)
+    let floatAboveAllPreference = Setup<HeliumPanelController.FloatAboveAllPreference>("rawFloatAboveAll", value: .spaces)
     let opacityPercentage = Setup<Int>("opacityPercentage", value: 60)
     let rank = Setup<Int>(k.rank, value: 0)
     let date = Setup<TimeInterval>(k.date, value: Date().timeIntervalSinceReferenceDate)
@@ -938,7 +938,7 @@ class Document : NSDocument {
         dict[k.rect] = NSStringFromRect(settings.rect.value)
         dict[k.plays] = settings.plays.value
         dict[k.label] = settings.autoHideTitlePreference.value.rawValue as AnyObject
-        dict[k.hover] = settings.disabledFullScreenFloat.value
+        dict[k.hover] = settings.floatAboveAllPreference.value.rawValue as AnyObject
         dict[k.alpha] = settings.opacityPercentage.value
         dict[k.trans] = settings.translucencyPreference.value.rawValue as AnyObject
         dict[k.agent] = settings.customUserAgent.value
@@ -956,7 +956,7 @@ class Document : NSDocument {
         item.rect = self.settings.rect.value
         item.plays = self.settings.plays.value
         item.label = self.settings.autoHideTitlePreference.value.rawValue
-        item.hover = self.settings.disabledFullScreenFloat.value
+        item.hover = self.settings.floatAboveAllPreference.value.rawValue
         item.alpha = self.settings.opacityPercentage.value
         item.trans = self.settings.translucencyPreference.value.rawValue
         item.agent = self.settings.customUserAgent.value
@@ -992,11 +992,11 @@ class Document : NSDocument {
         if let plays : Int = dictionary[k.plays] as? Int, plays != self.settings.plays.value {
             self.settings.plays.value = plays
         }
-        if let label : Int = dictionary[k.label] as? Int, label != self.settings.autoHideTitlePreference.value.rawValue  {
+        if let label : Int = dictionary[k.label] as? Int, label != self.settings.autoHideTitlePreference.value.rawValue {
             self.settings.autoHideTitlePreference.value = HeliumPanelController.AutoHideTitlePreference(rawValue: label)!
         }
-        if let hover : Bool = dictionary[k.hover] as? Bool, hover != self.settings.disabledFullScreenFloat.value {
-            self.settings.disabledFullScreenFloat.value = hover
+        if let hover : Int = dictionary[k.hover] as? Int, hover != self.settings.floatAboveAllPreference.value.rawValue {
+            self.settings.floatAboveAllPreference.value = HeliumPanelController.FloatAboveAllPreference(rawValue: hover)
         }
         if let alpha : Int = dictionary[k.alpha] as? Int, alpha != self.settings.opacityPercentage.value {
             self.settings.opacityPercentage.value = alpha
