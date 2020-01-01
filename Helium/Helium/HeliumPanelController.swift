@@ -613,11 +613,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 panel.ignoresMouseEvents = currentlyTranslucent
             }
             if currentlyTranslucent {
-                panel.animator().alphaValue = alpha
+                panel.alphaValue = alpha
                 panel.isOpaque = false
             } else {
                 panel.isOpaque = true
-                panel.animator().alphaValue = 1
+                panel.alphaValue = 1
             }
         }
     }
@@ -691,14 +691,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         
         let newTitlePref = HeliumPanelController.AutoHideTitlePreference(rawValue: sender.tag)!
         if autoHideTitlePreference == .outside {
-            //self.panel.styleMask.formUnion(.fullSizeContentView)
             self.panel.titlebarAppearsTransparent = false
             self.titleDragButton?.isTransparent = false
             self.titleDragButton?.isBordered = true
         }
         else
         {
-            //self.panel.styleMask.formSymmetricDifference(.fullSizeContentView)
             self.panel.titlebarAppearsTransparent = true
             self.titleDragButton?.isTransparent = true
             self.titleDragButton?.isBordered = false
@@ -708,13 +706,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         autoHideTitlePreference = newTitlePref
         mouseOver = false
 
-        if sender.tag > 0 {
-            panel.titleVisibility = .visible
-        }
-        else
-        if sender.tag < 0 {
-            panel.titleVisibility = .hidden
-        }
         updateTitleBar(didChange: true)
         cacheSettings()
     }
