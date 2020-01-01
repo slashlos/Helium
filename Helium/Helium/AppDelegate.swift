@@ -417,7 +417,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         doc.settings.rect.value = window.frame
         
         //  OPTION key down creates new tabs as tag=3
-        if ((NSApp.currentEvent?.modifierFlags.contains(NSEvent.ModifierFlags.option))! || (sender as! NSMenuItem).tag == 3), let keyWindow = NSApp.keyWindow,
+        if let menuItem : NSMenuItem = sender as? NSMenuItem,
+            ((NSApp.currentEvent?.modifierFlags.contains(NSEvent.ModifierFlags.option))! || menuItem.tag == 3), let keyWindow = NSApp.keyWindow,
             !(keyWindow.contentViewController?.isKind(of: AboutBoxController.self))! {
             keyWindow.addTabbedWindow(window, ordered: .above)
         }
