@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15702"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15702"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -612,16 +612,10 @@ CA
                                                                         <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="YZS-4h-CTK"/>
                                                                     </connections>
                                                                 </menuItem>
-                                                                <menuItem title="Always" tag="1" id="e8c-51-6y0">
+                                                                <menuItem title="Outside" tag="1" id="e8c-51-6y0">
                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                     <connections>
                                                                         <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="Slz-Lc-bmO"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Transparent" tag="-1" id="9hZ-rR-xzU">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="autoHideTitlePress:" target="Ady-hI-5gd" id="dyL-4D-qqO"/>
                                                                     </connections>
                                                                 </menuItem>
                                                             </items>
@@ -1035,7 +1029,7 @@ CA
                                                         <action selector="translucencyPress:" target="Ady-hI-5gd" id="eEJ-0J-GzP"/>
                                                     </connections>
                                                 </menuItem>
-                                                <menuItem title="Always" state="on" tag="1" id="E7u-n2-bML" userLabel="Always">
+                                                <menuItem title="Outside" tag="1" id="E7u-n2-bML" userLabel="Always">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <connections>
                                                         <action selector="translucencyPress:" target="Ady-hI-5gd" id="T78-2y-zjT"/>
