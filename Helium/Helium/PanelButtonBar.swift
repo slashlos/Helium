@@ -215,10 +215,8 @@ public class PanelButtonBar : NSView {
 	}
 	
 	override public func mouseExited(with theEvent: NSEvent) {
-		if !self.individualized {
-			self.closeButton?.isMouseOver = false
-			self.miniaturizeButton?.isMouseOver = false
-			self.zoomButton?.isMouseOver = false
-		}
+		self.closeButton?.isMouseOver = false
+		self.miniaturizeButton?.isMouseOver = false
+		self.zoomButton?.isMouseOver = false
 	}
 }
