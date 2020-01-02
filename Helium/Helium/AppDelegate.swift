@@ -976,14 +976,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     var defaults = UserDefaults.standard
-    var disableDocumentReOpening = false
+    var disableDocumentReOpening = true
     var hiddenWindows = Dictionary<String, Any>()
 
+    func applicationOpenUntitledFile(_ sender: NSApplication) -> Bool {
+        let lastCount = dc.documents.count
+        self.newDocument(sender)
+        return dc.documents.count > lastCount
+    }
+    
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         let reopenMessage = disableDocumentReOpening ? "do not reopen doc(s)" : "reopen doc(s)"
         let hasVisibleDocs = flag ? "has doc(s)" : "no doc(s)"
         Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
-        return !disableDocumentReOpening
+        if !flag && 0 == dc.documents.count { return !applicationOpenUntitledFile(sender) }
+        return !disableDocumentReOpening || !flag
     }
 
     //  Local/global event monitor: CTRL+OPTION+COMMAND to toggle windows' alpha / audio values
