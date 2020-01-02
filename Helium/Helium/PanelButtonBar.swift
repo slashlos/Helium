@@ -12,7 +12,6 @@
 import Foundation
 
 class PanelButton : NSButton {
-	private var _individualized:Bool = false;
 	private var _isMouseOver:Bool = false;
 	private var useTrackingArea:Bool = true;
 	
@@ -25,15 +24,6 @@ class PanelButton : NSButton {
 			return self._isMouseOver;
 		}
 	};
-	var individualized:Bool {
-		set {
-			self._individualized = newValue;
-			self.setNeedsDisplay();
-		}
-		get {
-			return self._individualized;
-		}
-	}
 	var type:NSWindow.ButtonType = NSWindow.ButtonType.miniaturizeButton;
 	
 	
@@ -122,10 +112,11 @@ class PanelButton : NSButton {
 			
 			// draw contents
 			if (self.isMouseOver) {
+				NSGraphicsContext.current?.shouldAntialias = true;
+
 				path = NSBezierPath();
 				
 				if (type == NSWindow.ButtonType.zoomButton) {
-					NSGraphicsContext.current?.shouldAntialias = true;
 					
 					path.move(to: NSMakePoint(self.bounds.width / 2, self.bounds.height * 0.21));
 					path.line(to: NSMakePoint(self.bounds.width / 2, self.bounds.height * 0.79));
@@ -133,14 +124,14 @@ class PanelButton : NSButton {
 					path.move(to: NSMakePoint(self.bounds.width * 0.79, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.21, self.bounds.height / 2));
 					path.lineWidth = 1.25//0.75;
+					
 				} else if (type == NSWindow.ButtonType.miniaturizeButton) {
-					NSGraphicsContext.current?.shouldAntialias = true;
 					
 					path.move(to: NSMakePoint(self.bounds.width * 0.80, self.bounds.height / 2));
 					path.line(to: NSMakePoint(self.bounds.width * 0.20, self.bounds.height / 2));
 					path.lineWidth = 1.25//0.75;
+					
 				} else if (type == NSWindow.ButtonType.closeButton) {
-					NSGraphicsContext.current?.shouldAntialias = true;
 
 					path.move(to: NSMakePoint(self.bounds.width * 0.27, self.bounds.height * 0.27));
 					path.line(to: NSMakePoint(self.bounds.width * 0.73, self.bounds.height * 0.73));
@@ -176,6 +167,17 @@ class PanelButton : NSButton {
 }
 
 public class PanelButtonBar : NSView {
+	private var _individualized:Bool = false;
+	var individualized:Bool {
+		set {
+			self._individualized = newValue
+			self.needsDisplay = true
+		}
+		get {
+			return self._individualized;
+		}
+	}
+
 	var closeButton : PanelButton?;
 	var miniaturizeButton : PanelButton?;
 	var zoomButton : PanelButton?;
@@ -200,18 +202,23 @@ public class PanelButtonBar : NSView {
 		self.addSubview(self.zoomButton!);
 		
 		let trackingArea = NSTrackingArea(rect: self.bounds, options: NSTrackingArea.Options.mouseEnteredAndExited.union(NSTrackingArea.Options.mouseMoved).union(NSTrackingArea.Options.activeAlways), owner: self, userInfo: nil);
-		self.addTrackingArea(trackingArea);
+		self.addTrackingArea(trackingArea)
+		self.individualized = ita
 	}
 	
 	override public func mouseEntered(with theEvent: NSEvent) {
-		self.closeButton?.isMouseOver = true
-		self.miniaturizeButton?.isMouseOver = true
-		self.zoomButton?.isMouseOver = true
+		if !self.individualized {
+			self.closeButton?.isMouseOver = true
+			self.miniaturizeButton?.isMouseOver = true
+			self.zoomButton?.isMouseOver = true
+		}
 	}
 	
 	override public func mouseExited(with theEvent: NSEvent) {
-		self.closeButton?.isMouseOver = false
-		self.miniaturizeButton?.isMouseOver = false
-		self.zoomButton?.isMouseOver = false
+		if !self.individualized {
+			self.closeButton?.isMouseOver = false
+			self.miniaturizeButton?.isMouseOver = false
+			self.zoomButton?.isMouseOver = false
+		}
 	}
 }
