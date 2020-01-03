@@ -9,25 +9,63 @@
 
 import AppKit
 
+extension NSColor {
+    convenience init(hex: Int, alpha: CGFloat = 1) {
+        let components = (
+            R: CGFloat((hex >> 16) & 0xff) / 255,
+            G: CGFloat((hex >> 08) & 0xff) / 255,
+            B: CGFloat((hex >> 00) & 0xff) / 255
+        )
+        self.init(red: components.R, green: components.G, blue: components.B, alpha: alpha)
+    }
+}
 class HeliumTitleDragButton : NSButton {
 /* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
  *  Photo_Editor_WindowDraggableButton_swift.html#//
  *  apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
  */
     var hpc : HeliumPanelController?
-    
-override func mouseDown(with mouseDownEvent: NSEvent) {
-    let window = self.window!
-    let startingPoint = mouseDownEvent.locationInWindow
-    
-    highlight(true)
-    
-    // Track events until the mouse is up (in which we interpret as a click), or a drag starts (in which we pass off to the Window Server to perform the drag)
-    var shouldCallSuper = false
+    var borderColor : NSColor {
+        get {
+            if let url = hpc?.webView?.url, url.isFileURL {
+                return NSColor.controlColor
+            }
+            else
+            {
+                return NSColor(hex: 0x44AAFF)///.white
+            }
+        }
+    }
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        
+        if hpc?.settings.autoHideTitlePreference.value != .never, hpc?.mouseOver ?? false  {
+            NSGraphicsContext.current?.saveGraphicsState()
+            let path = NSBezierPath()
+            path.appendRect(dirtyRect)
 
-    // trackEvents won't return until after the tracking all ends
-    window.trackEvents(matching: [.leftMouseDragged, .leftMouseUp], timeout: NSEvent.foreverDuration, mode: RunLoop.Mode.default) { event, stop in
-        switch event?.type {
+            let color = self.borderColor
+            self.layer?.borderColor = color.cgColor
+            self.layer?.borderWidth = 2
+            color.setStroke()
+            path.stroke()
+            
+            NSGraphicsContext.current?.restoreGraphicsState()
+        }
+    }
+    
+    override func mouseDown(with mouseDownEvent: NSEvent) {
+        let window = self.window!
+        let startingPoint = mouseDownEvent.locationInWindow
+        
+        highlight(true)
+        
+        // Track events until the mouse is up (in which we interpret as a click), or a drag starts (in which we pass off to the Window Server to perform the drag)
+        var shouldCallSuper = false
+
+        // trackEvents won't return until after the tracking all ends
+        window.trackEvents(matching: [.leftMouseDragged, .leftMouseUp], timeout: NSEvent.foreverDuration, mode: RunLoop.Mode.default) { event, stop in
+            switch event?.type {
                 case .leftMouseUp:
                     // Stop on a mouse up; post it back into the queue and call super so it can handle it
                     shouldCallSuper = true
@@ -95,23 +133,20 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
     var titleDragButton : HeliumTitleDragButton?
-    override func windowDidLoad() {
-        //  Default to not dragging by content
-        panel.isMovableByWindowBackground = false
-        panel.isFloatingPanel = true
-        
-        //  Set up hover & buttons unless we're not a helium document
-        guard !self.isKind(of: ReleasePanelController.self) else { return }
+    
+    fileprivate func configureTitleDrag() {
         panel.standardWindowButton(.closeButton)?.image = NSImage.init()
         
-        //  Overlay title with our drag title button
+        //  Overlay title with our drag title button if needed
         var dragFrame = titleView?.frame
         dragFrame?.size.height += 2
+        dragFrame?.size.width += 2
         titleDragButton = HeliumTitleDragButton.init(frame: dragFrame!)
         self.contentViewController?.view.addSubview(titleDragButton!)
+        titleDragButton?.cell?.controlView?.wantsLayer = true
         titleDragButton?.top((titleDragButton?.superview)!)
         titleDragButton?.addSubview(titleView!)
-        titleDragButton?.isTransparent = true
+        titleDragButton?.isTransparent = false
         titleDragButton?.isBordered = false
         titleView?.fit(titleDragButton!)
         titleDragButton?.hpc = self;
@@ -130,7 +165,17 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             panelButton.target = windowButton.target
             panelButton.action = windowButton.action
         }
+    }
+    
+    override func windowDidLoad() {
+        //  Default to not dragging by content
+        panel.isMovableByWindowBackground = false
+        panel.isFloatingPanel = true
         
+        //  Set up hover & buttons unless we're not a helium document
+        guard !self.isKind(of: ReleasePanelController.self) else { return }
+        configureTitleDrag()
+                
         setupTrackingAreas(true)
         
         NotificationCenter.default.addObserver(
@@ -156,6 +201,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
     func documentDidLoad() {
         // Moved later, called by view, when document is available
+        mouseOver = false
+
         setFloatOverFullScreenApps()
         
         willUpdateTitleBar()
@@ -311,7 +358,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         return destinationURL
     }()
 
-    /// updates the canvas with a given image file
+    // updates the canvas with a given image file
     private func handleFile(at url: URL) {
         ///let data = NSImageRep.init(contentsOf: url)
         let data = NSKeyedArchiver.archivedData(withRootObject: NSImage(contentsOf: url) as Any)
@@ -320,7 +367,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
         
-    /// displays an error
+    // displays an error
     private func handleError(_ error: Error) {
         OperationQueue.main.addOperation {
             if let window = self.window {
@@ -559,15 +606,17 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                             : .visible
                     titleDragButton?.isHidden = !mouseOver
                     titleDragButton?.isBordered = mouseOver
+                    titleDragButton?.needsDisplay = true
                 }
                 else
                 {
                     window.titleVisibility = .visible
                     titleDragButton?.isHidden = false
                     titleDragButton?.isBordered = true
+                    titleDragButton?.needsDisplay = true
                 }
             }
-            docIconVisibiity(mouseOver)
+            docIconVisibility(mouseOver)
         }
     }
     
@@ -690,16 +739,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         guard autoHideTitlePreference.rawValue != sender.tag else { return }
         
         let newTitlePref = HeliumPanelController.AutoHideTitlePreference(rawValue: sender.tag)!
+
+        //  Make sure queue affects are immediately effective
         if autoHideTitlePreference == .outside {
-            self.panel.titlebarAppearsTransparent = false
-            self.titleDragButton?.isTransparent = false
-            self.titleDragButton?.isBordered = true
+            titleDragButton?.isTransparent = false
+            titleDragButton?.isBordered = true
+            titleDragButton?.needsDisplay = true
         }
         else
         {
-            self.panel.titlebarAppearsTransparent = true
-            self.titleDragButton?.isTransparent = true
-            self.titleDragButton?.isBordered = false
+            titleDragButton?.isTransparent = true
+            titleDragButton?.isBordered = false
+            titleDragButton?.needsDisplay = true
         }
         
         //  Presume false so our action result is immediate
@@ -916,7 +967,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
-    fileprivate func docIconVisibiity(_ mouseWasOver: Bool) {
+    fileprivate func docIconVisibility(_ mouseWasOver: Bool) {
         if let docIconButton = panel.standardWindowButton(.documentIconButton) {
             //  initially keep doc & title vertically aligned
             if 0 == docIconButton.constraints.count, let titleView = self.titleView {
@@ -948,22 +999,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc func updateTitleBar(didChange: Bool) {
         if didChange {
             if autoHideTitlePreference != .never && !mouseOver {
-                NSAnimationContext.runAnimationGroup({ (context) -> Void in
-                    context.duration = 0.5
-                    panel.animator().titleVisibility = .hidden
-                    //panel.animator().styleMask.formUnion(.fullSizeContentView)
+                DispatchQueue.main.async {
+                    self.panel.titleVisibility = .hidden
                     self.titleView?.isHidden = true
-                }, completionHandler: nil)
+                    self.titleDragButton?.isTransparent = true
+                    self.titleDragButton?.isBordered = false
+                    self.titleDragButton?.needsDisplay = true
+                }
             } else {
-                NSAnimationContext.runAnimationGroup({ (context) -> Void in
-                    context.duration = 0.5
-                    panel.animator().titleVisibility = .visible
-                    //panel.animator().styleMask.formSymmetricDifference(.fullSizeContentView)
+                DispatchQueue.main.async {
+                    self.panel.titleVisibility = .visible
                     self.titleView?.isHidden = false
-                }, completionHandler: nil)
+                    self.titleDragButton?.isTransparent = false
+                    self.titleDragButton?.isBordered = true
+                    self.titleDragButton?.needsDisplay = true
+                }
             }
         }
-        docIconVisibiity(autoHideTitlePreference == .never || translucencyPreference == .never)
+        docIconVisibility(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
