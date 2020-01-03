@@ -290,7 +290,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     //  By defaut we show document title bar
     @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
-        UserSettings.AutoHideTitle.value = (sender.state == .off)
+        UserSettings.AutoHideTitle.value = 1 == sender.tag
      }
 
     //  By default we auto save any document changes
