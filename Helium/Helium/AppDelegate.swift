@@ -426,6 +426,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         {
             doc.showWindows()
         }
+        
+        //  New window / document settings pick up global static pref(s)
+        doc.settings.autoHideTitlePreference.value = UserSettings.AutoHideTitle.value ? .outside : .never
+        doc.heliumPanelController?.updateTitleBar(didChange: true)
     }
     
 

@@ -1867,10 +1867,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         //  Restore setting not done by document controller
-        if let dict = defaults.dictionary(forKey: url.absoluteString), let doc = doc, let hpc = hpc {
-            doc.restoreSettings(with: dict)
-            hpc.documentDidLoad()
-        }
+        if let hpc = hpc { hpc.documentDidLoad() }
         
         //  Finish recording of for this url session
         let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
