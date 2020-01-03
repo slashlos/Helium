@@ -28,7 +28,7 @@ class HeliumTitleDragButton : NSButton {
     var hpc : HeliumPanelController?
     var borderColor : NSColor {
         get {
-            if let url = hpc?.webView?.url, url.isFileURL {
+            if let webView = hpc?.webView, let url = webView.url, url.isFileURL {
                 return NSColor.controlColor
             }
             else
@@ -37,6 +37,19 @@ class HeliumTitleDragButton : NSButton {
             }
         }
     }
+    
+    required override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        self.cell?.controlView?.wantsLayer = true
+        self.layer?.borderWidth = 2
+        self.layer?.borderColor = borderColor.cgColor/// NSColor(hex: 0x44AAFF).cgColor
+    }
+      
+    required init?(coder: NSCoder) {
+        ///super.init(coder: coder)
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
@@ -45,7 +58,6 @@ class HeliumTitleDragButton : NSButton {
 
             let color = self.borderColor
             self.layer?.borderColor = color.cgColor
-            self.layer?.borderWidth = 2
             color.setStroke()
             path.stroke()
         }
@@ -140,7 +152,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         dragFrame?.size.width += 2
         titleDragButton = HeliumTitleDragButton.init(frame: dragFrame!)
         self.contentViewController?.view.addSubview(titleDragButton!)
-        titleDragButton?.cell?.controlView?.wantsLayer = true
         titleDragButton?.top((titleDragButton?.superview)!)
         titleDragButton?.addSubview(titleView!)
         titleDragButton?.isTransparent = false
