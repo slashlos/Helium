@@ -19,6 +19,7 @@ extension NSColor {
         self.init(red: components.R, green: components.G, blue: components.B, alpha: alpha)
     }
 }
+
 class HeliumTitleDragButton : NSButton {
 /* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
  *  Photo_Editor_WindowDraggableButton_swift.html#//
@@ -40,17 +41,13 @@ class HeliumTitleDragButton : NSButton {
         super.draw(dirtyRect)
         
         if hpc?.settings.autoHideTitlePreference.value != .never, hpc?.mouseOver ?? false  {
-            NSGraphicsContext.current?.saveGraphicsState()
-            let path = NSBezierPath()
-            path.appendRect(dirtyRect)
+            let path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
 
             let color = self.borderColor
             self.layer?.borderColor = color.cgColor
             self.layer?.borderWidth = 2
             color.setStroke()
             path.stroke()
-            
-            NSGraphicsContext.current?.restoreGraphicsState()
         }
     }
     
@@ -996,7 +993,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         cacheSettings()
     }
     
-    @objc func updateTitleBar(didChange: Bool) {
+    @objc func updateTitleBar(didChange: Bool) {/*
+        guard let url = webView?.url, url.isFileURL else {
+            self.titleDragButton?.isTransparent = true
+            self.titleDragButton?.isBordered = false
+            self.titleDragButton?.needsDisplay = true
+            return
+        }*/
+        
         if didChange {
             if autoHideTitlePreference != .never && !mouseOver {
                 DispatchQueue.main.async {
@@ -1004,7 +1008,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     self.titleView?.isHidden = true
                     self.titleDragButton?.isTransparent = true
                     self.titleDragButton?.isBordered = false
-                    self.titleDragButton?.needsDisplay = true
+                    self.titleDragButton?.display()
                 }
             } else {
                 DispatchQueue.main.async {
@@ -1012,7 +1016,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     self.titleView?.isHidden = false
                     self.titleDragButton?.isTransparent = false
                     self.titleDragButton?.isBordered = true
-                    self.titleDragButton?.needsDisplay = true
+                    self.titleDragButton?.display()
                 }
             }
         }
