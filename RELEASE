@@ -22,6 +22,21 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 5787</h2>
+<p class="block">
+be6ef12|20/01/03 title drag button initialization fixes<br>
+d578d50|20/01/03 title bar update optimizations<br>
+4e0968a|20/01/02 fix IBAction auto hide global setting<br>
+2205182|20/01/02 revamp auto hide title bar logic<br>
+59aca8f|20/01/02 minimize doc attributes restores<br>
+fff2ad7|20/01/02 many UI items "Always" -> "Outside"<br>
+757264b|20/01/02 always clear mouse overs on superview exit<br>
+318f995|20/01/02 individualize tracking areas<br>
+775e93e|20/01/02 document-less dock click yields new window<br>
+3859b17|20/01/01 cleanups re: animator, drop styleMask changes<br>
+f8fc1a0|20/01/01 guard newDocument sender usage<br>
+</p>
+
 <h2>Build 5727</h2>
 <p class="block">
 3b4bda1|19/12/01 UI: float above: all spaces, full screen apps<br>
