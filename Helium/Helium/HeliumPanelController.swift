@@ -25,10 +25,23 @@ class HeliumTitleDragButton : NSButton {
  *  Photo_Editor_WindowDraggableButton_swift.html#//
  *  apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
  */
-    var hpc : HeliumPanelController?
+    //  once our controller appear, update
+    var _hpc : HeliumPanelController?
+    var hpc : HeliumPanelController? {
+        get {
+            return _hpc
+        }
+        set (value) {
+            _hpc = value
+            display()
+        }
+    }
     var borderColor : NSColor {
         get {
-            if let webView = hpc?.webView, let url = webView.url, url.isFileURL {
+            guard let hpc = self.hpc else {
+                return NSColor.clear
+            }
+            if let webView = hpc.webView, let url = webView.url, url.isFileURL {
                 return NSColor.controlColor
             }
             else
@@ -487,7 +500,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     override func mouseEntered(with theEvent: NSEvent) {
-        let hideTitle = autoHideTitlePreference != .never
         if theEvent.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -509,23 +521,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 break
                 
             default:
-                let lastMouseOver = mouseOver
                 closeButton?.isMouseOver = false
                 miniaturizeButton?.isMouseOver = false
                 zoomButton?.isMouseOver = false
-                mouseOver = true
-                updateTranslucency()
-                
-                //  view or title entered
-                if hideTitle && (lastMouseOver != mouseOver) {
-                    updateTitleBar(didChange: lastMouseOver != mouseOver)
-                }
             }
+        }
+        
+        DispatchQueue.main.async {
+            self.mouseOver = true
         }
     }
     
     override func mouseExited(with theEvent: NSEvent) {
-        let hideTitle = autoHideTitlePreference != .never
         let location : NSPoint = theEvent.locationInWindow
         let tag = theEvent.trackingNumber
 
@@ -549,22 +556,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                             return
                         }
                     }
-                    
-                    var lastMouseOver = mouseOver
-                    mouseOver = false
-                    updateTranslucency()
-                    
-                    if ((titleView?.hitTest(theEvent.locationInWindow)) != nil) ||
-                        ((self.window?.contentView?.hitTest(theEvent.locationInWindow)) != nil) {
-                        //Swift.print("still here")
-                        lastMouseOver = true
-                        mouseOver = true
-                    }
-                    if hideTitle {
-                        updateTitleBar(didChange: lastMouseOver != mouseOver)
-                    }
                 }
             }
+        }
+        
+        DispatchQueue.main.async {
+            self.mouseOver = false
         }
     }
     
@@ -604,8 +601,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
      }
 
     // MARK:- Translucency
-    fileprivate var mouseOver: Bool = false {
+    fileprivate dynamic var mouseOver: Bool = false {
         didSet {
+            let hideTitle = autoHideTitlePreference != .never
             if let window = self.webView?.window {
                 if autoHideTitlePreference == .outside {
                     window.titleVisibility =
@@ -624,6 +622,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     titleDragButton?.needsDisplay = true
                 }
             }
+            updateTranslucency()
+            
+            //  view or title entered
+            if hideTitle { updateTitleBar(didChange: true) }
+
             docIconVisibility(mouseOver)
         }
     }
@@ -763,7 +766,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         
         //  Presume false so our action result is immediate
         autoHideTitlePreference = newTitlePref
-        mouseOver = false
 
         updateTitleBar(didChange: true)
         cacheSettings()
@@ -1004,13 +1006,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         cacheSettings()
     }
     
-    @objc func updateTitleBar(didChange: Bool) {/*
-        guard let url = webView?.url, url.isFileURL else {
-            self.titleDragButton?.isTransparent = true
-            self.titleDragButton?.isBordered = false
-            self.titleDragButton?.needsDisplay = true
-            return
-        }*/
+    @objc func updateTitleBar(didChange: Bool) {
         
         if didChange {
             if autoHideTitlePreference != .never && !mouseOver {
