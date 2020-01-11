@@ -1030,7 +1030,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             self,
             selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
-            object: nil)
+            object: nil)/*
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(wkFlippedView(_:)),
@@ -1072,7 +1072,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         print("Scroll View \(String(describing: note.object)) will be opened now")
         if let scrollView : NSScrollView = note.object as? NSScrollView {
             scrollView.autohidesScrollers = true
-        }
+        }*/
     }
     
     override func viewDidAppear() {
