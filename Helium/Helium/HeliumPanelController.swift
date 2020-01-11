@@ -33,7 +33,7 @@ class HeliumTitleDragButton : NSButton {
         }
         set (value) {
             _hpc = value
-            display()
+            self.window?.contentView?.needsDisplay = true
         }
     }
     var borderColor : NSColor {
@@ -41,8 +41,12 @@ class HeliumTitleDragButton : NSButton {
             guard let hpc = self.hpc else {
                 return NSColor.clear
             }
-            if let webView = hpc.webView, let url = webView.url, url.isFileURL {
-                return NSColor.controlColor
+            if let window = hpc.window, let url = window.representedURL, url.absoluteString != UserSettings.HomePageURL.value {
+                if url.isFileURL {
+                    return NSColor.controlColor
+                } else {
+                    return NSColor.clear
+                }
             }
             else
             {
@@ -64,11 +68,13 @@ class HeliumTitleDragButton : NSButton {
     }
     
     override func draw(_ dirtyRect: NSRect) {
+        let path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
+
         super.draw(dirtyRect)
         
-        if hpc?.settings.autoHideTitlePreference.value != .never, hpc?.mouseOver ?? false  {
-            let path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
-
+        guard let hpc = self.hpc else { return }
+        
+        if hpc.autoHideTitlePreference == .never || hpc.mouseOver {
             let color = self.borderColor
             self.layer?.borderColor = color.cgColor
             color.setStroke()
@@ -600,10 +606,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         case outside = 1
      }
 
-    // MARK:- Translucency
+    // MARK:- Translucency, AutoHideTitle Bar
     fileprivate dynamic var mouseOver: Bool = false {
         didSet {
             let hideTitle = autoHideTitlePreference != .never
+
+            if let url = panel.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
+                panel.titleVisibility = .hidden
+                titleDragButton?.isBordered = false
+                titleDragButton?.needsDisplay = true
+                return
+            }
+            
             if let window = self.webView?.window {
                 if autoHideTitlePreference == .outside {
                     window.titleVisibility =
@@ -1008,6 +1022,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     
     @objc func updateTitleBar(didChange: Bool) {
         
+        if let url = window?.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
+            panel.titleVisibility = .hidden
+            titleDragButton?.isTransparent = true
+            titleDragButton?.isBordered = false
+            if let docIconButton = panel.standardWindowButton(.documentIconButton) {
+                docIconButton.isHidden = true
+            }
+            return
+        }
+        
         if didChange {
             if autoHideTitlePreference != .never && !mouseOver {
                 DispatchQueue.main.async {
@@ -1015,17 +1039,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     self.titleView?.isHidden = true
                     self.titleDragButton?.isTransparent = true
                     self.titleDragButton?.isBordered = false
-                    self.titleDragButton?.display()
-                }
+                 }
             } else {
                 DispatchQueue.main.async {
                     self.panel.titleVisibility = .visible
                     self.titleView?.isHidden = false
                     self.titleDragButton?.isTransparent = false
                     self.titleDragButton?.isBordered = true
-                    self.titleDragButton?.display()
                 }
             }
+            self.titleDragButton?.needsDisplay = true
         }
         docIconVisibility(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
