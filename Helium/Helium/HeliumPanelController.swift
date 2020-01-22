@@ -910,15 +910,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         default:
             // Opacity menu item have opacity as tag value
             if menuItem.tag >= 10 {
-                if let hwc = NSApp.keyWindow?.windowController {
-                    menuItem.state = (menuItem.tag == (hwc as! HeliumPanelController).settings.opacityPercentage.value ? .on : .off)
-                    menuItem.target = hwc
-                }
-                else
-                {
-                    menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? .on : .off)
-                    menuItem.target = self
-                }
+                menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? .on : .off)
             }
             break
         }
