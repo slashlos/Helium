@@ -306,6 +306,12 @@
                                                             <action selector="restoreDocAttrsPress:" target="Voe-Tx-rLC" id="VCX-Qd-Gxf"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Restore Web URLs" id="EbJ-df-oOx">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="restoreWebURLsPress:" target="Voe-Tx-rLC" id="Al7-Sm-fua"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="User Agent" id="oRg-Z4-GTG">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
@@ -357,12 +363,6 @@
                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                     <connections>
                                                                         <action selector="developerExtrasEnabledPress:" target="Voe-Tx-rLC" id="9cU-cf-41k"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Hide zoom icon" id="2nN-CZ-MHD">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="hideZoomIconPress:" target="Voe-Tx-rLC" id="Ruk-Sf-kRt"/>
                                                                     </connections>
                                                                 </menuItem>
                                                                 <menuItem title="HTTP -&gt; HTTPS Links" toolTip="promote http:// -&gt; https://" id="bu5-rW-TcR">
@@ -424,12 +424,12 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="New" id="lz3-XZ-eKC">
                                                 <items>
-                                                    <menuItem title="Window" keyEquivalent="n" id="5z8-gm-Cg3">
+                                                    <menuItem title="Window" tag="1" keyEquivalent="n" id="5z8-gm-Cg3">
                                                         <connections>
                                                             <action selector="newDocument:" target="Ady-hI-5gd" id="MBG-Bq-nZh"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Tab" tag="1" alternate="YES" keyEquivalent="n" id="NGT-Ia-bmu">
+                                                    <menuItem title="Tab" tag="3" alternate="YES" keyEquivalent="n" id="NGT-Ia-bmu">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                         <connections>
                                                             <action selector="newDocument:" target="Ady-hI-5gd" id="dQm-Nv-HoC"/>
@@ -645,6 +645,12 @@ CA
                                                             <action selector="toggleTabBar:" target="Ady-hI-5gd" id="0Zl-zZ-VVd"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Snapshot" id="XZA-7w-cCC">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem title="Translucency" id="yAu-DE-1jG" userLabel="Translucency">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <menu key="submenu" title="Translucency" systemMenu="window" id="kEP-We-47v">
@@ -822,13 +828,13 @@ CA
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <menu key="submenu" title="New" id="ReN-RZ-qss">
                                 <items>
-                                    <menuItem title="Window" id="sa6-w8-Bve">
+                                    <menuItem title="Window" tag="1" id="sa6-w8-Bve">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="F4r-B4-BOi"/>
                                         </connections>
                                     </menuItem>
-                                    <menuItem title="Tab" tag="1" alternate="YES" id="kuG-JL-b07">
+                                    <menuItem title="Tab" tag="3" alternate="YES" id="kuG-JL-b07">
                                         <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                         <connections>
                                             <action selector="newDocument:" target="Ady-hI-5gd" id="6K8-jq-Fnh"/>
@@ -884,6 +890,12 @@ CA
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <connections>
                                 <action selector="presentPlaylistSheet:" target="Ady-hI-5gd" id="daN-bM-r7D"/>
+                            </connections>
+                        </menuItem>
+                        <menuItem title="Snapshot" id="myp-D2-ebl">
+                            <modifierMask key="keyEquivalentModifierMask"/>
+                            <connections>
+                                <action selector="snapshot:" target="Ady-hI-5gd" id="7QW-wX-qa9"/>
                             </connections>
                         </menuItem>
                         <menuItem title="Preferences" id="aQs-KB-lss">
