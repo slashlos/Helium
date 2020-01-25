@@ -1063,6 +1063,7 @@ class Document : NSDocument {
         return docNames[docType.rawValue]
     }
 
+    var _displayImage: NSImage?
     var displayImage: NSImage {
         get {
             switch docType {
@@ -1073,16 +1074,18 @@ class Document : NSDocument {
                 return NSImage.init(named: "appIcon")!
                 
             default:
-                if (self.fileURL?.isFileURL) != nil {
-                    ///let size = NSMakeSize(CGFloat(kTitleNormal), CGFloat(kTitleNormal))
-                    let size = NSMakeSize(32.0, 32.0)
+                guard _displayImage == nil else { return _displayImage! }
+                
+                guard let url = self.fileURL, url.isFileURL else { return NSImage.init(named: k.docIcon)! }
+                
+                let size = NSMakeSize(32.0, 32.0)
                     
-                    let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, self.fileURL! as CFURL , size, nil)
-                    if let tmpImage = tmp?.takeUnretainedValue() {
-                        ///let tmpIcon = NSImage(cgImage: tmpImage, size: size)
-                        ///return tmpIcon
-                        return NSImage(cgImage: tmpImage, size: size)
-                    }
+                let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, url as CFURL , size, nil)
+                if let tmpImage = tmp?.takeUnretainedValue() {
+                    ///let tmpIcon = NSImage(cgImage: tmpImage, size: size)
+                    ///return tmpIcon
+                    _displayImage = NSImage(cgImage: tmpImage, size: size)
+                    return _displayImage!
                 }
                 return NSImage.init(named: k.docIcon)!
             }
