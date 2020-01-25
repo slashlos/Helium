@@ -743,6 +743,7 @@ class MyWebView : WKWebView {
         
         item = NSMenuItem(title: "New Tab", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
+        item.representedObject = self.window
         item.target = appDelegate
         item.isAlternate = true
         item.tag = 3
@@ -766,6 +767,7 @@ class MyWebView : WKWebView {
         
         item = NSMenuItem(title: "File in new tab…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
+        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
         item.tag = 3
@@ -788,13 +790,6 @@ class MyWebView : WKWebView {
         item.isAlternate = true
         item.target = wvc
         item.tag = 3
-        subOpen.addItem(item)
-        
-        item = NSMenuItem(title: "New Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
-        item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
-        item.target = appDelegate
-        item.isAlternate = true
-        item.tag = 1
         subOpen.addItem(item)
         
         item = NSMenuItem(title: "Playlists", action: #selector(AppDelegate.presentPlaylistSheet(_:)), keyEquivalent: "")

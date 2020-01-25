@@ -401,16 +401,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         doc.makeWindowControllers()
         let wc = doc.windowControllers.first
         let window : NSPanel = wc!.window as! NSPanel as NSPanel
+        var parWin : NSWindow? = NSApp.keyWindow
+        var newTab = false
         
         //  Delegate for observation(s) run-down
         window.delegate = wc as? NSWindowDelegate
         doc.settings.rect.value = window.frame
         
         //  OPTION key down creates new tabs as tag=3
-        if let menuItem : NSMenuItem = sender as? NSMenuItem,
-            ((NSApp.currentEvent?.modifierFlags.contains(NSEvent.ModifierFlags.option))! || menuItem.tag == 3), let keyWindow = NSApp.keyWindow,
-            !(keyWindow.contentViewController?.isKind(of: AboutBoxController.self))! {
-            keyWindow.addTabbedWindow(window, ordered: .above)
+        if let menuItem : NSMenuItem = sender as? NSMenuItem, menuItem.tag == 3 {
+            parWin = menuItem.representedObject as? NSWindow
+            newTab = true
+        }
+        if let event = NSApp.currentEvent, event.modifierFlags.contains(.option) {
+            newTab = true
+        }
+        if let parent = parWin, newTab {
+            parent.addTabbedWindow(window, ordered: .above)
         }
         else
         {
