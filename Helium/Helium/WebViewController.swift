@@ -737,6 +737,28 @@ class MyWebView : WKWebView {
         menu.addItem(item)
         menu.addItem(NSMenuItem.separator())
 
+        //  Add tab support once present
+        var tabItemUpdated = false
+        if let tabs = self.window?.tabbedWindows, tabs.count > 0 {
+            if tabs.count > 1 {
+                item = NSMenuItem(title: "Prev Tab", action: #selector(window.selectPreviousTab(_:)), keyEquivalent: "")
+                menu.addItem(item)
+                item = NSMenuItem(title: "Next Tab", action: #selector(window.selectNextTab(_:)), keyEquivalent: "")
+                menu.addItem(item)
+            }
+            item = NSMenuItem(title: "To New Window", action: #selector(window.moveTabToNewWindow(_:)), keyEquivalent: "")
+            menu.addItem(item)
+            item = NSMenuItem(title: "Show All Tabs", action: #selector(window.toggleTabOverview(_:)), keyEquivalent: "")
+            menu.addItem(item)
+            tabItemUpdated = true
+        }
+        if NSApp.windows.count > 1 {
+            item = NSMenuItem(title: "Merge All Windows", action: #selector(window.mergeAllWindows(_:)), keyEquivalent: "")
+            menu.addItem(item)
+            tabItemUpdated = true
+        }
+        if tabItemUpdated { menu.addItem(NSMenuItem.separator()) }
+
         item = NSMenuItem(title: "New Window", action: #selector(appDelegate.newDocument(_:)), keyEquivalent: "")
         item.target = appDelegate
         item.tag = 1
@@ -1632,7 +1654,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 
                     // once loaded update window title,size with video name,dimension
                     if let toolTip = (mwv.url?.absoluteString) {
-                        title = url.isFileURL ? url.lastPathComponent : (url.path != "/" ? url.lastPathComponent : url.host) ?? toolTip
+                        title = url.isFileURL ? url.lastPathComponent : (url.path != "/" ? url.lastPathComponent : url.host) ?? document!.displayName
                         self.heliumPanelController?.hoverBar?.superview?.toolTip = toolTip
 
                         if let track = AVURLAsset(url: url, options: nil).tracks.first {
@@ -1707,7 +1729,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     if let doc = self.document, let hpc = doc.heliumPanelController {
                         self.view.window?.representedURL = url
                         hpc.updateTitleBar(didChange: false)
-                        NSApp.addWindowsItem(self.view.window!, title: url.lastPathComponent, filename: false)
+                        NSApp.addWindowsItem(self.view.window!, title: doc.displayName, filename: false)
                     }
                 }
             }
@@ -1720,6 +1742,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             
         case "title":
             title = mwv.title
+            self.view.window?.windowController?.synchronizeWindowTitleWithDocumentName()
             break;
             
         default:
