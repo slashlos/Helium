@@ -1116,6 +1116,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     fileprivate func setupWebView() {
+        let config = webView.configuration
         
         webView.autoresizingMask = [NSView.AutoresizingMask.height, NSView.AutoresizingMask.width]
         if webView.constraints.count == 0 {
@@ -1123,7 +1124,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         // Allow plug-ins such as silverlight
-        webView.configuration.preferences.plugInsEnabled = true
+        config.preferences.plugInsEnabled = true
         
         // Custom user agent string for Netflix HTML5 support
         webView.customUserAgent = UserSettings.UserAgent.value
@@ -1143,13 +1144,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         //  Fetch, synchronize and observe data store for cookie changes
         if #available(OSX 10.13, *) {
             let websiteDataStore = WKWebsiteDataStore.nonPersistent()
-            let configuration = webView.configuration
-            configuration.websiteDataStore = websiteDataStore
+            config.websiteDataStore = websiteDataStore
             
-            configuration.processPool = WKProcessPool()
+            config.processPool = WKProcessPool()
             let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
             
-            cookies.forEach({ configuration.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil) })
+            cookies.forEach({ config.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil) })
             WKWebsiteDataStore.default().httpCookieStore.add(self)
         }
         
@@ -1179,7 +1179,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.registerForDraggedTypes(Array(webView.acceptableTypes))
 
         //  Watch javascript selection messages unless already done
-        let controller = webView.configuration.userContentController
+        let controller = config.userContentController
         if controller.userScripts.count > 0 { return }
         
         controller.add(self, name: "newWindowWithUrlDetected")
