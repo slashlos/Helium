@@ -1042,6 +1042,7 @@ class Document : NSDocument {
                 self.settings.rect.value = item.rect
              }
         }
+        if url.isFileURL { _displayImage = nil }
     }
     func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
