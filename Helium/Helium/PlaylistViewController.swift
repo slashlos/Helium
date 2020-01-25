@@ -1180,14 +1180,53 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     //  MARK:- Delegate
+    //  when on a sheet, cannot alter histories
+    dynamic var sheetPresent : Bool {
+        get {
+            guard let sheets = self.view.window?.contentViewController?.presentedViewControllers else { return false }
+            return sheets.count > 0
+        }
+    }
+    
+    func tableView(_ tableView: NSTableView, dataCellFor tableColumn: NSTableColumn?, row: Int) -> NSCell? {
+        guard let column = tableColumn else { return nil }
+
+        let item : AnyObject = ([playlistArrayController,playitemArrayController][tableView.tag]?.arrangedObjects as! [AnyObject])[row]
+        let cell : NSTextFieldCell = column.dataCell(forRow: row) as! NSTextFieldCell
+        cell.font = .systemFont(ofSize: -1)
+
+        //  if we have a url show histories in italics
+        if tableView.tag == 1 {
+            let list : AnyObject = (playlistArrayController.arrangedObjects as! [AnyObject])[playlistArrayController.selectionIndex]
+            if list.name == UserSettings.HistoryName.value {
+                cell.font = NSFont.init(name: "Helvetica Oblique", size: -1)
+            }
+        }
+        
+        guard tableView.tag == 0, isGlobalPlaylist, item.name == UserSettings.HistoryName.value else { return cell }
+
+        cell.font = NSFont.init(name: "Helvetica Oblique", size: -1)
+        
+        return cell
+    }
+    
 
     //  We cannot alter a playitem once plays is non-zero; set to zero to alter
     func tableView(_ tableView: NSTableView, shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
+ 
         if tableView == playlistTableView {
-            return true
+            let list : AnyObject = (playlistArrayController.arrangedObjects as! [AnyObject])[playlistArrayController.selectionIndex]
+            if list.name == UserSettings.HistoryName.value {
+                return false
+            }
+            return tableColumn?.identifier.rawValue == k.name
         }
         else
-        if tableView == playitemTableView, let item = playitemArrayController.selectedObjects.first {
+        if tableView == playitemTableView {
+            let item : AnyObject = (playitemArrayController.arrangedObjects as! [AnyObject])[row]
+            if item.name == UserSettings.HistoryName.value  {
+                return false
+            }
             return (item as! PlayItem).plays == 0 || tableColumn?.identifier.rawValue != k.plays
         }
         else
@@ -1195,37 +1234,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             return false
         }
     }
-    /*
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let item = ([playlistArrayController,playitemArrayController][tableView.tag]?.arrangedObjects as! [AnyObject])[row]
-        //let item = ((tableView.dataSource as! NSArrayController).arrangedObjects as! [AnyObject])[row]
-        var view = tableView.makeView(withIdentifier: tableColumn!.identifier, owner: self)
-        if view ==  nil {
-            Swift.print("tag: \(tableView.tag) ident: \(tableColumn!.identifier.rawValue)")
-            view = NSTableCellView.init()
-            view?.identifier = tableColumn?.identifier
-        }
-        
-        guard tableView.tag == 0 else { return view }
-
-        guard isGlobalPlaylist, item.name == UserSettings.HistoryName.value,
-            let identifier = tableColumn?.identifier,
-            identifier.rawValue == k.name else { return view }
-
-        if let cellView = view as? NSTableCellView {
-            if tableView.selectedRowIndexes.intersection(IndexSet.init(integer: row)).count > 0 {
-                cellView.textField?.font = .boldSystemFont(ofSize: -1)
-                cellView.textField?.textColor = .white
-            }
-            else
-            {
-                cellView.textField?.font = .systemFont(ofSize: -1)
-                cellView.textField?.textColor = .blue
-            }
-        }
-        return view
-    }
-    */
+    
     func tableView(_ tableView: NSTableView, toolTipFor cell: NSCell, rect: NSRectPointer, tableColumn: NSTableColumn?, row: Int, mouseLocation: NSPoint) -> String {
         if tableView == playlistTableView
         {
@@ -1254,6 +1263,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         return "no tip for you"
     }
+    func tableViewSelectionIsChanging(_ notification: Notification) {
+        let tableView : NSTableView = notification.object as! NSTableView
+        if tableView == playlistTableView {
+             let rowSet = IndexSet(integer: tableView.selectedRow)
+             let colSet = IndexSet(integer: tableView.column(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "name")))
+             tableView.reloadData(forRowIndexes: rowSet, columnIndexes: colSet)
+         }
+    }
+
     func tableViewSelectionDidChange(_ notification: Notification) {
         //  Alert tooltip changes when selection does in tableView
         let buttons = [ "add", "remove", "play", "restore", "save"]
