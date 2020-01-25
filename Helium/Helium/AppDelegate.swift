@@ -605,6 +605,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.RestoreDocAttrs.value = (sender.state == .on ? false : true)
 	}
 	
+    @objc @IBAction func restoreWebURLsPress(_ sender: NSMenuItem) {
+        UserSettings.RestoreWebURLs.value = (sender.state == .on ? false : true)
+    }
+    
     @objc @IBAction func showReleaseInfo(_ sender: Any) {
         do
         {
@@ -780,6 +784,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case "Restore Doc Attributes":
                 menuItem.state = UserSettings.RestoreDocAttrs.value ? .on : .off
                 break
+            case "Restore Web URLs":
+                menuItem.state = UserSettings.RestoreWebURLs.value ? .on : .off
+                break
             case "User Agent":
                 break
             case "Quit":
@@ -799,7 +806,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         self.openForBusiness = true
 
         //  If we will restore then skip initial Untitled
-        return !documentsToRestore
+        return !documentsToRestore && !disableDocumentReOpening
     }
     
     func resetDefaults() {
@@ -991,7 +998,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     var defaults = UserDefaults.standard
-    var disableDocumentReOpening = true
     var hiddenWindows = Dictionary<String, Any>()
 
     func applicationOpenUntitledFile(_ sender: NSApplication) -> Bool {
@@ -1005,7 +1011,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let hasVisibleDocs = flag ? "has doc(s)" : "no doc(s)"
         Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
         if !flag && 0 == dc.documents.count { return !applicationOpenUntitledFile(sender) }
-        return !disableDocumentReOpening || !flag
+        return !disableDocumentReOpening || flag
     }
 
     //  Local/global event monitor: CTRL+OPTION+COMMAND to toggle windows' alpha / audio values
@@ -1109,8 +1115,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
         //  OPTION at startup disables reopening documents
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-        disableDocumentReOpening = flags.contains(NSEvent.ModifierFlags.option)
 
+        //  Wipe out defaults when OPTION+SHIFT is held down at startup
+        if flags.contains(NSEvent.ModifierFlags.option) {
+            Swift.print("option at start")
+            disableDocumentReOpening = true
+        }
+        
         // Local/Global Monitor
         _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
         globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.flagsChanged) { (event) -> Void in
@@ -1158,8 +1169,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  Restore auto save settings
         autoSaveDocs = UserSettings.AutoSaveDocs.value
 
-        //  Restore our non-document (file://) windows if any via
-        guard UserSettings.RestoreDocAttrs.value else { return }
+        //  Restore our web (non file://) document windows if any via
+        guard !disableDocumentReOpening else { return }
         if let keep = defaults.array(forKey: UserSettings.KeepListName.value) {
             for item in keep {
                 guard let urlString = (item as? String) else { continue }
@@ -1208,8 +1219,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         defaults.set(temp, forKey: UserSettings.Searches.keyPath)
         
-        //  Save our non-document (file://) windows to our keep list
-        if UserSettings.RestoreDocAttrs.value {
+        //  Save our web URLs (non file://) windows to our keep list
+        if UserSettings.RestoreWebURLs.value {
             temp = Array<String>()
             for document in NSApp.orderedDocuments {
                 guard let webURL = document.fileURL, !webURL.isFileURL else {
@@ -1653,14 +1664,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     // MARK: Application Events
-    dynamic var appEventSeen = false
+    dynamic var disableDocumentReOpening = false
+
     func application(_ sender: NSApplication, openFile: String) -> Bool {
         let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
         let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
-        appEventSeen = true
-        let status = openFileInNewWindow(fileURL)
-        appEventSeen = false
-        return status
+        disableDocumentReOpening = openFileInNewWindow(fileURL)
+        return disableDocumentReOpening
     }
     
     func application(_ sender: NSApplication, openFiles: [String]) {
@@ -1688,10 +1698,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     func application(_ application: NSApplication, openURL: URL) -> Bool {
-        appEventSeen = true
-        let status = openURLInNewWindow(openURL) != nil
-        appEventSeen = false
-        return status
+        disableDocumentReOpening = openURLInNewWindow(openURL) != nil
+        return disableDocumentReOpening
     }
 
     @available(OSX 10.13, *)

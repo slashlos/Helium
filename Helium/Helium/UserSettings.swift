@@ -87,6 +87,7 @@ internal struct UserSettings {
     static let AutoSaveDocs = Setting<Bool>("autoSaveDocs", defaultValue: true)
     static let PromoteHTTPS = Setting<Bool>("promoteHTTPS", defaultValue: false)
     static let RestoreDocAttrs = Setting<Bool>("restoreDocAttrs", defaultValue: true)
+    static let RestoreWebURLs = Setting<Bool>("restoreWebURLs", defaultValue: true)
     static let RestoreLocationSvcs = Setting<Bool>("restoreLocationSvcs", defaultValue: true)
     
     //  User non-document windows to restore
