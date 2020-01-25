@@ -837,6 +837,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
         
         //  Do not exceed program / user specified throttle
+        guard list.count > 0 else { return }
         if list.count > throttle {
             let message = String(format: "Limiting playlist(s) %ld items to throttle?", list.count)
             let infoMsg = String(format: "User defaults: %@ = %ld",
