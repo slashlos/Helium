@@ -1098,13 +1098,14 @@ class Document : NSDocument {
     }
     override var displayName: String! {
         get {
-            if (self.fileURL?.isFileURL) != nil {
-                if let justTheName = super.displayName  {
-                    return (justTheName as NSString).deletingPathExtension
-                }
+            guard let fileURL = self.fileURL else { return super.displayName }
+            if fileURL.isFileURL {
+                return fileURL.lastPathComponent
             }
-            //  This includes release & playlists (use draft name)
-            return super.displayName
+            else
+            {
+                return fileURL.absoluteString
+            }
         }
         set (newName) {
             super.displayName = newName
