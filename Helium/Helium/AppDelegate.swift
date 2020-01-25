@@ -766,9 +766,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case "Hide Helium in menu bar":
                 menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
                 break
-            case "Hide zoom icon":
-                menuItem.state = UserSettings.HideZoomIcon.value ? .on : .off
-                break
             case "Home Page":
                 break
             case "Location services":
