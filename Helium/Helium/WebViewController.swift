@@ -1166,6 +1166,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             name: NSNotification.Name(rawValue: "commandKeyDown"),
             object: nil)
 
+        //    Watch option + command key changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(WebViewController.optionAndCommandKeysDown(_:)),
+            name: NSNotification.Name(rawValue: "optionAndCommandKeysDown"),
+            object: nil)
+
         //  Intercept drags
         webView.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
         webView.registerForDraggedTypes([NSPasteboard.PasteboardType.fileURL])
