@@ -14,7 +14,11 @@ import Foundation
 class PanelButton : NSButton {
 	private var _isMouseOver:Bool = false;
 	private var useTrackingArea:Bool = true;
-	
+	private var buttonBar : PanelButtonBar {
+		get {
+			return self.superview as! PanelButtonBar
+		}
+	}
 	var isMouseOver:Bool {
 		set {
 			self._isMouseOver = newValue;
@@ -78,7 +82,7 @@ class PanelButton : NSButton {
 	}
 	override func mouseExited(with theEvent: NSEvent) {
 		if (self.useTrackingArea) {
-			self.isMouseOver = true;
+			self.isMouseOver = !buttonBar.individualized
 		}
 	}
 	
@@ -184,12 +188,12 @@ public class PanelButtonBar : NSView {
 	
 	required public init?(coder: NSCoder) {
 		super.init(coder: coder);
-		self.setupViews(individualTrackingAreas: true);
+		self.setupViews(individualTrackingAreas: false);
 	}
 	
 	override init (frame:NSRect) {
 		super.init(frame: frame);
-		self.setupViews(individualTrackingAreas: true);
+		self.setupViews(individualTrackingAreas: false);
 	}
 	
 	func setupViews (individualTrackingAreas ita:Bool) {

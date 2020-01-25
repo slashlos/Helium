@@ -183,10 +183,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, -3, 80, 19))
         self.titleView?.superview?.addSubview(hoverBar!)
         
-        //  We do not support a miniaturize button at this time; statically hide zoom
-        miniaturizeButton?.isHidden = true
-        zoomButton?.isHidden = UserSettings.HideZoomIcon.value
-        
         //  we want our own hover bar of buttons (no mini or zoom was visible)
         if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
             panelButton.target = windowButton.target
@@ -201,6 +197,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         
         //  Set up hover & buttons unless we're not a helium document
         guard !self.isKind(of: ReleasePanelController.self) else { return }
+        
+        //  We want to allow miniaturizations
+        self.panel.styleMask.formUnion(.miniaturizable)
         configureTitleDrag()
                 
         setupTrackingAreas(true)
@@ -527,9 +526,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 break
                 
             default:
-                closeButton?.isMouseOver = false
-                miniaturizeButton?.isMouseOver = false
-                zoomButton?.isMouseOver = false
+                if let hb = self.hoverBar, hb.individualized {
+                    closeButton?.isMouseOver = false
+                    miniaturizeButton?.isMouseOver = false
+                    zoomButton?.isMouseOver = false
+                }
             }
         }
         
@@ -548,9 +549,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
             switch tag {
             case closeTag, miniTag, zoomTag:
-                closeButton?.isMouseOver = false
-                miniaturizeButton?.isMouseOver = false
-                zoomButton?.isMouseOver = false
+                let indy = self.hoverBar?.individualized ?? false
+                if !indy || tag == closeTag { closeButton?.isMouseOver = false }
+                if !indy || tag == miniTag { miniaturizeButton?.isMouseOver = false }
+                if !indy || tag == zoomTag { zoomButton?.isMouseOver = false }
                 break
 
             default:

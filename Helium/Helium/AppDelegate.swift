@@ -338,22 +338,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.DisabledMagicURLs.value = (sender.state == .on)
     }
     
-    @objc @IBAction func hideZoomIconPress(_ sender: NSMenuItem) {
-        UserSettings.HideZoomIcon.value = (sender.state == .off)
-        
-        //  sync all document zoom icons now - yuck
-        for doc in dc.documents {
-            if let hpc = doc.windowControllers.first, hpc.isKind(of: HeliumPanelController.self) {
-                (hpc as! HeliumPanelController).zoomButton?.isHidden = hideZoomIcon
-            }
-        }
-	}
-    var hideZoomIcon : Bool {
-        get {
-            return UserSettings.HideZoomIcon.value
-        }
-    }
-    
 	func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
         
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
