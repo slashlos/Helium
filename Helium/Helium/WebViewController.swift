@@ -662,8 +662,9 @@ class MyWebView : WKWebView {
     //
     //  Actions used by contextual menu, or status item, or our app menu
     func publishApplicationMenu(_ menu: NSMenu) {
-        let wvc = self.window?.contentViewController as! WebViewController
-        let hpc = self.window?.windowController as! HeliumPanelController
+        guard let window = self.window else { return }
+        let wvc = window.contentViewController as! WebViewController
+        let hpc = window.windowController as! HeliumPanelController
         let settings = (hpc.document as! Document).settings
         let autoHideTitle = hpc.autoHideTitlePreference
         let translucency = hpc.translucencyPreference
@@ -797,6 +798,11 @@ class MyWebView : WKWebView {
         item.target = appDelegate
         menu.addItem(item)
 
+        item = NSMenuItem(title: "Snapshot", action: #selector(webViewController?.snapshot(_:)), keyEquivalent: "")
+        item.representedObject = self.window
+        item.target = wvc
+        menu.addItem(item)
+        
         item = NSMenuItem(title: "Appearance", action: #selector(menuClicked(_:)), keyEquivalent: "")
         menu.addItem(item)
         let subPref = NSMenu()
@@ -1256,6 +1262,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
     
+    @objc internal func optionAndCommandKeysDown(_ notification : Notification) {
+        Swift.print("optionAndCommandKeysDown")
+        snapshot(self)
+    }
+        
     fileprivate func zoomIn() {
         webView.magnification += 0.1
      }
@@ -1387,6 +1398,83 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         resetZoom()
     }
     
+    @IBAction func snapshot(_ sender: Any) {
+        webView.takeSnapshot(with: nil) {image, error in
+            if let image = image {
+                self.webImageView.image = image
+            } else {
+                print("Failed taking snapshot: \(error?.localizedDescription ?? "--")")
+                self.webImageView.image = nil
+            }
+        }
+        guard let image = webImageView.image else { return }
+        guard let tiffData = image.tiffRepresentation else { NSSound(named: "Sosumi")?.play(); return }
+         
+        //  1st around authenticate and cache sandbox data if needed
+        if appDelegate.isSandboxed(), appDelegate.desktopData == nil {
+            var desktop =
+                UserSettings.SnapshotsURL.value.count == 0
+                    ? appDelegate.getDesktopDirectory()
+                    : URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value, isDirectory: true)
+            
+            let openPanel = NSOpenPanel()
+            openPanel.message = "Authorize access to Snapshots"
+            openPanel.prompt = "Authorize"
+            openPanel.canChooseFiles = false
+            openPanel.canChooseDirectories = true
+            openPanel.canCreateDirectories = true
+            openPanel.directoryURL = desktop
+            openPanel.begin() { (result) -> Void in
+                if (result == NSApplication.ModalResponse.OK) {
+                    desktop = openPanel.url!
+                    _ = self.appDelegate.storeBookmark(url: desktop, options: self.appDelegate.rwOptions)
+                    self.appDelegate.desktopData = self.appDelegate.bookmarks[desktop]
+                    UserSettings.SnapshotsURL.value = desktop.absoluteString
+                    DispatchQueue.main.async {
+                        if !self.appDelegate.saveBookmarks() {
+                            Swift.print("Yoink, unable to save desktop booksmark(s)")
+                        }
+                    }
+                }
+            }
+        }
+        
+        //  Form a filename: ~/"<app's name> View Shot <timestamp>"
+        let dateFMT = DateFormatter()
+        dateFMT.dateFormat = "yyyy-dd-MM"
+        let timeFMT = DateFormatter()
+        timeFMT.dateFormat = "h.mm.ss a"
+        let now = Date()
+
+        let path = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value).appendingPathComponent(
+            String(format: "%@ View Shot %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
+        
+        let bitmapImageRep = NSBitmapImageRep(data: tiffData)
+        
+        //  With sandbox clearance to the desktop...
+        do
+        {
+            try bitmapImageRep?.representation(using: .png, properties: [:])?.write(to: path)
+            DispatchQueue.main.async {
+                // https://developer.apple.com/library/archive/qa/qa1913/_index.html
+                if let asset = NSDataAsset(name:"Grab") {
+
+                    do {
+                        // Use NSDataAsset's data property to access the audio file stored in Sound.
+                         let player = try AVAudioPlayer(data:asset.data, fileTypeHint:"caf")
+                        // Play the above sound file.
+                        player.play()
+                    } catch {
+                        Swift.print("no sound for you")
+                    }
+                }
+            }
+        } catch let error {
+            NSApp.presentError(error)
+            NSSound(named: "Sosumi")?.play()
+        }
+    }
+    
     @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         appDelegate.didRequestUserAgent(RequestUserStrings (
             currentURL: webView.customUserAgent,
@@ -1515,7 +1603,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.load(URLRequest.init(url: url))
     }
 
-    @objc @IBOutlet var webView: MyWebView!
+    @objc @IBOutlet weak var webView: MyWebView!
+    var webImageView = NSImageView.init()
 	var webSize = CGSize(width: 0,height: 0)
     
     @objc @IBOutlet weak var borderView: WebBorderView!

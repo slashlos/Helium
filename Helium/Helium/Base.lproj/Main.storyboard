@@ -639,8 +639,8 @@ CA
                                                             </items>
                                                         </menu>
                                                     </menuItem>
-                                                    <menuItem title="Show Tab Bar" keyEquivalent="t" id="Cno-aM-bke">
-                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                                    <menuItem title="Show Tab Bar" id="Cno-aM-bke">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
                                                             <action selector="toggleTabBar:" target="Ady-hI-5gd" id="0Zl-zZ-VVd"/>
                                                         </connections>
@@ -779,7 +779,6 @@ CA
                                                 </items>
                                             </menu>
                                         </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="Mmt-YT-MZ5"/>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -1137,7 +1136,7 @@ CA
                                             <rect key="frame" x="1" y="0.0" width="124" height="217"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playlistTableView.prefs" rowSizeStyle="automatic" headerView="tha-4C-kVE" viewBased="YES" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
+                                                <tableView identifier="playlists" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveName="playlistTableView.prefs" headerView="tha-4C-kVE" id="PML-r0-Bx7" userLabel="Playlist Table View" customClass="PlayTableView" customModule="Helium" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="253" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -1157,37 +1156,6 @@ CA
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="name"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <prototypeCellViews>
-                                                                <tableCellView id="mHz-pC-h6G">
-                                                                    <rect key="frame" x="1" y="1" width="121" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="AFk-cQ-CKw">
-                                                                            <rect key="frame" x="0.0" y="1" width="121" height="16"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="z0B-Lg-eec">
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                                <connections>
-                                                                                    <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.name" id="PXy-GN-jqC"/>
-                                                                                </connections>
-                                                                            </textFieldCell>
-                                                                            <connections>
-                                                                                <binding destination="mHz-pC-h6G" name="value" keyPath="objectValue.name" id="cHP-rl-jnR"/>
-                                                                                <binding destination="mHz-pC-h6G" name="toolTip" keyPath="objectValue.tooltip" id="xZn-iF-bWk"/>
-                                                                            </connections>
-                                                                        </textField>
-                                                                    </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="AFk-cQ-CKw" firstAttribute="leading" secondItem="mHz-pC-h6G" secondAttribute="leading" constant="2" id="4Il-QS-KDt"/>
-                                                                        <constraint firstItem="AFk-cQ-CKw" firstAttribute="centerX" secondItem="mHz-pC-h6G" secondAttribute="centerX" id="Pkg-0i-Nwf"/>
-                                                                        <constraint firstItem="AFk-cQ-CKw" firstAttribute="centerY" secondItem="mHz-pC-h6G" secondAttribute="centerY" id="V9P-Zm-u0S"/>
-                                                                    </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="AFk-cQ-CKw" id="Yd5-GJ-480"/>
-                                                                    </connections>
-                                                                </tableCellView>
-                                                            </prototypeCellViews>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.name" id="v11-uD-Oea">
                                                                     <dictionary key="options">
@@ -1212,37 +1180,6 @@ CA
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <prototypeCellViews>
-                                                                <tableCellView id="jSQ-aX-fpv">
-                                                                    <rect key="frame" x="125" y="1" width="40" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="yio-5u-BNl">
-                                                                            <rect key="frame" x="0.0" y="1" width="40" height="16"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="K7d-zD-iIW">
-                                                                                <dateFormatter key="formatter" dateStyle="short" timeStyle="short" id="yR9-bT-RmE"/>
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                                <connections>
-                                                                                    <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.date" id="M2O-cp-3w5"/>
-                                                                                </connections>
-                                                                            </textFieldCell>
-                                                                            <connections>
-                                                                                <binding destination="jSQ-aX-fpv" name="value" keyPath="objectValue.date" id="gWK-Es-xVf"/>
-                                                                            </connections>
-                                                                        </textField>
-                                                                    </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="yio-5u-BNl" firstAttribute="leading" secondItem="jSQ-aX-fpv" secondAttribute="leading" constant="2" id="6jg-ke-O9a"/>
-                                                                        <constraint firstItem="yio-5u-BNl" firstAttribute="centerY" secondItem="jSQ-aX-fpv" secondAttribute="centerY" id="Rxh-dr-JaY"/>
-                                                                        <constraint firstItem="yio-5u-BNl" firstAttribute="centerX" secondItem="jSQ-aX-fpv" secondAttribute="centerX" id="UYB-y4-4Zu"/>
-                                                                    </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="yio-5u-BNl" id="Vic-vU-ogC"/>
-                                                                    </connections>
-                                                                </tableCellView>
-                                                            </prototypeCellViews>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pdate" id="Xk4-D7-NdX">
                                                                     <dictionary key="options">
@@ -1265,33 +1202,6 @@ CA
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="tally"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <prototypeCellViews>
-                                                                <tableCellView id="qMa-V3-VMi">
-                                                                    <rect key="frame" x="168" y="1" width="40" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Wuu-4H-gtE">
-                                                                            <rect key="frame" x="0.0" y="1" width="40" height="16"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="R9D-ER-8y4">
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                            </textFieldCell>
-                                                                            <connections>
-                                                                                <binding destination="qMa-V3-VMi" name="value" keyPath="objectValue.tally" id="cLN-7R-EFp"/>
-                                                                            </connections>
-                                                                        </textField>
-                                                                    </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="Wuu-4H-gtE" firstAttribute="centerX" secondItem="qMa-V3-VMi" secondAttribute="centerX" id="8kb-wR-q0A"/>
-                                                                        <constraint firstItem="Wuu-4H-gtE" firstAttribute="leading" secondItem="qMa-V3-VMi" secondAttribute="leading" constant="2" id="M4L-qF-8uQ"/>
-                                                                        <constraint firstItem="Wuu-4H-gtE" firstAttribute="centerY" secondItem="qMa-V3-VMi" secondAttribute="centerY" id="wg4-Dj-Zlj"/>
-                                                                    </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="Wuu-4H-gtE" id="3lY-kl-sjt"/>
-                                                                    </connections>
-                                                                </tableCellView>
-                                                            </prototypeCellViews>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.tally" id="hjQ-jH-uln">
                                                                     <dictionary key="options">
@@ -1314,33 +1224,6 @@ CA
                                                             </textFieldCell>
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="plays"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <prototypeCellViews>
-                                                                <tableCellView id="8cd-fP-GVY">
-                                                                    <rect key="frame" x="211" y="1" width="40" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <subviews>
-                                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Xaf-iy-Fa1">
-                                                                            <rect key="frame" x="0.0" y="1" width="40" height="16"/>
-                                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="htf-Ys-tCD">
-                                                                                <font key="font" metaFont="system"/>
-                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                            </textFieldCell>
-                                                                            <connections>
-                                                                                <binding destination="8cd-fP-GVY" name="value" keyPath="objectValue.plays" id="OIC-HC-B7P"/>
-                                                                            </connections>
-                                                                        </textField>
-                                                                    </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="Xaf-iy-Fa1" firstAttribute="centerX" secondItem="8cd-fP-GVY" secondAttribute="centerX" id="ADm-Ca-2BC"/>
-                                                                        <constraint firstItem="Xaf-iy-Fa1" firstAttribute="leading" secondItem="8cd-fP-GVY" secondAttribute="leading" constant="2" id="nKA-b5-qd7"/>
-                                                                        <constraint firstItem="Xaf-iy-Fa1" firstAttribute="centerY" secondItem="8cd-fP-GVY" secondAttribute="centerY" id="t26-dF-C5W"/>
-                                                                    </constraints>
-                                                                    <connections>
-                                                                        <outlet property="textField" destination="Xaf-iy-Fa1" id="AfL-iN-RBt"/>
-                                                                    </connections>
-                                                                </tableCellView>
-                                                            </prototypeCellViews>
                                                             <connections>
                                                                 <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.plays" id="c6f-KZ-jMz">
                                                                     <dictionary key="options">
