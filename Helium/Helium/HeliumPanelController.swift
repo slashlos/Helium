@@ -820,6 +820,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
+    @IBAction func snapshot(_ sender: Any) {
+        guard let wvc = panel.contentViewController as? WebViewController else { return }
+        wvc.snapshot(sender)
+    }
+    
     @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
         case .never:
@@ -903,6 +908,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
+            break
+        case "Snapshot":
+            menuItem.isEnabled = panel.contentViewController?.isKind(of: WebViewController.self) ?? false
             break
         case "Save":
             break

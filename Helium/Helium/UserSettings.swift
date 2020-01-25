@@ -75,6 +75,9 @@ internal struct UserSettings {
     //  NOTE: UserAgent default is loaded at run-time
     static let UserAgent = Setting<String>("userAgent", defaultValue: "TBD")
 
+    //  Snapshots path loading once
+    static let SnapshotsURL = Setting<String>("snapshotsURL", defaultValue: "")
+
     //  User Defaults keys
     static let HistoryName  = Setting<String>("historyName", defaultValue:"History")
     static let HistoryKeep  = Setting<Int>("historyKeep", defaultValue:2048)

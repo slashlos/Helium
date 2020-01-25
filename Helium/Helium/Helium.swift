@@ -24,6 +24,7 @@ struct k {
     static let Helium = "Helium"
     static let helium = "helium"
     static let about = "about"
+    static let desktop = "Desktop"
     static let docIcon = "docIcon"
     static let Playlists = "Playlists"
     static let playlists = "playlists"

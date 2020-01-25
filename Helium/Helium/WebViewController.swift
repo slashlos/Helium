@@ -784,6 +784,7 @@ class MyWebView : WKWebView {
         
         item = NSMenuItem(title: "URL in new tab…", action: #selector(WebViewController.openLocationPress(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.option
+        item.representedObject = self.window
         item.isAlternate = true
         item.target = wvc
         item.tag = 3
@@ -1173,6 +1174,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 self.webView.configuration.userContentController.add(contentRuleList)
             })
         }
+        
+        //  https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
+        //  Watch click events
+        let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
+        let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        controller.addUserScript(clickMe)
+        controller.add(self, name: "clickMe")
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -1239,6 +1247,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @objc @IBAction func forwardPress(_ sender: AnyObject) {
         webView.goForward()
+    }
+    
+    @objc internal func optionKeyDown(_ notification : Notification) {
+        
     }
     
     @objc internal func commandKeyDown(_ notification : Notification) {
@@ -1829,6 +1841,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        //  make sure we are visible
+        if let doc = self.document, let window = webView.window, !window.isVisible {
+            doc.showWindows()
+        }
         Swift.print("didCommit - 2nd")
     }
     

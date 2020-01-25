@@ -167,6 +167,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
+    func getDesktopDirectory() -> URL {
+        let homedir = FileManager.default.homeDirectoryForCurrentUser
+        let desktop = homedir.appendingPathComponent(k.desktop, isDirectory: true)
+        return desktop
+    }
+    
     //  return key state for external paths
     var newViewOptions : ViewOptions = sameWindow
     var getViewOptions : ViewOptions {
@@ -819,12 +825,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
+        
+        //  Clear any snapshots URL sandbox resources
+        if nil != desktopData {
+            let desktop = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value)
+            desktop.stopAccessingSecurityScopedResource()
+            bookmarks[desktop] = nil
+            desktopData = nil
+            UserSettings.SnapshotsURL.value = UserSettings.SnapshotsURL.default
+        }
     }
     
     let toHMS = hmsTransformer()
     let rectToString = rectTransformer()
     var launchedAsLogInItem : Bool = false
     
+    var desktopData: Data?
+    let rwOptions:URL.BookmarkCreationOptions = [.withSecurityScope]
+
     func applicationWillFinishLaunching(_ notification: Notification) {
         let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
         let event = NSAppleEventDescriptor.currentProcess()
@@ -841,6 +859,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             resetDefaults()
             NSSound(named: "Purr")?.play()
         }
+        
         //  We were started as a login item startup save this
         launchedAsLogInItem = event.eventID == kAEOpenApplication &&
             event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
@@ -870,8 +889,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             object: nil)
 
         //  Load sandbox bookmark url when necessary
-        if self.isSandboxed() != self.loadBookmarks() {
-            Swift.print("Yoink, unable to load bookmarks")
+        if self.isSandboxed() {
+            if !self.loadBookmarks() {
+                Swift.print("Yoink, unable to load bookmarks")
+            }
+            else
+            {
+                //  1st time gain access to the ~/Deskop
+                let url = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value, isDirectory: true)
+                if let data = bookmarks[url], fetchBookmark((key: url, value: data)) {
+                    Swift.print ("snapshotURL \(url.absoluteString)")
+                    desktopData = data
+                }
+            }
         }
         
         //  For site that require location services
@@ -1068,6 +1098,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
             return true
             
+        case [NSEvent.ModifierFlags.option, NSEvent.ModifierFlags.command]:
+            let notif = Notification(name: Notification.Name(rawValue: "optionAndCommandKeysDown"),
+                                     object: NSNumber(booleanLiteral: commandKeyDown))
+            NotificationCenter.default.post(notif)
+            return true
+            
         case [NSEvent.ModifierFlags.shift]:
             self.shiftKeyDown = true
             return true
@@ -1137,7 +1173,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  Capture default user agent string for this platform
         UserSettings.UserAgent.default = WKWebView()._userAgent
-        
         
         //  Restore auto save settings
         autoSaveDocs = UserSettings.AutoSaveDocs.value
@@ -1684,7 +1719,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         for url in urls {
             
             if !self.application(application, openURL: url) {
-                print("Yoink unablel to open \(url)")
+                print("Yoink unable to open \(url)")
             }
         }
     }
@@ -1756,7 +1791,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
         }
         return restored == bookmarks.count
-     }
+    }
     
     func saveBookmarks() -> Bool
     {
@@ -1775,7 +1810,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    func storeBookmark(url: URL) -> Bool
+    func storeBookmark(url: URL, options: URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]) -> Bool
     {
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
@@ -1786,7 +1821,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         do
         {
-            let options:URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]
             let data = try url.bookmarkData(options: options, includingResourceValuesForKeys: nil, relativeTo: nil)
             bookmarks[url] = data
             return self.fetchBookmark((key: url, value: data))
@@ -1799,6 +1833,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
+    func findBookmark(_ url: URL) -> Data? {
+        if let data = bookmarks[url] {
+            if self.fetchBookmark((key: url, value: data)) {
+                return data
+            }
+        }
+        return nil
+    }
+
     func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool
     {
         let restoredUrl: URL?

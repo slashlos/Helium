@@ -3,3 +3,6 @@
 //
 
 #import "WKWebViewPrivate.h"
+
+@import CoreGraphics;
+#import <WebKit/WKSnapshotConfiguration.h>
