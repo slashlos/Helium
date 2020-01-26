@@ -645,12 +645,6 @@ CA
                                                             <action selector="toggleTabBar:" target="Ady-hI-5gd" id="0Zl-zZ-VVd"/>
                                                         </connections>
                                                     </menuItem>
-                                                    <menuItem title="Snapshot" id="XZA-7w-cCC">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
-                                                        </connections>
-                                                    </menuItem>
                                                     <menuItem title="Translucency" id="yAu-DE-1jG" userLabel="Translucency">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <menu key="submenu" title="Translucency" systemMenu="window" id="kEP-We-47v">
@@ -787,6 +781,12 @@ CA
                                         <menuItem title="Next Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="I42-BG-GCZ">
                                             <connections>
                                                 <action selector="selectNextTab:" target="Ady-hI-5gd" id="FhA-oV-t9s"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Snapshot" keyEquivalent="p" id="XZA-7w-cCC">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
                                             </connections>
                                         </menuItem>
                                     </items>
