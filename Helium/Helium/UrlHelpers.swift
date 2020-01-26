@@ -223,6 +223,19 @@ extension URL {
             return nil
         }
     }
+    
+    var resourceSpecifier: String {
+        get {
+            let nrl : NSURL = self as NSURL
+            return nrl.resourceSpecifier ?? self.absoluteString
+        }
+    }
+    var simpleSpecifier: String {
+        get {
+            let str = self.resourceSpecifier
+            return str[2..<str.count]
+        }
+    }
 }
 
 extension String {

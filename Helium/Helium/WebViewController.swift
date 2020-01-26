@@ -82,6 +82,14 @@ class MyWebView : WKWebView {
             Swift.print("Menu \(menuItem.title) clicked")
         }
     }
+    
+    @objc open func jump(to item: NSMenuItem) -> WKNavigation? {
+        if let nav = go(to: item.representedObject as! WKBackForwardListItem) {
+            self.window?.title = item.title
+            return nav
+        }
+        return  nil
+    }
 
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
 
@@ -737,13 +745,60 @@ class MyWebView : WKWebView {
         menu.addItem(item)
         menu.addItem(NSMenuItem.separator())
 
+        //  Add backForwardList navigation if any
+        let back = backForwardList.backList
+        let fore = backForwardList.forwardList
+        if back.count > 0 || fore.count > 0 {
+            item = NSMenuItem(title: "History", action: #selector(menuClicked(_:)), keyEquivalent: "")
+            menu.addItem(item)
+            let jump = NSMenu()
+            item.submenu = jump
+
+            Swift.print("back \(back.count)")
+            for prev in back {
+                item = NSMenuItem(title: prev.title ?? prev.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item.toolTip = prev.url.absoluteString
+                item.representedObject = prev
+                jump.addItem(item)
+            }
+            if let curr = backForwardList.currentItem {
+                item = NSMenuItem(title: curr.title ?? curr.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item.toolTip = curr.url.absoluteString
+                item.representedObject = curr
+                item.state = .on
+                jump.addItem(item)
+            }
+            Swift.print("fore \(fore.count)")
+            for next in fore {
+                item = NSMenuItem(title: next.title ?? next.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item.toolTip = next.url.absoluteString
+                item.representedObject = next
+                jump.addItem(item)
+            }
+            menu.addItem(NSMenuItem.separator())
+        }
+        
         //  Add tab support once present
         var tabItemUpdated = false
         if let tabs = self.window?.tabbedWindows, tabs.count > 0 {
-            if tabs.count > 1 {
-                item = NSMenuItem(title: "Prev Tab", action: #selector(window.selectPreviousTab(_:)), keyEquivalent: "")
+            if tabs.count > 3 {
+                item = NSMenuItem(title: "Tabs", action: #selector(menuClicked(_:)), keyEquivalent: "")
                 menu.addItem(item)
-                item = NSMenuItem(title: "Next Tab", action: #selector(window.selectNextTab(_:)), keyEquivalent: "")
+                let jump = NSMenu()
+                item.submenu = jump
+                for tab in tabs {
+                    item = NSMenuItem(title: tab.title, action: #selector(hpc.selectTabItem(_:)), keyEquivalent: "")
+                    if tab.title == self.window?.title { item.state = .on }
+                    item.toolTip = tab.representedURL?.absoluteString
+                    item.representedObject = tab
+                    jump.addItem(item)
+                }
+            }
+            else
+            if tabs.count > 1 {
+                item = NSMenuItem(title: "Prev Tab", action: #selector(hpc.selectPreviousTab(_:)), keyEquivalent: "")
+                menu.addItem(item)
+                item = NSMenuItem(title: "Next Tab", action: #selector(hpc.selectNextTab(_:)), keyEquivalent: "")
                 menu.addItem(item)
             }
             item = NSMenuItem(title: "To New Window", action: #selector(window.moveTabToNewWindow(_:)), keyEquivalent: "")
@@ -1654,7 +1709,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 
                     // once loaded update window title,size with video name,dimension
                     if let toolTip = (mwv.url?.absoluteString) {
-                        title = url.isFileURL ? url.lastPathComponent : (url.path != "/" ? url.lastPathComponent : url.host) ?? document!.displayName
+                        title = url.isFileURL ? url.lastPathComponent : (url.path != "/" ? url.simpleSpecifier : url.host) ?? document!.displayName
                         self.heliumPanelController?.hoverBar?.superview?.toolTip = toolTip
 
                         if let track = AVURLAsset(url: url, options: nil).tracks.first {
@@ -1738,12 +1793,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         case "loading":
             guard let loading = change?[NSKeyValueChangeKey(rawValue: "new")] as? Bool, loading == loadingIndicator.isHidden else { return }
             Swift.print("loading: \(loading ? "YES" : "NO")")
-            break;
+            break
             
         case "title":
             title = mwv.title
-            self.view.window?.windowController?.synchronizeWindowTitleWithDocumentName()
-            break;
+            if let window = self.view.window {
+                window.title = title ?? self.webView.url!.simpleSpecifier
+            }
+            break
             
         default:
             Swift.print("Unknown observing keyPath \(String(describing: keyPath))")

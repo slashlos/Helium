@@ -143,6 +143,23 @@ class HeliumPanel: NSPanel, NSPasteboardWriting, NSDraggingSource {
     override var canBecomeMain: Bool {
         return true
     }
+    
+    func selectTabItem(_ sender: Any?) {
+        if let item = (sender as? NSMenuItem), let window : NSWindow = item.representedObject as? NSWindow, let group = window.tabGroup {
+            Swift.print("set selected window within group: \(String(describing: window.identifier))")
+            group.selectedWindow = window
+            windowController?.synchronizeWindowTitleWithDocumentName()
+        }
+    }
+    
+    override func selectPreviousTab(_ sender: Any?) {
+        super.selectPreviousTab(sender)
+        windowController?.synchronizeWindowTitleWithDocumentName()
+    }
+    override func selectNextTab(_ sender: Any?) {
+        super.selectNextTab(sender)
+        windowController?.synchronizeWindowTitleWithDocumentName()
+    }
 }
 
 class PlaylistsPanel : NSPanel {

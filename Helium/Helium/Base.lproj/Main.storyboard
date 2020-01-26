@@ -453,7 +453,7 @@
                                                     <menuItem title="File in new tab…" tag="3" alternate="YES" keyEquivalent="o" id="at8-06-y5R">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="jT0-c7-Nhu"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="EUF-By-SfA"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="O" id="vEi-Jg-aIw">
@@ -469,7 +469,7 @@
                                                     <menuItem title="URL in new tab…" tag="3" alternate="YES" keyEquivalent="l" id="AWF-C8-zwA">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="Z2e-hp-2tb"/>
+                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="kBG-G2-syh"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="L" id="PJM-19-avb">
@@ -779,6 +779,16 @@ CA
                                                 </items>
                                             </menu>
                                         </menuItem>
+                                        <menuItem title="Prev Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="go3-ee-QR9">
+                                            <connections>
+                                                <action selector="selectPreviousTab:" target="Ady-hI-5gd" id="tcp-Op-sdN"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Next Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="I42-BG-GCZ">
+                                            <connections>
+                                                <action selector="selectNextTab:" target="Ady-hI-5gd" id="FhA-oV-t9s"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -818,7 +828,6 @@ CA
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
                     </connections>
                 </customObject>
-                <customObject id="sQQ-SA-Rgm"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController representsSharedInstance="YES" id="H0D-H0-Cmz"/>
                 <menu id="aho-AB-RLH">

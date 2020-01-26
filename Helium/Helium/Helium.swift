@@ -1032,8 +1032,8 @@ class Document : NSDocument {
     }
     
     func update(to url: URL) {
-        self.fileType = url.isFileURL ? url.pathExtension : nil
         self.fileURL = url
+        self.fileType = url.isFileURL ? url.pathExtension : url.scheme
         
         if let dict = defaults.dictionary(forKey: url.absoluteString) {
             let item = PlayItem.init(with: dict)
@@ -1104,7 +1104,7 @@ class Document : NSDocument {
             }
             else
             {
-                return fileURL.absoluteString
+                return fileURL.simpleSpecifier
             }
         }
         set (newName) {

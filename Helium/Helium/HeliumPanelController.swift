@@ -827,6 +827,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         wvc.snapshot(sender)
     }
     
+    @objc @IBAction func selectTabItem(_ sender: Any) {
+        panel.selectTabItem(sender)
+    }
+    @objc @IBAction func selectPreviousTab(_ sender: Any) {
+        panel.selectPreviousTab(sender)
+    }
+    @objc @IBAction func selectNextTab(_ sender: Any) {
+        panel.selectNextTab(sender)
+    }
+    
     @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
         case .never:
