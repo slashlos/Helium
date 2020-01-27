@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBuildDate</key>
-	<string>20200103.120909</string>
+	<string>20200126.185112</string>
 	<key>CFBuildIncrement</key>
 	<false/>
 	<key>CFBuildMajor</key>
@@ -11,7 +11,7 @@
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>5787</integer>
+	<integer>6287</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -23,10 +23,6 @@
 			<string>Helium</string>
 			<key>CFBundleTypeName</key>
 			<string>Helium</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>????</string>
-			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
@@ -46,26 +42,23 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>avi</string>
-				<string>mp4</string>
-				<string>png</string>
-				<string>m4v</string>
-				<string>mov</string>
-				<string>webloc</string>
-				<string>tiff</string>
-				<string>tif</string>
-				<string>gif</string>
-				<string>jpg</string>
-				<string>jpeg</string>
-				<string>url</string>
-			</array>
+			<array/>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
 			<key>CFBundleTypeName</key>
 			<string>Any</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.adobe.pdf</string>
+				<string>public.movie</string>
+				<string>public.image</string>
+				<string>public.data</string>
+				<string>public.plain-text</string>
+				<string>public.html</string>
+				<string>public.text</string>
+			</array>
 		</dict>
 		<dict>
 			<key>CFBundleTypeIconFile</key>
@@ -112,7 +105,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3.0.5787</string>
+	<string>3.0.6287</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
@@ -123,7 +116,7 @@
 		<true/>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019 Carlos D Santiago. All rights reserved.|Copyright © 2015 Jaden Geller. All rights reserved.</string>
+	<string>Copyright © 2020 Carlos D Santiago. All rights reserved.|Copyright © 2015 Jaden Geller. All rights reserved.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>Allow website(s) to know your location</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -136,16 +129,34 @@
 	<string>https://raw.githubusercontent.com/slashlos/Helium/master/HeliumUpdatesSparkleFeed.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
-	<key>UTImportedTypeDeclarations</key>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.html</string>
-				<string>public.data</string>
+				<string>public.plist</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Helium</string>
+			<key>UTTypeIconFile</key>
+			<string>docIcon</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.helium.webloc</string>
+			<string>com.slashlos.helium.h3w</string>
+			<key>UTTypeTagSpecification</key>
+			<dict/>
+			<key>public.filename-extension</key>
+			<array>
+				<string>h3w</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array/>
+			<key>UTTypeIdentifier</key>
+			<string>com.adobe.pdf</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

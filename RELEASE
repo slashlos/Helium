@@ -22,6 +22,38 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 6287</h2>
+<p class="block">
+51f0103|20/01/26 moved snapshot menu item</br>
+1a32502|20/01/26 tabs, history UI overhaul</br>
+8c39445|20/01/25 isolate clickMe handler</br>
+ba3a459|20/01/25 cleanups</br>
+e5e58ab|20/01/25 show histories RONLY in file context</br>
+120f1bb|20/01/25 tableView UI updates</br>
+f7ecef9|20/01/25 snapshot key short cut</br>
+8321820|20/01/25 tab UI changes</br>
+c0543c5|20/01/25 snapshot support</br>
+374fa99|20/01/25 Finder snapshot sound: Grab</br>
+d5c5035|20/01/25 fixed display name handling</br>
+bc17c26|20/01/25 clear image on update handling</br>
+1330a62|20/01/25 clear image on update to reload</br>
+0432273|20/01/25 tab handling fixes</br>
+ccea952|20/01/25 web, document restore handling fixes</br>
+b9e733f|20/01/25 zoom pref deprecated</br>
+0cdad54|20/01/25 deprecated zoom pref</br>
+04789f1|20/01/25 fix rapid click of nil selection</br>
+1f54929|20/01/25 window bar icon UI uptakes</br>
+8a55da3|20/01/25 snapshot support</br>
+542bcfe|20/01/23 fix playlist name sort order</br>
+8c63d77|20/01/23 snapshot added; tag fixes</br>
+8d3c57a|20/01/22 fix opacity menu item state setting</br>
+a18ba9c|20/01/19 updated to Swift 5</br>
+0d17063|20/01/11 mouse over UI changes re: non-file URLs</br>
+db38967|20/01/11 comment out flipped view tracking</br>
+b2375b4|20/01/10 app icon updates</br>
+0ea43ae|20/01/10 mouse over optimizations and fixes</br>
+</p>
+
 <h2>Build 5787</h2>
 <p class="block">
 be6ef12|20/01/03 title drag button initialization fixes<br>
