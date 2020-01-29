@@ -1190,7 +1190,7 @@ CA
                                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="date"/>
                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                             <connections>
-                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.pdate" id="Xk4-D7-NdX">
+                                                                <binding destination="Vul-U2-GKW" name="value" keyPath="arrangedObjects.date" id="Ue8-y9-Lrw">
                                                                     <dictionary key="options">
                                                                         <bool key="NSConditionallySetsEditable" value="NO"/>
                                                                     </dictionary>
