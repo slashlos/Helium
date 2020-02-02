@@ -26,9 +26,7 @@ p.block {
 <p class="block">
 51f0103|20/01/26 moved snapshot menu item</br>
 1a32502|20/01/26 tabs, history UI overhaul</br>
-8c39445|20/01/25 isolate clickMe handler</br>
-ba3a459|20/01/25 cleanups</br>
-e5e58ab|20/01/25 show histories RONLY in file context</br>
+e5e58ab|20/01/25 histories RONLY in file context</br>
 120f1bb|20/01/25 tableView UI updates</br>
 f7ecef9|20/01/25 snapshot key short cut</br>
 8321820|20/01/25 tab UI changes</br>
