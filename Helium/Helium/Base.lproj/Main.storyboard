@@ -773,6 +773,16 @@ CA
                                                 </items>
                                             </menu>
                                         </menuItem>
+                                        <menuItem title="First Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="Qc5-fj-Zij">
+                                            <connections>
+                                                <action selector="selectPreviousTab:" target="Ady-hI-5gd" id="Y1Z-7T-OAd"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Last Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="sR8-HA-ppQ">
+                                            <connections>
+                                                <action selector="selectPreviousTab:" target="Ady-hI-5gd" id="n7R-zj-hWF"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Prev Tab" hidden="YES" keyEquivalent="" allowsKeyEquivalentWhenHidden="YES" id="go3-ee-QR9">
                                             <connections>
                                                 <action selector="selectPreviousTab:" target="Ady-hI-5gd" id="tcp-Op-sdN"/>
