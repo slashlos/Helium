@@ -836,6 +836,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc @IBAction func selectNextTab(_ sender: Any) {
         panel.selectNextTab(sender)
     }
+    @objc @IBAction func selectFirstTab(_ sender: Any) {
+        if let item : NSMenuItem = (sender as? NSMenuItem), let tabs = self.window?.tabbedWindows, let tab = tabs.first {
+            item.representedObject = tab
+            self.selectTabItem(item)
+        }
+    }
+    @objc @IBAction func selectLastTab(_ sender: AnyObject) {
+        if let item : NSMenuItem = (sender as? NSMenuItem), let tabs = self.window?.tabbedWindows, let tab = tabs.last {
+            item.representedObject = tab
+            self.selectTabItem(item)
+        }
+    }
     
     @objc @IBAction private func toggleTranslucencyPress(_ sender: NSMenuItem) {
         switch translucencyPreference {
