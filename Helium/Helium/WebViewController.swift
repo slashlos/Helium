@@ -221,9 +221,13 @@ class MyWebView : WKWebView {
             //  keep document in sync with webView url
             doc.update(to: nextURL)
             
-            self.load(URLRequest(url: nextURL))
-            ///self.loadFileURL(nextURL, allowingReadAccessTo: nextURL)
-            
+            if nextURL.isFileURL {
+                self.loadFileURL(nextURL, allowingReadAccessTo: nextURL)
+            }
+            else
+            {
+                self.load(URLRequest(url: nextURL))
+            }
             return
         }
         
@@ -438,21 +442,24 @@ class MyWebView : WKWebView {
                     
                 case .URL, .fileURL:
                     if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
-                         if viewOptions.contains(.t_view) {
-                             latest = self.appDelegate.openURLInNewWindow(url, attachTo: parent)
-                         }
-                         else
-                         if viewOptions.contains(.w_view) {
-                             latest = self.appDelegate.openURLInNewWindow(url)
-                         }
-                         else
-                         {
-                             self.next(url: url)
-                         }
-                         //  Multiple files implies new windows
-                         if latest != nil { parent = latest?.windowControllers.first?.window }
-                         viewOptions.insert(.w_view)
-                         handled += 1
+                        //  launch files in a new tab
+                        if url.isFileURL { viewOptions.insert(.t_view) }
+                        
+                        if viewOptions.contains(.t_view) {
+                            latest = self.appDelegate.openURLInNewWindow(url, attachTo: parent)
+                        }
+                        else
+                        if viewOptions.contains(.w_view) {
+                            latest = self.appDelegate.openURLInNewWindow(url)
+                        }
+                        else
+                        {
+                            self.next(url: url)
+                        }
+                        //  Multiple files implies new windows
+                        if latest != nil { parent = latest?.windowControllers.first?.window }
+                        viewOptions.insert(.w_view)
+                        handled += 1
                     }
                     else
                     if let data = item.data(forType: type), let url = NSKeyedUnarchiver.unarchiveObject(with: data) {
