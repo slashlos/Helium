@@ -1109,6 +1109,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             self,
             selector: #selector(WebViewController.loadURL(urlString:)),
             name: NSNotification.Name(rawValue: "HeliumLoadURLString"),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(WebViewController.snapshot(_:)),
+            name: NSNotification.Name(rawValue: "HeliumSnapshotAll"),
             object: nil)/*
         NotificationCenter.default.addObserver(
             self,
@@ -1476,6 +1481,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     @IBAction func snapshot(_ sender: Any) {
+        guard let window = self.view.window, window.isVisible else { return }
         webView.takeSnapshot(with: nil) {image, error in
             if let image = image {
                 self.webImageView.image = image

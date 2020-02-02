@@ -628,6 +628,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
 	}
 	
+    @objc @IBAction func snapshotAll(_ sender: NSMenuItem) {
+        let notif = Notification(name: Notification.Name(rawValue: "HeliumSnapshotAll"), object: sender)
+        NotificationCenter.default.post(notif)
+    }
+
 	var canRedo : Bool {
         if let redo = NSApp.keyWindow?.undoManager  {
             return redo.canRedo

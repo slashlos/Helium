@@ -789,6 +789,12 @@ CA
                                                 <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Snapshot" alternate="YES" keyEquivalent="P" id="dLl-Cr-uBv">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
