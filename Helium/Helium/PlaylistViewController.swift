@@ -1192,7 +1192,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         guard let column = tableColumn else { return nil }
 
         let item : AnyObject = ([playlistArrayController,playitemArrayController][tableView.tag]?.arrangedObjects as! [AnyObject])[row]
-        let cell : NSTextFieldCell = column.dataCell(forRow: row) as! NSTextFieldCell
+        let data : NSCell = column.dataCell(forRow: row) as! NSCell
+        guard let cell = data as? NSTextFieldCell else { return data }
+        
         cell.font = .systemFont(ofSize: -1)
 
         //  if we have a url show histories in italics
