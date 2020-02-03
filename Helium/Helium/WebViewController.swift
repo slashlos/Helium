@@ -803,9 +803,9 @@ class MyWebView : WKWebView {
             }
             else
             if tabs.count > 1 {
-                item = NSMenuItem(title: "Prev Tab", action: #selector(hpc.selectPreviousTab(_:)), keyEquivalent: "")
+                item = NSMenuItem(title: "Prev Tab", action: #selector(window.selectPreviousTab(_:)), keyEquivalent: "")
                 menu.addItem(item)
-                item = NSMenuItem(title: "Next Tab", action: #selector(hpc.selectNextTab(_:)), keyEquivalent: "")
+                item = NSMenuItem(title: "Next Tab", action: #selector(window.selectNextTab(_:)), keyEquivalent: "")
                 menu.addItem(item)
             }
             item = NSMenuItem(title: "To New Window", action: #selector(window.moveTabToNewWindow(_:)), keyEquivalent: "")

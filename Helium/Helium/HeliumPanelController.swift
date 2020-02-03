@@ -830,12 +830,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc @IBAction func selectTabItem(_ sender: Any) {
         panel.selectTabItem(sender)
     }
-    @objc @IBAction func selectPreviousTab(_ sender: Any) {
-        panel.selectPreviousTab(sender)
-    }
-    @objc @IBAction func selectNextTab(_ sender: Any) {
-        panel.selectNextTab(sender)
-    }
     @objc @IBAction func selectFirstTab(_ sender: Any) {
         if let item : NSMenuItem = (sender as? NSMenuItem), let tabs = self.window?.tabbedWindows, let tab = tabs.first {
             item.representedObject = tab
