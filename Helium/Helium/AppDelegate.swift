@@ -845,12 +845,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     let rwOptions:URL.BookmarkCreationOptions = [.withSecurityScope]
 
     func applicationWillFinishLaunching(_ notification: Notification) {
-        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-        let event = NSAppleEventDescriptor.currentProcess()
-
         //  We need our own to reopen our "document" urls
         _ = HeliumDocumentController.init()
         
+        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
+        let event = NSAppleEventDescriptor.currentProcess()
+
         //  We want automatic tab support
         NSPanel.allowsAutomaticWindowTabbing = true
         
@@ -859,6 +859,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             Swift.print("shift+option at start")
             resetDefaults()
             NSSound(named: "Purr")?.play()
+        }
+        
+        //  Don't reopen docs when OPTION is held down at startup
+        if flags.contains(NSEvent.ModifierFlags.option) {
+            Swift.print("option at start")
+            disableDocumentReOpening = true
         }
         
         //  We were started as a login item startup save this
@@ -1125,16 +1131,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-
-        //  OPTION at startup disables reopening documents
-        let flags : NSEvent.ModifierFlags = NSEvent.ModifierFlags(rawValue: NSEvent.modifierFlags.rawValue & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue)
-
-        //  Wipe out defaults when OPTION+SHIFT is held down at startup
-        if flags.contains(NSEvent.ModifierFlags.option) {
-            Swift.print("option at start")
-            disableDocumentReOpening = true
-        }
-        
         // Local/Global Monitor
         _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
         globalKeyDownMonitor = NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.flagsChanged) { (event) -> Void in
