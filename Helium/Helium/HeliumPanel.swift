@@ -151,7 +151,14 @@ class HeliumPanel: NSPanel, NSPasteboardWriting, NSDraggingSource {
             windowController?.synchronizeWindowTitleWithDocumentName()
         }
     }
-    
+    override func addTabbedWindow(_ window: NSWindow, ordered: NSWindow.OrderingMode) {
+        super.addTabbedWindow(window, ordered: ordered)
+        window.invalidateRestorableState()
+    }
+    override func moveTabToNewWindow(_ sender: Any?) {
+        super.moveTabToNewWindow(sender)
+        self.invalidateRestorableState()
+    }
     override func selectPreviousTab(_ sender: Any?) {
         super.selectPreviousTab(sender)
         windowController?.synchronizeWindowTitleWithDocumentName()
