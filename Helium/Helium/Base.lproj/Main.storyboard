@@ -263,24 +263,11 @@
                                         <menuItem title="Preferences..." id="MMM-uX-MFR">
                                             <menu key="submenu" title="Preferences..." id="BdD-B4-azf">
                                                 <items>
-                                                    <menuItem title="Auto-hide Title Bar" id="YwZ-rC-uSP">
+                                                    <menuItem title="Auto-hide Title Bar" id="ghN-c6-41G">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <menu key="submenu" title="Auto-hide Title Bar" id="Idu-DN-Q3K">
-                                                            <items>
-                                                                <menuItem title="Never" id="dPV-DX-9Z0">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="KXa-IE-aWZ"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                                <menuItem title="Outside" tag="1" toolTip="hide when mouse outside" id="LI0-hH-3UE">
-                                                                    <modifierMask key="keyEquivalentModifierMask"/>
-                                                                    <connections>
-                                                                        <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="Sfm-6V-Crr"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                            </items>
-                                                        </menu>
+                                                        <connections>
+                                                            <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="Cao-pT-szc"/>
+                                                        </connections>
                                                     </menuItem>
                                                     <menuItem title="Hide Helium in menu bar" id="2GK-ox-Nku" userLabel="Hide Helium in menu bar">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
