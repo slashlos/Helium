@@ -788,7 +788,7 @@ class MyWebView : WKWebView {
         //  Add tab support once present
         var tabItemUpdated = false
         if let tabs = self.window?.tabbedWindows, tabs.count > 0 {
-            if tabs.count > 3 {
+            if tabs.count > 1 {
                 item = NSMenuItem(title: "Tabs", action: #selector(menuClicked(_:)), keyEquivalent: "")
                 menu.addItem(item)
                 let jump = NSMenu()
@@ -800,13 +800,6 @@ class MyWebView : WKWebView {
                     item.representedObject = tab
                     jump.addItem(item)
                 }
-            }
-            else
-            if tabs.count > 1 {
-                item = NSMenuItem(title: "Prev Tab", action: #selector(window.selectPreviousTab(_:)), keyEquivalent: "")
-                menu.addItem(item)
-                item = NSMenuItem(title: "Next Tab", action: #selector(window.selectNextTab(_:)), keyEquivalent: "")
-                menu.addItem(item)
             }
             item = NSMenuItem(title: "To New Window", action: #selector(window.moveTabToNewWindow(_:)), keyEquivalent: "")
             menu.addItem(item)
