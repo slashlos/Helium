@@ -153,11 +153,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        shouldCascadeWindows = true
-    }
-    
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
     var titleDragButton : HeliumTitleDragButton?

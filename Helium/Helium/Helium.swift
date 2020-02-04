@@ -881,26 +881,6 @@ class HeliumDocumentController : NSDocumentController {
         }
         return doc
     }
-    
-    class override func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
-        let appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
-
-        appDelegate.documentsToRestore = !appDelegate.disableDocumentReOpening
-
-        if appDelegate.disableDocumentReOpening {
-            completionHandler(nil, NSError.init(domain: NSCocoaErrorDomain, code: NSUserCancelledError, userInfo: nil))
-        }
-        else
-        {
-            if identifier.rawValue == k.Helium {
-                super.restoreWindow(withIdentifier: identifier, state: state, completionHandler: completionHandler)
-            }
-            else
-            {
-                Swift.print("restoreWindow! \(identifier.rawValue)")
-            }
-        }
-    }
 }
 
 class Document : NSDocument {
