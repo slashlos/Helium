@@ -635,6 +635,14 @@ class MyWebView : WKWebView {
                     }
                     break
                     
+///                case .filePromise:
+///                    Swift.print(".filePromise")
+///                    break
+///
+///                case .promise:
+///                    Swift.print(".promise")
+///                    break
+                    
                 default:
                     Swift.print("unkn: \(type)")
 
@@ -1264,6 +1272,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 self.webView.configuration.userContentController.add(contentRuleList)
             })
         }
+        
+        // MARK: TODO: Watch click events
+        // https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
+        /*
+        let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
+        let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        controller.addUserScript(clickMe)
+        controller.add(self, name: "clickMe")*/
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -1673,6 +1689,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 //Swift.print("ucc: url -> \(url.absoluteString)")
             }
             break
+            
+///        case "clickMe":
+///            Swift.print("message: \(message.body)")
+///            break
             
         default:
             Swift.print("ucc: unknown \(message.name)")
