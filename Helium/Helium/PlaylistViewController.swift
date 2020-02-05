@@ -1290,6 +1290,15 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     // MARK:- Drag-n-Drop
+    // MARK:- TODO: crafting modern cocoa app
+    /*
+     * https://developer.apple.com/videos/play/wwdc2016/239
+    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+        let item = ([playlistArrayController,playitemArrayController][tableView.tag]?.arrangedObjects as! [AnyObject])[row]
+        
+        return item.pasteboardPropertyList(forType: .dict) as? NSPasteboardWriting
+    }
+    */
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
         Swift.print("\(tableView.tag) writeRowsWith: \(rowIndexes.count)")
         if tableView == playlistTableView {
