@@ -581,13 +581,39 @@ CA
                                     </items>
                                 </menu>
                             </menuItem>
+                            <menuItem title="View" id="l5y-lV-IIK">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="View" id="qEQ-5f-oRs">
+                                    <items>
+                                        <menuItem title="Show All Tabs" id="ca0-yh-eyd">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="toggleTabOverview:" target="Ady-hI-5gd" id="IPS-Zu-K9B"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="6nK-Nb-2IO"/>
+                                        <menuItem title="Merge All Windows" id="ezP-vi-H8g">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="mergeAllWindows:" target="Ady-hI-5gd" id="s4f-CW-gqY"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Tab To Window" id="i75-l3-rPe">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="moveTabToNewWindow:" target="Ady-hI-5gd" id="amj-5w-uFC"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                             <menuItem title="Window" id="GCB-22-CDu">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Window" systemMenu="window" id="3T3-to-DAm">
                                     <items>
-                                        <menuItem title="Appearance" id="hd6-Gd-vCv">
+                                        <menuItem title="Preferences" id="hd6-Gd-vCv">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Appearance" id="2N0-Zn-jSm">
+                                            <menu key="submenu" title="Preferences" id="2N0-Zn-jSm">
                                                 <items>
                                                     <menuItem title="Auto-hide Title Bar" id="74Q-YM-yXr">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -625,12 +651,6 @@ CA
                                                                 </menuItem>
                                                             </items>
                                                         </menu>
-                                                    </menuItem>
-                                                    <menuItem title="Show Tab Bar" id="Cno-aM-bke">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="toggleTabBar:" target="Ady-hI-5gd" id="0Zl-zZ-VVd"/>
-                                                        </connections>
                                                     </menuItem>
                                                     <menuItem title="Translucency" id="yAu-DE-1jG" userLabel="Translucency">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
@@ -780,13 +800,13 @@ CA
                                                 <action selector="selectNextTab:" target="Ady-hI-5gd" id="FhA-oV-t9s"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Snapshot" keyEquivalent="p" id="XZA-7w-cCC">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                        <menuItem isSeparatorItem="YES" id="2IL-Kf-JOW"/>
+                                        <menuItem title="Snapshot" keyEquivalent="P" id="XZA-7w-cCC">
                                             <connections>
                                                 <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Snapshot" alternate="YES" keyEquivalent="P" id="dLl-Cr-uBv">
+                                        <menuItem title="Snapshot All" tag="1" alternate="YES" keyEquivalent="P" id="dLl-Cr-uBv">
                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                             <connections>
                                                 <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
@@ -829,6 +849,7 @@ CA
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
                         <outlet property="autoSaveDocsMenuItem" destination="drc-ov-KJT" id="PAa-as-yFM"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
+                        <outlet property="mergeAllWindows" destination="ezP-vi-H8g" id="Uub-gt-UZz"/>
                     </connections>
                 </customObject>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
