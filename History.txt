@@ -1,7 +1,10 @@
 
-Author:
+Creator:
     Jaden Geller
 
+Author:
+    CD M Santiago
+    
 Contributors:
     in no particular order
 
@@ -14,9 +17,9 @@ Contributors:
 
 History
 
-  June 23, 2017
+  3.0, February 6, 2020
     Carlos D Santiago
-      document windows,
+      document windows adn tabs,
       playlists - global / shared, savable items
       balloon images https://pixabay.com
       Finder status and dock menus,
