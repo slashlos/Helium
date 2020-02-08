@@ -1807,6 +1807,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     func storeBookmark(url: URL, options: URL.BookmarkCreationOptions = [.withSecurityScope,.securityScopeAllowOnlyReadAccess]) -> Bool
     {
+        guard isSandboxed() else { return false }
+        
         //  Peek to see if we've seen this key before
         if let data = bookmarks[url] {
             if self.fetchBookmark((key: url, value: data)) {
