@@ -1,7 +1,10 @@
 
-Author:
+Creator:
     Jaden Geller
 
+Author:
+    CD M Santiago
+    
 Contributors:
     in no particular order
 
@@ -10,13 +13,12 @@ Contributors:
     shdwprince - Panel.swift
     Viktor Oreshkin - UrlHelpers.swift
     https://travis-ci.org/stek29/Helium - Swift3
-    Carlos D. Santiago (slashlos) - Version 3
 
 History
 
-  June 23, 2017
-    Carlos D Santiago
-      document windows,
+  3.0, February 6, 2020
+    CD M Santiago
+      document windows and tabs,
       playlists - global / shared, savable items
       balloon images https://pixabay.com
       Finder status and dock menus,
