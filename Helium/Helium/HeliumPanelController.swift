@@ -608,30 +608,37 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         didSet {
             let hideTitle = autoHideTitlePreference != .never
 
+            //  treat webURL titles specially
             if let url = panel.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
-                panel.titleVisibility = .hidden
-                titleDragButton?.isBordered = false
-                titleDragButton?.needsDisplay = true
+                NSAnimationContext.runAnimationGroup({ (context) in
+                    context.duration = 0.1
+                    panel.animator().titleVisibility = mouseOver ? .visible : .hidden
+                    titleDragButton?.animator().isBordered = mouseOver
+                    titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                    titleDragButton?.animator().isTransparent = mouseOver
+                })
                 return
             }
             
             if let window = self.webView?.window {
-                if autoHideTitlePreference == .outside {
-                    window.titleVisibility =
-                        (autoHideTitlePreference != .never)
-                            ? mouseOver ? .visible : .hidden
-                            : .visible
-                    titleDragButton?.isHidden = !mouseOver
-                    titleDragButton?.isBordered = mouseOver
-                    titleDragButton?.needsDisplay = true
-                }
-                else
-                {
-                    window.titleVisibility = .visible
-                    titleDragButton?.isHidden = false
-                    titleDragButton?.isBordered = true
-                    titleDragButton?.needsDisplay = true
-                }
+                NSAnimationContext.runAnimationGroup({ (context) in
+                    context.duration = 0.1
+
+                    if autoHideTitlePreference == .outside {
+                        window.animator().titleVisibility =
+                            (autoHideTitlePreference != .never)
+                                ? mouseOver ? .visible : .hidden : .visible
+                        titleDragButton?.animator().isHidden = !mouseOver
+                        titleDragButton?.animator().isBordered = mouseOver
+                    }
+                    else
+                    {
+                        window.animator().titleVisibility = .visible
+                        titleDragButton?.animator().isHidden = false
+                        titleDragButton?.animator().isBordered = true
+                    }
+
+                })
             }
             updateTranslucency()
             
@@ -763,22 +770,17 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         let newTitlePref = HeliumPanelController.AutoHideTitlePreference(rawValue: sender.tag)!
 
         //  Make sure queue affects are immediately effective
-        if autoHideTitlePreference == .outside {
-            titleDragButton?.isTransparent = false
-            titleDragButton?.isBordered = true
-            titleDragButton?.needsDisplay = true
-        }
-        else
-        {
-            titleDragButton?.isTransparent = true
-            titleDragButton?.isBordered = false
-            titleDragButton?.needsDisplay = true
-        }
-        
+        NSAnimationContext.runAnimationGroup({ (context) in
+            let outside = autoHideTitlePreference == .outside
+            context.duration = 0.1
+
+            titleDragButton?.animator().isTransparent = !outside
+            titleDragButton?.animator().isBordered = outside
+        })
+
         //  Presume false so our action result is immediate
         autoHideTitlePreference = newTitlePref
 
-        updateTitleBar(didChange: true)
         cacheSettings()
     }
     
@@ -1036,32 +1038,36 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc func updateTitleBar(didChange: Bool) {
         
         if let url = window?.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
-            panel.titleVisibility = .hidden
-            titleDragButton?.isTransparent = true
-            titleDragButton?.isBordered = false
-            if let docIconButton = panel.standardWindowButton(.documentIconButton) {
-                docIconButton.isHidden = true
-            }
+            
+            NSAnimationContext.runAnimationGroup({ (context) in
+                context.duration = 0.1
+
+                panel.animator().titleVisibility = .hidden
+                titleDragButton?.animator().isTransparent = true
+                titleDragButton?.animator().isBordered = false
+                if let docIconButton = panel.standardWindowButton(.documentIconButton) {
+                    docIconButton.animator().isHidden = true
+                }
+            })
             return
         }
         
         if didChange {
-            if autoHideTitlePreference != .never && !mouseOver {
-                DispatchQueue.main.async {
-                    self.panel.titleVisibility = .hidden
-                    self.titleView?.isHidden = true
-                    self.titleDragButton?.isTransparent = true
-                    self.titleDragButton?.isBordered = false
-                 }
-            } else {
-                DispatchQueue.main.async {
-                    self.panel.titleVisibility = .visible
-                    self.titleView?.isHidden = false
-                    self.titleDragButton?.isTransparent = false
-                    self.titleDragButton?.isBordered = true
+            NSAnimationContext.runAnimationGroup({ (context) in
+                context.duration = 0.1
+
+                if autoHideTitlePreference != .never && !mouseOver {
+                    panel.animator().titleVisibility = .hidden
+                    titleView?.animator().isHidden = true
+                    titleDragButton?.animator().isTransparent = true
+                    titleDragButton?.animator().isBordered = false
+                } else {
+                    panel.animator().titleVisibility = .visible
+                    titleView?.animator().isHidden = false
+                    titleDragButton?.animator().isTransparent = false
+                    titleDragButton?.animator().isBordered = true
                 }
-            }
-            self.titleDragButton?.needsDisplay = true
+            })
         }
         docIconVisibility(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
