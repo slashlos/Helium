@@ -995,7 +995,7 @@ class Document : NSDocument {
         }
 
         if self.settings.time.value == 0.0, let url = self.url, url.isFileURL {
-            let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
+            let attr = appDelegate.metadataDictionaryForFileAt((url.path))
             if let secs = attr?[kMDItemDurationSeconds] {
                 self.settings.time.value = secs as! TimeInterval
             }
@@ -1031,6 +1031,8 @@ class Document : NSDocument {
              }
         }
         if url.isFileURL { _displayImage = nil }
+        
+        self.windowControllers.first?.contentViewController?.representedObject = url
     }
     func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
@@ -1186,7 +1188,7 @@ class Document : NSDocument {
                     try self.writeSafely(to: url, ofType: type, for: .saveOperation)
                 }
             }
-         } catch let error {
+        } catch let error {
             NSApp.presentError(error)
         }
     }
