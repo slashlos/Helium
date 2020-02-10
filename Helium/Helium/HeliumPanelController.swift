@@ -168,12 +168,20 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         self.contentViewController?.view.addSubview(titleDragButton!)
         titleDragButton?.top((titleDragButton?.superview)!)
         titleDragButton?.addSubview(titleView!)
-        titleDragButton?.isTransparent = false
-        titleDragButton?.isBordered = false
         titleView?.fit(titleDragButton!)
         titleDragButton?.hpc = self;
         titleDragButton?.title = ""
+ 
+        NSAnimationContext.runAnimationGroup({ (context) in
+            context.duration = 0.1
 
+            panel.animator().titleVisibility = (autoHideTitlePreference != .never) ? mouseOver ? .visible : .hidden : .visible
+            titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+            titleDragButton?.isTransparent = mouseOver
+            titleDragButton?.animator().isHidden = !mouseOver
+            titleDragButton?.animator().isBordered = mouseOver
+        })
+ 
         // place the hover bar
         hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, -3, 80, 19))
         self.titleView?.superview?.addSubview(hoverBar!)
