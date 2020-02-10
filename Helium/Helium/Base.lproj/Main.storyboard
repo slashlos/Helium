@@ -849,7 +849,6 @@ CA
                         <outlet property="appMenu" destination="aho-AB-RLH" id="DpU-D7-hSB"/>
                         <outlet property="autoSaveDocsMenuItem" destination="drc-ov-KJT" id="PAa-as-yFM"/>
                         <outlet property="magicURLMenu" destination="GQ3-Bi-0IJ" id="1Kj-Qu-x6d"/>
-                        <outlet property="mergeAllWindows" destination="ezP-vi-H8g" id="Uub-gt-UZz"/>
                     </connections>
                 </customObject>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
