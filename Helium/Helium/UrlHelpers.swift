@@ -208,6 +208,14 @@ extension UrlHelpers.Magic {
 
 //  read back webloc contents
 extension URL {
+//  https://medium.com/@francishart/swift-how-to-determine-file-type-4c46fc2afce
+    func hasHTMLContent() -> Bool {
+        let type = self.pathExtension as CFString
+        let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil)
+        
+        return UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeHTML)
+    }
+    
     var webloc : URL? {
         get {
             do {
