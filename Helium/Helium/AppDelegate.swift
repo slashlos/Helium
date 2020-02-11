@@ -450,6 +450,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
+                if url.isFileURL && isSandboxed() != storeBookmark(url: url) {
+                    Swift.print("Yoink, unable to sandbox \(url)")
+                    return
+                }
+
                 if viewOptions.contains(.t_view) {
                     _ = openFileInNewWindow(url, attachTo: sender.representedObject as? NSWindow)
                 }
@@ -1722,6 +1727,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     // MARK:- Sandbox Support
     var bookmarks = [URL: Data]()
 
+    func authenticateBaseURL(_ url: URL) -> URL {
+        var baseURL = url
+        let openPanel = NSOpenPanel()
+        
+        openPanel.message = "Authorize access to " + baseURL.lastPathComponent
+        openPanel.prompt = "Authorize"
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseFiles = false
+        openPanel.canChooseDirectories = true
+        openPanel.canCreateDirectories = false
+        openPanel.directoryURL = baseURL.deletingLastPathComponent()
+        
+        openPanel.begin() { (result) -> Void in
+            if (result == NSApplication.ModalResponse.OK) {
+                if let authURL = openPanel.url {
+                    if self.storeBookmark(url: authURL) {
+                        baseURL = authURL
+                    }
+                    else
+                    {
+                        Swift.print("Yoink, unable to sandbox base \(authURL)")
+                    }
+                }
+            }
+        }
+        return baseURL
+    }
+    
     func isSandboxed() -> Bool {
         let bundleURL = Bundle.main.bundleURL
         var staticCode:SecStaticCode?
@@ -1759,10 +1792,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     func loadBookmarks() -> Bool
     {
         //  Ignore loading unless configured
-        guard isSandboxed() else
-        {
-            return false
-        }
+        guard isSandboxed() else { return false }
 
         let fm = FileManager.default
         
@@ -1791,10 +1821,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     func saveBookmarks() -> Bool
     {
         //  Ignore saving unless configured
-        guard isSandboxed() else
-        {
-            return false
-        }
+        guard isSandboxed() else { return false }
 
         if let path = bookmarkPath() {
             return NSKeyedArchiver.archiveRootObject(bookmarks, toFile: path)
@@ -1831,6 +1858,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     func findBookmark(_ url: URL) -> Data? {
+        guard isSandboxed() else { return nil }
+
         if let data = bookmarks[url] {
             if self.fetchBookmark((key: url, value: data)) {
                 return data
@@ -1841,6 +1870,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool
     {
+        guard isSandboxed() else { return false }
+
         let restoredUrl: URL?
         var isStale = true
         
@@ -1854,12 +1885,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             return false
         }
         
-        guard !isStale, let url = restoredUrl, url.startAccessingSecurityScopedResource() else {
+        guard let url = restoredUrl else {
             Swift.print ("? \(bookmark.key)")
             return false
         }
-//        Swift.print ("+ \(bookmark.key)")
-        return true
+        
+        if isStale {
+            Swift.print ("≠ \(bookmark.key)")
+            return false
+        }
+        
+        let fetch = url.startAccessingSecurityScopedResource()
+        Swift.print ("\(fetch ? "•" : "º") \(bookmark.key)")
+        return fetch
     }
 }
 
