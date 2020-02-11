@@ -178,12 +178,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var getViewOptions : ViewOptions {
         get {
             var viewOptions = ViewOptions()
-            if shiftKeyDown {
-                viewOptions.insert(.w_view)
-            }
-            if optionKeyDown {
-                viewOptions.insert(.t_view)
-            }
+            if shiftKeyDown { viewOptions.insert(.w_view) }
+            if optionKeyDown { viewOptions.insert(.t_view) }
             return viewOptions
         }
     }
