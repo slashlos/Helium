@@ -10,13 +10,13 @@
 import Foundation
 
 struct UrlHelpers {
-    /// Prepends `http://` if scheme isn't `https?://` unless "file://"
+    //   Prepends `http://` if scheme no scheme was found
     static func ensureScheme(_ urlString: String) -> String {
-        if !(urlString.lowercased().hasPrefix("http://") || urlString.lowercased().hasPrefix("https://")) {
-            return urlString.lowercased().hasPrefix("file://") ? urlString : "http://" + urlString
-        } else {
-            return urlString
+        guard let scheme = URL.init(string: urlString)?.scheme, scheme.count > 0 else {
+            return "http://" + urlString
         }
+        
+        return urlString
     }
     
     // https://mathiasbynens.be/demo/url-regex
