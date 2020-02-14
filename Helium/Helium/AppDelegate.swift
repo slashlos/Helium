@@ -339,8 +339,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
             guard openForBusiness || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
                 if let wvc = thisWindow.contentViewController as? WebViewController {
-                    wvc.webView.next(url: fileURL)
-                    return true
+                    return wvc.webView.next(url: fileURL)
                 }
                 else
                 {
@@ -360,7 +359,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
             if let hpc = doc.heliumPanelController {
                 doc.showWindows()
-                hpc.webViewController.webView.next(url: fileURL)
+                return hpc.webViewController.webView.next(url: fileURL)
             }
             else
             {
@@ -487,7 +486,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return false
     }
     
-    internal func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Document? {
+    func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
         do {
             let types : Dictionary<String,String> = [ k.h3w : k.Helium ]
             let type = types [ newURL.pathExtension ]
@@ -496,11 +495,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 parent.addTabbedWindow(tabWindow, ordered: .above)
             }
             doc.showWindows()
-            return doc
+            return true
         } catch let error {
             NSApp.presentError(error)
         }
-        return nil
+        return false
     }
     
     @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
@@ -1650,7 +1649,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  Handle new window here to narrow cast to new or current panel controller
         if (viewOptions == sameWindow || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
             if let hpc : HeliumPanelController = wc as? HeliumPanelController {
-                (hpc.contentViewController as! WebViewController).loadURL(text: String(urlString))
+                _ = (hpc.contentViewController as! WebViewController).loadURL(text: String(urlString))
                 return
             }
         }
@@ -1680,36 +1679,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return disableDocumentReOpening
     }
     
-    func application(_ sender: NSApplication, openFiles: [String]) {
-        // Create a FileManager instance
-        let fileManager = FileManager.default
-        
-        for path in openFiles {
-
-            do {
-                let files = try fileManager.contentsOfDirectory(atPath: path)
-                for file in files {
-                    _ = self.application(sender, openFile: file)
-                }
-            }
-            catch let error as NSError {
-                if fileManager.fileExists(atPath: path) {
-                    _ = self.application(sender, openFile: path)
-                }
-                else
-                {
-                    print("Yoink \(error.localizedDescription)")
-                }
-            }
-        }
-    }
-    
     func application(_ application: NSApplication, openURL: URL) -> Bool {
-        disableDocumentReOpening = openURLInNewWindow(openURL) != nil
+        disableDocumentReOpening = openURLInNewWindow(openURL)
         return disableDocumentReOpening
     }
 
-    @available(OSX 10.13, *)
     func application(_ application: NSApplication, open urls: [URL]) {
         
         for url in urls {
@@ -1853,15 +1827,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    func findBookmark(_ url: URL) -> Data? {
-        guard isSandboxed() else { return nil }
+    func reloadBookmark(_ url: URL) -> Bool {
+        guard isSandboxed() else { return false }
 
         if let data = bookmarks[url] {
             if self.fetchBookmark((key: url, value: data)) {
-                return data
+                return fetchBookmark( (key: url, value: data))
             }
         }
-        return nil
+        return false
     }
 
     func fetchBookmark(_ bookmark: (key: URL, value: Data)) -> Bool

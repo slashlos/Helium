@@ -1111,7 +1111,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
         if let playlist = notification.object {
             let playlistURL = playlist as! URL
-            self.webViewController.loadURL(url: playlistURL)
+            _ = self.webViewController.loadURL(url: playlistURL)
         }
     }
 

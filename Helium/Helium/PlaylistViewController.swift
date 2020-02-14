@@ -789,14 +789,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             if firstHere {
                 if let first = NSApp.keyWindow {
                     if let wvc = first.contentViewController as? WebViewController {
-                        wvc.webView.next(url: item.link)
-                        firstHere = false
+                        firstHere = !wvc.webView.next(url: item.link)
                     }
                 }
                 if !firstHere { continue }
             }
 
-            if appDelegate.doOpenFile(fileURL: item.link) {
+            if appDelegate.openURLInNewWindow(item.link) {
                 print(String(format: "%3d %3d %@", i, item.rank, item.name))
             }
             

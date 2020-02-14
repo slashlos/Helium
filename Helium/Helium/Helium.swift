@@ -886,6 +886,9 @@ class HeliumDocumentController : NSDocumentController {
 class Document : NSDocument {
 
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
+    override class var autosavesInPlace: Bool {
+        return false
+    }
     var dc : NSDocumentController {
         get {
             return NSDocumentController.shared
@@ -898,7 +901,25 @@ class Document : NSDocument {
         }
     }
     var settings: Settings
-    var docType : DocType
+    var docType : DocType {
+        get {
+            if let fileType = self.fileType {
+                return DocType(rawValue: docTypes.firstIndex(of: fileType) ?? DocType.helium.rawValue)
+            }
+            else
+            {
+                return .helium
+            }
+        }
+    }
+    
+    var heliumPanelController : HeliumPanelController? {
+        get {
+            guard let hpc : HeliumPanelController = windowControllers.first as? HeliumPanelController else { return nil }
+            return hpc
+        }
+    }
+    
     var url : URL? {
         get {
             if let url = self.fileURL
@@ -1039,16 +1060,6 @@ class Document : NSDocument {
         self.update(to: item.link)
     }
     
-    override init() {
-        settings = Settings()
-        docType = .helium
-        super.init()
-    }
-    
-    override class var autosavesInPlace: Bool {
-        return false
-    }
-    
     override func defaultDraftName() -> String {
         return docNames[docType.rawValue]
     }
@@ -1101,7 +1112,21 @@ class Document : NSDocument {
             super.displayName = newName
         }
     }
+    
+    // MARK: Initialization
+    override init() {
+        settings = Settings()
+        super.init()
+    }
+    
+    convenience init(type typeName: String) throws {
+        self.init()
 
+        do {
+            self.makeWindowController(typeName)
+        }
+    }
+        
     convenience init(contentsOf url: URL) throws {
         do {
             try self.init(contentsOf: url, ofType: k.Helium)
@@ -1122,53 +1147,77 @@ class Document : NSDocument {
         //  Record url and type, caller will load via notification
         do {
             self.makeWindowController(typeName)
-            dc.addDocument(self)
-            
-            //  Defer custom setups until we have a webView
-            if [k.Custom, k.Playlists, k.Release].contains(typeName) { return }
+            try revert(toContentsOf: url, ofType: typeName)
+        }
+    }
+    
+    override func revert(toContentsOf url: URL, ofType typeName: String) throws {
+        let controller = windowControllers.first!
+        
+        //  Defer custom setups until we have a webView
+        if [k.Custom, k.Playlists, k.Release].contains(typeName) { return }
 
-            //  If we were seen before then restore settings
-            if let hpc = heliumPanelController {
-                if let fileURL = fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
-                    self.restoreSettings(with: dict)
-                    hpc.willUpdateTranslucency()
-                    hpc.willUpdateAlpha()
+        //  If we we're seen before then restore settings
+        if let hpc = heliumPanelController {
+            if let fileURL = fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
+                self.restoreSettings(with: dict)
+                hpc.willUpdateTranslucency()
+                hpc.willUpdateAlpha()
+            }
+            
+            if settings.rect.value != NSZeroRect, let window = hpc.window {
+                window.setFrame(settings.rect.value, display: true)
+            }
+
+            hpc.window?.orderFront(self)
+            _ = hpc.webView?.next(url: fileURL!)
+        }
+        
+        switch docType {
+
+        case .playlist:
+            let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
+            pvc.playlists = [PlayList]()
+            pvc.playCache = [PlayList]()
+
+            if let url = self.url, url.pathExtension == k.h3w, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
+                var playlists = [PlayList]()
+                
+                for (name,plist) in dict {
+                    guard let items = plist as? [Dictionary<String,Any>] else { continue }
+                    var list : [PlayItem] = [PlayItem]()
+                    for pitem in items {
+                        let item = PlayItem.init(with: pitem)
+                        list.append(item)
+                    }
+                    let playlist = PlayList.init(name: name, list: list)
+                    playlists.append(playlist)
                 }
                 
-                if settings.rect.value != NSZeroRect, let window = hpc.window {
-                    window.setFrame(settings.rect.value, display: true)
-                }
-
-                hpc.window?.orderFront(self)
-                hpc.webView?.next(url: fileURL!)
+                pvc.playlists.append(contentsOf: playlists)
             }
-        }
-    }
-    
-    convenience init(type typeName: String) throws {
-        self.init()
-        
-        do {
-            self.makeWindowController(typeName)
-        }
-    }
-    
-    convenience init(withPlayitem item: PlayItem) throws {
-        self.init()
-        self.update(with: item)
+            else
+            {
+                pvc.playlists.append(contentsOf: appDelegate.playlists)
+                pvc.isGlobalPlaylist = true
+            }
 
-        //  Record url and type, caller will load via notification
-        do {
-            let url = item.link
-            self.makeWindowControllers()
+            NSApp.addWindowsItem(controller.window!, title: self.displayName, filename: false)
+            break
             
-            if let hwc = self.windowControllers.first {
-                hwc.window?.orderFront(self)
-                (hwc.contentViewController as! WebViewController).loadURL(url: url)
-                if item.rect != NSZeroRect {
-                    hwc.window?.setFrameOrigin(item.rect.origin)
-                }
+        case .release:
+            let filename = url.path
+            let relnotes = NSString.string(fromAsset: filename)
+            let wvc = (controller as! HeliumPanelController).webViewController
+            if let webView = wvc.webView {
+                webView.loadHTMLString(relnotes, baseURL: nil)
             }
+            break
+            
+        default:
+            let wvc = (controller as! HeliumPanelController).webViewController
+            wvc.clear()
+            break
         }
     }
     
@@ -1240,12 +1289,10 @@ class Document : NSDocument {
         }
     }
     
-    //MARK:- Actions
     override func makeWindowControllers() {
         makeWindowController(k.Helium)
     }
     func makeWindowController(_ typeName: String) {
-        self.docType = DocType(rawValue: docTypes.firstIndex(of: typeName) ?? DocType.helium.rawValue)
         let type = [ k.Helium, k.Release, k.Playlists ][docType.rawValue]
         let identifier = String(format: "%@Controller", type)
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
@@ -1305,12 +1352,6 @@ class Document : NSDocument {
             if self.settings.rect.value != NSZeroRect {
                 window.setFrameOrigin(self.settings.rect.value.origin)
             }
-        }
-    }
-    var heliumPanelController : HeliumPanelController? {
-        get {
-            guard let hpc : HeliumPanelController = windowControllers.first as? HeliumPanelController else { return nil }
-            return hpc
         }
     }
 }
