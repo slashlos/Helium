@@ -1802,9 +1802,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         hpc.updateTitleBar(didChange: false)
                         NSApp.addWindowsItem(self.view.window!, title: doc.displayName, filename: false)
                     }
-                    
-                    //  once a sandbox file URL is seen flag we can no longer share
-                    if url.isFileURL, appDelegate.isSandboxed() { webView.notShareable = true }
                 }
             }
             break
@@ -2032,14 +2029,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        Swift.print("didFail navigation?: \((error as NSError).code): \(error.localizedDescription)")
         handleError(error)
     }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        Swift.print("didFailProvisionalNavigation?: \((error as NSError).code): \(error.localizedDescription)")
         handleError(error)
     }
     fileprivate func handleError(_ error: Error) {
         let message = error.localizedDescription
-        Swift.print("didFailProvisionalNavigation?: \((error as NSError).code): \(message)")
         if (error as NSError).code >= 400 {
             NSApp.presentError(error)
         }
@@ -2072,7 +2070,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
         NotificationCenter.default.post(notif)
         
-        Swift.print("didFinish: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
+        Swift.print("didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
 /*
         let html = """
 <html>
