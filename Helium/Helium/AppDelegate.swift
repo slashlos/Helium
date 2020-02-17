@@ -1406,7 +1406,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 // buttons are accept, cancel, default
                 if response == NSApplication.ModalResponse.alertThirdButtonReturn {
                     let newUA = (alert.accessoryView as! NSTextField).stringValue
-                    if UAHelpers.isValid(uaString: newUA) {
+                    if UAHelpers.isValidUA(uaString: newUA) {
                         acceptHandler(newUA)
                     }
                     else
@@ -1418,7 +1418,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                     // swiftlint:disable:next force_cast
                     let newUA = (alert.accessoryView as! NSTextField).stringValue
-                    if UAHelpers.isValid(uaString: newUA) {
+                    if UAHelpers.isValidUA(uaString: newUA) {
                         acceptHandler(newUA)
                     }
                     else
@@ -1433,7 +1433,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             switch alert.runModal() {
             case NSApplication.ModalResponse.alertThirdButtonReturn:
                 let newUA = (alert.accessoryView as! NSTextField).stringValue
-                if UAHelpers.isValid(uaString: newUA) {
+                if UAHelpers.isValidUA(uaString: newUA) {
                     acceptHandler(newUA)
                 }
                 else
@@ -1444,7 +1444,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 let newUA = (alert.accessoryView as! NSTextField).stringValue
-                if UAHelpers.isValid(uaString: newUA) {
+                if UAHelpers.isValidUA(uaString: newUA) {
                     acceptHandler(newUA)
                 }
                 else
@@ -1509,7 +1509,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
-                    if UrlHelpers.isValid(urlString: urlString) {
+                    if UrlHelpers.isValidUA(urlString: urlString) {
                         acceptHandler(newWindow,URL.init(string: urlString)!)
                         self.recentSearches.append(rawString)
                     }
@@ -1531,7 +1531,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
 
                 urlString = UrlHelpers.ensureScheme(urlString)
-                guard UrlHelpers.isValid(urlString: urlString), let searchURL = URL.init(string: urlString) else {
+                guard UrlHelpers.isValidUA(urlString: urlString), let searchURL = URL.init(string: urlString) else {
                     Swift.print("invalid: \(urlString)")
                     return
                 }
@@ -1587,7 +1587,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if response == NSApplication.ModalResponse.alertThirdButtonReturn {
                     var newUrl = (alert.buttons[2] as NSButton).toolTip
                     newUrl = UrlHelpers.ensureScheme(newUrl!)
-                    if UrlHelpers.isValid(urlString: newUrl!) {
+                    if UrlHelpers.isValidUA(urlString: newUrl!) {
                         acceptHandler(newUrl!)
                     }
                 }
@@ -1596,7 +1596,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     // swiftlint:disable:next force_cast
                     var newUrl = (alert.accessoryView as! NSTextField).stringValue
                     newUrl = UrlHelpers.ensureScheme(newUrl)
-                    if UrlHelpers.isValid(urlString: newUrl) {
+                    if UrlHelpers.isValidUA(urlString: newUrl) {
                         acceptHandler(newUrl)
                     }
                 }
@@ -1611,7 +1611,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case NSApplication.ModalResponse.alertThirdButtonReturn:
                 var newUrl = (alert.buttons[2] as NSButton).toolTip
                 newUrl = UrlHelpers.ensureScheme(newUrl!)
-                if UrlHelpers.isValid(urlString: newUrl!) {
+                if UrlHelpers.isValidUA(urlString: newUrl!) {
                     acceptHandler(newUrl!)
                 }
                 
@@ -1620,7 +1620,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 var newUrl = (alert.accessoryView as! NSTextField).stringValue
                 newUrl = UrlHelpers.ensureScheme(newUrl)
-                if UrlHelpers.isValid(urlString: newUrl) {
+                if UrlHelpers.isValidUA(urlString: newUrl) {
                     acceptHandler(newUrl)
                 }
                 
