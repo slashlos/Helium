@@ -531,6 +531,19 @@ CA
                                                 <action selector="openSearchPress:" target="Voe-Tx-rLC" id="ULN-mA-ikl"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="zTb-jP-kZR"/>
+                                        <menuItem title="Snapshot" keyEquivalent="p" id="XZA-7w-cCC">
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                            <connections>
+                                                <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Snapshot All" tag="1" alternate="YES" keyEquivalent="p" id="dLl-Cr-uBv">
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES" option="YES"/>
+                                            <connections>
+                                                <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                     <connections>
                                         <outlet property="delegate" destination="Voe-Tx-rLC" id="VbI-6E-D40"/>
@@ -801,17 +814,6 @@ CA
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="2IL-Kf-JOW"/>
-                                        <menuItem title="Snapshot" keyEquivalent="P" id="XZA-7w-cCC">
-                                            <connections>
-                                                <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Snapshot All" tag="1" alternate="YES" keyEquivalent="P" id="dLl-Cr-uBv">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                            <connections>
-                                                <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
-                                            </connections>
-                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
