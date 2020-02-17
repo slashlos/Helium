@@ -50,11 +50,13 @@ extension String {
     }
 
     func isValidURL() -> Bool {
+        guard let urlComponents = URLComponents.init(string: self), urlComponents.host != nil, urlComponents.url != nil else { return false }
         
-        let urlRegEx = "((file|https|http)()://)((\\w|-)+)(([.]|[/])((\\w|-)+))+"
-        let predicate = NSPredicate(format:"SELF MATCHES %@", argumentArray:[urlRegEx])
+        return true
+        ///let urlRegEx = "((afp:file|https|http|smb)()://)((\\w|-)+)(([.]|[/])((\\w|-)+))+"
+        ///let predicate = NSPredicate(format:"SELF MATCHES %@", argumentArray:[urlRegEx])
         
-        return predicate.evaluate(with: self)
+        ///return predicate.evaluate(with: self)
     }
 }
 
