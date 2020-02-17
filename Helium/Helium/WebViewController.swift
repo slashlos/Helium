@@ -763,13 +763,13 @@ class MyWebView : WKWebView {
 
             Swift.print("back \(back.count)")
             for prev in back {
-                item = NSMenuItem(title: prev.title ?? prev.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item = NSMenuItem(title: prev.article, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
                 item.toolTip = prev.url.absoluteString
                 item.representedObject = prev
                 jump.addItem(item)
             }
             if let curr = backForwardList.currentItem {
-                item = NSMenuItem(title: curr.title ?? curr.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item = NSMenuItem(title: curr.article, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
                 item.toolTip = curr.url.absoluteString
                 item.representedObject = curr
                 item.state = .on
@@ -777,7 +777,7 @@ class MyWebView : WKWebView {
             }
             Swift.print("fore \(fore.count)")
             for next in fore {
-                item = NSMenuItem(title: next.title ?? next.url.absoluteString, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
+                item = NSMenuItem(title: next.article, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
                 item.toolTip = next.url.absoluteString
                 item.representedObject = next
                 jump.addItem(item)
@@ -804,6 +804,11 @@ class MyWebView : WKWebView {
             item = NSMenuItem(title: "To New Window", action: #selector(window.moveTabToNewWindow(_:)), keyEquivalent: "")
             menu.addItem(item)
             item = NSMenuItem(title: "Show All Tabs", action: #selector(window.toggleTabOverview(_:)), keyEquivalent: "")
+            menu.addItem(item)
+            tabItemUpdated = true
+        }
+        if NSApp.windows.count > 1 {
+            item = NSMenuItem(title: "Merge All Windows", action: #selector(window.mergeAllWindows(_:)), keyEquivalent: "")
             menu.addItem(item)
             tabItemUpdated = true
         }
@@ -1260,7 +1265,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             })
         }
         
-        // MARK: TODO: Watch click events
+        // TODO: Watch click events
         // https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
         /*
         let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
