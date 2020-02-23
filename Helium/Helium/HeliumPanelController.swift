@@ -26,31 +26,24 @@ class HeliumTitleDragButton : NSButton {
  *  apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
  */
     //  once our controller appear, update
-    var _hpc : HeliumPanelController?
     var hpc : HeliumPanelController? {
         get {
-            return _hpc
-        }
-        set (value) {
-            _hpc = value
-            self.window?.contentView?.needsDisplay = true
+            return self.window?.windowController as? HeliumPanelController
         }
     }
     var borderColor : NSColor {
         get {
-            guard let hpc = self.hpc else {
-                return NSColor.clear
-            }
-            if let window = hpc.window, let url = window.representedURL, url.absoluteString != UserSettings.HomePageURL.value {
+            guard let window = self.window else { return NSColor.clear }
+            if let url = window.representedURL, url.absoluteString != UserSettings.HomePageURL.value {
                 if url.isFileURL {
-                    return NSColor.controlColor
+                    return NSColor.controlDarkShadowColor
                 } else {
                     return NSColor.clear
                 }
             }
             else
             {
-                return NSColor(hex: 0x44AAFF)///.white
+                return NSColor(hex: 0x3399FF/*0x44AAFF*/)
             }
         }
     }
@@ -70,6 +63,18 @@ class HeliumTitleDragButton : NSButton {
     override func draw(_ dirtyRect: NSRect) {
         let path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
 
+        if let window = self.window, let url = window.representedURL, url.isFileURL {
+            if !url.hasVideoContent() {
+                self.layer?.backgroundColor = NSColor.controlDarkShadowColor.cgColor
+            } else {
+                self.layer?.backgroundColor = NSColor.clear.cgColor
+            }
+        }
+        else
+        {
+            self.layer?.backgroundColor = NSColor(hex: 0x3399FF).cgColor
+        }
+        
         super.draw(dirtyRect)
         
         guard let hpc = self.hpc else { return }
@@ -169,7 +174,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         titleDragButton?.top((titleDragButton?.superview)!)
         titleDragButton?.addSubview(titleView!)
         titleView?.fit(titleDragButton!)
-        titleDragButton?.hpc = self;
         titleDragButton?.title = ""
  
         NSAnimationContext.runAnimationGroup({ (context) in
@@ -507,6 +511,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         return self.workQueue
     }
     
+    var fadeTimer : Timer? = nil
     override func mouseEntered(with theEvent: NSEvent) {
         if theEvent.modifierFlags.contains(NSEvent.ModifierFlags.shift) {
             NSApp.activate(ignoringOtherApps: true)
@@ -540,6 +545,19 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         DispatchQueue.main.async {
             self.mouseOver = true
         }
+        /*
+        if self.autoHideTitlePreference == .outside {
+            self.fadeTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false, block: { (timer) in
+                if self.mouseOver, timer.isValid {
+                    timer.invalidate()
+                    DispatchQueue.main.async {
+                        self.mouseExited(with: theEvent)
+                        Swift.print("mouseWasSet()")
+                    }
+                }
+            })
+            if let timer = self.fadeTimer { RunLoop.current.add(timer, forMode: .common) }
+        }*/
     }
     
     override func mouseExited(with theEvent: NSEvent) {
@@ -609,7 +627,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     enum AutoHideTitlePreference: Int {
         case never = 0
         case outside = 1
-     }
+    }
 
     // MARK:- Translucency, AutoHideTitle Bar
     fileprivate dynamic var mouseOver: Bool = false {
@@ -788,7 +806,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
         //  Presume false so our action result is immediate
         autoHideTitlePreference = newTitlePref
-
+        updateTitleBar(didChange: true)
         cacheSettings()
     }
     
@@ -819,12 +837,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
         cacheSettings()
-    }
-    
-    @objc @IBAction func saveDocument(_ sender: NSMenuItem) {
-        if let doc = self.doc {
-            doc.save(sender)
-        }
     }
     
     @IBAction func snapshot(_ sender: Any) {
@@ -954,12 +966,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         cacheSettings()
     }
     func willUpdateTitleBar() {
-        
         //  synchronize prefs to document's panel state
-        let hideableTitle = autoHideTitlePreference != HeliumPanelController.AutoHideTitlePreference.never
-        if hideableTitle != (panel.titleVisibility != .hidden), !self.shouldBeVisible() {
-            updateTitleBar(didChange:true)
-        }
+        let nowState = autoHideTitlePreference
+        let othState = autoHideTitlePreference == .never ? HeliumPanelController.AutoHideTitlePreference.outside : .never
+        self.autoHideTitlePreference = othState
+        self.autoHideTitlePreference = nowState
     }
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
@@ -1077,14 +1088,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 }
             })
         }
+        else
+        {
+            titleDragButton?.needsDisplay = true
+            titleView?.needsDisplay = true
+        }
         docIconVisibility(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
     
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
-        guard let doc = self.doc else {
-            return displayName }
+        guard let doc = self.doc else { return displayName }
         
-        switch self.doc!.docType {
+        switch self.doc!.docGroup {
         case .playlist, .release:
             return doc.displayName
         default:

@@ -10,12 +10,12 @@ import Foundation
 import QuickLook
 
 // Document type
-struct DocType : OptionSet {
+struct DocGroup : OptionSet {
     let rawValue: Int
 
-    static let helium       = DocType(rawValue: 0)
-    static let release      = DocType(rawValue: 1)
-    static let playlist     = DocType(rawValue: 2)
+    static let helium       = DocGroup(rawValue: 0)
+    static let release      = DocGroup(rawValue: 1)
+    static let playlist     = DocGroup(rawValue: 2)
 }
 let docHelium : ViewOptions = []
 
@@ -33,7 +33,7 @@ struct k {
     static let Settings = "settings"
     static let Custom = "Custom"
     static let webloc = "webloc"
-    static let h3w = "h3w"
+    static let hpl = "hpl"
     static let play = "play"
     static let item = "item"
     static let name = "name"
@@ -62,6 +62,7 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 1.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let Release = "Release"
+    static let ReleaseAsset = "RELEASE"
     static let ReleaseNotes = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
@@ -77,7 +78,7 @@ struct k {
     static let searchLinks = [k.bingLink, k.googleLink, k.yahooLink]
 }
 
-let docTypes = [k.Helium, k.Release, k.Playlists]
+let docGroups = [k.Helium, k.Release, k.Playlists]
 let docNames = [k.Helium, k.ReleaseNotes, k.Playlists]
 
 extension NSPasteboard.PasteboardType {
@@ -273,6 +274,12 @@ class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
             
         }
     }
+    @objc dynamic var image: NSImage {
+        get {
+            return NSImage.init(named: k.Helium)!
+        }
+    }
+
     override var description: String {
         get {
             return String(format: "<%@: %p '%@' %ld item(s)", self.className, self, self.name, list.count)
@@ -513,7 +520,21 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
             link = URL.init(string: value)!
         }
     }
-
+    @objc dynamic var image: NSImage {
+        get {
+            guard link.isFileURL else { return NSImage.init(named: k.docIcon)! }
+            
+            let size = NSMakeSize(32.0, 32.0)
+                
+            let tmp = QLThumbnailImageCreate(kCFAllocatorDefault, link as CFURL , size, nil)
+            if let tmpImage = tmp?.takeUnretainedValue() {
+                ///let tmpIcon = NSImage(cgImage: tmpImage, size: size)
+                ///return tmpIcon
+                return NSImage(cgImage: tmpImage, size: size)
+            }
+            return NSImage.init(named: k.docIcon)!
+        }
+    }
     // MARK:- Functions
     override init() {
         name = k.item + "#"
@@ -859,9 +880,7 @@ class HeliumDocumentController : NSDocumentController {
     override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> Document {
         var doc: Document
         do {
-            let typeName = contentsURL.isFileURL && contentsURL.pathExtension == k.h3w ? k.Playlists : typeName
             doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
-            doc.showWindows()
         } catch let error {
             NSApp.presentError(error)
             doc = try Document.init(contentsOf: contentsURL)
@@ -889,9 +908,9 @@ class Document : NSDocument {
     override class var autosavesInPlace: Bool {
         return false
     }
-    var dc : NSDocumentController {
+    var docController : HeliumDocumentController {
         get {
-            return NSDocumentController.shared
+            return NSDocumentController.shared as! HeliumDocumentController
         }
     }
     var defaults = UserDefaults.standard
@@ -901,10 +920,10 @@ class Document : NSDocument {
         }
     }
     var settings: Settings
-    var docType : DocType {
+    var docGroup : DocGroup {
         get {
             if let fileType = self.fileType {
-                return DocType(rawValue: docTypes.firstIndex(of: fileType) ?? DocType.helium.rawValue)
+                return DocGroup(rawValue: docGroups.firstIndex(of: fileType) ?? DocGroup.helium.rawValue)
             }
             else
             {
@@ -1016,7 +1035,7 @@ class Document : NSDocument {
         }
 
         if self.settings.time.value == 0.0, let url = self.url, url.isFileURL {
-            let attr = appDelegate.metadataDictionaryForFileAt((url.path))
+            let attr = appDelegate.metadataDictionaryForFileAt((self.fileURL?.path)!)
             if let secs = attr?[kMDItemDurationSeconds] {
                 self.settings.time.value = secs as! TimeInterval
             }
@@ -1042,7 +1061,6 @@ class Document : NSDocument {
     
     func update(to url: URL) {
         self.fileURL = url
-        self.fileType = url.isFileURL ? url.pathExtension : url.scheme
         
         if let dict = defaults.dictionary(forKey: url.absoluteString) {
             let item = PlayItem.init(with: dict)
@@ -1052,8 +1070,6 @@ class Document : NSDocument {
              }
         }
         if url.isFileURL { _displayImage = nil }
-        
-        self.windowControllers.first?.contentViewController?.representedObject = url
     }
     func update(with item: PlayItem) {
         self.restoreSettings(with: item.dictionary())
@@ -1061,13 +1077,13 @@ class Document : NSDocument {
     }
     
     override func defaultDraftName() -> String {
-        return docNames[docType.rawValue]
+        return docNames[docGroup.rawValue]
     }
 
     var _displayImage: NSImage?
     var displayImage: NSImage {
         get {
-            switch docType {
+            switch docGroup {
             case .playlist:
                 return NSImage.init(named: "docIcon")!
 
@@ -1100,12 +1116,13 @@ class Document : NSDocument {
     override var displayName: String! {
         get {
             guard let fileURL = self.fileURL else { return super.displayName }
-            if fileURL.isFileURL {
-                return fileURL.lastPathComponent
+            if fileURL.isFileURL
+            {
+                return fileURL/*.deletingPathExtension()*/.lastPathComponent
             }
             else
             {
-                return fileURL.simpleSpecifier
+                return super.displayName
             }
         }
         set (newName) {
@@ -1120,33 +1137,38 @@ class Document : NSDocument {
     }
     
     convenience init(type typeName: String) throws {
-        self.init()
-
         do {
-            self.makeWindowController(typeName)
+            self.init()
+        
+            //  sync docGroup group identifier to typeName
+            fileType = typeName
         }
     }
         
     convenience init(contentsOf url: URL) throws {
         do {
-            try self.init(contentsOf: url, ofType: k.Helium)
+            try self.init(contentsOf: url, ofType: url.pathExtension == k.hpl ? k.Playlists : k.Helium)
         }
     }
+    
     convenience init(contentsOf url: URL, ofType typeName: String) throws {
-        self.init()
-
-        if url.pathExtension == k.webloc, let webURL = url.webloc {
-            fileURL = webURL
-        }
-        else
-        {
-            fileURL = url
-        }
-        self.fileType = fileURL?.pathExtension
-        
         //  Record url and type, caller will load via notification
         do {
-            self.makeWindowController(typeName)
+            self.init()
+
+            fileURL = url
+            fileType = typeName
+            
+            makeWindowControllers()
+        }
+    }
+    
+    override func read(from url: URL, ofType typeName: String) throws {
+        switch typeName {
+        case "AnyType":
+            fileURL = url
+            break
+        default:
             try revert(toContentsOf: url, ofType: typeName)
         }
     }
@@ -1154,33 +1176,62 @@ class Document : NSDocument {
     override func revert(toContentsOf url: URL, ofType typeName: String) throws {
         let controller = windowControllers.first!
         
-        //  Defer custom setups until we have a webView
-        if [k.Custom, k.Playlists, k.Release].contains(typeName) { return }
-
-        //  If we we're seen before then restore settings
-        if let hpc = heliumPanelController {
-            if let fileURL = fileURL, let dict = defaults.dictionary(forKey: fileURL.absoluteString) {
-                self.restoreSettings(with: dict)
-                hpc.willUpdateTranslucency()
-                hpc.willUpdateAlpha()
+        if url.isFileURL {
+            if appDelegate.isSandboxed() != appDelegate.storeBookmark(url: url) {
+                Swift.print("Yoink, unable to sandbox file \(url)")
             }
-            
-            if settings.rect.value != NSZeroRect, let window = hpc.window {
-                window.setFrame(settings.rect.value, display: true)
-            }
-
-            hpc.window?.orderFront(self)
-            _ = hpc.webView?.next(url: fileURL!)
         }
-        
-        switch docType {
+
+        //  Defer custom setups until we have a webView
+        if [k.Custom].contains(typeName) { return }
+
+        switch docGroup {
 
         case .playlist:
-            let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
-            pvc.playlists = [PlayList]()
-            pvc.playCache = [PlayList]()
 
-            if let url = self.url, url.pathExtension == k.h3w, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
+            //  hpl files are playlist extractions, presented as a sheet or window
+            guard url.pathExtension == k.hpl, let dict = NSDictionary(contentsOf: url) else { return }
+        
+            //  We could have 3 keys: <source-name>, k.playlists, k.playitems or promise file of playlists
+            var playlists = [PlayList]()
+            if let names : [String] = dict.value(forKey: k.playlists) as? [String] {
+                for name in names {
+                  if let items = dict.value(forKey: name) as? [Dictionary<String,Any>] {
+                      let playlist = PlayList.init(name: name, list: [PlayItem]())
+                      for item in items {
+                          playlist.list.append(PlayItem.init(with: item))
+                      }
+                      playlists.append(playlist)
+                  }
+                }
+            }
+            else
+            if let items = dict.value(forKey: k.playitems) as? [Dictionary<String,Any>] {
+                let playlist = PlayList.init(name: url.lastPathComponent, list: [PlayItem]())
+                for item in items {
+                  playlist.list.append(PlayItem.init(with: item))
+                }
+                playlists.append(playlist)
+            }
+            else
+            {
+                for (name,list) in dict {
+                  let playlist = PlayList.init(name: name as! String, list: [PlayItem]())
+                  for item in (list as? [Dictionary<String,Any>])! {
+                      playlist.list.append(PlayItem.init(with: item))
+                  }
+                  playlists.append(playlist)
+                }
+            }
+            
+            guard playlists.count > 0 else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+         
+ /*
+            let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
+            
+            if let url = self.url, url.pathExtension == k.hpl, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
                 var playlists = [PlayList]()
                 
                 for (name,plist) in dict {
@@ -1201,41 +1252,45 @@ class Document : NSDocument {
                 pvc.playlists.append(contentsOf: appDelegate.playlists)
                 pvc.isGlobalPlaylist = true
             }
-
-            NSApp.addWindowsItem(controller.window!, title: self.displayName, filename: false)
+*/
             break
             
         case .release:
-            let filename = url.path
-            let relnotes = NSString.string(fromAsset: filename)
-            let wvc = (controller as! HeliumPanelController).webViewController
-            if let webView = wvc.webView {
-                webView.loadHTMLString(relnotes, baseURL: nil)
-            }
             break
             
         default:
             let wvc = (controller as! HeliumPanelController).webViewController
-            wvc.clear()
+            if url.isFileURL {
+                let baseURL = appDelegate.authenticateBaseURL(url)
+                
+                wvc.webView.loadFileURL(url, allowingReadAccessTo: baseURL)
+            }
+            else
+            {
+                wvc.webView.load(URLRequest.init(url: url))
+            }
             break
         }
     }
     
     @objc @IBAction override func save(_ sender: (Any)?) {
-        guard fileURL != nil, fileURL?.scheme != k.about, docType != .release else {
-            return
-        }
+        guard fileURL != nil, fileURL?.scheme != k.about, docGroup != .release else { return }
         
         do {
-            if docType == .helium {
+            switch docGroup {
+            case .helium:
                 try self.write(to: fileURL!, ofType: fileType!)
-            }
-            else
-            if docType == .playlist {
+                return
+                
+            case .playlist:
                 if let url = self.url, url.isFileURL {
-                    let type = docTypes[docType.rawValue]
+                    let type = docGroups[docGroup.rawValue]
                     try self.writeSafely(to: url, ofType: type, for: .saveOperation)
+                    return
                 }
+            
+            default:
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
             }
         } catch let error {
             NSApp.presentError(error)
@@ -1251,7 +1306,7 @@ class Document : NSDocument {
         defaults.synchronize()
         
         //  Update UI (red dot in close button) immediately
-        guard self.docType == .helium else { return }
+        guard self.docGroup == .helium else { return }
         if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()
         }
@@ -1271,8 +1326,8 @@ class Document : NSDocument {
     }
     override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
         do {
-            guard docType == .playlist else {
-                try self.write(to: fileURL!, ofType: fileType!)
+            guard docGroup == .playlist else {
+                try self.write(to: url, ofType: typeName)
                 return
             }
 
@@ -1285,54 +1340,33 @@ class Document : NSDocument {
     
     override var shouldRunSavePanelWithAccessoryView: Bool {
         get {
-            return docType == .helium
+            return docGroup == .playlist
         }
     }
     
     override func makeWindowControllers() {
-        makeWindowController(k.Helium)
-    }
-    func makeWindowController(_ typeName: String) {
-        let type = [ k.Helium, k.Release, k.Playlists ][docType.rawValue]
+        let type = [ k.Helium, k.Release, k.Playlists ][docGroup.rawValue]
         let identifier = String(format: "%@Controller", type)
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         
         let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
-        dc.addDocument(self)
+        docController.addDocument(self)
         
-        switch docType {
+        //  Defer custom setups until we have a URL
+        if [k.Custom].contains(fileType) { return }
 
+        //  make and read all route to revert() for file I/O
+        switch docGroup {
+            
         case .playlist:
             let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
-            
-            if let url = self.url, url.pathExtension == k.h3w, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
-                var playlists = [PlayList]()
-                
-                for (name,plist) in dict {
-                    guard let items = plist as? [Dictionary<String,Any>] else { continue }
-                    var list : [PlayItem] = [PlayItem]()
-                    for pitem in items {
-                        let item = PlayItem.init(with: pitem)
-                        list.append(item)
-                    }
-                    let playlist = PlayList.init(name: name, list: list)
-                    playlists.append(playlist)
-                }
-                
-                pvc.playlists.append(contentsOf: playlists)
-            }
-            else
-            {
-                pvc.playlists.append(contentsOf: appDelegate.playlists)
-                pvc.isGlobalPlaylist = true
-            }
-
-            NSApp.addWindowsItem(controller.window!, title: self.displayName, filename: false)
+            pvc.playlists.append(contentsOf: appDelegate.playlists)
+            pvc.isGlobalPlaylist = true
             break
             
         case .release:
-            let relnotes = NSString.string(fromAsset: "RELEASE")
+            let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
             let wvc = (controller as! HeliumPanelController).webViewController
             if let webView = wvc.webView {
                 webView.loadHTMLString(relnotes, baseURL: nil)
@@ -1340,11 +1374,20 @@ class Document : NSDocument {
             break
             
         default:
-            let wvc = (controller as! HeliumPanelController).webViewController
-            wvc.clear()
-            break
+            if let url = fileURL, let type = fileType {
+                do {
+                    try revert(toContentsOf: url, ofType: type)
+                } catch let error {
+                    NSApp.presentError(error)
+                }
+            }
+            else
+            {
+                let wvc = (controller as! HeliumPanelController).webViewController
+                wvc.clear()
+            }
         }
- 
+
         //  Relocate to origin if any
         if let window = controller.window {
             window.offsetFromKeyWindow()

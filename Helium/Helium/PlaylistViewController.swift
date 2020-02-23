@@ -41,8 +41,9 @@ class PlayTableView : NSTableView {
         var items = [NSDraggingItem]()
         
         for index in indexSet {
-            let dragImage = (delegate.view.window?.windowController?.document as! Document).dragImage
+            let object : AnyObject = (arrayController.arrangedObjects as! [AnyObject])[index]
             let item = NSDraggingItem.init(pasteboardWriter: objects[index])
+            let dragImage = object.image.resize(w: 32, h: 32)
             item.setDraggingFrame(self.rect(ofRow: index), contents: dragImage)
             item.draggingFrame = self.rect(ofRow: index)
             items.append(item)
@@ -152,7 +153,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var defaults = UserDefaults.standard
-    
+
     var shiftKeyDown : Bool {
         get {
             return (NSApp.delegate as! AppDelegate).shiftKeyDown
@@ -1127,8 +1128,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     appDelegate.playlists = playlists
                 }
                 else
-                {
-                    saveDocument(self)
+                if let document = self.view.window?.windowController?.document {
+                    (document as! Document).save(sender)
                 }
                 break
             case false:
@@ -1180,10 +1181,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
 
     //  MARK:- Delegate
     //  when on a sheet, cannot alter histories
-    dynamic var sheetPresent : Bool {
+    var sheetPresent : Bool {
         get {
-            guard let sheets = self.view.window?.contentViewController?.presentedViewControllers else { return false }
-            return sheets.count > 0
+            return self.view.window?.sheetParent != nil
         }
     }
     
@@ -1199,7 +1199,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  if we have a url show histories in italics
         if tableView.tag == 1 {
             let list : AnyObject = (playlistArrayController.arrangedObjects as! [AnyObject])[playlistArrayController.selectionIndex]
-            if list.name == UserSettings.HistoryName.value {
+            if isGlobalPlaylist, list.name == UserSettings.HistoryName.value {
                 cell.font = NSFont.init(name: "Helvetica Oblique", size: -1)
             }
         }
@@ -1379,7 +1379,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
                 dict[name] = items
             }
-            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: promise, type: k.h3w) {
+            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: promise, type: k.hpl) {
                 (dict as NSDictionary).write(to: fileURL, atomically: true)
                 names.append(fileURL.absoluteString)
             }
@@ -1397,7 +1397,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 items.append(item.dictionary() as AnyObject)
             }
             
-            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.h3w) {
+            if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.hpl) {
                 var dict = Dictionary<String,[AnyObject]>()
                 dict[name] = items
                 (dict as NSDictionary).write(to: fileURL, atomically: true)

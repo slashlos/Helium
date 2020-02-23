@@ -17,7 +17,7 @@ Contributors:
 History
 
   3.0, February 6, 2020
-    Carlos David Manuel Santiago
+    CD M Santiago
       document windows and tabs,
       playlists - global / shared, savable items
       balloon images https://pixabay.com

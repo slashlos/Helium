@@ -426,26 +426,10 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Location" id="bib-Uj-vzu">
                                     <items>
-                                        <menuItem title="New" id="4OQ-29-DoS">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="New" id="lz3-XZ-eKC">
-                                                <items>
-                                                    <menuItem title="Window" tag="1" keyEquivalent="n" id="5z8-gm-Cg3">
-                                                        <connections>
-                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="MBG-Bq-nZh"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Tab" tag="3" alternate="YES" keyEquivalent="n" id="NGT-Ia-bmu">
-                                                        <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                        <connections>
-                                                            <action selector="newDocument:" target="Ady-hI-5gd" id="dQm-Nv-HoC"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                                <connections>
-                                                    <outlet property="delegate" destination="Voe-Tx-rLC" id="0lq-Vz-ZN2"/>
-                                                </connections>
-                                            </menu>
+                                        <menuItem title="New" tag="1" keyEquivalent="n" id="5z8-gm-Cg3">
+                                            <connections>
+                                                <action selector="newDocument:" target="Ady-hI-5gd" id="MBG-Bq-nZh"/>
+                                            </connections>
                                         </menuItem>
                                         <menuItem title="Open" id="wiF-om-ZaY">
                                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -453,34 +437,34 @@
                                                 <items>
                                                     <menuItem title="File…" keyEquivalent="o" id="iba-HN-Jos">
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="kab-s7-8J8"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="21X-0G-NuF"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="File in new tab…" tag="3" alternate="YES" keyEquivalent="o" id="at8-06-y5R">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="EUF-By-SfA"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="5Wv-bN-NsV"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="O" id="vEi-Jg-aIw">
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="fNJ-2b-kKL"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="b57-Ke-BTP"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="SQV-ho-ckr"/>
+                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="PXo-Hw-IwE"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL in new tab…" tag="3" alternate="YES" keyEquivalent="l" id="AWF-C8-zwA">
                                                         <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="kBG-G2-syh"/>
+                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="4WI-8M-d5I"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="L" id="PJM-19-avb">
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="OIB-zR-gT2"/>
+                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="7k6-Kj-qCU"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
@@ -526,6 +510,12 @@ CA
                                                 <action selector="saveDocument:" target="Ady-hI-5gd" id="2Da-J9-Bqx"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Save As" alternate="YES" keyEquivalent="s" id="msZ-vZ-9wQ">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="saveDocumentAs:" target="Ady-hI-5gd" id="4If-Hb-lU2"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wbg-XB-qHT"/>
                                         <menuItem title="Back" keyEquivalent="[" id="UkE-up-3w1">
                                             <connections>
@@ -551,14 +541,14 @@ CA
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="zTb-jP-kZR"/>
-                                        <menuItem title="Snapshot" keyEquivalent="p" id="XZA-7w-cCC">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                        <menuItem title="Snapshot" id="XZA-7w-cCC">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Snapshot All" tag="1" alternate="YES" keyEquivalent="p" id="dLl-Cr-uBv">
-                                            <modifierMask key="keyEquivalentModifierMask" control="YES" option="YES"/>
+                                        <menuItem title="Snapshot All" tag="1" alternate="YES" id="dLl-Cr-uBv">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                             <connections>
                                                 <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
                                             </connections>

@@ -219,7 +219,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
 
-    var dc : HeliumDocumentController {
+    var docController : HeliumDocumentController {
         get {
             return NSDocumentController.shared as! HeliumDocumentController
         }
@@ -307,14 +307,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         set (value) {
             UserSettings.AutoSaveDocs.value = value
             if value {
-                for doc in dc.documents {
-                    if let hpc = doc.windowControllers.first, hpc.isKind(of: HeliumPanelController.self) {
-                        DispatchQueue.main.async {
-                            (hpc as! HeliumPanelController).saveDocument(self.autoSaveDocsMenuItem)
-                        }
+                for doc in docController.documents {
+                    DispatchQueue.main.async {
+                        doc.save(self.autoSaveDocsMenuItem)
                     }
-                }
-                dc.saveAllDocuments(autoSaveDocsMenuItem)
+                 }
+                docController.saveAllDocuments(autoSaveDocsMenuItem)
             }
         }
     }
@@ -377,20 +375,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  This could be anything so add/if a doc and initialize
         do {
-            let typeName = fileURL.isFileURL && fileURL.pathExtension == k.h3w ? k.Playlists : k.Helium
+            let typeName = fileURL.isFileURL && fileURL.pathExtension == k.hpl ? k.Playlists : k.Helium
             let doc = try Document.init(contentsOf: fileURL, ofType: typeName)
-            dc.noteNewRecentDocumentURL(fileURL)
-
-            if let hpc = doc.heliumPanelController {
-                doc.showWindows()
-                return hpc.webViewController.webView.next(url: fileURL)
-            }
-            else
-            {
-                doc.showWindows()
-            }
+            docController.noteNewRecentDocumentURL(fileURL)
+            doc.showWindows()
             status = true
-            
         } catch let error {
             print("*** Error open file: \(error.localizedDescription)")
             status = false
@@ -415,44 +404,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.RestoreLocationSvcs.value = isLocationEnabled
     }
     
-    @objc @IBAction func newDocument(_ sender: Any) {
-        let doc = Document.init()
-        doc.makeWindowControllers()
-        let wc = doc.windowControllers.first
-        let window : NSPanel = wc!.window as! NSPanel as NSPanel
-        var parWin : NSWindow? = NSApp.keyWindow
-        var newTab = false
-        
-        //  Delegate for observation(s) run-down
-        window.delegate = wc as? NSWindowDelegate
-        doc.settings.rect.value = window.frame
-        
-        //  OPTION key down creates new tabs as tag=3
-        if let menuItem : NSMenuItem = sender as? NSMenuItem, menuItem.tag == 3 {
-            parWin = menuItem.representedObject as? NSWindow
-            newTab = true
-        }
-        if let event = NSApp.currentEvent, event.modifierFlags.contains(.option) {
-            newTab = true
-        }
-        if let parent = parWin, newTab {
-            parent.addTabbedWindow(window, ordered: .above)
-        }
-        else
-        {
-            doc.showWindows()
-        }
-        
-        //  New window / document settings pick up global static pref(s)
-        doc.settings.autoHideTitlePreference.value = UserSettings.AutoHideTitle.value ? .outside : .never
-        doc.heliumPanelController?.updateTitleBar(didChange: true)
-    }
-    
-
-    @objc @IBAction func openDocument(_ sender: Any) {
-		self.openFilePress(sender as AnyObject)
-	}
-    
     @objc @IBAction func openFilePress(_ sender: AnyObject) {
         var viewOptions = ViewOptions(rawValue: sender.tag)
         
@@ -469,11 +420,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
-                if url.isFileURL && isSandboxed() != storeBookmark(url: url) {
-                    Swift.print("Yoink, unable to sandbox \(url)")
-                    return
-                }
-
                 if viewOptions.contains(.t_view) {
                     _ = openFileInNewWindow(url, attachTo: sender.representedObject as? NSWindow)
                 }
@@ -492,40 +438,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return
     }
     
-    internal func openFileInNewWindow(_ newURL: URL, attachTo parentWindow: NSWindow? = nil) -> Bool {
+    internal func openFileInNewWindow(_ url: URL, attachTo parentWindow: NSWindow? = nil) -> Bool {
+        return openURLInNewWindow(url, attachTo: parentWindow)
+    }
+    
+    func openURLInNewWindow(_ url: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
+        if url.isFileURL, isSandboxed() != storeBookmark(url: url) {
+            Swift.print("Yoink, unable to sandbox \(url)")
+            return false
+        }
+
         do {
-            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: newURL.pathExtension)
-            if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
-                parent.addTabbedWindow(tabWindow, ordered: .above)
+            let doc = try Document.init(contentsOf: url)
+             
+            guard let wc = doc.windowControllers.first else { return false }
+            
+            guard let window = wc.window, let cvc = window.contentViewController,
+                let webView = (cvc as? WebViewController)?.webView else { return false }
+            
+            if url.isFileURL
+            {
+                webView.loadFileURL(url, allowingReadAccessTo: url)
             }
             else
-            if let hpc = doc.windowControllers.first as? HeliumPanelController {
-                hpc.webViewController.webView.next(url: newURL)
+            {
+                webView.load(URLRequest.init(url: url))
+            }
+            if let parent = parentWindow {
+                parent.addTabbedWindow(window, ordered: .above)
             }
             doc.showWindows()
+            
             return true
         } catch let error {
             NSApp.presentError(error)
+            return false
         }
-        return false
     }
-    
-    func openURLInNewWindow(_ newURL: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
-        do {
-            let types : Dictionary<String,String> = [ k.h3w : k.Helium ]
-            let type = types [ newURL.pathExtension ]
-            let doc = try dc.makeDocument(withContentsOf: newURL, ofType: type ?? k.Helium)
-            if let parent = parentWindow, let tabWindow = doc.windowControllers.first?.window {
-                parent.addTabbedWindow(tabWindow, ordered: .above)
-            }
-            doc.showWindows()
-            return true
-        } catch let error {
-            NSApp.presentError(error)
-        }
-        return false
-    }
-    
+        
     @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
         if let newURL = sender.representedObject {
             _ = self.openURLInNewWindow(newURL as! URL, attachTo: sender.representedObject as? NSWindow)
@@ -598,6 +548,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             //  No contextual window, load panel and its playlist controller
             do {
                 let doc = try Document.init(type: k.Playlists)
+                doc.makeWindowControllers()
                 doc.showWindows()
             }
             catch let error {
@@ -610,9 +561,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         if let wvc = window.windowController?.contentViewController {
 
             //  We're already here so exit
-            if wvc.isKind(of: PlaylistViewController.self) {
-                return
-            }
+            if wvc.isKind(of: PlaylistViewController.self) { return }
             
             //  If a web view controller, fetch and present playlist here
             if let wvc: WebViewController = wvc as? WebViewController {
@@ -645,6 +594,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         do
         {
             let doc = try Document.init(type: k.Release)
+            doc.makeWindowControllers()
             doc.showWindows()
         }
         catch let error {
@@ -1044,16 +994,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var hiddenWindows = Dictionary<String, Any>()
 
     func applicationOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        let lastCount = dc.documents.count
-        self.newDocument(sender)
-        return dc.documents.count > lastCount
+        let docCount = docController.documents.count
+        return docCount > 0
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         let reopenMessage = disableDocumentReOpening ? "do not reopen doc(s)" : "reopen doc(s)"
         let hasVisibleDocs = flag ? "has doc(s)" : "no doc(s)"
         Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
-        if !flag && 0 == dc.documents.count { return !applicationOpenUntitledFile(sender) }
+        if !flag && 0 == docController.documents.count { return !applicationOpenUntitledFile(sender) }
         return !disableDocumentReOpening || flag
     }
 
@@ -1286,12 +1235,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         item.target = self
         subOpen.addItem(item)
         
-        item = NSMenuItem(title: "Window", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Window", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "")
         item.isAlternate = true
-        item.target = self
+        item.target = docController
         subOpen.addItem(item)
 
-        item = NSMenuItem(title: "Tab", action: #selector(AppDelegate.newDocument(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Tab", action: #selector(NSDocumentController.newDocument(_:)), keyEquivalent: "")
         item.keyEquivalentModifierMask = NSEvent.ModifierFlags.shift
         item.isAlternate = true
         item.target = self
@@ -1726,8 +1675,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var bookmarks = [URL: Data]()
 
     func authenticateBaseURL(_ url: URL) -> URL {
-        var baseURL = url
+        guard isSandboxed(), url.hasHTMLContent() else { return url }
+        
         let openPanel = NSOpenPanel()
+        var baseURL = url
         
         openPanel.message = "Authorize access to " + baseURL.lastPathComponent
         openPanel.prompt = "Authorize"

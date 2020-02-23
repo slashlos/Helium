@@ -5,48 +5,48 @@
 	<key>CFBuildDate</key>
 	<string>20200205.200154</string>
 	<key>CFBuildIncrement</key>
-	<false/>
+	<true/>
 	<key>CFBuildMajor</key>
 	<string>3</string>
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<integer>6287</integer>
+	<integer>6692</integer>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
 			<key>CFBundleTypeExtensions</key>
-			<array/>
+			<array>
+				<string>hpl</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
 			<key>CFBundleTypeName</key>
 			<string>Helium</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).Document</string>
 		</dict>
 		<dict>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
 			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>h3w</string>
-			</array>
+			<array/>
 			<key>CFBundleTypeIconFile</key>
 			<string>docIcon</string>
 			<key>CFBundleTypeName</key>
 			<string>Playlist</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>NSDocumentClass</key>
+			<string>$(PRODUCT_MODULE_NAME).Document</string>
 		</dict>
 		<dict>
-			<key>LSHandlerRank</key>
-			<string>Default</string>
 			<key>CFBundleTypeExtensions</key>
 			<array/>
 			<key>CFBundleTypeIconFile</key>
@@ -55,6 +55,8 @@
 			<string>Any</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.adobe.pdf</string>
@@ -67,14 +69,16 @@
 			</array>
 		</dict>
 		<dict>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
 			<key>CFBundleTypeName</key>
 			<string>Release</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>NSDocumentClass</key>
+			<string>$(PRODUCT_MODULE_NAME).Document</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -94,7 +98,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3</string>
+	<string>3.0.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -149,7 +153,7 @@
 			<key>UTTypeIconFile</key>
 			<string>docIcon</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.slashlos.helium.h3w</string>
+			<string>com.slashlos.helium.hpl</string>
 			<key>UTTypeTagSpecification</key>
 			<dict/>
 			<key>public.filename-extension</key>

@@ -28,10 +28,4 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
             panel.isFloatingPanel = true
         }
     }
-    
-    @objc @IBAction func saveDocument(_ sender: Any?) {
-        if let doc = self.document {
-            (doc as! Document).save(sender)
-        }
-    }
 }
