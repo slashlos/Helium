@@ -82,6 +82,7 @@ internal struct UserSettings {
     static let HistoryName  = Setting<String>("historyName", defaultValue:"History")
     static let HistoryKeep  = Setting<Int>("historyKeep", defaultValue:2048)
     static let HistoryList  = Setting<String>("historyList", defaultValue:"histories")
+    static let HistorySaves = Setting<Bool>("historySaves", defaultValue: true)
     static let HideAppMenu  = Setting<Bool>("hideAppMenu", defaultValue: false)
     static let AutoHideTitle = Setting<Bool>("autoHideTitle", defaultValue: true)
     static let AutoSaveDocs = Setting<Bool>("autoSaveDocs", defaultValue: true)

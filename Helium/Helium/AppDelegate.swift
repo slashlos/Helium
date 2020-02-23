@@ -319,7 +319,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
-    @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
+	@IBAction func clearHistoryPress(_ sender: Any) {
+        
+        let message = "Confirm clearing URL and search history"
+        let infoMsg = String(format: "%ld history(s), %ld search(es)", _histories?.count ?? 0,
+                             recentSearches.count)
+        
+        sheetOKCancel(message, info: infoMsg,
+                                acceptHandler: { (button) in
+
+                                    //  Make them confirm first, then clear lazily
+                                    if button == NSApplication.ModalResponse.alertFirstButtonReturn {
+                                        self._histories = [PlayItem]()
+                                        let forget = Array<Any>()
+                                        self.defaults.set(forget, forKey: UserSettings.HistoryList.keyPath)
+                                        let forgot = Array<String>()
+                                        self.defaults.set(forgot, forKey: UserSettings.Searches.keyPath)
+                                    }
+        })
+	}
+	
+	@IBAction func keepHistoryPress(_ sender: NSMenuItem) {
+        UserSettings.HistorySaves.value = (sender.state == .off)
+	}
+	
+	@objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
         UserSettings.DeveloperExtrasEnabled.value = (sender.state == .off)
     }
     
@@ -779,6 +803,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 break
             case "Hide Helium in menu bar":
                 menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
+                break
+            case "Keep history record":
+                menuItem.state = UserSettings.HistorySaves.value ? .on : .off
                 break
             case "Home Page":
                 break
@@ -1286,6 +1313,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
+        guard UserSettings.HistorySaves.value else { return }
         guard let itemURL = notification.object as? URL, itemURL.scheme != k.about,
             itemURL.absoluteString != UserSettings.HomePageURL.value else {
             return

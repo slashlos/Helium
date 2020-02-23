@@ -275,6 +275,25 @@
                                                             <action selector="hideAppStatusItem:" target="Voe-Tx-rLC" id="qAE-Uy-oG1"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="History" id="U5l-79-QKP">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="History" id="SJx-eY-mSz">
+                                                            <items>
+                                                                <menuItem title="Clear history storage" id="PKU-o4-gKq">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="clearHistoryPress:" target="Voe-Tx-rLC" id="qNk-dN-Qm4"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Keep history record" id="VvF-I9-38F" userLabel="History Maintained">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="keepHistoryPress:" target="Voe-Tx-rLC" id="frf-zj-VeP"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
                                                     <menuItem title="Home Page" id="Vn0-wi-SSU">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
