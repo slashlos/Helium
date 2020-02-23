@@ -215,7 +215,13 @@ extension URL {
         
         return UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeHTML)
     }
-    
+    func hasVideoContent() -> Bool {
+        let type = self.pathExtension as CFString
+        let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil)
+        
+        return  UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeMovie) ||
+                UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeVideo)
+    }
     var webloc : URL? {
         get {
             do {
