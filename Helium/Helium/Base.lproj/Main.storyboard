@@ -1127,7 +1127,7 @@ CA
         <!--Window Controller-->
         <scene sceneID="3rF-Wl-9by">
             <objects>
-                <windowController storyboardIdentifier="PlaylistsController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="PlaylistController" id="o3w-13-r8w" customClass="PlaylistPanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" identifier="Playlists" title="Helium Playlists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingIdentifier="playlists" tabbingMode="disallowed" id="9Nm-Xe-vMy" customClass="PlaylistsPanel" customModule="Helium" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowCollectionBehavior key="collectionBehavior" moveToActiveSpace="YES"/>
