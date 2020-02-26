@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 6/24/17.
-//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017-2020 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation

@@ -3,7 +3,7 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 2/15/17.
-//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017-2020 Carlos D. Santiago. All rights reserved.
 //
 //  Kudos to Nate Thompson: Using Drag and Drop with NSTableview
 //  https://www.natethompson.io/2019/03/23/nstableview-drag-and-drop.html

@@ -4,7 +4,7 @@
 //
 //  Created by Viktor Oreshkin on 9.5.17.
 //  Copyright © 2017 Jaden Geller. All rights reserved.
-//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017-2020 Carlos D. Santiago. All rights reserved.
 //
 
 import Foundation
