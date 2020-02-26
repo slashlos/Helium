@@ -262,9 +262,9 @@
 				0F10354A1F0300DA00327B30 /* Helium.swift */,
 				0FD57FDD1EEC89F400A0F84D /* HeliumPanel.swift */,
 				4D867CD31AD6796A00681331 /* HeliumPanelController.swift */,
-				0FD6C7371E62286000D6F836 /* PlaylistViewController.swift */,
-				0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */,
 				4D867CB81AD6781200681331 /* WebViewController.swift */,
+				0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */,
+				0FD6C7371E62286000D6F836 /* PlaylistViewController.swift */,
 				4DEAB8FE1ADBD98600A2FC2B /* WKWebViewPrivate.h */,
 				4D867CBA1AD6781200681331 /* Images.xcassets */,
 				4D867CBC1AD6781200681331 /* Main.storyboard */,
@@ -360,6 +360,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27199AC11BE422AC00E02297 /* Build configuration list for PBXNativeTarget "HeliumShareExtension" */;
 			buildPhases = (
+				0F1E6E4C23EBB5BA00A3DC93 /* ShellScript */,
 				27199AAC1BE422AC00E02297 /* Sources */,
 				27199AAD1BE422AC00E02297 /* Frameworks */,
 				27199AAE1BE422AC00E02297 /* Resources */,
@@ -377,7 +378,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D867CCD1AD6781200681331 /* Build configuration list for PBXNativeTarget "Helium" */;
 			buildPhases = (
-				0F05C8281EFF1B54001B5D02 /* Version */,
 				4D867CAD1AD6781200681331 /* Sources */,
 				4D867CAE1AD6781200681331 /* Frameworks */,
 				4D867CAF1AD6781200681331 /* Resources */,
@@ -447,7 +447,6 @@
 					};
 					4D867CB01AD6781200681331 = {
 						CreatedOnToolsVersion = 6.3;
-						DevelopmentTeam = VQYGYPHYGE;
 						LastSwiftMigration = 1030;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -530,19 +529,22 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0F05C8281EFF1B54001B5D02 /* Version */ = {
+		0F1E6E4C23EBB5BA00A3DC93 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 			);
-			name = Version;
+			outputFileListPaths = (
+			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $buildPlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $buildPlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $buildPlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber if asked\nbuildIncr=$(/usr/libexec/PlistBuddy -c \"Print CFBuildIncrement\" $buildPlist)\nif [ \"$buildIncr\" = \"true\" ];\nthen\n    buildNumber=$(($buildNumber + 1))\nfi\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\nset -x\nbuildPlist=\"Helium/Info.plist\"\nsharePlist=\"HeliumShareExtension/Info.plist\"\n\nbuildMajor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMajor\" $sharePlist)\nbuildMinor=$(/usr/libexec/PlistBuddy -c \"Print CFBuildMinor\" $sharePlist)\nbuildPatch=$(/usr/libexec/PlistBuddy -c \"Print CFBuildPatch\" $sharePlist)\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBuildNumber\" $sharePlist)\nbuildDate=$(date \"+%Y%m%d.%H%M%S\")\n\n# Increment the buildNumber if asked\nbuildIncr=$(/usr/libexec/PlistBuddy -c \"Print CFBuildIncrement\" $buildPlist)\nif [ \"$buildIncr\" = \"true\" ];\nthen\n    buildNumber=$(($buildNumber + 1))\nfi\n\n# Formulate the bundle versions\nbundleVersion=$buildMajor.$buildMinor.$buildNumber\nbundleShortVersion=$buildMajor.$buildMinor.$buildPatch\n\n# Set the version numbers in the buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $buildPlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $buildPlist\n\n# Propagate to share\n/usr/libexec/PlistBuddy -c \"Set :CFBuildNumber $buildNumber\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBuildDate $buildDate\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $bundleVersion\" $sharePlist\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $bundleShortVersion\" $sharePlist\n";
 		};
 		0F60517C216130840008977E /* Build DMG */ = {
 			isa = PBXShellScriptBuildPhase;

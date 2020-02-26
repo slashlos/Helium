@@ -19,7 +19,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>hpl</string>
+				<string>hpi</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>Helium</string>
@@ -34,7 +34,9 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
-			<array/>
+			<array>
+				<string>hpl</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>docIcon</string>
 			<key>CFBundleTypeName</key>
@@ -146,10 +148,28 @@
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.plist</string>
+				<string>com.apple.property-list</string>
 			</array>
 			<key>UTTypeDescription</key>
+			<string>PlayItem</string>
+			<key>UTTypeIconFile</key>
 			<string>Helium</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.slashlos.helium.pli</string>
+			<key>UTTypeTagSpecification</key>
+			<dict/>
+			<key>public.filename-extension</key>
+			<array>
+				<string>hpi</string>
+			</array>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.property-list</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>PlayList</string>
 			<key>UTTypeIconFile</key>
 			<string>docIcon</string>
 			<key>UTTypeIdentifier</key>
@@ -158,7 +178,7 @@
 			<dict/>
 			<key>public.filename-extension</key>
 			<array>
-				<string>h3w</string>
+				<string>hpl</string>
 			</array>
 		</dict>
 	</array>
