@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -122,18 +123,18 @@
                     </menu>
                 </menuItem>
             </items>
+            <point key="canvasLocation" x="140" y="154"/>
         </menu>
         <window title="Helium Login Auto Launch" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="QvC-M9-y7g" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" utility="YES" HUD="YES"/>
             <rect key="contentRect" x="280" y="1024" width="240" height="120"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="240" height="120"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <button toolTip="record auto launch setting" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TOl-bg-vd9">
+                    <button toolTip="record auto launch setting" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="TOl-bg-vd9">
                         <rect key="frame" x="165" y="13" width="61" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Set" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aj5-QX-mOg">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -142,9 +143,8 @@
                             <action selector="setPreferences:" target="Voe-Tx-rLC" id="Csr-i3-k0r"/>
                         </connections>
                     </button>
-                    <button toolTip="record auto launch setting" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="47X-2m-6fc">
+                    <button toolTip="record auto launch setting" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="47X-2m-6fc">
                         <rect key="frame" x="14" y="14" width="82" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Tjj-tx-8br">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -156,9 +156,8 @@ Gw
                             <action selector="cancel:" target="Voe-Tx-rLC" id="c1o-zn-aQX"/>
                         </connections>
                     </button>
-                    <button toolTip="Auto launch Helium at login" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uv7-xx-Kun">
+                    <button toolTip="Auto launch Helium at login" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uv7-xx-Kun">
                         <rect key="frame" x="49" y="69" width="161" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Launch Helium at login" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="1OR-I7-lIL">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
@@ -169,6 +168,16 @@ Gw
                         </connections>
                     </button>
                 </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="TOl-bg-vd9" secondAttribute="trailing" constant="20" symbolic="YES" id="Cfc-SM-Dq6"/>
+                    <constraint firstItem="47X-2m-6fc" firstAttribute="top" secondItem="uv7-xx-Kun" secondAttribute="bottom" constant="29" id="eoA-LS-aKZ"/>
+                    <constraint firstItem="TOl-bg-vd9" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="47X-2m-6fc" secondAttribute="trailing" constant="12" symbolic="YES" id="fvP-IN-S6u"/>
+                    <constraint firstAttribute="trailing" secondItem="uv7-xx-Kun" secondAttribute="trailing" constant="32" id="gG5-5Y-ur6"/>
+                    <constraint firstItem="uv7-xx-Kun" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EiT-Mj-1SZ" secondAttribute="leading" symbolic="YES" id="mUr-vy-u7f"/>
+                    <constraint firstItem="47X-2m-6fc" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" symbolic="YES" id="qAV-7C-Dt9"/>
+                    <constraint firstItem="TOl-bg-vd9" firstAttribute="top" secondItem="uv7-xx-Kun" secondAttribute="bottom" constant="30" id="vHX-bS-NUo"/>
+                    <constraint firstAttribute="bottom" secondItem="TOl-bg-vd9" secondAttribute="bottom" constant="20" symbolic="YES" id="x31-Er-zRM"/>
+                </constraints>
             </view>
             <connections>
                 <outlet property="delegate" destination="Voe-Tx-rLC" id="XsG-pB-chf"/>
