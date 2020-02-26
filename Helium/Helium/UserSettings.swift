@@ -96,7 +96,7 @@ internal struct UserSettings {
     
     //  Search provider - must match k struct, menu item tags
     static let Search = Setting<Int>("search", defaultValue: 1) // Google
-    static let Searches = Setting<Array<String>>("searches", defaultValue: [String]())
+    static let SearchNames = Setting<String>("webSearches", defaultValue: "WebSearches")
     
     //  Developer setting(s)
     static let DeveloperExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)

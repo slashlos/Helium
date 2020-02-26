@@ -227,7 +227,53 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc @IBOutlet weak var appMenu: NSMenu!
 	var appStatusItem:NSStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     fileprivate var searchField : SearchField = SearchField.init(withValue: k.Helium, modalTitle: "Search")
-    fileprivate var recentSearches = Array<String>()
+
+    @objc dynamic var _webSearches : [PlayItem]?
+    @objc dynamic var  webSearches : [PlayItem] {
+        get {
+            if  _webSearches == nil {
+                _webSearches = [PlayItem]()
+                
+                // Restore search name change
+                if let searchesName = self.defaults.string(forKey: UserSettings.SearchNames.keyPath), searchesName != UserSettings.SearchNames.value {
+                    UserSettings.SearchNames.value = searchesName
+                }
+                
+                if let items = self.defaults.array(forKey: UserSettings.SearchNames.keyPath) {
+                    
+                    // Load histories from defaults up to their maximum
+                    for playitem in items {
+                        if let name : String = playitem as? String, let dict = defaults.dictionary(forKey: name) {
+                            self._webSearches?.append(PlayItem.init(with: dict))
+                        }
+                        else
+                        if let dict : Dictionary <String,AnyObject> = playitem as? Dictionary <String,AnyObject> {
+                            self._webSearches?.append(PlayItem.init(with: dict))
+                        }
+                        else
+                        {
+                            Swift.print("unknown search \(playitem)")
+                        }
+                    }
+                    Swift.print("searches \(self._webSearches!.count) restored")
+                }
+            }
+            return _webSearches!
+        }
+        set (array) {
+            _webSearches = array
+        }
+    }
+    
+    var recentSearches : Array<String> {
+        get {
+            var searches = Array<String>()
+            for search in webSearches {
+                searches.append(search.name)
+            }
+            return searches
+        }
+    }
     
     var title : String {
         get {
@@ -326,8 +372,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                                         self._histories = [PlayItem]()
                                         let forget = Array<Any>()
                                         self.defaults.set(forget, forKey: UserSettings.HistoryList.keyPath)
-                                        let forgot = Array<String>()
-                                        self.defaults.set(forgot, forKey: UserSettings.Searches.keyPath)
+                                        let forgot = Array<PlayItem>()
+                                        self.defaults.set(forgot, forKey: UserSettings.SearchNames.keyPath)
                                     }
         })
 	}
@@ -1102,11 +1148,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         // Asynchronous code running on the low priority queue
         DispatchQueue.global(qos: .utility).async {
 
-            if let items = self.defaults.array(forKey: UserSettings.Searches.keyPath) {
+            if let items = self.defaults.array(forKey: UserSettings.SearchNames.keyPath) {
                 for search in items {
-                    self.recentSearches.append(search as! String)
+                    self.webSearches.append(PlayItem.init(with: (search as! Dictionary)))
                 }
-                Swift.print("searches \(self.recentSearches.count) restored")
+                Swift.print("searches \(self.webSearches.count) restored")
             }
         }
         
@@ -1181,11 +1227,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
 
         //  Save searches to defaults up to their maximum
-        temp = Array<String>()
-        for item in recentSearches.suffix(254) {
-            temp.append(item as String)
+        temp = Array<Any>()
+        for item in webSearches.suffix(254) {
+            temp.append(item.dictionary())
         }
-        defaults.set(temp, forKey: UserSettings.Searches.keyPath)
+        defaults.set(temp, forKey: UserSettings.SearchNames.keyPath)
         
         //  Save our web URLs (non file://) windows to our keep list
         if UserSettings.RestoreWebURLs.value {
@@ -1473,7 +1519,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     urlString = UrlHelpers.ensureScheme(urlString)
                     if UrlHelpers.isValidUA(urlString: urlString) {
                         acceptHandler(newWindow,URL.init(string: urlString)!)
-                        self.recentSearches.append(rawString)
+                        Swift.print("search \(rawString)")
                     }
 
                 default:
@@ -1498,7 +1544,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     return
                 }
                 acceptHandler(newWindow,searchURL)
-                self.recentSearches.append(rawString)
+                Swift.print("search \(rawString)")
 
             default:// NSAlertSecondButtonReturn:
                 return
@@ -1576,8 +1622,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if UrlHelpers.isValidUA(urlString: newUrl!) {
                     acceptHandler(newUrl!)
                 }
-                
-                break
                 
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 var newUrl = (alert.accessoryView as! NSTextField).stringValue
