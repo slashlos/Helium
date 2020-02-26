@@ -35,6 +35,7 @@ struct k {
     static let Settings = "settings"
     static let Custom = "Custom"
     static let webloc = "webloc"
+    static let hpi = "hpi"
     static let hpl = "hpl"
     static let play = "play"
     static let item = "item"
@@ -80,8 +81,8 @@ struct k {
     static let searchLinks = [k.bingLink, k.googleLink, k.yahooLink]
 }
 
-let docGroups = [k.Helium, k.Release, k.Playlists]
-let docNames = [k.Helium, k.ReleaseNotes, k.Playlists]
+let docGroups = [k.Helium, k.Release, k.Playlist]
+let docNames = [k.Helium, k.ReleaseNotes, k.Playlist]
 
 extension NSPasteboard.PasteboardType {
     static let data    = NSPasteboard.PasteboardType(kUTTypeData as String)
@@ -421,12 +422,10 @@ class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         switch type {
         case .list:
             self.init(with: propertyList as! Dictionary, createMissingItems: true)
-            break
             
         case .data:
             let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
             self.init(item as! PlayList)
-            break
             
         case .dict:
             let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
@@ -747,24 +746,20 @@ class PlayItem : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
         switch type {
         case .item:
             self.init(with: propertyList as! Dictionary)
-            break
             
         case .data:
             let item = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
             self.init(item as! PlayItem)
-            break
             
         case .dict:
             let dict = NSKeyedUnarchiver.unarchiveObject(with: propertyList as! Data)
             self.init(with: dict as! Dictionary)
-            break
             
         case .string:
             self.init()
             if let xmlString = propertyList as? String {
                 Swift.print("convert \(xmlString) to playitem")
             }
-            break
             
         default:
             Swift.print("unknown \(type)")
@@ -980,7 +975,7 @@ class Document : NSDocument {
     func playitem() -> PlayItem {
         let item = PlayItem.init()
         item.name = self.displayName
-        item.link = self.fileURL!
+        if let fileURL = self.fileURL { item.link = fileURL }
         item.date = self.settings.date.value
         item.time = self.settings.time.value
         item.rank = self.settings.rank.value
@@ -1144,12 +1139,14 @@ class Document : NSDocument {
         
             //  sync docGroup group identifier to typeName
             fileType = typeName
+
+            makeWindowControllers()
         }
     }
         
     convenience init(contentsOf url: URL) throws {
         do {
-            try self.init(contentsOf: url, ofType: url.pathExtension == k.hpl ? k.Playlists : k.Helium)
+            try self.init(contentsOf: url, ofType: url.pathExtension == k.hpl ? k.Playlist : k.Helium)
         }
     }
     
@@ -1165,19 +1162,108 @@ class Document : NSDocument {
         }
     }
     
-    override func read(from url: URL, ofType typeName: String) throws {
-        switch typeName {
-        case "AnyType":
-            fileURL = url
-            break
+    override func data(ofType typeName: String) throws -> Data {
+        switch docGroup {
+        case .playlist:
+            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
+
+            //  For Playlist doc group, write out dictionary of playlists, history and searches
+            var plists = [PlayList]()
+             
+            // Save playlists - no maximum
+            plists.append(contentsOf: pvc.playlists)
+             
+            // Save histories - no maximum
+            plists.append(PlayList.init(name: UserSettings.HistoryList.keyPath , list: appDelegate.histories))
+
+            //  Save searches - no maximum
+            plists.append(PlayList.init(name: UserSettings.SearchNames.keyPath, list: appDelegate.webSearches))
+ 
+            return NSKeyedArchiver.archivedData(withRootObject: plists)
+  
+        case .release:
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+
         default:
-            try revert(toContentsOf: url, ofType: typeName)
+            let ilists = [playitem()]
+            //  TODO: add fore/back history
+            
+            return NSKeyedArchiver.archivedData(withRootObject: ilists)
+        }
+    }
+
+    override func read(from data: Data, ofType typeName: String) throws {
+        switch docGroup {
+        case .playlist:
+            guard let pdata = NSKeyedUnarchiver.unarchiveObject(with: data) else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+            guard let plists : [PlayList] = pdata as? [PlayList]  else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+            
+            //  files are playlist extractions, presented as a sheet or window
+            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
+            pvc.playlists = plists
+            pvc.playlistArrayController.content = pvc.playlists
+
+            guard pvc.playlists.count > 0 else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+             
+        case .release:
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+
+        default:
+            guard let idata = NSKeyedUnarchiver.unarchiveObject(with: data) else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+            guard let ilists : [PlayItem] = idata as? [PlayItem]  else {
+                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+            }
+        
+            for (i,item) in ilists.enumerated() {
+                switch i {
+                case 0:
+                    restoreSettings(with: item.dictionary())
+                    
+                default:
+                    // TODO: restore fore/back history
+                    break
+                }
+            }
+        }
+    }
+
+    override func revertToSaved(_ sender: Any?) {
+        switch docGroup {
+        case .playlist:
+            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
+            if let url = fileURL, let type = fileType {
+                do {
+                    try super.revert(toContentsOf: url, ofType: type)
+                }
+                catch let error {
+                    NSApp.presentError(error)
+                }
+            }
+            else
+            {
+                pvc.playlists = appDelegate.restorePlaylists()
+                pvc.playlistArrayController.content = pvc.playlists
+            }
+            
+        case .release:
+            break
+
+        default:
+            restoreSettings(with: dictionary())
+            //  TODO: restore fore/back history?
+            break
         }
     }
     
     override func revert(toContentsOf url: URL, ofType typeName: String) throws {
-        let controller = windowControllers.first!
-        
         if url.isFileURL {
             if appDelegate.isSandboxed() != appDelegate.storeBookmark(url: url) {
                 Swift.print("Yoink, unable to sandbox file \(url)")
@@ -1187,116 +1273,77 @@ class Document : NSDocument {
         //  Defer custom setups until we have a webView
         if [k.Custom].contains(typeName) { return }
 
+        //  We should call read(data) then restore controller below
+        try super.revert(toContentsOf: url, ofType: typeName)
+        
         switch docGroup {
 
         case .playlist:
+            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
+            pvc.playlistArrayController.content = pvc.playlists
 
-            //  hpl files are playlist extractions, presented as a sheet or window
-            guard url.pathExtension == k.hpl, let dict = NSDictionary(contentsOf: url) else { return }
-        
-            //  We could have 3 keys: <source-name>, k.playlists, k.playitems or promise file of playlists
-            var playlists = [PlayList]()
-            if let names : [String] = dict.value(forKey: k.playlists) as? [String] {
-                for name in names {
-                  if let items = dict.value(forKey: name) as? [Dictionary<String,Any>] {
-                      let playlist = PlayList.init(name: name, list: [PlayItem]())
-                      for item in items {
-                          playlist.list.append(PlayItem.init(with: item))
-                      }
-                      playlists.append(playlist)
-                  }
-                }
-            }
-            else
-            if let items = dict.value(forKey: k.playitems) as? [Dictionary<String,Any>] {
-                let playlist = PlayList.init(name: url.lastPathComponent, list: [PlayItem]())
-                for item in items {
-                  playlist.list.append(PlayItem.init(with: item))
-                }
-                playlists.append(playlist)
-            }
-            else
-            {
-                for (name,list) in dict {
-                  let playlist = PlayList.init(name: name as! String, list: [PlayItem]())
-                  for item in (list as? [Dictionary<String,Any>])! {
-                      playlist.list.append(PlayItem.init(with: item))
-                  }
-                  playlists.append(playlist)
-                }
-            }
-            
-            guard playlists.count > 0 else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
-         
- /*
-            let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
-            
-            if let url = self.url, url.pathExtension == k.hpl, let dict = NSDictionary(contentsOf: url) as? Dictionary<String,Any> {
-                var playlists = [PlayList]()
-                
-                for (name,plist) in dict {
-                    guard let items = plist as? [Dictionary<String,Any>] else { continue }
-                    var list : [PlayItem] = [PlayItem]()
-                    for pitem in items {
-                        let item = PlayItem.init(with: pitem)
-                        list.append(item)
-                    }
-                    let playlist = PlayList.init(name: name, list: list)
-                    playlists.append(playlist)
-                }
-                
-                pvc.playlists.append(contentsOf: playlists)
-            }
-            else
-            {
-                pvc.playlists.append(contentsOf: appDelegate.playlists)
-                pvc.isGlobalPlaylist = true
-            }
-*/
-            break
             
         case .release:
             break
             
         default:
-            let wvc = (controller as! HeliumPanelController).webViewController
-            if url.isFileURL {
-                let baseURL = appDelegate.authenticateBaseURL(url)
-                
-                wvc.webView.loadFileURL(url, allowingReadAccessTo: baseURL)
-            }
-            else
-            {
-                wvc.webView.load(URLRequest.init(url: url))
-            }
             break
         }
     }
     
     @objc @IBAction override func save(_ sender: (Any)?) {
-        guard fileURL != nil, fileURL?.scheme != k.about, docGroup != .release else { return }
+        guard fileURL?.scheme != k.about, docGroup != .release else { return }
         
         do {
             switch docGroup {
-            case .helium:
-                try self.write(to: fileURL!, ofType: fileType!)
+            case .playlist:
+                if fileURL?.isFileURL ?? false {
+                    super.save(sender)
+                }
+                else
+                {
+                    appDelegate.savePlaylists(self)
+                }
+                
+            case .release:
+                break
+                
+            default:
+                if let url = fileURL, let type = fileType {
+                    try self.write(to: url, ofType: type)
+                }
+                else
+                {
+                    cacheSettings(fileURL ?? URL.init(string: UserSettings.HomePageURL.value)!)
+                }
                 return
                 
-            case .playlist:
-                if let url = self.url, url.isFileURL {
-                    let type = docGroups[docGroup.rawValue]
-                    try self.writeSafely(to: url, ofType: type, for: .saveOperation)
-                    return
-                }
-            
-            default:
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
             }
         } catch let error {
             NSApp.presentError(error)
         }
+    }
+    
+    @objc @IBAction override func saveAs(_ sender: Any?) {
+        if let window = windowControllers.first?.window {
+            let savePanel = NSSavePanel()
+            let fileType = self.fileType!
+            savePanel.allowedFileTypes = [self.fileNameExtension(forType: fileType, saveOperation: .saveAsOperation)!]
+            
+            savePanel.beginSheetModal(for: window, completionHandler: { (result: NSApplication.ModalResponse) in
+                if result == .OK {
+                    do {
+                        if let saveURL = savePanel.url {
+                            try super.write(to: saveURL, ofType: fileType)
+                            self.updateChangeCount(.changeCleared)
+                            _ = saveURL.hideFileExtensionInPath()
+                        }
+                    } catch let error {
+                        NSApp.presentError(error)
+                    }
+                }
+            })
+         }
     }
     
     func cacheSettings(_ url : URL) {
@@ -1313,7 +1360,7 @@ class Document : NSDocument {
             hoverBar.closeButton?.setNeedsDisplay()
         }
     }
-        
+    
     override func write(to url: URL, ofType typeName: String) throws {
         switch docGroup {
         case .playlist:

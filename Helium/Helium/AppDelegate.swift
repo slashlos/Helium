@@ -416,7 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  This could be anything so add/if a doc and initialize
         do {
-            let typeName = fileURL.isFileURL && fileURL.pathExtension == k.hpl ? k.Playlists : k.Helium
+            let typeName = fileURL.isFileURL && fileURL.pathExtension == k.hpl ? k.Playlist : k.Helium
             let doc = try Document.init(contentsOf: fileURL, ofType: typeName)
             docController.noteNewRecentDocumentURL(fileURL)
             doc.showWindows()
@@ -457,7 +457,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  No window, so load panel modally
         NSApp.activate(ignoringOtherApps: true)
         
-        if open.runModal() == NSApplication.ModalResponse.OK {
+        if open.runModal() == .OK {
             open.orderOut(sender)
             let urls = open.urls
             for url in urls {
@@ -488,10 +488,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             Swift.print("Yoink, unable to sandbox \(url)")
             return false
         }
-
+        
         do {
-            let doc = try Document.init(contentsOf: url)
-             
+            let doc = try Document.init(contentsOf: url, ofType: url.pathExtension == k.hpl ? k.Playlist : k.Helium)
+            
             guard let wc = doc.windowControllers.first else { return false }
             
             guard let window = wc.window, let cvc = window.contentViewController,
@@ -588,8 +588,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No contextual window, load panel and its playlist controller
             do {
-                let doc = try Document.init(type: k.Playlists)
-                doc.makeWindowControllers()
+                let doc = try Document.init(type: k.Playlist)
                 doc.showWindows()
             }
             catch let error {
@@ -635,7 +634,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         do
         {
             let doc = try Document.init(type: k.Release)
-            doc.makeWindowControllers()
             doc.showWindows()
         }
         catch let error {
@@ -931,47 +929,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc dynamic var  playlists : [PlayList] {
         get {
             if  _playlists == nil {
-                _playlists = [PlayList]()
-                
-                //  read back playlists as [Dictionary] or [String] keys to each [PlayItem]
-                if let plists = self.defaults.dictionary(forKey: k.playlists) {
-                    for (name,plist) in plists {
-                        guard let items = plist as? [Dictionary<String,Any>] else {
-                            let playlist = PlayList.init(name: name, list: [PlayItem]())
-                            _playlists?.append(playlist)
-                            continue
-                        }
-                        var list : [PlayItem] = [PlayItem]()
-                        for plist in items {
-                            let item = PlayItem.init(with: plist)
-                            list.append(item)
-                        }
-                        let playlist = PlayList.init(name: name, list: list)
-                        _playlists?.append(playlist)
-                    }
-                }
-                else
-                if let plists = self.defaults.array(forKey: k.playlists) as? [String] {
-                    for name in plists {
-                        guard let plist = self.defaults.dictionary(forKey: name) else {
-                            let playlist = PlayList.init(name: name, list: [PlayItem]())
-                            _playlists?.append(playlist)
-                            continue
-                        }
-                        let playlist = PlayList.init(with: plist, createMissingItems: true)
-                        _playlists?.append(playlist)
-                    }
-                }
-                else
-                {
-                    self.defaults.set([Dictionary<String,Any>](), forKey: k.playlists)
-                }
+                _playlists = restorePlaylists()
             }
             return _playlists!
         }
         set (array) {
             _playlists = array
         }
+    }
+    
+    func restorePlaylists() -> [PlayList] {
+        var playlists = [PlayList]()
+            
+        //  read back playlists as [Dictionary] or [String] keys to each [PlayItem]
+        if let plists = self.defaults.dictionary(forKey: k.playlists) {
+            for (name,plist) in plists {
+                guard let items = plist as? [Dictionary<String,Any>] else {
+                    let playlist = PlayList.init(name: name, list: [PlayItem]())
+                    playlists.append(playlist)
+                    continue
+                }
+                var list : [PlayItem] = [PlayItem]()
+                for plist in items {
+                    let item = PlayItem.init(with: plist)
+                    list.append(item)
+                }
+                let playlist = PlayList.init(name: name, list: list)
+                playlists.append(playlist)
+            }
+        }
+        else
+        if let plists = self.defaults.array(forKey: k.playlists) as? [String] {
+            for name in plists {
+                guard let plist = self.defaults.dictionary(forKey: name) else {
+                    let playlist = PlayList.init(name: name, list: [PlayItem]())
+                    playlists.append(playlist)
+                    continue
+                }
+                let playlist = PlayList.init(with: plist, createMissingItems: true)
+                playlists.append(playlist)
+            }
+        }
+        else
+        {
+            self.defaults.set([Dictionary<String,Any>](), forKey: k.playlists)
+        }
+        return playlists
     }
     
     @objc @IBAction func savePlaylists(_ sender: Any) {
@@ -1217,12 +1220,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         // Save play;sits to defaults - no maximum
         savePlaylists(self)
         
-        // Save histories to defaults up to their maxiumum
+        // Save histories to defaults up to their maximum
         let keep = UserSettings.HistoryKeep.value
         var temp = Array<Any>()
         for item in histories.sorted(by: { (lhs, rhs) -> Bool in return lhs.rank < rhs.rank}).suffix(keep) {
-            let test = item.dictionary()
-            temp.append(test)
+            temp.append(item.dictionary())
         }
         defaults.set(temp, forKey: UserSettings.HistoryList.keyPath)
 
@@ -1685,6 +1687,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return disableDocumentReOpening
     }
     
+    func application(_ sender: NSApplication, openFiles: [String]) {
+        // Create a FileManager instance
+        let fileManager = FileManager.default
+        
+        for path in openFiles {
+
+            do {
+                let files = try fileManager.contentsOfDirectory(atPath: path)
+                for file in files {
+                    _ = self.application(sender, openFile: file)
+                }
+            }
+            catch let error as NSError {
+                if fileManager.fileExists(atPath: path) {
+                    _ = self.application(sender, openFile: path)
+                }
+                else
+                {
+                    print("Yoink \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
     func application(_ application: NSApplication, openURL: URL) -> Bool {
         disableDocumentReOpening = openURLInNewWindow(openURL)
         return disableDocumentReOpening
@@ -1718,7 +1744,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         openPanel.directoryURL = baseURL.deletingLastPathComponent()
         
         openPanel.begin() { (result) -> Void in
-            if (result == NSApplication.ModalResponse.OK) {
+            if (result == .OK) {
                 if let authURL = openPanel.url {
                     if self.storeBookmark(url: authURL) {
                         baseURL = authURL

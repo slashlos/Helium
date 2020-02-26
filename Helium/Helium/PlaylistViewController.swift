@@ -484,9 +484,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  Leave non-global extractions contents intact
         if isGlobalPlaylist {
             
-            //  Load global pp delegate keep history
-            self.restorePlaylists(nil)
-            
             //  Prune duplicate history entries
             while let oldHistory = playlists.name(UserSettings.HistoryName.value)
             {
@@ -530,6 +527,14 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         guard let cornerView = playitemTableView.cornerView else { return }
 		cornerView.addSubview(cornerButton)
         cornerButton.center(cornerView)
+    }
+    
+    override func viewDidAppear() {
+        Swift.print(String(format: "sheet? %@", sheetPresent ? "YEA" : "NEA"))
+        let window = self.view.window!
+        
+        // Remember for later restoration
+        NSApp.addWindowsItem(window, title: window.title, filename: false)
     }
     
     override func viewWillDisappear() {
@@ -1036,18 +1041,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         }
 	}
     
-    @objc @IBAction func saveDocument(_ sender: AnyObject) {
-        Swift.print("saveDocument");
-        if let doc = self.view.window?.windowController?.document {
-            (doc as! Document).save(sender)
-            
-            //  We would throw if any errors so clear redo now
-            if 0 == doc.changeCount {
-                self.undoManager?.removeAllActions()
-            }
-        }
-    }
-    
     @objc @IBAction func savePlaylists(_ sender: AnyObject) {
         let whoAmI = self.view.window?.firstResponder
         
@@ -1070,8 +1063,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             
             //  If no selection we saved *all* to global to be restored
             if saveArray.count == playlists.count {
-// TODO: convert playlists to dictionary
-//                defaults.set(playlists.allKeys, forKey: k.playlists)
                 var names = Array<String>()
                 
                 for playlist in saveArray {
@@ -1171,7 +1162,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 
             default:
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
-                break
             }
         }
         return true;
@@ -1354,32 +1344,22 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     }
 
     func tableView(_ tableView: NSTableView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedRowsWith indexSet: IndexSet) -> [String] {
-        var dict = Dictionary<String,[Any]>()
         var names : [String] = [String]()
-        let count = indexSet.count
         
         //	Always marshall an array regardless of count
         if tableView == playlistTableView {
             let objects: [PlayList] = playlistArrayController.arrangedObjects as! [PlayList]
-            var promise : String!
+            let promise = String(format: "%@%@", objects[0].name,
+                                 objects.count > 2 ? String(format: "+%d", (objects.count - 1)) : "")
+            var playlists = [PlayList]()
 
-            for (i,index) in indexSet.enumerated() {
-                if i == 0 {
-                    promise = String(format: "%@%@", objects[index].name,
-                                     count > 2 ? String(format: "+%d", (count - 1)) : "")
-                }
-                let playlist = objects[index]
-                var items: [Any] = [Any]()
-                let name = playlist.name
-                for item in playlist.list {
-                    let dict = item.dictionary()
-                    items.append(dict)
-                }
-                dict[name] = items
+            for index in indexSet {
+                playlists.append(objects[index])
             }
             if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: promise, type: k.hpl) {
-                (dict as NSDictionary).write(to: fileURL, atomically: true)
-                names.append(fileURL.absoluteString)
+                if NSKeyedArchiver.archiveRootObject(playlists, toFile: fileURL.path) {
+                    names.append(fileURL.lastPathComponent)
+                }
             }
         }
         else
@@ -1387,18 +1367,17 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             let selection = playlistArrayController.selectedObjects.first as! PlayList
             let objects: [PlayItem] = playitemArrayController.arrangedObjects as! [PlayItem]
             let name = String(format: "%@(%ld)", selection.name, indexSet.count)
-            var items: [AnyObject] = [AnyObject]()
+            let playlist = PlayList.init(name: name, list: [PlayItem]())
 
             for index in indexSet {
                 let item = objects[index]
                 names.append(item.link.absoluteString)
-                items.append(item.dictionary() as AnyObject)
             }
             
             if let fileURL = NewFileURLForWriting(path: dropDestination.path, name: name, type: k.hpl) {
-                var dict = Dictionary<String,[AnyObject]>()
-                dict[name] = items
-                (dict as NSDictionary).write(to: fileURL, atomically: true)
+                if NSKeyedArchiver.archiveRootObject([playlist], toFile: fileURL.path) {
+                    names.append(fileURL.lastPathComponent)
+                }
             }
         }
         return names
@@ -1627,7 +1606,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     //  selected playlist is already set
                     play = (playlistArrayController.arrangedObjects as! Array)[row]
                     playlistArrayController.setSelectionIndex(row)
-                    break
+
                 default:
                     play = PlayList()
                     add(list: play!, atIndex: -1)

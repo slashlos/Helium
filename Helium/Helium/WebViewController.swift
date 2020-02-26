@@ -1111,10 +1111,16 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     override func viewWillAppear() {
          
-        //  If we we're seen before then restore settings
-        if let hpc = heliumPanelController {
-            hpc.documentDidLoad()
+        if let url = webView.url {
+            Swift.print("willAppear with \(url.absoluteString)")
         }
+        else
+        {
+            clear()
+        }
+        
+        //  If we we're seen before then restore settings
+        if let hpc = heliumPanelController { hpc.documentDidLoad() }
     }
     
     override func viewDidAppear() {
@@ -1230,6 +1236,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
         controller.addUserScript(clickMe)
         controller.add(self, name: "clickMe")*/
+        
+        
+
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -1251,6 +1260,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         webView.updateTrackingAreas()
     }
+    
     override func viewDidLayout() {
         super.viewDidLayout()
 
@@ -1353,7 +1363,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 
         open.worksWhenModal = true
         open.beginSheetModal(for: window!, completionHandler: { (response: NSApplication.ModalResponse) in
-            if response == NSApplication.ModalResponse.OK {
+            if response == .OK {
                 //  TODO: launch files in new tabs
                 viewOptions.insert(.t_view)
 
@@ -1483,7 +1493,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             openPanel.canCreateDirectories = true
             openPanel.directoryURL = desktop
             openPanel.begin() { (result) -> Void in
-                if (result == NSApplication.ModalResponse.OK) {
+                if (result == .OK) {
                     desktop = openPanel.url!
                     _ = self.appDelegate.storeBookmark(url: desktop, options: self.appDelegate.rwOptions)
                     self.appDelegate.desktopData = self.appDelegate.bookmarks[desktop]
@@ -1766,10 +1776,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                 }
                             })
                         }
-                        else
-                        {
-                            restoreSettings(with: url.absoluteString)
-                        }
                     } else {
                         title = appDelegate.appName
                     }
@@ -1784,24 +1790,26 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             Swift.print("loading: \(loading ? "YES" : "NO")")
             
         case "title":
-            title = mwv.title
-            if let window = self.view.window {
-                window.title = title ?? self.webView.url!.simpleSpecifier
+            if let newTitle = change?[NSKeyValueChangeKey(rawValue: "new")] as? String {
+                if let window = self.view.window {
+                    window.title = newTitle
+                    NSApp.changeWindowsItem(window, title: newTitle, filename: false)
+                }
             }
-            break
-            
+             
+        case "url":
+            if let urlString = change?[NSKeyValueChangeKey(rawValue: "new")] as? String {
+                guard let dict = defaults.dictionary(forKey: urlString) else { return }
+                
+                if let doc = self.document {
+                    doc.restoreSettings(with: dict)
+                    doc.heliumPanelController?.documentDidLoad()
+                }
+            }
+
         default:
             Swift.print("Unknown observing keyPath \(String(describing: keyPath))")
         }
-    }
-    
-    fileprivate func restoreSettings(with title: String) {
-        guard let dict = defaults.dictionary(forKey: title), let doc = self.document, let hpc = doc.heliumPanelController else
-        {
-            return
-        }
-        doc.restoreSettings(with: dict)
-        hpc.documentDidLoad()
     }
     
     //Convert a YouTube video url that starts at a certian point to popup/embedded design
@@ -2148,5 +2156,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 }
 
 class ReleaseViewController : WebViewController {
-    
+
+    override func viewWillAppear() {
+        
+        let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
+        if let webView = self.webView {
+            webView.loadHTMLString(relnotes, baseURL: nil)
+        }
+    }
 }

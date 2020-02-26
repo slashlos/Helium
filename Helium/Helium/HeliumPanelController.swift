@@ -202,9 +202,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
         
-        //  Set up hover & buttons unless we're not a helium document
-        guard !self.isKind(of: ReleasePanelController.self) else { return }
-        
         //  We want to allow miniaturizations
         self.panel.styleMask.formUnion(.miniaturizable)
         configureTitleDrag()
@@ -230,6 +227,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         //  We allow drag from title's document icon to self or Finder
         panel.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
         panel.registerForDraggedTypes([.promise, .URL, .fileURL])
+        
+        // Remember for later restoration
+        NSApp.addWindowsItem(panel, title: panel.title, filename: false)
     }
 
     func documentDidLoad() {
@@ -1071,11 +1071,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 }
             })
         }
-        else
-        {
-            titleDragButton?.needsDisplay = true
-            titleView?.needsDisplay = true
-        }
         docIconVisibility(autoHideTitlePreference == .never || translucencyPreference == .never)
     }
     
@@ -1130,5 +1125,24 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
 class ReleasePanelController : HeliumPanelController {
 
+    override func windowDidLoad() {
+        //  Default to not dragging by content
+        panel.isMovableByWindowBackground = false
+        panel.isFloatingPanel = true
+
+        // Remember for later restoration
+        synchronizeWindowTitleWithDocumentName()
+        NSApp.addWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
+    }
+    
+    override func documentDidLoad() {
+        
+        let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
+        if let webView = webViewController.webView {
+            webView.loadHTMLString(relnotes, baseURL: nil)
+        }
+
+        super.documentDidLoad()
+    }
 }
 
