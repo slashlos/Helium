@@ -516,6 +516,11 @@ CA
                                                 <action selector="saveDocumentAs:" target="Ady-hI-5gd" id="4If-Hb-lU2"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Revert To Saved…" keyEquivalent="s" id="xOh-zJ-vOA">
+                                            <connections>
+                                                <action selector="revertDocumentToSaved:" target="Ady-hI-5gd" id="ywd-wc-9xA"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wbg-XB-qHT"/>
                                         <menuItem title="Back" keyEquivalent="[" id="UkE-up-3w1">
                                             <connections>
