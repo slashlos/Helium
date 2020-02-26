@@ -196,23 +196,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         switch CLLocationManager.authorizationStatus() {
         case .notDetermined:
             Swift.print("location notDetermined")
-            break
             
         case .restricted:
             Swift.print("location restricted")
-            break
             
         case .denied:
             Swift.print("location denied")
-            break
             
         case .authorizedWhenInUse:
             print("location authorizedWhenInUse")
-            break
             
         case .authorizedAlways:
             print("location authorizedWhenInUse")
-            break
             
         default:
             fatalError()
@@ -737,8 +732,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 break
             case "Auto save documents":
                 menuItem.state = UserSettings.AutoSaveDocs.value ? .on : .off
-                break;
-            case "Developer Extras":
+             case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hpc : HeliumPanelController = wc as? HeliumPanelController,
@@ -750,30 +744,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     break
                 }
                 menuItem.state = .on
-                break
             case "Hide Helium in menu bar":
                 menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
-                break
             case "Keep history record":
                 menuItem.state = UserSettings.HistorySaves.value ? .on : .off
-                break
             case "Home Page":
                 break
             case "Location services":
                 menuItem.state = isLocationEnabled ? .on : .off
-                break
-            case "Magic URL Redirects":
+           case "Magic URL Redirects":
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
-                break
             case "HTTP -> HTTPS Links":
                 menuItem.state = UserSettings.PromoteHTTPS.value ? .on : .off
-                break
             case "Restore Doc Attributes":
                 menuItem.state = UserSettings.RestoreDocAttrs.value ? .on : .off
-                break
             case "Restore Web URLs":
                 menuItem.state = UserSettings.RestoreWebURLs.value ? .on : .off
-                break
             case "User Agent":
                 break
             case "Quit":
@@ -1417,8 +1403,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 {
                     userAlertMessage("This apppears to be an invalid User Agent", info: newUA)
                 }
-                break
-                
+                 
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 let newUA = (alert.accessoryView as! NSTextField).stringValue
                 if UAHelpers.isValidUA(uaString: newUA) {

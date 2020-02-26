@@ -3,8 +3,9 @@
 //  Helium
 //
 //  Created by Carlos D. Santiago on 6/27/17.
-//  Copyright © 2017 Carlos D. Santiago. All rights reserved.
+//  Copyright © 2017-2020 Carlos D. Santiago. All rights reserved.
 //
+//  Document instance read/save/write are to default; use super for files
 
 import Foundation
 import QuickLook
@@ -21,11 +22,12 @@ let docHelium : ViewOptions = []
 
 //  Global static strings
 struct k {
-    static let Helium = "Helium"
+    static let Helium = "Helium" /// aka Playitem
     static let helium = "helium"
     static let about = "about"
     static let desktop = "Desktop"
     static let docIcon = "docIcon"
+    static let Playlist = "Playlist"
     static let Playlists = "Playlists"
     static let playlists = "playlists"
     static let Playitems = "Playitems"
@@ -1313,28 +1315,25 @@ class Document : NSDocument {
     }
         
     override func write(to url: URL, ofType typeName: String) throws {
-        cacheSettings(url)
-        
-        //  When a document is written, update in global play items
+        switch docGroup {
+        case .playlist:
+            appDelegate.savePlaylists(self)
+            break
+            
+        case .release:
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+
+        default:
+            cacheSettings(url)
+            
+            //  When a document is written, update in global play items
+            UserDefaults.standard.synchronize()
+        }
         self.updateChangeCount(.changeCleared)
-        UserDefaults.standard.synchronize()
 
         //  Update UI (red dot in close button) immediately
         if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
             hoverBar.closeButton?.setNeedsDisplay()
-        }
-    }
-    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
-        do {
-            guard docGroup == .playlist else {
-                try self.write(to: url, ofType: typeName)
-                return
-            }
-
-            try self.write(to: url, ofType: typeName)
-            self.updateChangeCount(.changeCleared)
-        } catch let error {
-            NSApp.presentError(error)
         }
     }
     
@@ -1345,7 +1344,7 @@ class Document : NSDocument {
     }
     
     override func makeWindowControllers() {
-        let type = [ k.Helium, k.Release, k.Playlists ][docGroup.rawValue]
+        let type = [ k.Helium, k.Release, k.Playlist ][docGroup.rawValue]
         let identifier = String(format: "%@Controller", type)
         let storyboard = NSStoryboard(name: "Main", bundle: nil)
         
@@ -1360,17 +1359,9 @@ class Document : NSDocument {
         switch docGroup {
             
         case .playlist:
-            let pvc : PlaylistViewController = controller.contentViewController as! PlaylistViewController
-            pvc.playlists.append(contentsOf: appDelegate.playlists)
-            pvc.isGlobalPlaylist = true
-            break
+            revertToSaved(self)
             
         case .release:
-            let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
-            let wvc = (controller as! HeliumPanelController).webViewController
-            if let webView = wvc.webView {
-                webView.loadHTMLString(relnotes, baseURL: nil)
-            }
             break
             
         default:
@@ -1380,11 +1371,6 @@ class Document : NSDocument {
                 } catch let error {
                     NSApp.presentError(error)
                 }
-            }
-            else
-            {
-                let wvc = (controller as! HeliumPanelController).webViewController
-                wvc.clear()
             }
         }
 

@@ -214,7 +214,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 }
             }
             self.cornerButton.setNeedsDisplay()
-            break
             
         case false:
             for (row,item) in (playitemArrayController.arrangedObjects as! [PlayItem]).enumerated() {
@@ -270,7 +269,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             for keyPath in keys {
                 item.addObserver(self, forKeyPath: keyPath, options: [.old,.new], context: nil)
             }
-            break
+            
         case false:
             for keyPath in keys {
                 item.removeObserver(self, forKeyPath: keyPath)
@@ -367,7 +366,6 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             {
                 Swift.print(String.init(format: "%p:%@ unk %@", object! as! CVarArg, keyPath!, "*no* values?"))
             }
-            break
             
         default:
             if let undo = self.undoManager {
@@ -1131,7 +1129,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 if let document = self.view.window?.windowController?.document {
                     (document as! Document).save(sender)
                 }
-                break
+            
             case false:
                 // Restore NON-HISTORY playlist(s) from cache
                 if let historyIndex = playCache.firstIndex(of: historyCache) {
@@ -1643,11 +1641,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                     Swift.print("selection \(String(describing: playlistArrayController.selectedObjects.first))")
                     Swift.print("     play \(String(describing: play))")
                 }
-                break
-                
+                 
             default: // playitemTableView:
                 play = playlistArrayController.selectedObjects.first as? PlayList
-                break
             }
 
             for itemURL in items {
@@ -1727,13 +1723,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                         if let testURL = URL(string: elementItem!) {
                             url = testURL
                         }
-                        break
+                        
                     case NSPasteboard.PasteboardType("public.file-url"),
                          NSPasteboard.PasteboardType("public.utf8-plain-text")://kUTTypeFileURL
                         if let testURL = URL(string: elementItem!)?.standardizedFileURL {
                             url = testURL
                         }
-                        break
+                        
                     case NSPasteboard.PasteboardType("com.apple.finder.node"):
                         continue // handled as public.file-url
                     case NSPasteboard.PasteboardType("com.apple.pasteboard.promised-file-content-type"):

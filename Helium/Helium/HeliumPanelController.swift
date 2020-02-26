@@ -574,8 +574,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 if !indy || tag == closeTag { closeButton?.isMouseOver = false }
                 if !indy || tag == miniTag { miniaturizeButton?.isMouseOver = false }
                 if !indy || tag == zoomTag { zoomButton?.isMouseOver = false }
-                break
-
+ 
             default:
                 if let vSize = self.window?.contentView?.bounds.size {
                 
@@ -864,19 +863,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         switch translucencyPreference {
         case .never:
             translucencyPreference = .always
-            break
         case .always:
             translucencyPreference = .never
-            break
         case .mouseOver:
             translucencyPreference = .offOver
-            break
         case .mouseOutside:
             translucencyPreference = .offOutside
-            break
         case .offOver:
             translucencyPreference = .mouseOver
-            break
         case .offOutside:
             translucencyPreference = .mouseOutside
         }
@@ -898,7 +892,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         //Transluceny Menu
         case "Enabled":
             menuItem.state = canBeTranslucent() ? .on : .off
-            break
         //AutoHide / Transluceny Menu
         case "Never":
             if autoHideTitleBarMenu {
@@ -909,7 +902,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             {
                 menuItem.state = translucencyPreference == .never ? .on : .off
             }
-            break
         case "Outside":
             if autoHideTitleBarMenu {
                 menuItem.state = autoHideTitlePreference == .outside ? .on : .off
@@ -919,34 +911,26 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             {
                 menuItem.state = translucencyPreference == .always ? .on : .off
             }
-            break
         case "Mouse Over":
             menuItem.state = translucencyPreference == .offOver
                 ? .mixed
                 : translucencyPreference == .mouseOver ? .on : .off
-            break
         case "Mouse Outside":
             menuItem.state = translucencyPreference == .offOutside
                 ? .mixed
                 : translucencyPreference == .mouseOutside ? .on : .off
-            break
         case "All Spaces Disabled":
             menuItem.state = settings.floatAboveAllPreference.value.contains(.disabled) ? .on : .off
-            break;
         case "Full Screen":
             menuItem.state = settings.floatAboveAllPreference.value.contains(.screen) ? .on : .off
-            break;
         case "Hide Helium in menu bar":
             menuItem.state = UserSettings.HideAppMenu.value ? .on : .off
-            break
         case "Home Page":
             break
         case "Magic URL Redirects":
             menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
-            break
         case "Snapshot":
             menuItem.isEnabled = panel.contentViewController?.isKind(of: WebViewController.self) ?? false
-            break
         case "Save":
             break
 
@@ -955,7 +939,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             if menuItem.tag >= 10 {
                 menuItem.state = (menuItem.tag == settings.opacityPercentage.value ? .on : .off)
             }
-            break
         }
         return true;
     }

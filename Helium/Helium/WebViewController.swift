@@ -400,7 +400,6 @@ class MyWebView : WKWebView {
                     if let files = pboard.propertyList(forType: type) {
                         Swift.print("files \(files)")
                     }
-                    break
                     
                 case .URL, .fileURL:
                     if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
@@ -457,7 +456,6 @@ class MyWebView : WKWebView {
                             }
                         }
                     }
-                    break
                     
                 case .list:
                     if let playlists: Array<AnyObject> = pboard.readObjects(forClasses: [PlayList.classForCoder()], options: options) as Array<AnyObject>? {
@@ -481,7 +479,6 @@ class MyWebView : WKWebView {
                             handled += 1
                         }
                     }
-                    break
                     
                 case .item:
                     if let playitems: Array<AnyObject> = pboard.readObjects(forClasses: [PlayItem.classForCoder()], options: options) as Array<AnyObject>? {
@@ -506,7 +503,6 @@ class MyWebView : WKWebView {
                             handled += (items == playitems.count) ? 1 : 0
                         }
                     }
-                    break
                     
                 case .data:
                     if let data = item.data(forType: type), let item = NSKeyedUnarchiver.unarchiveObject(with: data) {
@@ -524,19 +520,16 @@ class MyWebView : WKWebView {
                             Swift.print("data: \(data)")
                         }
                     }
-                    break
 
                 case .rtf, .rtfd:
                     if let data = item.data(forType: type), let text = NSAttributedString(rtf: data, documentAttributes: nil) {
                         handled += self.text(text.string) ? 1 : 0
                     }
-                    break
                     
                 case .string, .tabularText:
                     if let text = item.string(forType: type) {
                         handled += self.text(text) ? 1 : 0
                     }
-                    break
                     
                 case webarchive:
                     if let data = item.data(forType: type) {
@@ -558,8 +551,7 @@ class MyWebView : WKWebView {
                             Swift.print("\(type) prop \(String(describing: prop))")
                         }
                     }
-                    break
-
+ 
                 case chromeType:
                     if let data = item.data(forType: type) {
                         let html = String(decoding: data, as: UTF8.self)
@@ -582,7 +574,6 @@ class MyWebView : WKWebView {
                             Swift.print("\(type) prop \(String(describing: prop))")
                         }
                     }
-                    break
                     
 ///                case .filePromise:
 ///                    Swift.print(".filePromise")
@@ -1645,7 +1636,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 webView.selectedURL = url
                 //Swift.print("ucc: new -> \(url.absoluteString)")
             }
-            break
             
         case "newSelectionDetected":
             if let urlString : String = message.body as? String
@@ -1653,14 +1643,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 webView.selectedText = urlString
                 //Swift.print("ucc: str -> \(urlString)")
             }
-            break
             
         case "newUrlDetected":
             if let url = URL.init(string: message.body as! String) {
                 webView.selectedURL = url
                 //Swift.print("ucc: url -> \(url.absoluteString)")
             }
-            break
             
 ///        case "clickMe":
 ///            Swift.print("message: \(message.body)")
@@ -1745,7 +1733,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                         mwv.window?.setFrameOrigin(origin)
                                         mwv.bounds.size = webSize
                                     }
-                                    break
                                     
                                 default:
                                     //  Issue still to be resolved so leave as-is for now
@@ -1791,12 +1778,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     NSApp.addWindowsItem(self.view.window!, title: title, filename: false)
                 }
             }
-            break
             
         case "loading":
             guard let loading = change?[NSKeyValueChangeKey(rawValue: "new")] as? Bool, loading == loadingIndicator.isHidden else { return }
             Swift.print("loading: \(loading ? "YES" : "NO")")
-            break
             
         case "title":
             title = mwv.title
