@@ -217,10 +217,10 @@ extension URL {
     }
     func hasVideoContent() -> Bool {
         let type = self.pathExtension as CFString
-        let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil)
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil) else { return false }
         
-        return  UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeMovie) ||
-                UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeVideo)
+        let utiCheck = uti.takeRetainedValue()
+        return UTTypeConformsTo(utiCheck, kUTTypeMovie) || UTTypeConformsTo(utiCheck, kUTTypeVideo)
     }
     var webloc : URL? {
         get {
@@ -249,6 +249,22 @@ extension URL {
             let str = self.resourceSpecifier
             return str[2..<str.count]
         }
+    }
+    
+    func hideFileExtensionInPath() -> Bool {
+        guard self.isFileURL else { return false }
+        
+        let fileAttrs = [FileAttributeKey.extensionHidden : "1"]
+        let fm = FileManager.default
+
+        do {
+            try fm.setAttributes(fileAttrs, ofItemAtPath: self.path)
+            return true
+        }
+        catch let error {
+            NSApp.presentError(error)
+        }
+        return false
     }
 }
 
