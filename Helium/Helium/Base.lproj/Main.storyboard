@@ -437,7 +437,7 @@
                                                 <items>
                                                     <menuItem title="File…" keyEquivalent="o" id="iba-HN-Jos">
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="21X-0G-NuF"/>
+                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="tUU-QP-Hs6"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="File in new tab…" tag="3" alternate="YES" keyEquivalent="o" id="at8-06-y5R">
@@ -448,7 +448,7 @@
                                                     </menuItem>
                                                     <menuItem title="File in new window…" tag="1" alternate="YES" keyEquivalent="O" id="vEi-Jg-aIw">
                                                         <connections>
-                                                            <action selector="openFilePress:" target="Ady-hI-5gd" id="b57-Ke-BTP"/>
+                                                            <action selector="openFilePress:" target="Voe-Tx-rLC" id="FdK-O7-IZQ"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem title="URL…" keyEquivalent="l" id="JqH-ds-lJa">
@@ -464,7 +464,7 @@
                                                     </menuItem>
                                                     <menuItem title="URL in new window…" tag="1" alternate="YES" keyEquivalent="L" id="PJM-19-avb">
                                                         <connections>
-                                                            <action selector="openLocationPress:" target="Ady-hI-5gd" id="7k6-Kj-qCU"/>
+                                                            <action selector="openLocationPress:" target="Voe-Tx-rLC" id="519-eL-QXJ"/>
                                                         </connections>
                                                     </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="vhk-le-YBM"/>
