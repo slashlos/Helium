@@ -2151,12 +2151,4 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 
 class ReleaseViewController : WebViewController {
 
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        
-        let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
-        if let webView = self.webView {
-            webView.loadHTMLString(relnotes, baseURL: nil)
-        }
-    }
 }

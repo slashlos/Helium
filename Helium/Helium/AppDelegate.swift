@@ -630,6 +630,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         do
         {
             let doc = try docController.makeUntitledDocument(ofType: k.Release)
+            if 0 == doc.windowControllers.count { doc.makeWindowControllers() }
+            doc.revertToSaved(sender)
             doc.showWindows()
         }
         catch let error {

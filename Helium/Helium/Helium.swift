@@ -1261,6 +1261,7 @@ class Document : NSDocument {
             }
             
         case .release:
+            fileURL = URL.init(string: k.ReleaseNotes)
             let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
             let wvc = window!.contentViewController as? WebViewController
             wvc!.webView.loadHTMLString(relnotes, baseURL: nil)

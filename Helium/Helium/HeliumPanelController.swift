@@ -1129,15 +1129,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 class ReleasePanelController : HeliumPanelController {
 
     override func windowDidLoad() {
-        super.windowDidLoad()
-        
         //  Default to not dragging by content
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
         panel.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
 
         // Remember for later restoration
-        synchronizeWindowTitleWithDocumentName()
         NSApp.addWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
     }
 }
