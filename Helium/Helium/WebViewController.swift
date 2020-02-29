@@ -72,6 +72,8 @@ extension WKBackForwardListItem {
     }
 }
 class MyWebView : WKWebView {
+    //  TODO: HACK: mark us dirty once we've loading a bookmarked file
+    dynamic var dirty = false
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var docController : HeliumDocumentController {
         get {
@@ -238,9 +240,13 @@ class MyWebView : WKWebView {
 
         if url.isFileURL
         {
-            //  TODO: instantiate a webview with a new file rather than loadFileURL
-            ///return self.loadFileURL(url, allowingReadAccessTo: url) != nil
-            return appDelegate.openURLInNewWindow(url, attachTo: window)
+            if appDelegate.isSandboxed() != appDelegate.storeBookmark(url: url) {
+                Swift.print("Yoink, unable to sandbox \(url)")
+                return false
+            }
+            let baseURL = appDelegate.authenticateBaseURL(url)
+                
+            return self.loadFileURL(url, allowingReadAccessTo: baseURL) != nil
         }
         else
         {
@@ -403,8 +409,7 @@ class MyWebView : WKWebView {
                     
                 case .URL, .fileURL:
                     if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
-                        // TODO: launch files in a new tab
-                        if url.isFileURL { viewOptions.insert(.t_view) }
+                        if url.isFileURL /*dirty*/ { viewOptions.insert(.t_view) }
                         
                         if viewOptions.contains(.t_view) {
                             handled += self.appDelegate.openURLInNewWindow(url, attachTo: window) ? 1 : 0
@@ -1107,36 +1112,27 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if let scrollView : NSScrollView = note.object as? NSScrollView {
             scrollView.autohidesScrollers = true
         }*/
-    }
-    
-    override func viewWillAppear() {
-         
-        if let url = webView.url {
-            Swift.print("willAppear with \(url.absoluteString)")
+            
+        if let document = heliumPanelController?.document, let url = document.fileURL, url != nil {
+            _ = loadURL(url: url!)
         }
         else
         {
             clear()
         }
         
-        //  If we we're seen before then restore settings
-        if let hpc = heliumPanelController { hpc.documentDidLoad() }
+        //  load developer panel if asked - initially no
+        self.webView?.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
     override func viewDidAppear() {
+        super.viewDidAppear()
+        
         guard let doc = self.document, doc.docGroup == .helium else { return }
         
         //  https://stackoverflow.com/questions/32056874/programmatically-wkwebview-inside-an-uiview-with-auto-layout
         //  the autolayout is complete only when the view has appeared.
         if self.webView != nil { setupWebView() }
-        
-        // Final panel updates, called by view, when document is available
-        if let hpc = self.heliumPanelController {
-            hpc.documentDidLoad()
-        }
-        
-        //  load developer panel if asked - initially no
-        self.webView?.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
     fileprivate func setupWebView() {
@@ -1236,9 +1232,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
         controller.addUserScript(clickMe)
         controller.add(self, name: "clickMe")*/
-        
-        
-
     }
     
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -1286,6 +1279,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
             webView.removeObserver(navDelegate, forKeyPath: "loading")
             webView.removeObserver(navDelegate, forKeyPath: "title")
+            webView.removeObserver(navDelegate, forKeyPath: "url")
             observing = false
         }
     }
@@ -1364,8 +1358,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         open.worksWhenModal = true
         open.beginSheetModal(for: window!, completionHandler: { (response: NSApplication.ModalResponse) in
             if response == .OK {
-                //  TODO: launch files in new tabs
-                viewOptions.insert(.t_view)
+                /*if self.webView.dirty {*/ viewOptions.insert(.t_view) ///}
 
                 let urls = open.urls
                 var handled = 0
@@ -1419,7 +1412,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                         }
                                         else
                                         {
-                                            _ = self.loadURL(url: newURL)
+                                            _ = self.webView.next(url: newURL) ? 1 : 0
                                         }
         })
     }
@@ -1672,7 +1665,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     // MARK: Webview functions
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
-        guard self.document?.docGroup == .helium, let url = URL.init(string: UserSettings.HomePageURL.value) else { return }
+        guard let url = URL.init(string: UserSettings.HomePageURL.value) else {
+            _ = loadURL(url: URL.init(string: UserSettings.HomePageURL.default)!)
+            return
+        }
         webView.load(URLRequest.init(url: url))
     }
 
@@ -1780,6 +1776,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         title = appDelegate.appName
                     }
                     
+                    //  TODO: HACK: mark us dirty once we've loading a bookmarked file
+                    if let url = webView.url, appDelegate.isSandboxed(), url.isFileURL {
+                        webView.dirty = true
+                    }
+                    
                     // Remember for later restoration
                     NSApp.addWindowsItem(self.view.window!, title: title, filename: false)
                 }
@@ -1797,13 +1798,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 }
             }
              
-        case "url":
+        case "url":///currently *not* KVO ?
             if let urlString = change?[NSKeyValueChangeKey(rawValue: "new")] as? String {
                 guard let dict = defaults.dictionary(forKey: urlString) else { return }
                 
                 if let doc = self.document {
                     doc.restoreSettings(with: dict)
-                    doc.heliumPanelController?.documentDidLoad()
                 }
             }
 
@@ -1998,6 +1998,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         Swift.print("didStartProvisionalNavigation - 1st")
+        
+        //  Restore setting not done by document controller
+        if let hpc = heliumPanelController { hpc.documentDidLoad() }
     }
     
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
@@ -2036,20 +2039,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-        let doc = self.document
-        let hpc = doc?.heliumPanelController
-        
         guard let url = webView.url else { return }
-        
-        //  Restore setting not done by document controller
-        if let hpc = hpc { hpc.documentDidLoad() }
         
         //  Finish recording of for this url session
         if UserSettings.HistorySaves.value {
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
             NotificationCenter.default.post(notif)
         }
-        
+
         Swift.print("didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
 /*
         let html = """
@@ -2107,9 +2104,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     newView.uiDelegate = wvc
                     newWebView = hpc.webView
                     wvc.viewDidLoad()
-
-                    //  Setups all done, make us visible
-                    doc.showWindows()
                 }
             } catch let error {
                 NSApp.presentError(error)
@@ -2158,6 +2152,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 class ReleaseViewController : WebViewController {
 
     override func viewWillAppear() {
+        super.viewWillAppear()
         
         let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
         if let webView = self.webView {

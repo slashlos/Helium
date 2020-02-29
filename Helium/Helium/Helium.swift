@@ -877,10 +877,20 @@ class HeliumDocumentController : NSDocumentController {
     override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> Document {
         var doc: Document
         do {
-            doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
+            if [k.hpi,k.hpl].contains(contentsURL.pathExtension) || [k.Playlist,k.Release].contains(typeName) {
+                doc = try super.makeDocument(for: urlOrNil, withContentsOf: contentsURL, ofType: typeName) as! Document
+            }
+            else
+            {
+                doc = try Document.init(contentsOf: contentsURL, ofType: typeName)
+                doc.makeWindowControllers()
+                doc.revertToSaved(self)
+            }
         } catch let error {
             NSApp.presentError(error)
             doc = try Document.init(contentsOf: contentsURL)
+            doc.makeWindowControllers()
+            doc.revertToSaved(self)
         }
         
         return doc
@@ -892,8 +902,7 @@ class HeliumDocumentController : NSDocumentController {
             doc = try self.makeDocument(for: url, withContentsOf: url, ofType: typeName)
         } catch let error {
             NSApp.presentError(error)
-            doc = Document.init()
-            doc.update(to: url)
+            doc = try self.makeUntitledDocument(ofType: typeName) as! Document
         }
         return doc
     }
@@ -1139,8 +1148,6 @@ class Document : NSDocument {
         
             //  sync docGroup group identifier to typeName
             fileType = typeName
-
-            makeWindowControllers()
         }
     }
         
@@ -1157,8 +1164,6 @@ class Document : NSDocument {
 
             fileURL = url
             fileType = typeName
-            
-            makeWindowControllers()
         }
     }
     
@@ -1186,7 +1191,6 @@ class Document : NSDocument {
 
         default:
             let ilists = [playitem()]
-            //  TODO: add fore/back history
             
             return NSKeyedArchiver.archivedData(withRootObject: ilists)
         }
@@ -1202,7 +1206,7 @@ class Document : NSDocument {
                 throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
             }
             
-            //  files are playlist extractions, presented as a sheet or window
+            //  files are [playlist] extractions, presented as a sheet or window
             let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
             pvc.playlists = plists
             pvc.playlistArrayController.content = pvc.playlists
@@ -1226,6 +1230,7 @@ class Document : NSDocument {
                 switch i {
                 case 0:
                     restoreSettings(with: item.dictionary())
+                    fileURL = item.link
                     
                 default:
                     // TODO: restore fore/back history
@@ -1236,12 +1241,14 @@ class Document : NSDocument {
     }
 
     override func revertToSaved(_ sender: Any?) {
+        let window = windowControllers.first?.window
+
         switch docGroup {
         case .playlist:
             let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
-            if let url = fileURL, let type = fileType {
+            if let url = fileURL, let type = fileType, url.isFileURL {
                 do {
-                    try super.revert(toContentsOf: url, ofType: type)
+                    try revert(toContentsOf: url, ofType: type)
                 }
                 catch let error {
                     NSApp.presentError(error)
@@ -1254,12 +1261,40 @@ class Document : NSDocument {
             }
             
         case .release:
-            break
+            let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
+            let wvc = window!.contentViewController as? WebViewController
+            wvc!.webView.loadHTMLString(relnotes, baseURL: nil)
 
         default:
-            restoreSettings(with: dictionary())
-            //  TODO: restore fore/back history?
-            break
+            if let url = fileURL, let type = fileType, url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
+                do {
+                    try revert(toContentsOf: url, ofType: type)
+                }
+                catch let error {
+                    NSApp.presentError(error)
+                }
+            }
+            else
+            {
+                guard let url = fileURL else { return }
+                let cvc = window?.contentViewController
+                let webView = (cvc as? WebViewController)?.webView
+                
+                if let dict = defaults.dictionary(forKey: url.absoluteString) {
+                    restoreSettings(with: dict)
+                }
+                
+                if url.isFileURL
+                {
+                    let baseURL = appDelegate.authenticateBaseURL(url)
+                    
+                    webView?.loadFileURL(url, allowingReadAccessTo: baseURL)
+                }
+                else
+                {
+                    webView?.load(URLRequest.init(url: url))
+                }
+            }
         }
     }
     
@@ -1273,21 +1308,30 @@ class Document : NSDocument {
         //  Defer custom setups until we have a webView
         if [k.Custom].contains(typeName) { return }
 
-        //  We should call read(data) then restore controller below
-        try super.revert(toContentsOf: url, ofType: typeName)
+        //  revert() should call read(data) then restore controller later
         
         switch docGroup {
 
         case .playlist:
             let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
-            pvc.playlistArrayController.content = pvc.playlists
 
+            try super.revert(toContentsOf: url, ofType: typeName)
+            pvc.playlistArrayController.content = pvc.playlists
             
         case .release:
             break
             
         default:
-            break
+            if url.pathExtension == k.hpi {
+                try super.revert(toContentsOf: url, ofType: typeName)
+            }
+            else
+            {
+                if let dict = defaults.dictionary(forKey: url.absoluteString) {
+                    restoreSettings(with: dict)
+                }
+                fileURL = url
+            }
         }
     }
     
@@ -1398,36 +1442,5 @@ class Document : NSDocument {
         let controller = storyboard.instantiateController(withIdentifier: identifier) as! NSWindowController
         self.addWindowController(controller)
         docController.addDocument(self)
-        
-        //  Defer custom setups until we have a URL
-        if [k.Custom].contains(fileType) { return }
-
-        //  make and read all route to revert() for file I/O
-        switch docGroup {
-            
-        case .playlist:
-            revertToSaved(self)
-            
-        case .release:
-            break
-            
-        default:
-            if let url = fileURL, let type = fileType {
-                do {
-                    try revert(toContentsOf: url, ofType: type)
-                } catch let error {
-                    NSApp.presentError(error)
-                }
-            }
-        }
-
-        //  Relocate to origin if any
-        if let window = controller.window {
-            window.offsetFromKeyWindow()
-
-            if self.settings.rect.value != NSZeroRect {
-                window.setFrameOrigin(self.settings.rect.value.origin)
-            }
-        }
     }
 }

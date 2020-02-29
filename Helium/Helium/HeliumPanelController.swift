@@ -198,6 +198,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     override func windowDidLoad() {
+        super.windowDidLoad()
+        
         //  Default to not dragging by content
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
@@ -227,7 +229,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         //  We allow drag from title's document icon to self or Finder
         panel.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
         panel.registerForDraggedTypes([.promise, .URL, .fileURL])
-        
+        panel.windowController?.shouldCascadeWindows = true///offsetFromKeyWindow()
+
         // Remember for later restoration
         NSApp.addWindowsItem(panel, title: panel.title, filename: false)
     }
@@ -1126,23 +1129,16 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 class ReleasePanelController : HeliumPanelController {
 
     override func windowDidLoad() {
+        super.windowDidLoad()
+        
         //  Default to not dragging by content
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
+        panel.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
 
         // Remember for later restoration
         synchronizeWindowTitleWithDocumentName()
         NSApp.addWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
-    }
-    
-    override func documentDidLoad() {
-        
-        let relnotes = NSString.string(fromAsset: k.ReleaseAsset)
-        if let webView = webViewController.webView {
-            webView.loadHTMLString(relnotes, baseURL: nil)
-        }
-
-        super.documentDidLoad()
     }
 }
 

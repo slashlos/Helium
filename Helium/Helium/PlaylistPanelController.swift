@@ -22,10 +22,14 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
     
     override func windowDidLoad() {
         super.windowDidLoad()
+        
         if let window = self.window, let pvc = window.contentViewController {
             //  call playlist view windowShouldClose() on close
             window.delegate = (pvc as! PlaylistViewController)
             panel.isFloatingPanel = true
+            
+            //  Relocate to origin if any
+            window.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
         }
     }
 }

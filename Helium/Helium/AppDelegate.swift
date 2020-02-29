@@ -398,6 +398,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
 	func doOpenFile(fileURL: URL, fromWindow: NSWindow? = nil) -> Bool {
+        if isSandboxed() != storeBookmark(url: fileURL) {
+            Swift.print("Yoink, unable to sandbox \(fileURL)")
+            return false
+        }
         
         if let thisWindow = fromWindow != nil ? fromWindow : NSApp.keyWindow {
             guard openForBusiness || (thisWindow.contentViewController?.isKind(of: PlaylistViewController.self))! else {
@@ -417,7 +421,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  This could be anything so add/if a doc and initialize
         do {
             let typeName = fileURL.isFileURL && fileURL.pathExtension == k.hpl ? k.Playlist : k.Helium
-            let doc = try Document.init(contentsOf: fileURL, ofType: typeName)
+            let doc = try docController.makeDocument(withContentsOf: fileURL, ofType: typeName)
             docController.noteNewRecentDocumentURL(fileURL)
             doc.showWindows()
             status = true
@@ -490,31 +494,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         
         do {
-            let doc = try Document.init(contentsOf: url, ofType: url.pathExtension == k.hpl ? k.Playlist : k.Helium)
+            let typeName = url.pathExtension == k.hpl ? k.Playlist : k.Helium
+            let doc = try docController.makeDocument(withContentsOf: url, ofType: typeName)
             
             guard let wc = doc.windowControllers.first else { return false }
             
-            guard let window = wc.window, let cvc = window.contentViewController,
-                let webView = (cvc as? WebViewController)?.webView else { return false }
+            guard let window = wc.window else { return false }
             
-            if url.isFileURL
-            {
-                webView.loadFileURL(url, allowingReadAccessTo: url)
-            }
-            else
-            {
-                webView.load(URLRequest.init(url: url))
-            }
             if let parent = parentWindow {
                 parent.addTabbedWindow(window, ordered: .above)
             }
             doc.showWindows()
-            
             return true
+            
         } catch let error {
             NSApp.presentError(error)
-            return false
         }
+        return false
     }
         
     @objc @IBAction func openVideoInNewWindowPress(_ sender: NSMenuItem) {
@@ -588,7 +584,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         guard let item: NSMenuItem = sender as? NSMenuItem, let window: NSWindow = item.representedObject as? NSWindow else {
             //  No contextual window, load panel and its playlist controller
             do {
-                let doc = try Document.init(type: k.Playlist)
+                let doc = try docController.makeUntitledDocument(ofType: k.Playlist)
+                if 0 == doc.windowControllers.count { doc.makeWindowControllers() }
                 doc.showWindows()
             }
             catch let error {
@@ -608,7 +605,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if wvc.presentedViewControllers?.count == 0 {
                     let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
                     pvc.playlists.append(contentsOf: playlists)
-                    pvc.isGlobalPlaylist = true
                     pvc.webViewController = wvc
                     wvc.presentAsSheet(pvc)
                 }
@@ -633,7 +629,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc @IBAction func showReleaseInfo(_ sender: Any) {
         do
         {
-            let doc = try Document.init(type: k.Release)
+            let doc = try docController.makeUntitledDocument(ofType: k.Release)
             doc.showWindows()
         }
         catch let error {

@@ -147,8 +147,8 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc @IBOutlet weak var playitemTableView: PlayTableView!
     @objc @IBOutlet weak var playlistSplitView: NSSplitView!
 
-    //  we are managing the globals playlist, which includes app delegate histories
-    var isGlobalPlaylist : Bool = false
+    //  we are managing a local playlist, so include app delegate histories RONLY
+    var isLocalPlaylist : Bool = false
     
     //  cache playlists read and saved to defaults
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
@@ -482,20 +482,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     
     override func viewWillAppear() {
         //  Leave non-global extractions contents intact
-        if isGlobalPlaylist {
-            
-            //  Prune duplicate history entries
-            while let oldHistory = playlists.name(UserSettings.HistoryName.value)
-            {
-                playlistArrayController.removeObject(oldHistory)
-            }
-            historyCache = PlayList.init(name: UserSettings.HistoryName.value,
-                                         list: appDelegate.histories)
-            
-            playlistArrayController.addObject(historyCache)
-        }
-        else
-        if let doc = self.webViewController?.document, let url = doc.fileURL
+        if isLocalPlaylist, let doc = self.webViewController?.document, let url = doc.fileURL
         {
             //  Set window titleView with url as tooltip like .helium type
             if let titleView = self.view.window?.standardWindowButton(.closeButton)?.superview {
@@ -505,6 +492,18 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
             //  Start us of cleanly re: change count
             doc.updateChangeCount(.changeCleared)
             self.undoManager?.removeAllActions()
+        }
+        else
+        {
+            //  Prune duplicate history entries
+            while let oldHistory = playlists.name(UserSettings.HistoryName.value)
+            {
+                playlistArrayController.removeObject(oldHistory)
+            }
+            historyCache = PlayList.init(name: UserSettings.HistoryName.value,
+                                         list: appDelegate.histories)
+            
+            playlistArrayController.addObject(historyCache)
         }
         
         // cache our list before editing
@@ -1112,13 +1111,13 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
                 // Save to the cache
                 playCache = playlists
                 
-                // If we're global save that too
-                if isGlobalPlaylist {
-                    appDelegate.playlists = playlists
+                // If local save that too
+                if isLocalPlaylist, let document = self.view.window?.windowController?.document {
+                    (document as! Document).save(sender)
                 }
                 else
-                if let document = self.view.window?.windowController?.document {
-                    (document as! Document).save(sender)
+                {
+                    appDelegate.playlists = playlists
                 }
             
             case false:
@@ -1187,12 +1186,12 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         //  if we have a url show histories in italics
         if tableView.tag == 1 {
             let list : AnyObject = (playlistArrayController.arrangedObjects as! [AnyObject])[playlistArrayController.selectionIndex]
-            if isGlobalPlaylist, list.name == UserSettings.HistoryName.value {
+            if isLocalPlaylist, list.name == UserSettings.HistoryName.value {
                 cell.font = NSFont.init(name: "Helvetica Oblique", size: -1)
             }
         }
         
-        guard tableView.tag == 0, isGlobalPlaylist, item.name == UserSettings.HistoryName.value else { return cell }
+        guard tableView.tag == 0, isLocalPlaylist, item.name == UserSettings.HistoryName.value else { return cell }
 
         cell.font = NSFont.init(name: "Helvetica Oblique", size: -1)
         
