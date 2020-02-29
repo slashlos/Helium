@@ -625,8 +625,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         do
         {
             let doc = try docController.makeUntitledDocument(ofType: k.Release)
-            if 0 == doc.windowControllers.count { doc.makeWindowControllers() }
-            doc.revertToSaved(sender)
             doc.showWindows()
         }
         catch let error {
@@ -1715,6 +1713,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             
             if !self.application(application, openURL: url) {
                 print("Yoink unable to open \(url)")
+            }
+        }
+    }
+    
+    //  MARK: - Command line handling
+    
+    fileprivate func handleCommandLine(_ argv: [String] ) {
+        let fileManager = FileManager.default
+        
+        for (i,path) in argv.enumerated() {
+            
+            if fileManager.fileExists(atPath: path) {
+                //_ = self.application(NSApp, openFile: path)
+                Swift.print("exist \(i) -> \(path)")
+            }
+            else
+            {
+                Swift.print("Yoink \(i) -> \(path)")
             }
         }
     }

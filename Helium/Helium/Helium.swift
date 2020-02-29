@@ -906,6 +906,25 @@ class HeliumDocumentController : NSDocumentController {
         }
         return doc
     }
+    
+    override func makeUntitledDocument(ofType typeName: String) throws -> NSDocument {
+        var doc: Document
+        do {
+            doc = try super.makeUntitledDocument(ofType: typeName) as! Document
+            
+            //  Allow multiple release instances being 'untitled' but load now
+            if doc.docGroup == .release {
+                if 0 == doc.windowControllers.count { doc.makeWindowControllers() }
+                doc.revertToSaved(self)
+            }
+        } catch let error {
+            NSApp.presentError(error)
+            doc = try Document.init(type: typeName)
+            doc.makeWindowControllers()
+            doc.revertToSaved(self)
+        }
+        return doc
+    }
 }
 
 class Document : NSDocument {
