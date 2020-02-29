@@ -1672,7 +1672,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     dynamic var disableDocumentReOpening = false
 
     func application(_ sender: NSApplication, openFile: String) -> Bool {
-        let urlString = (openFile.hasPrefix("file://") ? openFile : "file://" + openFile)
+        let urlString = (openFile.hasPrefix("file://") ? openFile : "file" + openFile)
         let fileURL = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!)!
         disableDocumentReOpening = openFileInNewWindow(fileURL)
         return disableDocumentReOpening
@@ -1685,19 +1685,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         for path in openFiles {
 
             do {
+                if var url = URL.init(string: path.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed)!) {
+                    if nil == url.scheme { url = url.settingScheme("file") }
+                    if !url.hasDirectory() { url = url.settingDirectoryPath(fileManager.currentDirectoryPath) }
+                    if isSandboxed() != storeBookmark(url: url) { continue }
+                    if !self.application(sender, openURL: url) {
+                        Swift.print("Yoink url? \(url.absoluteString)")
+                    }
+                    continue
+                }
+                
+                if fileManager.fileExists(atPath: path) {
+                    if !self.application(sender, openFile: path) {
+                        Swift.print("Yoink path \(path)")
+                    }
+                    continue
+                }
+
                 let files = try fileManager.contentsOfDirectory(atPath: path)
                 for file in files {
                     _ = self.application(sender, openFile: file)
                 }
             }
             catch let error as NSError {
-                if fileManager.fileExists(atPath: path) {
-                    _ = self.application(sender, openFile: path)
-                }
-                else
-                {
-                    print("Yoink \(error.localizedDescription)")
-                }
+                print("Yoink \(error.localizedDescription)")
             }
         }
     }
@@ -1713,24 +1724,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             
             if !self.application(application, openURL: url) {
                 print("Yoink unable to open \(url)")
-            }
-        }
-    }
-    
-    //  MARK: - Command line handling
-    
-    fileprivate func handleCommandLine(_ argv: [String] ) {
-        let fileManager = FileManager.default
-        
-        for (i,path) in argv.enumerated() {
-            
-            if fileManager.fileExists(atPath: path) {
-                //_ = self.application(NSApp, openFile: path)
-                Swift.print("exist \(i) -> \(path)")
-            }
-            else
-            {
-                Swift.print("Yoink \(i) -> \(path)")
             }
         }
     }
