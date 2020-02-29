@@ -415,22 +415,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             }
         }
         
-        //  Open a new window
-        var status = false
-        
         //  This could be anything so add/if a doc and initialize
         do {
             let typeName = fileURL.isFileURL && fileURL.pathExtension == k.hpl ? k.Playlist : k.Helium
             let doc = try docController.makeDocument(withContentsOf: fileURL, ofType: typeName)
             docController.noteNewRecentDocumentURL(fileURL)
             doc.showWindows()
-            status = true
+            return true
         } catch let error {
             print("*** Error open file: \(error.localizedDescription)")
-            status = false
+            return false
         }
-
-        return status
     }
     
     @objc @IBAction func locationServicesPress(_ sender: NSMenuItem) {

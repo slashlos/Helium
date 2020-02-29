@@ -1257,7 +1257,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     override func viewDidLayout() {
         super.viewDidLayout()
 
-        //  ditch horizonatal scroll when not over
+        //  TODO: ditch horizonatal scroll when not over
         if let scrollView = self.webView.enclosingScrollView {
             if scrollView.hasHorizontalScroller {
                 scrollView.horizontalScroller?.isHidden = true
@@ -1279,7 +1279,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
             webView.removeObserver(navDelegate, forKeyPath: "loading")
             webView.removeObserver(navDelegate, forKeyPath: "title")
-            webView.removeObserver(navDelegate, forKeyPath: "url")
             observing = false
         }
     }
