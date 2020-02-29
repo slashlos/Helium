@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBuildDate</key>
+	<string>20200229.150414</string>
+	<key>CFBuildMajor</key>
+	<string>3</string>
+	<key>CFBuildMinor</key>
+	<string>0</string>
+	<key>CFBuildNumber</key>
+	<string>6964</string>
+	<key>CFBuildPatch</key>
+	<string>1</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -23,7 +33,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>3.0.6692</string>
+	<string>3.0.6964</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
