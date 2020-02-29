@@ -1252,8 +1252,7 @@ class Document : NSDocument {
                     fileURL = item.link
                     
                 default:
-                    // TODO: restore fore/back history
-                    break
+                    Swift.print("\(i) -> \(item.link.absoluteString)")
                 }
             }
         }
