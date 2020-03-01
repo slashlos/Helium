@@ -1125,6 +1125,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         self.webView?.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
+    override func viewWillAppear() {
+        guard let doc = self.document, let url = doc.fileURL else { clear(); return }
+        Swift.print("url => \(url.absoluteString)")
+    }
+    
     override func viewDidAppear() {
         super.viewDidAppear()
         

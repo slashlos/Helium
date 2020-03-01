@@ -789,7 +789,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 menuItem.state = isLocationEnabled ? .on : .off
            case "Magic URL Redirects":
                 menuItem.state = UserSettings.DisabledMagicURLs.value ? .off : .on
-            case "HTTP -> HTTPS Links":
+            case "Upgrade HTTP -> HTTPS Links":
                 menuItem.state = UserSettings.PromoteHTTPS.value ? .on : .off
             case "Restore Doc Attributes":
                 menuItem.state = UserSettings.RestoreDocAttrs.value ? .on : .off
