@@ -2098,6 +2098,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
+        Swift.print(String(format: "UI: %p createWebViewWith:", webView))
 
         if navigationAction.targetFrame == nil {
             _ = appDelegate.openURLInNewWindow(navigationAction.request.url!)
@@ -2106,7 +2107,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         //  We really want to use the supplied config, so use custom setup
         var newWebView : WKWebView?
-        Swift.print("createWebViewWith")
         
         if let newURL = navigationAction.request.url {
             do {
@@ -2136,35 +2136,35 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters,
                  initiatedByFrame frame: WKFrameInfo,
                  completionHandler: @escaping ([URL]?) -> Void) {
-        Swift.print("runOpenPanelWith")
+        Swift.print(String(format: "UI: %p runOpenPanelWith:", webView))
     }
     
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        Swift.print("runJavaScriptAlertPanelWithMessage")
+        Swift.print(String(format: "UI: %p runJavaScriptAlertPanelWithMessage:", webView))
     }
     
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo,
                  completionHandler: @escaping (Bool) -> Void) {
-        Swift.print("runJavaScriptConfirmPanelWithMessage")
+        Swift.print(String(format: "UI: %p runJavaScriptConfirmPanelWithMessage:", webView))
     }
     
     func webViewDidClose(_ webView: WKWebView) {
-        Swift.print("webViewDidClose")
+        Swift.print(String(format: "UI: %p webViewDidClose:", webView))
     }
     
     //  MARK: TabView Delegate
     
     func tabView(_ tabView: NSTabView, willSelect tabViewItem: NSTabViewItem?) {
         if let item = tabViewItem {
-            Swift.print("willSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
+            Swift.print("tab willSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
         }
     }
     
     func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
         if let item = tabViewItem {
-            Swift.print("didSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
+            Swift.print("tab didSelect: label: \(item.label) ident: \(String(describing: item.identifier))")
         }
     }
 }
