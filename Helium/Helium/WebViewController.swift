@@ -1314,6 +1314,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let navDelegate = webView.navigationDelegate as! NSObject
         
         webView.stopLoading()
+        webView.uiDelegate = nil
+        webView.navigationDelegate = nil
 
         // Wind down all observations
         if observing {
