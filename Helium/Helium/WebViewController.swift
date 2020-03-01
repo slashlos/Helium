@@ -1823,7 +1823,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     if let url = webView.url, appDelegate.isSandboxed(), url.isFileURL { webView.dirty = true }
                     
                     // Remember for later restoration
-                    NSApp.addWindowsItem(self.view.window!, title: title, filename: false)
+                    NSApp.changeWindowsItem(self.view.window!, title: title, filename: false)
+
                 }
             }
             
