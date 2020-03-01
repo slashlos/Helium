@@ -976,20 +976,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         guard let vindow = window,
             let wvc = vindow.contentViewController as? WebViewController,
-            let wpc = vindow.windowController as? HeliumPanelController,
-            let webView = wvc.webView else { return false }
+            let wpc = vindow.windowController as? HeliumPanelController else { return false }
 
         wvc.clear()
 
         vindow.ignoresMouseEvents = true
         wpc.setupTrackingAreas(false)
         
-        //  Halt anything in progress
-        guard let delegate = webView.navigationDelegate as? NSObject else { return true }
-        assert(delegate == wvc, "webView delegate mismatch")
-
         //  Stop whatever is going on by brute force
-        (panel.contentViewController as! WebViewController).viewWillDisappear()
+        //(panel.contentViewController as! WebViewController).viewWillDisappear()
 
         //  Propagate to super after removal
         wvc.setupTrackingAreas(false)

@@ -72,7 +72,7 @@ extension WKBackForwardListItem {
     }
 }
 class MyWebView : WKWebView {
-    //  TODO: HACK: mark us dirty once we've loading a bookmarked file
+    // MARK: TODO: load new files in distinct windows
     dynamic var dirty = false
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     var docController : HeliumDocumentController {
@@ -327,11 +327,7 @@ class MyWebView : WKWebView {
         return canAccept
     }
     
-    var borderView: WebBorderView {
-        get {
-            return (uiDelegate as! WebViewController).borderView
-        }
-    }
+    var borderView = WebBorderView()
     
     var isReceivingDrag : Bool {
         get {
@@ -409,6 +405,7 @@ class MyWebView : WKWebView {
                     
                 case .URL, .fileURL:
                     if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
+                        // MARK: TODO: load new files in distinct windows
                         if url.isFileURL /*dirty*/ { viewOptions.insert(.t_view) }
                         
                         if viewOptions.contains(.t_view) {
@@ -1053,6 +1050,22 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        //  Wire in ourselves as delegate
+        webView.navigationDelegate = self
+        webView.uiDelegate = self
+        
+        // Layout webview, its border and load progress indicator
+        view.addSubview(webView)
+        webView.frame = view.bounds
+        
+        view.addSubview(borderView)
+        borderView.frame = view.bounds
+        
+        view.addSubview(loadingIndicator)
+        loadingIndicator.frame = NSMakeRect(0, 0, 32, 32)
+        loadingIndicator.isIndeterminate = true
+        loadingIndicator.style = .bar
+
         webView.becomeFirstResponder()
         
         NotificationCenter.default.addObserver(
@@ -1072,6 +1085,16 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             object: nil)/*
         NotificationCenter.default.addObserver(
             self,
+            selector: #selector(avPlayerView(_:)),
+            name: NSNotification.Name(rawValue: "AVPlayerView"),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(wkScrollView(_:)),
+            name: NSNotification.Name(rawValue: "NSScrollView"),
+            object: nil)
+        NotificationCenter.default.addObserver(
+            self,
             selector: #selector(wkFlippedView(_:)),
             name: NSNotification.Name(rawValue: "WKFlippedView"),
             object: nil)
@@ -1086,6 +1109,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let newDidAddSubviewImplementationBlock: @convention(block) (AnyObject?, NSView) -> Void = { (view: AnyObject!, subview: NSView) -> Void in
             castedOriginalDidAddSubviewImplementation(view, Selector(("didAddsubview:")), subview)
 //            Swift.print("view: \(subview.className)")
+            if subview.className == "AVPlayerView" {
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "AVPlayerView"), object: subview)
+            }
+            if subview.className == "NSScrollView" {
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "NSScrollView"), object: subview)
+            }
             if subview.className == "WKFlippedView" {
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "WKFlippedView"), object: subview)
             }
@@ -1093,6 +1122,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
         method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)
+    }
+    
+    @objc func avPlayerView(_ note: NSNotification) {
+        print("AV Player \(String(describing: note.object)) will be opened now")
+        guard let view = note.object as? NSView else { return }
+        
+        Swift.print("player is \(view.className)")
     }
     
     @objc func wkFlippedView(_ note: NSNotification) {
@@ -1107,8 +1143,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
     
-    func scrollView(_ note: NSNotification) {
-        print("Scroll View \(String(describing: note.object)) will be opened now")
+    @objc func wkScrollView(_ note: NSNotification) {
+        print("WK Scroll View \(String(describing: note.object)) will be opened now")
         if let scrollView : NSScrollView = note.object as? NSScrollView {
             scrollView.autohidesScrollers = true
         }*/
@@ -1122,7 +1158,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         //  load developer panel if asked - initially no
-        self.webView?.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
+        self.webView.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
     
     override func viewWillAppear() {
@@ -1136,17 +1172,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         guard let doc = self.document, doc.docGroup == .helium else { return }
         
         //  https://stackoverflow.com/questions/32056874/programmatically-wkwebview-inside-an-uiview-with-auto-layout
+ 
         //  the autolayout is complete only when the view has appeared.
-        if self.webView != nil { setupWebView() }
-    }
-    
-    fileprivate func setupWebView() {
-        let config = webView.configuration
+        webView.autoresizingMask = [.height,.width]
+        webView.fit(webView.superview!)
+        borderView.fit(borderView.superview!)
+        loadingIndicator.center(loadingIndicator.superview!)
+        loadingIndicator.bind(NSBindingName(rawValue: "animate"), to: webView, withKeyPath: "loading", options: nil)
         
-        webView.autoresizingMask = [NSView.AutoresizingMask.height, NSView.AutoresizingMask.width]
-        if webView.constraints.count == 0 {
-            webView.fit(webView.superview!)
-        }
+        let config = webView.configuration
         
         // Allow plug-ins such as silverlight
         config.preferences.plugInsEnabled = true
@@ -1279,6 +1313,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         guard let wc = self.view.window?.windowController, !wc.isKind(of: ReleasePanelController.self) else { return }
         let navDelegate = webView.navigationDelegate as! NSObject
         
+        webView.stopLoading()
+
         // Wind down all observations
         if observing {
             webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
@@ -1343,7 +1379,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @objc @IBAction func developerExtrasEnabledPress(_ sender: NSMenuItem) {
-        self.webView?.configuration.preferences.setValue((sender.state != .on), forKey: "developerExtrasEnabled")
+        self.webView.configuration.preferences.setValue((sender.state != .on), forKey: "developerExtrasEnabled")
     }
 
     @objc @IBAction func openFilePress(_ sender: AnyObject) {
@@ -1362,6 +1398,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         open.worksWhenModal = true
         open.beginSheetModal(for: window!, completionHandler: { (response: NSApplication.ModalResponse) in
             if response == .OK {
+                // MARK: TODO: load new files in distinct windows
                 /*if self.webView.dirty {*/ viewOptions.insert(.t_view) ///}
 
                 let urls = open.urls
@@ -1676,13 +1713,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.load(URLRequest.init(url: url))
     }
 
-    @objc @IBOutlet weak var webView: MyWebView!
+    var webView = MyWebView()
     var webImageView = NSImageView.init()
 	var webSize = CGSize(width: 0,height: 0)
     
-    @objc @IBOutlet weak var borderView: WebBorderView!
+    var borderView = WebBorderView()
 	
-    @objc @IBOutlet weak var loadingIndicator: NSProgressIndicator!
+    var loadingIndicator = NSProgressIndicator()
 	
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
@@ -1780,10 +1817,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         title = appDelegate.appName
                     }
                     
-                    //  TODO: HACK: mark us dirty once we've loading a bookmarked file
-                    if let url = webView.url, appDelegate.isSandboxed(), url.isFileURL {
-                        webView.dirty = true
-                    }
+                    // MARK: TODO: load new files in distinct windows
+                    if let url = webView.url, appDelegate.isSandboxed(), url.isFileURL { webView.dirty = true }
                     
                     // Remember for later restoration
                     NSApp.addWindowsItem(self.view.window!, title: title, filename: false)
