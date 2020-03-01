@@ -1917,6 +1917,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        Swift.print(String(format: "0NV: decidePolicyFor: %p", webView))
+
         let viewOptions = appDelegate.getViewOptions
         var url = navigationAction.request.url!
         
@@ -1978,7 +1980,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        
+        Swift.print(String(format: "1DP decidePolicyFor: %p", webView))
+
         guard let response = navigationResponse.response as? HTTPURLResponse,
             let url = navigationResponse.response.url else {
                 decisionHandler(.allow)
@@ -2000,29 +2003,36 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         decisionHandler(.allow)
     }
     
+    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+        Swift.print(String(format: "2SR: %p didReceiveServerRedirectForProvisionalNavigation: %p", navigation, webView))
+    }
+    
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        Swift.print("didStartProvisionalNavigation - 1st")
+        Swift.print(String(format: "1LD: %p didStartProvisionalNavigation: %p", navigation, webView))
         
         //  Restore setting not done by document controller
         if let hpc = heliumPanelController { hpc.documentDidLoad() }
     }
     
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        Swift.print(String(format: "2NV: %p - didCommit: %p", navigation, webView))
+
         //  make sure we are visible
         if let doc = self.document, let window = webView.window, !window.isVisible {
             doc.showWindows()
-        }
-        Swift.print("didCommit - 2nd")
+        }        
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        Swift.print(String(format: "?LD: %p didFailProvisionalNavigation: %p", navigation, webView) + " \((error as NSError).code): \(error.localizedDescription)")
+        handleError(error)
     }
     
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        Swift.print("didFail navigation?: \((error as NSError).code): \(error.localizedDescription)")
+        Swift.print(String(format: "?NV: %p didFail: %p", navigation, webView) + " \((error as NSError).code): \(error.localizedDescription)")
         handleError(error)
     }
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        Swift.print("didFailProvisionalNavigation?: \((error as NSError).code): \(error.localizedDescription)")
-        handleError(error)
-    }
+    
     fileprivate func handleError(_ error: Error) {
         let message = error.localizedDescription
         if (error as NSError).code >= 400 {
@@ -2051,7 +2061,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             NotificationCenter.default.post(notif)
         }
 
-        Swift.print("didFinish navigation: '\(String(describing: webView.title))' => \(url.absoluteString) - last")
+        Swift.print(String(format: "3NV: %p didFinish: %p", navigation, webView) + " \"\(String(describing: webView.title))\" => \(url.absoluteString)")
 /*
         let html = """
 <html>
@@ -2067,14 +2077,20 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         guard let title = webView.title, let urlString : String = webView.url?.absoluteString else {
             return
         }
-        Swift.print("didFinishLoad: '\(title)' => \(urlString)")
+        Swift.print(String(format: "3LD: %p didFinishLoad: %p", navigation, webView) + " \"\(title)\" => \(urlString)")
     }
     
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        Swift.print(String(format: "2AC: didReceive: %p", webView))
+
         guard let serverTrust = challenge.protectionSpace.serverTrust else { return completionHandler(.useCredential, nil) }
         let exceptions = SecTrustCopyExceptions(serverTrust)
         SecTrustSetExceptions(serverTrust, exceptions)
         completionHandler(.useCredential, URLCredential(trust: serverTrust))
+    }
+    
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        Swift.print(String(format: "3DT: webViewWebContentProcessDidTerminate: %p", webView))
     }
     
     //  MARK: UI Delegate
