@@ -624,7 +624,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     @objc @IBAction func showReleaseInfo(_ sender: Any) {
         do
         {
-            let doc = try docController.makeUntitledDocument(ofType: k.Release)
+            let url = URL.init(string: k.ReleaseURL)!
+            let doc = try docController.makeDocument(withContentsOf: url, ofType: k.Helium)
             doc.showWindows()
         }
         catch let error {
