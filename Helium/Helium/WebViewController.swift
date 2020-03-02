@@ -773,7 +773,7 @@ class MyWebView : WKWebView {
             menu.addItem(item)
             tabItemUpdated = true
         }
-        if NSApp.windows.count > 1 {
+        if docController.documents.count > 1 {
             item = NSMenuItem(title: "Merge All Windows", action: #selector(window.mergeAllWindows(_:)), keyEquivalent: "")
             menu.addItem(item)
             tabItemUpdated = true
