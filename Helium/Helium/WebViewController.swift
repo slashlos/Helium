@@ -2109,13 +2109,13 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
         guard let url = webView.url else { return }
         
+        Swift.print(String(format: "3NV: %p didFinish: %p", navigation, webView) + " \"\(String(describing: webView.title))\" => \(url.absoluteString)")
+
         //  Finish recording of for this url session
         if UserSettings.HistorySaves.value {
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
             NotificationCenter.default.post(notif)
         }
-
-        Swift.print(String(format: "3NV: %p didFinish: %p", navigation, webView) + " \"\(String(describing: webView.title))\" => \(url.absoluteString)")
 /*
         let html = """
 <html>
