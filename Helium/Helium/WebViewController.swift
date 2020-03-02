@@ -63,6 +63,20 @@ class WebBorderView : NSView {
     }
 }
 
+class ProgressIndicator : NSProgressIndicator {
+    init() {
+        super.init(frame: NSMakeRect(0, 0, 32, 32))
+
+        isDisplayedWhenStopped = false
+        isIndeterminate = true
+        style = .spinning
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 extension WKBackForwardListItem {
     var article : String {
         get {
@@ -1054,7 +1068,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.navigationDelegate = self
         webView.uiDelegate = self
         
-        // Layout webview, its border and load progress indicator
+        //  Layout webview, its border and load progress indicator
+        //  but watch out if these subviews were restored for us
+        
         view.addSubview(webView)
         webView.frame = view.bounds
         
@@ -1062,9 +1078,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         borderView.frame = view.bounds
         
         view.addSubview(loadingIndicator)
-        loadingIndicator.frame = NSMakeRect(0, 0, 32, 32)
-        loadingIndicator.isIndeterminate = true
-        loadingIndicator.style = .bar
 
         webView.becomeFirstResponder()
         
@@ -1176,7 +1189,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         //  the autolayout is complete only when the view has appeared.
         webView.autoresizingMask = [.height,.width]
         webView.fit(webView.superview!)
+        
+        borderView.autoresizingMask = [.height,.width]
         borderView.fit(borderView.superview!)
+        
         loadingIndicator.center(loadingIndicator.superview!)
         loadingIndicator.bind(NSBindingName(rawValue: "animate"), to: webView, withKeyPath: "loading", options: nil)
         
@@ -1721,7 +1737,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     var borderView = WebBorderView()
 	
-    var loadingIndicator = NSProgressIndicator()
+    var loadingIndicator = ProgressIndicator()
 	
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
