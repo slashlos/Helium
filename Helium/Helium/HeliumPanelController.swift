@@ -1076,8 +1076,9 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         guard let doc = self.doc else { return displayName }
         
         switch self.doc!.docGroup {
-        case .playlist, .release:
+        case .playlist:
             return doc.displayName
+            
         default:
             if let length = self.webView?.title?.count, length > 0 {
                 return self.webView!.title!
