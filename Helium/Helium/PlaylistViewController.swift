@@ -533,7 +533,7 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
         let window = self.view.window!
         
         // Remember for later restoration
-        NSApp.addWindowsItem(window, title: window.title, filename: false)
+        NSApp.changeWindowsItem(window, title: window.title, filename: false)
     }
     
     override func viewWillDisappear() {

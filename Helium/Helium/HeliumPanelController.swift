@@ -232,7 +232,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         panel.windowController?.shouldCascadeWindows = true///offsetFromKeyWindow()
 
         // Remember for later restoration
-        NSApp.addWindowsItem(panel, title: panel.title, filename: false)
+        NSApp.changeWindowsItem(panel, title: panel.title, filename: false)
     }
 
     func documentDidLoad() {
@@ -1130,7 +1130,7 @@ class ReleasePanelController : HeliumPanelController {
         panel.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
 
         // Remember for later restoration
-        NSApp.addWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
+        NSApp.changeWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
     }
 }
 
