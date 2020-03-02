@@ -266,6 +266,22 @@ extension URL {
         }
         return false
     }
+    
+    func hasDirectory() -> Bool {
+        guard let paths = FileManager.default.componentsToDisplay(forPath: self.path) else { return false }
+        return paths.count > 0
+    }
+    func settingDirectoryPath(_ value: String) -> URL {
+        let components = NSURLComponents.init(url: self, resolvingAgainstBaseURL: true)
+        let path = components?.path ?? "/"
+        components?.path = value + "/" + path
+        return (components?.url!)!
+    }
+    func settingScheme(_ value: String) -> URL {
+        let components = NSURLComponents.init(url: self, resolvingAgainstBaseURL: true)
+        components?.scheme = value
+        return (components?.url!)!
+    }
 }
 
 extension String {
