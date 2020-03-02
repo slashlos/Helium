@@ -38,7 +38,7 @@ class HeliumTitleDragButton : NSButton {
                 if url.isFileURL {
                     return NSColor.controlDarkShadowColor
                 } else {
-                    return NSColor.clear
+                    return NSColor(hex: 0x3399FF/*0x44AAFF*/)///NSColor.clear
                 }
             }
             else
@@ -82,8 +82,8 @@ class HeliumTitleDragButton : NSButton {
         if hpc.autoHideTitlePreference == .never || hpc.mouseOver {
             let color = self.borderColor
             self.layer?.borderColor = color.cgColor
-            color.setStroke()
-            path.stroke()
+            color.setStroke(); color.setFill()
+            path.stroke(); path.fill()
         }
     }
     
@@ -643,6 +643,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     panel.animator().titleVisibility = mouseOver ? .visible : .hidden
                     titleDragButton?.animator().isBordered = mouseOver
                     titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                    titleDragButton?.animator().isHidden = !mouseOver
                     titleDragButton?.animator().isTransparent = mouseOver
                 })
                 return
