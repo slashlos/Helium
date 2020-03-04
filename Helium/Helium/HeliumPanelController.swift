@@ -784,6 +784,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         installTitleFader()
 
         updateTitleBar(didChange: true)
+        
         cacheSettings()
     }
     
