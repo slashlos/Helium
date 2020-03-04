@@ -24,6 +24,9 @@ struct k {
     static let Helium = "Helium" /// aka Playitem
     static let helium = "helium"
     static let about = "about"
+    static let asset = "asset"
+    static let html = "html"
+    static let text = "text"
     static let desktop = "Desktop"
     static let docIcon = "docIcon"
     static let Playlist = "Playlist"
@@ -64,7 +67,7 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 1.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let Release = "Release"
-    static let ReleaseURL = "about:///RELEASE"
+    static let ReleaseURL = "about:///asset/RELEASE"
     static let ReleaseNotes = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
@@ -876,8 +879,7 @@ class HeliumDocumentController : NSDocumentController {
     override func makeDocument(for urlOrNil: URL?, withContentsOf contentsURL: URL, ofType typeName: String) throws -> Document {
         var doc: Document
         do {
-            if [k.hpi,k.hpl].contains(contentsURL.pathExtension) || k.Playlist == typeName ||
-                k.about == contentsURL.scheme {
+            if [k.hpi,k.hpl].contains(contentsURL.pathExtension) || k.Playlist == typeName {
                 doc = try super.makeDocument(for: urlOrNil, withContentsOf: contentsURL, ofType: typeName) as! Document
             }
             else
@@ -1271,8 +1273,22 @@ class Document : NSDocument {
             }
             else
             if k.about == url.scheme {
-                let filename = url.lastPathComponent
-                wvc.htmlContents = NSString.string(fromAsset: filename)
+                //  "about" scheme formatted URLs: 'about:///<path>/<file>'
+                let paths = url.pathComponents
+                guard "/" == paths.first else { return }
+                let path = paths[1]
+                let file = paths[2]
+                if k.asset == path {
+                    wvc.webView.htmlContents = NSString.string(fromAsset: file)
+                }
+                else
+                if k.html == path {
+                    Swift.print("load html: \(file)")
+                }
+                else
+                if k.text == path {
+                    Swift.print("load text: \(file)")
+                }
             }
         }
     }
