@@ -314,6 +314,70 @@ extension NSAttributedString {
     }
 }
 
+extension NSString {
+    class func timeAndDate() -> String {
+        let dateFMT = DateFormatter()
+        dateFMT.dateFormat = "yyddMM"
+        let timeFMT = DateFormatter()
+        timeFMT.dateFormat = "HHmmss"
+        let now = Date()
+
+        return String(format: "%@:%@", dateFMT.string(from: now), timeFMT.string(from: now))
+    }
+}
+
+//  https://stackoverflow.com/questions/39075043/how-to-convert-data-to-hex-string-in-swift
+extension Data {
+    private static let hexAlphabet = "0123456789abcdef".unicodeScalars.map { $0 }
+
+    public func hexEncodedString() -> String {
+        return String(self.reduce(into: "".unicodeScalars, { (result, value) in
+            result.append(Data.hexAlphabet[Int(value/16)])
+            result.append(Data.hexAlphabet[Int(value%16)])
+        }))
+    }
+}
+
+//  https://codereview.stackexchange.com/questions/135424/hex-string-to-bytes-nsdata?newreg=06dfe1d5b9964b928631538c9e48d421
+extension String {
+    func dataFromHexString() -> NSData? {
+
+        // Convert 0 ... 9, a ... f, A ...F to their decimal value,
+        // return nil for all other input characters
+        func decodeNibble(u: UInt16) -> UInt8? {
+            switch(u) {
+            case 0x30 ... 0x39:
+                return UInt8(u - 0x30)
+            case 0x41 ... 0x46:
+                return UInt8(u - 0x41 + 10)
+            case 0x61 ... 0x66:
+                return UInt8(u - 0x61 + 10)
+            default:
+                return nil
+            }
+        }
+
+        let utf16 = self.utf16
+        guard let data = NSMutableData(capacity: utf16.count/2) else {
+            return nil
+        }
+
+        var i = utf16.startIndex
+        while i != utf16.endIndex {
+            guard
+                let hi = decodeNibble(u: utf16[i]),
+                let lo = decodeNibble(u: utf16[index(i, offsetBy: 1, limitedBy: utf16.endIndex)!])
+            else {
+                return nil
+            }
+            var value = hi << 4 + lo
+            data.append(&value, length: 1)
+            i = index(i, offsetBy: 2, limitedBy: utf16.endIndex)!
+        }
+        return data
+    }
+}
+
 struct UAHelpers {
     static func isValidUA(uaString: String) -> Bool {
         // From https://stackoverflow.com/questions/20569000/regex-for-http-user-agent
