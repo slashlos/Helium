@@ -282,6 +282,55 @@ extension URL {
         components?.scheme = value
         return (components?.url!)!
     }
+    
+    //  TAD encoded resource name URLs for data, html, text, …
+    //self.load(data, mimeType: <#T##String#>, characterEncodingName: UTF8, baseURL: <#T##URL#>)
+
+    init?(cache data: Data) {
+        let name = String(format: "about:///data/%@", NSString.timeAndDate())
+        self = URL.init(string: name)!
+        var dict = Dictionary<String,Any>()
+        dict[k.name] = name
+        dict[k.link] = self
+        dict[k.data] = data.hexEncodedString()
+        
+        UserDefaults.standard.set(dict, forKey: name)
+    }
+    init?(cache text: String, embed: Bool = false) {
+        let name = String(format: "about:///html/%@", NSString.timeAndDate())
+        self = URL.init(string: name)!
+        var dict = Dictionary<String,Any>()
+        dict[k.name] = name
+        dict[k.link] = self
+        dict[k.html] = embed
+            ? String(format: "<html><body><code>%@</code></body></html>", text)
+            : text
+        
+        UserDefaults.standard.set(dict, forKey: name)
+    }
+    init?(cache text: NSAttributedString, embed: Bool = true) {
+        let name = String(format: "about:///html/%@", NSString.timeAndDate())
+        self = URL.init(string: name)!
+
+        do {
+            let docAttrs = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
+            let data = try text.data(from: NSMakeRange(0, text.length), documentAttributes: docAttrs)
+            if let attrs = String(data: data, encoding: .utf8) {
+                let html = embed
+                    ? String(format: "<html><body><code>%@</code></body></html>", attrs)
+                    : attrs
+
+                var dict = Dictionary<String,Any>()
+                dict[k.name] = name
+                dict[k.link] = self
+                dict[k.html] = html
+                
+                UserDefaults.standard.set(dict, forKey: name)
+            }
+        } catch let error as NSError {
+            Swift.print("attributedString -> html: \(error.code):\(error.localizedDescription): \(text)")
+        }
+    }
 }
 
 extension String {
