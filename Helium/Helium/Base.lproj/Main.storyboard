@@ -3,7 +3,6 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15705"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -85,7 +84,7 @@
                                     <action selector="toggleContent:" target="umu-a0-Tfe" id="4Sd-95-PKJ"/>
                                 </connections>
                             </button>
-                            <button toolTip="version information" translatesAutoresizingMaskIntoConstraints="NO" id="0NX-wg-Xfe">
+                            <button toolTip="cycle thru read me, history, liicense, privacy information" translatesAutoresizingMaskIntoConstraints="NO" id="0NX-wg-Xfe">
                                 <rect key="frame" x="12" y="97" width="257" height="12"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="12" id="Tzv-hz-N36"/>
@@ -178,7 +177,7 @@
         <scene sceneID="3Vy-ae-Byb">
             <objects>
                 <windowController storyboardIdentifier="ReleaseController" id="Mba-6M-yew" customClass="ReleasePanelController" customModule="Helium" customModuleProvider="target" sceneMemberID="viewController">
-                    <window key="window" identifier="Release" title="Release" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingMode="disallowed" id="Ufa-aB-AvU" customClass="ReleasePanel" customModule="Helium" customModuleProvider="target">
+                    <window key="window" identifier="Release" title="Release" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" tabbingMode="disallowed" id="Ufa-aB-AvU" customClass="NSPanel">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="-2135" y="500" width="480" height="270"/>
@@ -202,42 +201,7 @@
                     <view key="view" id="RL2-Bf-RhN">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <wkWebView wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sE0-Ot-XDk" customClass="MyWebView" customModule="Helium" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
-                                <wkWebViewConfiguration key="configuration">
-                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
-                                    <wkPreferences key="preferences"/>
-                                </wkWebViewConfiguration>
-                                <connections>
-                                    <outlet property="UIDelegate" destination="XfG-lQ-9wD" id="GOS-fc-77i"/>
-                                    <outlet property="navigationDelegate" destination="XfG-lQ-9wD" id="mBQ-C1-Qji"/>
-                                </connections>
-                            </wkWebView>
-                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NY3-ac-sYA" customClass="WebBorderView" customModule="Helium" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                            </customView>
-                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="WRh-sF-wPp">
-                                <rect key="frame" x="216" y="143" width="32" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <binding destination="XfG-lQ-9wD" name="animate" keyPath="self.webView.loading" id="tcv-Dk-sqU"/>
-                                </connections>
-                            </progressIndicator>
-                        </subviews>
-                        <constraints>
-                            <constraint firstItem="sE0-Ot-XDk" firstAttribute="leading" secondItem="RL2-Bf-RhN" secondAttribute="leading" id="LfT-gy-aNQ"/>
-                            <constraint firstItem="sE0-Ot-XDk" firstAttribute="height" secondItem="RL2-Bf-RhN" secondAttribute="height" id="Tve-v4-XGN"/>
-                            <constraint firstAttribute="trailing" secondItem="sE0-Ot-XDk" secondAttribute="trailing" id="ZFG-CQ-BN8"/>
-                            <constraint firstAttribute="bottom" secondItem="sE0-Ot-XDk" secondAttribute="bottom" id="lKt-AZ-moa"/>
-                            <constraint firstItem="sE0-Ot-XDk" firstAttribute="top" secondItem="RL2-Bf-RhN" secondAttribute="top" id="pQH-vI-xMC"/>
-                            <constraint firstItem="sE0-Ot-XDk" firstAttribute="width" secondItem="RL2-Bf-RhN" secondAttribute="width" id="zA1-dd-64y"/>
-                        </constraints>
                     </view>
-                    <connections>
-                        <outlet property="webView" destination="sE0-Ot-XDk" id="nqH-UY-280"/>
-                    </connections>
                 </viewController>
                 <customObject id="K7P-l9-TeE" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
