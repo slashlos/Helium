@@ -759,8 +759,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 let index = (menuItem.tag - (group * 100)) % 3
                 
                 menuItem.state = UserSettings.Search.value == index ? .on : .off
-                break
-
+ 
             case "Preferences":
                 break
             case "Auto-hide Title Bar":

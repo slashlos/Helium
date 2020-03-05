@@ -534,7 +534,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 return
             case zoomTag:
                 zoomButton?.isMouseOver = true
-                break
                 
             default:
                 if let hb = self.hoverBar, hb.individualized {

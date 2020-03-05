@@ -438,7 +438,6 @@ class PlayList : NSObject, NSCoding, NSCopying, NSDraggingSource, NSDraggingDest
             if let xmlString = propertyList as? String {
                 Swift.print("convert \(xmlString) to playlist")
             }
-            break
             
         default:
             Swift.print("unknown \(type)")
@@ -1321,10 +1320,6 @@ class Document : NSDocument {
     
     override func revert(toContentsOf url: URL, ofType typeName: String) throws {
 
-        if let dict = defaults.dictionary(forKey: url.absoluteString) {
-            restoreSettings(with: dict)
-        }
-        
         //  Defer custom setups until we have a webView
         if [k.Custom].contains(typeName) { return }
 
@@ -1334,7 +1329,11 @@ class Document : NSDocument {
 
         case .playlist:
             let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
-
+            
+            if let dict = defaults.dictionary(forKey: url.absoluteString) {
+                restoreSettings(with: dict)
+            }
+            
             try super.revert(toContentsOf: url, ofType: typeName)
             pvc.playlistArrayController.content = pvc.playlists
             
