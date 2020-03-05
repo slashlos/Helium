@@ -1397,7 +1397,7 @@ class Document : NSDocument {
         //  soft update fileURL to cache if needed
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)
-        if !autoSaveDocs { self.updateChangeCount(.changeDone) }
+        if !autoSaveDocs { self.updateChangeCount(.changeCleared) }
         defaults.synchronize()
         
         //  Update UI (red dot in close button) immediately
@@ -1411,7 +1411,6 @@ class Document : NSDocument {
         switch docGroup {
         case .playlist:
             appDelegate.savePlaylists(self)
-            break
             
         default:
             cacheSettings(url)
