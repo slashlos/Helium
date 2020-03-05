@@ -77,7 +77,7 @@ class AboutBoxController : NSViewController {
     }
     
     internal func showCredits() {
-        let credits = ["README", "History", "LICENSE"];
+        let credits = ["README", "History", "LICENSE", "helium_privacy"];
         
         if AboutBoxController.creditsState >= AboutBoxController.maxStates
         {
@@ -85,7 +85,7 @@ class AboutBoxController : NSViewController {
         }
         //	Setup our credits; if sender is nil, give 'em long history
         let creditsString = NSAttributedString.string(fromAsset: credits[AboutBoxController.creditsState])
-        creditsField.string = creditsString
+        self.creditsField.textStorage?.setAttributedString(creditsString)
     }
     
     @objc @IBAction func cycleCredits(_ sender: Any) {
@@ -105,7 +105,10 @@ class AboutBoxController : NSViewController {
         }
     }
     
-    @objc @IBAction func toggleVersion(_ sender: Any) {
+	@IBAction func presentPrivacy(_ sender: Any) {
+	}
+	
+	@objc @IBAction func toggleVersion(_ sender: Any) {
         
         AboutBoxController.versionState += 1
         if AboutBoxController.versionState >= AboutBoxController.maxStates
@@ -134,8 +137,8 @@ class AboutBoxController : NSViewController {
 
     static var versionState: Int = 0
     static var creditsState: Int = 0
-    static let maxStates: Int = 3
-    static let creditsCount: Int = 2// CDS, JG, ...
+    static let maxStates: Int = 4
+    static let creditsCount: Int = 2// CDMS, JG, ...
 
     override func viewWillAppear() {
         let theWindow = appNameField.window
@@ -179,7 +182,7 @@ class AboutBoxController : NSViewController {
 
         //	Setup the version to one we constrict
         versionString = String(format:"Version %@",
-                               infoDictionary["CFBundleShortVersionString"] as! CVarArg)
+                               infoDictionary["CFBuildMajor"] as! CVarArg)
 
         // Version criteria to cycle thru
         self.versionData = versionString;

@@ -305,12 +305,18 @@ extension NSString {
 }
 
 extension NSAttributedString {
-    class func string(fromAsset: String) -> String {
+    class func string(fromAsset: String) -> NSAttributedString {
         let asset = NSDataAsset.init(name: fromAsset)
         let data = NSData.init(data: (asset?.data)!)
-        let text = String.init(data: data as Data, encoding: String.Encoding.utf8)
-        
-        return text!
+        var text : NSAttributedString
+        do {
+            text = try NSAttributedString.init(data: data as Data, options:[NSAttributedString.DocumentReadingOptionKey.documentType: NSAttributedString.DocumentType.rtf], documentAttributes: nil)
+            return text
+        } catch {
+            let chars = String.init(data: data as Data, encoding: String.Encoding.utf8)
+            text = NSAttributedString.init(string: chars!)
+            return text
+        }
     }
 }
 
