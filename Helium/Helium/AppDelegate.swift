@@ -1129,6 +1129,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
+    var autoSaveTimer : Timer?
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Local/Global Monitor
         _ /*accessEnabled*/ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
@@ -1188,6 +1189,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 Swift.print("restore \(item)")
             }
         }
+        
+        //  Startup our autosaving block; keeps SaveAs options too!
+        let secs = UserSettings.AutoSaveTime.value
+        self.autoSaveTimer = Timer.scheduledTimer(withTimeInterval: secs, repeats: true, block: { (timer) in
+            if timer.isValid, UserSettings.AutoSaveDocs.value {
+                Swift.print("autoSaveTimer")
+                for document in self.docController.documents {
+                    if document.isDocumentEdited {
+                        DispatchQueue.global().async {
+                            document.save(self)
+                        }
+                    }
+                }
+            }
+        })
+        if let timer = self.autoSaveTimer { RunLoop.current.add(timer, forMode: .common) }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -1241,6 +1258,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         
         defaults.synchronize()
+        
+        //  Run-down autosaving
+        if let timer = autoSaveTimer { timer.invalidate() }
     }
 
     func applicationDockMenu(sender: NSApplication) -> NSMenu? {

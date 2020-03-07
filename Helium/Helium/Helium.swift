@@ -938,6 +938,14 @@ class Document : NSDocument {
     override class var autosavesInPlace: Bool {
         return false
     }
+    override func updateChangeCount(_ change: NSDocument.ChangeType) {
+        super.updateChangeCount(change)
+        
+        //  Update UI (red dot in close button) immediately
+        if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
+            hoverBar.closeButton?.setNeedsDisplay()
+        }
+    }
     var docController : HeliumDocumentController {
         get {
             return NSDocumentController.shared as! HeliumDocumentController
@@ -1145,7 +1153,7 @@ class Document : NSDocument {
             guard let fileURL = self.fileURL else { return super.displayName }
             if fileURL.isFileURL
             {
-                return fileURL/*.deletingPathExtension()*/.lastPathComponent
+                return fileURL.deletingPathExtension().lastPathComponent
             }
             else
             {
@@ -1362,9 +1370,8 @@ class Document : NSDocument {
                 {
                     cacheSettings(fileURL ?? URL.init(string: UserSettings.HomePageURL.value)!)
                 }
-                return
-                
             }
+            updateChangeCount(.changeCleared)
         } catch let error {
             NSApp.presentError(error)
         }
@@ -1392,19 +1399,26 @@ class Document : NSDocument {
          }
     }
     
+    override func save(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType, completionHandler: @escaping (Error?) -> Void) {
+        if url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
+            super.save(to: url, ofType: typeName, for: saveOperation, completionHandler: completionHandler)
+        }
+        else
+        {
+            do {
+                try writeSafely(to: url, ofType: typeName, for: saveOperation)
+                completionHandler(nil)
+            } catch let error {
+                completionHandler(error)
+            }
+        }
+    }
+    
     func cacheSettings(_ url : URL) {
-        
+        guard url.absoluteString != UserSettings.HomePageURL.value else { return }
         //  soft update fileURL to cache if needed
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)
-        if !autoSaveDocs { self.updateChangeCount(.changeCleared) }
-        defaults.synchronize()
-        
-        //  Update UI (red dot in close button) immediately
-        guard self.docGroup == .helium else { return }
-        if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
-            hoverBar.closeButton?.setNeedsDisplay()
-        }
     }
     
     override func write(to url: URL, ofType typeName: String) throws {
@@ -1415,15 +1429,27 @@ class Document : NSDocument {
         default:
             cacheSettings(url)
             
-            //  When a document is written, update in global play items
+            //  When a document is written, update its global play items
             UserDefaults.standard.synchronize()
         }
         self.updateChangeCount(.changeCleared)
-
-        //  Update UI (red dot in close button) immediately
-        if let hpc = heliumPanelController, let hoverBar = hpc.hoverBar {
-            hoverBar.closeButton?.setNeedsDisplay()
+    }
+    
+    override func writeSafely(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType) throws {
+        if url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
+            try super.writeSafely(to: url, ofType: typeName, for: saveOperation)
         }
+        else
+        {
+            try write(to: url, ofType: typeName)
+        }
+        updateChangeCount( [.saveOperation                  : .changeCleared,
+                            .saveAsOperation                : .changeCleared,
+                            .saveToOperation                : .changeCleared,
+                            .autosaveElsewhereOperation     : .changeAutosaved,
+                            .autosaveInPlaceOperation       : .changeAutosaved,
+                            .autosaveAsOperation            : .changeAutosaved][saveOperation] ?? .changeCleared)
+        updateChangeCount(.changeCleared)
     }
     
     override var shouldRunSavePanelWithAccessoryView: Bool {
