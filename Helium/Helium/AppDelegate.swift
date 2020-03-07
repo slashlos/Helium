@@ -1194,7 +1194,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let secs = UserSettings.AutoSaveTime.value
         self.autoSaveTimer = Timer.scheduledTimer(withTimeInterval: secs, repeats: true, block: { (timer) in
             if timer.isValid, UserSettings.AutoSaveDocs.value {
-                Swift.print("autoSaveTimer")
                 for document in self.docController.documents {
                     if document.isDocumentEdited {
                         DispatchQueue.main.async {
@@ -1530,7 +1529,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
-                    if UrlHelpers.isValidUA(urlString: urlString) {
+                    if UrlHelpers.isValidURL(urlString: urlString) {
                         acceptHandler(newWindow,URL.init(string: urlString)!)
                         Swift.print("search \(rawString)")
                     }
@@ -1552,7 +1551,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
 
                 urlString = UrlHelpers.ensureScheme(urlString)
-                guard UrlHelpers.isValidUA(urlString: urlString), let searchURL = URL.init(string: urlString) else {
+                guard UrlHelpers.isValidURL(urlString: urlString), let searchURL = URL.init(string: urlString) else {
                     Swift.print("invalid: \(urlString)")
                     return
                 }
@@ -1608,7 +1607,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 if response == NSApplication.ModalResponse.alertThirdButtonReturn {
                     var newUrl = (alert.buttons[2] as NSButton).toolTip
                     newUrl = UrlHelpers.ensureScheme(newUrl!)
-                    if UrlHelpers.isValidUA(urlString: newUrl!) {
+                    if UrlHelpers.isValidURL(urlString: newUrl!) {
                         acceptHandler(newUrl!)
                     }
                 }
@@ -1617,7 +1616,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     // swiftlint:disable:next force_cast
                     var newUrl = (alert.accessoryView as! NSTextField).stringValue
                     newUrl = UrlHelpers.ensureScheme(newUrl)
-                    if UrlHelpers.isValidUA(urlString: newUrl) {
+                    if UrlHelpers.isValidURL(urlString: newUrl) {
                         acceptHandler(newUrl)
                     }
                 }
@@ -1632,14 +1631,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             case NSApplication.ModalResponse.alertThirdButtonReturn:
                 var newUrl = (alert.buttons[2] as NSButton).toolTip
                 newUrl = UrlHelpers.ensureScheme(newUrl!)
-                if UrlHelpers.isValidUA(urlString: newUrl!) {
+                if UrlHelpers.isValidURL(urlString: newUrl!) {
                     acceptHandler(newUrl!)
                 }
                 
             case NSApplication.ModalResponse.alertFirstButtonReturn:
                 var newUrl = (alert.accessoryView as! NSTextField).stringValue
                 newUrl = UrlHelpers.ensureScheme(newUrl)
-                if UrlHelpers.isValidUA(urlString: newUrl) {
+                if UrlHelpers.isValidURL(urlString: newUrl) {
                     acceptHandler(newUrl)
                 }
                 

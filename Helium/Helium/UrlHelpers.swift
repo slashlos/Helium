@@ -20,7 +20,7 @@ struct UrlHelpers {
     }
     
     // https://mathiasbynens.be/demo/url-regex
-    static func isValidUA(urlString: String) -> Bool {
+    static func isValidURL(urlString: String) -> Bool {
         // swiftlint:disable:next force_try
         if urlString.lowercased().hasPrefix("file:"), let url = URL.init(string: urlString) {
             return FileManager.default.fileExists(atPath:url.path)
