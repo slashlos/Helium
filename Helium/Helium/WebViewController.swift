@@ -106,6 +106,12 @@ class MyWebView : WKWebView {
     var webarchive: NSPasteboard.PasteboardType { return NSPasteboard.PasteboardType.init(rawValue: "com.apple.webarchive") }
     var acceptableTypes: Set<NSPasteboard.PasteboardType> { return [.URL, .fileURL, .list, .item, .html, .pdf, .png, .rtf, .rtfd, .tiff, finderNode, webarchive] }
     var filteringOptions = [NSPasteboard.ReadingOptionKey.urlReadingContentsConformToTypes:NSImage.imageTypes]
+    var htmlContents : String? {
+        didSet {
+            dirty = true
+        }
+    }
+
     /*
     override init(frame: CGRect, configuration: WKWebViewConfiguration = WKWebViewConfiguration()) {
         let prefs = WKPreferences()
@@ -170,7 +176,7 @@ class MyWebView : WKWebView {
         if let url = self.selectedURL {
             load(URLRequest.init(url: url))
         }
-      }
+    }
     
     @objc func openLinkInNewWindow(_ item: NSMenuItem) {
         if let urlString = self.selectedText, let url = URL.init(string: urlString) {
@@ -212,6 +218,7 @@ class MyWebView : WKWebView {
         return super.load(request)
     }
 */
+/*
     @objc @IBAction internal func cut(_ sender: Any) {
         guard let doc : Document = self.window?.windowController?.document as? Document, doc.docGroup == .helium else { return }
 
@@ -230,6 +237,11 @@ class MyWebView : WKWebView {
         }
     }
     @objc @IBAction internal func paste(_ sender: Any) {
+        let whoAmI : NSResponder = (self.window?.firstResponder)!
+        
+        //  We want to add to existing play item list
+        guard whoAmI == self else { whoAmI.nextResponder?.perform(#selector(paste(_:)), with: sender); return }
+
         guard let doc : Document = self.window?.windowController?.document as? Document, doc.docGroup == .helium else { return }
         
         let pb = NSPasteboard.general
@@ -241,9 +253,15 @@ class MyWebView : WKWebView {
         self.cancelOperation(sender)
         Swift.print("cancel")
     }
-
+*/
+    func data(_ data : Data) -> Bool {
+        guard let url = URL.init(cache: data) else { return false }
+        return next(url: url)
+    }
+    
     func html(_ html : String) -> Bool {
-        return self.loadHTMLString(html, baseURL: nil) != nil
+        guard let url = URL.init(cache: html) else { return false }
+        return next(url: url)
     }
 
     func next(url: URL) -> Bool {
@@ -263,17 +281,26 @@ class MyWebView : WKWebView {
             return self.loadFileURL(url, allowingReadAccessTo: baseURL) != nil
         }
         else
-        {
-            return self.load(URLRequest(url: url)) != nil
+        if k.about == url.scheme {
+            return appDelegate.openURLInNewWindow(url, attachTo: window)
         }
+        else
+        if self.load(URLRequest(url: url)) != nil {
+            if let doc = self.webViewController?.document {
+                doc.fileURL = url
+                doc.save(doc)
+            }
+            return true
+        }
+        return false
     }
     
     func text(_ text : String) -> Bool {
+        if let url = URL.init(string: text) { return next(url: url) }
+        
         if FileManager.default.fileExists(atPath: text) {
             return next(url: URL.init(fileURLWithPath: text))
         }
-        
-        if let url = URL.init(string: text) { return next(url: url) }
         
         if let data = text.data(using: String.Encoding.utf8) {
             do {
@@ -286,39 +313,37 @@ class MyWebView : WKWebView {
             }
         }
         
-        let html = String(format: """
-<html>
-<body>
-<code>
-%@
-</code>
-</body>
-</html>
-""", text);
-        return self.loadHTMLString(html, baseURL: nil) != nil
+        guard let url = URL.init(cache: text) else { return false }
+        return next(url: url)
     }
     
-    func text(attrributedString text: NSAttributedString) {
-        do {
-            let docAttrs = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
-            let data = try text.data(from: NSMakeRange(0, text.length), documentAttributes: docAttrs)
-            if let attrs = String(data: data, encoding: .utf8) {
-                let html = String(format: """
-<html>
-<body>
-<code>
-%@
-</code>
-</body>
-</html>
-""", attrs);
-                self.loadHTMLString(html, baseURL: nil)
-            }
-        } catch let error as NSError {
-            Swift.print("attributedString -> html: \(error.code):\(error.localizedDescription): \(text)")
+    func text(attrributedString text: NSAttributedString) -> Bool {
+        guard let url = URL.init(cache: text) else { return false }
+        return next(url: url)
+    }
+    
+    //  MARK: Mouse tracking idle
+    var trackingArea : NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        
+        if trackingArea != nil {
+            self.removeTrackingArea(trackingArea!)
+        }
+        let options : NSTrackingArea.Options = [.mouseEnteredAndExited, .mouseMoved, .activeInKeyWindow]
+        trackingArea = NSTrackingArea(rect: self.bounds, options: options, owner: self, userInfo: nil)
+        self.addTrackingArea(trackingArea!)
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        super.mouseMoved(with: event)
+        
+        if let hpc = heliumPanelController {
+            hpc.mouseIdle = false
         }
     }
-    
+
     // MARK: Drag and Drop - Before Release
     func shouldAllowDrag(_ info: NSDraggingInfo) -> Bool {
         guard let doc = webViewController?.document, doc.docGroup == .helium else { return false }
@@ -420,7 +445,7 @@ class MyWebView : WKWebView {
                 case .URL, .fileURL:
                     if let urlString = item.string(forType: type), let url = URL.init(string: urlString) {
                         // MARK: TODO: load new files in distinct windows
-                        if url.isFileURL /*dirty*/ { viewOptions.insert(.t_view) }
+                        if url.isFileURL || dirty { viewOptions.insert(.t_view) }
                         
                         if viewOptions.contains(.t_view) {
                             handled += self.appDelegate.openURLInNewWindow(url, attachTo: window) ? 1 : 0
@@ -603,8 +628,7 @@ class MyWebView : WKWebView {
                     Swift.print("unkn: \(type)")
 
                     if let data = item.data(forType: type) {
-                        Swift.print("data: \(data.count) bytes")
-                        //self.load(data, mimeType: <#T##String#>, characterEncodingName: UTF8, baseURL: <#T##URL#>)
+                        handled += self.data(data) ? 1 : 0
                     }
                 }
                 if handled == items?.count { break }
@@ -709,7 +733,7 @@ class MyWebView : WKWebView {
             }
         }
         var item: NSMenuItem
-
+/*
         item = NSMenuItem(title: "Cut", action: #selector(MyWebView.cut(_:)), keyEquivalent: "")
         menu.addItem(item)
         item = NSMenuItem(title: "Copy", action: #selector(MyWebView.copy(_:)), keyEquivalent: "")
@@ -717,7 +741,7 @@ class MyWebView : WKWebView {
         item = NSMenuItem(title: "Paste", action: #selector(MyWebView.paste(_:)), keyEquivalent: "")
         menu.addItem(item)
         menu.addItem(NSMenuItem.separator())
-
+*/
         //  Add backForwardList navigation if any
         let back = backForwardList.backList
         let fore = backForwardList.forwardList
@@ -727,7 +751,6 @@ class MyWebView : WKWebView {
             let jump = NSMenu()
             item.submenu = jump
 
-            Swift.print("back \(back.count)")
             for prev in back {
                 item = NSMenuItem(title: prev.article, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
                 item.toolTip = prev.url.absoluteString
@@ -741,7 +764,6 @@ class MyWebView : WKWebView {
                 item.state = .on
                 jump.addItem(item)
             }
-            Swift.print("fore \(fore.count)")
             for next in fore {
                 item = NSMenuItem(title: next.article, action: #selector(MyWebView.jump(to:)), keyEquivalent: "")
                 item.toolTip = next.url.absoluteString
@@ -1079,8 +1101,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         view.addSubview(loadingIndicator)
 
-        webView.becomeFirstResponder()
-        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(WebViewController.loadURL(urlFileURL:)),
@@ -1175,8 +1195,47 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     override func viewWillAppear() {
-        guard let doc = self.document, let url = doc.fileURL else { clear(); return }
-        Swift.print("url => \(url.absoluteString)")
+        super.viewWillAppear()
+        
+        guard let doc = self.document, let url = doc.fileURL else { return }
+        
+        switch doc.docGroup {
+        case .playlist:
+            break
+            
+        default:
+            if url.isFileURL {
+                if [k.hpi].contains(url.pathExtension) {
+                    webView.load(URLRequest.init(url: url))
+                }
+                else
+                {
+                    if appDelegate.isSandboxed() != appDelegate.storeBookmark(url: url) {
+                        Swift.print("Yoink, unable to sandbox \(url)")
+                    }
+                    let baseURL = appDelegate.authenticateBaseURL(url)
+                        
+                    webView.loadFileURL(url, allowingReadAccessTo: baseURL)
+                }
+            }
+            else
+            if k.about == url.scheme {
+                webView.loadHTMLString(webView.htmlContents!, baseURL: nil)
+            }
+            else
+            {
+                webView.load(URLRequest.init(url: url))
+            }
+        }
+    }
+    
+    override func viewWillLayout() {
+        //  the autolayout is complete only when the view has appeared.
+        webView.autoresizingMask = [.height,.width]
+        if 0 == webView.constraints.count { webView.fit(webView.superview!) }
+         
+        borderView.autoresizingMask = [.height,.width]
+        if 0 == borderView.constraints.count { borderView.fit(borderView.superview!) }
     }
     
     override func viewDidAppear() {
@@ -1327,18 +1386,19 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     override func viewWillDisappear() {
         guard let wc = self.view.window?.windowController, !wc.isKind(of: ReleasePanelController.self) else { return }
-        let navDelegate = webView.navigationDelegate as! NSObject
+        if let navDelegate : NSObject = webView.navigationDelegate as? NSObject {
         
-        webView.stopLoading()
-        webView.uiDelegate = nil
-        webView.navigationDelegate = nil
+            webView.stopLoading()
+            webView.uiDelegate = nil
+            webView.navigationDelegate = nil
 
-        // Wind down all observations
-        if observing {
-            webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
-            webView.removeObserver(navDelegate, forKeyPath: "loading")
-            webView.removeObserver(navDelegate, forKeyPath: "title")
-            observing = false
+            // Wind down all observations
+            if observing {
+                webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
+                webView.removeObserver(navDelegate, forKeyPath: "loading")
+                webView.removeObserver(navDelegate, forKeyPath: "title")
+                observing = false
+            }
         }
     }
 
@@ -1835,9 +1895,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                         title = appDelegate.appName
                     }
                     
-                    // MARK: TODO: load new files in distinct windows
-                    if let url = webView.url, appDelegate.isSandboxed(), url.isFileURL { webView.dirty = true }
-                    
                     // Remember for later restoration
                     NSApp.changeWindowsItem(self.view.window!, title: title, filename: false)
 
@@ -2070,11 +2127,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         Swift.print(String(format: "2NV: %p - didCommit: %p", navigation, webView))
-
-        //  make sure we are visible
-        if let doc = self.document, let window = webView.window, !window.isVisible {
-            doc.showWindows()
-        }        
     }
     
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -2110,7 +2162,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         guard let url = webView.url else { return }
         
         Swift.print(String(format: "3NV: %p didFinish: %p", navigation, webView) + " \"\(String(describing: webView.title))\" => \(url.absoluteString)")
-
+        if let doc = self.document, let dict = defaults.dictionary(forKey: url.absoluteString) {
+            doc.restoreSettings(with: dict)
+        }
+        
         //  Finish recording of for this url session
         if UserSettings.HistorySaves.value {
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
