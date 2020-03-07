@@ -249,9 +249,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     
     func windowDidMove(_ notification: Notification) {
-        if (notification.object as! NSWindow) == self.window {
-            self.doc?.settings.rect.value = (self.window?.frame)!
-            cacheSettings()
+        if let sender : NSWindow = notification.object as? NSWindow, sender == self.window {
+            self.doc?.settings.rect.value = sender.frame
+            if let doc = panel.windowController?.document {
+                doc.updateChangeCount(.changeDone)
+            }
+            ///Swift.print("moved \(sender.frame.origin)")
         }
     }
     func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
@@ -260,7 +263,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             frame.size = frameSize
 
             settings.rect.value = frame
-            cacheSettings()
+            if let doc = panel.windowController?.document {
+                doc.updateChangeCount(.changeDone)
+            }
+            ///Swift.print("sized \(frameSize)")
         }
         return frameSize
     }
