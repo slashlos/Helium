@@ -932,8 +932,14 @@ class HeliumDocumentController : NSDocumentController {
     }
 }
 
-class Document : NSDocument {
+fileprivate var homeURL : URL {
+    get {
+        return URL.init(string: UserSettings.HomePageURL.value)!
+    }
+}
 
+class Document : NSDocument {
+8
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     override class var autosavesInPlace: Bool {
         return false
@@ -990,7 +996,7 @@ class Document : NSDocument {
             }
             else
             {
-                return URL.init(string: UserSettings.HomePageURL.value)
+                return homeURL
             }
         }
     }
@@ -1351,29 +1357,35 @@ class Document : NSDocument {
     }
     
     @objc @IBAction override func save(_ sender: (Any)?) {
-        do {
-            switch docGroup {
-            case .playlist:
-                if fileURL?.isFileURL ?? false {
-                    super.save(sender)
-                }
-                else
-                {
-                    appDelegate.savePlaylists(self)
-                }
-                
-            default:
-                if let url = fileURL, let type = fileType {
-                    try self.write(to: url, ofType: type)
-                }
-                else
-                {
-                    cacheSettings(fileURL ?? URL.init(string: UserSettings.HomePageURL.value)!)
-                }
-            }
+        guard let url = url, url != homeURL else {
+            cacheSettings(homeURL)
             updateChangeCount(.changeCleared)
-        } catch let error {
-            NSApp.presentError(error)
+            return
+        }
+        
+        if url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
+            super.save(sender)
+        }
+        else
+        {
+            do {
+                switch docGroup {
+                case .playlist:
+                    appDelegate.savePlaylists(self)
+                    
+                default:
+                    if let url = fileURL, let type = fileType {
+                        try self.write(to: url, ofType: type)
+                    }
+                    else
+                    {
+                        cacheSettings(fileURL ?? homeURL)
+                    }
+                }
+                updateChangeCount(.changeCleared)
+            } catch let error {
+                NSApp.presentError(error)
+            }
         }
     }
     
@@ -1400,6 +1412,12 @@ class Document : NSDocument {
     }
     
     override func save(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType, completionHandler: @escaping (Error?) -> Void) {
+        guard url != homeURL else {
+            cacheSettings(homeURL)
+            updateChangeCount(.changeCleared)
+            return
+        }
+
         if url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
             super.save(to: url, ofType: typeName, for: saveOperation, completionHandler: completionHandler)
         }
@@ -1414,8 +1432,12 @@ class Document : NSDocument {
         }
     }
     
+    override func save(withDelegate delegate: Any?, didSave didSaveSelector: Selector?, contextInfo: UnsafeMutableRawPointer?) {
+        save(self)
+    }
+    
     func cacheSettings(_ url : URL) {
-        guard url.absoluteString != UserSettings.HomePageURL.value else { return }
+        guard url != homeURL else { return }
         //  soft update fileURL to cache if needed
         if self.url != url { self.fileURL = url }
         defaults.set(self.dictionary(), forKey: url.absoluteString)

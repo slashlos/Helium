@@ -15,7 +15,7 @@ import Cocoa
 import CoreLocation
 
 struct RequestUserStrings {
-    let currentURL: String?
+    let currentURLString: String?
     let alertMessageText: String
     let alertButton1stText: String
     let alertButton1stInfo: String?
@@ -315,7 +315,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 	}
     @objc @IBAction func homePagePress(_ sender: AnyObject) {
         didRequestUserUrl(RequestUserStrings (
-            currentURL: UserSettings.HomePageURL.value,
+            currentURLString:   UserSettings.HomePageURL.value,
             alertMessageText:   "New home page",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -523,7 +523,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             urlString = rawString
         }
         didRequestUserUrl(RequestUserStrings (
-            currentURL:         urlString,
+            currentURLString:   urlString,
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -550,7 +550,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  No window?, so load alert modally
             
         didRequestSearch(RequestUserStrings (
-            currentURL: nil,
+            currentURLString:   nil,
             alertMessageText:   "Search",
             alertButton1stText: name,         alertButton1stInfo: info,
             alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
@@ -671,7 +671,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     
     @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         didRequestUserAgent(RequestUserStrings (
-            currentURL: UserSettings.UserAgent.value,
+            currentURLString:   UserSettings.UserAgent.value,
             alertMessageText:   "Default user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -1197,7 +1197,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 Swift.print("autoSaveTimer")
                 for document in self.docController.documents {
                     if document.isDocumentEdited {
-                        DispatchQueue.global().async {
+                        DispatchQueue.main.async {
                             document.save(self)
                         }
                     }
@@ -1400,7 +1400,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         alert.messageText = strings.alertMessageText
         
         // Create urlField
-        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
+        let urlField = URLField(withValue: strings.currentURLString, modalTitle: title)
         urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         
         // Add urlField and buttons to alert
@@ -1493,7 +1493,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         alert.messageText = strings.alertMessageText
         
         // Create our search field with recent searches
-        let search = SearchField(withValue: strings.currentURL, modalTitle: title)
+        let search = SearchField(withValue: strings.currentURLString, modalTitle: title)
         search.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         (search.cell as! NSSearchFieldCell).maximumRecents = 254
         search.recentSearches = recentSearches
@@ -1579,7 +1579,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         alert.messageText = strings.alertMessageText
         
         // Create urlField
-        let urlField = URLField(withValue: strings.currentURL, modalTitle: title)
+        let urlField = URLField(withValue: strings.currentURLString, modalTitle: title)
         urlField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
         alert.accessoryView = urlField
 

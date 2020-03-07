@@ -1505,14 +1505,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     @objc @IBAction func openLocationPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
-        var urlString = currentURL
+        var urlString = currentURLString
         
         if let rawString = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string), rawString.isValidURL() {
             urlString = rawString
         }
 
         appDelegate.didRequestUserUrl(RequestUserStrings (
-            currentURL:         urlString,
+            currentURLString:   urlString,
             alertMessageText:   "URL to load",
             alertButton1stText: "Load",     alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -1543,7 +1543,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let info = k.searchInfos[ UserSettings.Search.value ]
 
         appDelegate.didRequestSearch(RequestUserStrings (
-            currentURL:         nil,
+            currentURLString:   nil,
             alertMessageText:   "Search",
             alertButton1stText: name,         alertButton1stInfo: info,
             alertButton2ndText: "Cancel",     alertButton2ndInfo: nil,
@@ -1657,7 +1657,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         appDelegate.didRequestUserAgent(RequestUserStrings (
-            currentURL: webView.customUserAgent,
+            currentURLString:   webView.customUserAgent,
             alertMessageText:   "Custom user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -1686,7 +1686,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     // MARK: Loading
     
-    internal var currentURL: String? {
+    internal var currentURLString: String? {
         return webView.url?.absoluteString
     }
 

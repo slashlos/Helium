@@ -20,6 +20,12 @@ extension NSColor {
     }
 }
 
+fileprivate var homeURL : URL {
+    get {
+        return URL.init(string: UserSettings.HomePageURL.value)!
+    }
+}
+
 class HeliumTitleDragButton : NSButton {
 /* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
  *  Photo_Editor_WindowDraggableButton_swift.html#//
@@ -34,7 +40,7 @@ class HeliumTitleDragButton : NSButton {
     var borderColor : NSColor {
         get {
             guard let window = self.window else { return NSColor.clear }
-            if let url = window.representedURL, url.absoluteString != UserSettings.HomePageURL.value {
+            if let url = window.representedURL, url != homeURL {
                 if url.isFileURL {
                     return NSColor.controlDarkShadowColor
                 } else {
@@ -389,7 +395,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     
     var promiseURL : URL {
         get {
-            return window?.representedURL ?? URL.init(string: UserSettings.HomePageURL.value)!
+            return window?.representedURL ?? homeURL
         }
     }
     
@@ -1031,7 +1037,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 if autoHideTitlePreference == .outside {
                     panel.animator().titleVisibility = mouseSeen ? .visible : .hidden
                     titleDragButton?.animator().isHidden = !mouseSeen
-                    if let url = panel.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
+                    if let url = panel.representedURL, !url.isFileURL, url != homeURL {
                         titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
@@ -1043,7 +1049,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                 {
                     panel.animator().titleVisibility = .visible
                     titleDragButton?.animator().isHidden = false
-                    if let url = panel.representedURL, !url.isFileURL, url.absoluteString != UserSettings.HomePageURL.value {
+                    if let url = panel.representedURL, !url.isFileURL, url != homeURL {
                         titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
