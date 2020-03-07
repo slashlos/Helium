@@ -421,6 +421,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc @IBAction func redo(_ sender: Any) {
         if let undo = self.undoManager, undo.canRedo {
             undo.redo()
+            if let doc = self.view.window?.windowController?.document {
+                doc.updateChangeCount(.changeRedone)
+            }
             Swift.print("redo:");
         }
     }
@@ -438,6 +441,9 @@ class PlaylistViewController: NSViewController,NSTableViewDataSource,NSTableView
     @objc @IBAction func undo(_ sender: Any) {
         if let undo = self.undoManager, undo.canUndo {
             undo.undo()
+            if let doc = self.view.window?.windowController?.document {
+                doc.updateChangeCount(.changeUndone)
+            }
             Swift.print("undo:");
         }
     }
