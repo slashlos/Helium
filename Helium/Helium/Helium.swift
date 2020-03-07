@@ -939,7 +939,6 @@ fileprivate var homeURL : URL {
 }
 
 class Document : NSDocument {
-8
     var appDelegate: AppDelegate = NSApp.delegate as! AppDelegate
     override class var autosavesInPlace: Bool {
         return false
