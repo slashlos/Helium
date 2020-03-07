@@ -1356,13 +1356,8 @@ class Document : NSDocument {
     }
     
     @objc @IBAction override func save(_ sender: (Any)?) {
-        guard let url = url, url != homeURL else {
-            cacheSettings(homeURL)
-            updateChangeCount(.changeCleared)
-            return
-        }
         
-        if url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
+        if let url = url, url.isFileURL, [k.hpi,k.hpl].contains(url.pathExtension) {
             super.save(sender)
         }
         else
