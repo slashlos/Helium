@@ -15,6 +15,16 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
             return (self.window as! NSPanel)
         }
     }
+    fileprivate var pvc: PlaylistViewController {
+        get {
+            return (self.window?.contentViewController as! PlaylistViewController)
+        }
+    }
+    fileprivate var doc : Document {
+        get {
+            return (self.document as! Document)
+        }
+    }
 
     override func windowTitle(forDocumentDisplayName displayName: String) -> String {
         return (document?.displayName)!
@@ -23,13 +33,13 @@ class PlaylistPanelController : NSWindowController,NSWindowDelegate {
     override func windowDidLoad() {
         super.windowDidLoad()
         
-        if let window = self.window, let pvc = window.contentViewController {
-            //  call playlist view windowShouldClose() on close
-            window.delegate = (pvc as! PlaylistViewController)
-            panel.isFloatingPanel = true
-            
-            //  Relocate to origin if any
-            window.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
-        }
+        pvc.playlistArrayController.add(contentsOf: doc.items)
+
+        //  Switch to playlist view windowShouldClose() on close
+        panel.delegate = pvc
+        panel.isFloatingPanel = true
+        
+        //  Relocate to origin if any
+        panel.windowController?.shouldCascadeWindows = true///.offsetFromKeyWindow()
     }
 }
