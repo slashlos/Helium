@@ -601,6 +601,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     let pvc = storyboard.instantiateController(withIdentifier: "PlaylistViewController") as! PlaylistViewController
                     pvc.playlists.append(contentsOf: playlists)
                     pvc.webViewController = wvc
+                    pvc.isLocalPlaylist = true
                     wvc.presentAsSheet(pvc)
                 }
                 return
