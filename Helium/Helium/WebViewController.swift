@@ -265,6 +265,7 @@ class MyWebView : WKWebView {
     }
 
     func next(url: URL) -> Bool {
+        guard let doc = self.webViewController?.document else { return false }
 
         //  Resolve alias before sandbox bookmarking
         if let webloc = url.webloc { return next(url: webloc) }
@@ -281,15 +282,29 @@ class MyWebView : WKWebView {
             return self.loadFileURL(url, allowingReadAccessTo: baseURL) != nil
         }
         else
-        if k.about == url.scheme {
-            return appDelegate.openURLInNewWindow(url, attachTo: window)
+        if k.helium == url.scheme {
+            let paths = url.pathComponents
+            guard "/" == paths.first, paths.count == 3 else { return false }
+            let type = paths[1]
+
+            switch type {// type data,html,text
+
+            case k.html,k.text:
+                return self.loadHTMLString(doc.contents! as! String, baseURL: nil) != nil
+                
+            case k.data:
+                ///return self.load(doc.contents as! Data, mimeType: <#T##String#>, characterEncodingName: UTF8, baseURL: <#T##URL#>) != nil
+                break
+                
+            default:
+                Swift.print("unknown helium: type \(type)")
+                return false
+            }
         }
         else
         if self.load(URLRequest(url: url)) != nil {
-            if let doc = self.webViewController?.document {
-                doc.fileURL = url
-                doc.save(doc)
-            }
+            doc.fileURL = url
+            doc.save(doc)
             return true
         }
         return false
@@ -1153,10 +1168,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             }
         }
         
+         #52    0x00007fff2bd86ac8 in NSApplicationMain ()
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
-        method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)
+        method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)*/
+        
+        //  load developer panel if asked - initially no
+        self.webView.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
     }
-    
+    /*
     @objc func avPlayerView(_ note: NSNotification) {
         print("AV Player \(String(describing: note.object)) will be opened now")
         guard let view = note.object as? NSView else { return }
@@ -1180,52 +1199,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         print("WK Scroll View \(String(describing: note.object)) will be opened now")
         if let scrollView : NSScrollView = note.object as? NSScrollView {
             scrollView.autohidesScrollers = true
-        }*/
-            
-        if let document = heliumPanelController?.document, let url = document.fileURL, url != nil {
-            _ = loadURL(url: url!)
+        }
+    }*/
+    
+    override func viewWillAppear() {
+        
+        if let document = self.document, let url = document.fileURL {
+            _ = loadURL(url: url)
         }
         else
         {
             clear()
-        }
-        
-        //  load developer panel if asked - initially no
-        self.webView.configuration.preferences.setValue(UserSettings.DeveloperExtrasEnabled.value, forKey: "developerExtrasEnabled")
-    }
-    
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        
-        guard let doc = self.document, let url = doc.fileURL else { return }
-        
-        switch doc.docGroup {
-        case .playlist:
-            break
-            
-        default:
-            if url.isFileURL {
-                if [k.hpi].contains(url.pathExtension) {
-                    webView.load(URLRequest.init(url: url))
-                }
-                else
-                {
-                    if appDelegate.isSandboxed() != appDelegate.storeBookmark(url: url) {
-                        Swift.print("Yoink, unable to sandbox \(url)")
-                    }
-                    let baseURL = appDelegate.authenticateBaseURL(url)
-                        
-                    webView.loadFileURL(url, allowingReadAccessTo: baseURL)
-                }
-            }
-            else
-            if k.about == url.scheme {
-                webView.loadHTMLString(webView.htmlContents!, baseURL: nil)
-            }
-            else
-            {
-                webView.load(URLRequest.init(url: url))
-            }
         }
     }
     
@@ -2171,15 +2155,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
             NotificationCenter.default.post(notif)
         }
-/*
-        let html = """
-<html>
-<body>
-<h1>Hello, Swift!</h1>
-</body>
-</html>
-"""
-        webView.loadHTMLString(html, baseURL: nil)*/
     }
     
     func webView(_ webView: WKWebView, didFinishLoad navigation: WKNavigation) {
