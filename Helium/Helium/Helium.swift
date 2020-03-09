@@ -23,7 +23,6 @@ let docHelium : ViewOptions = []
 struct k {
     static let Helium = "Helium" /// aka Playitem
     static let helium = "helium"
-    static let about = "about"
     static let asset = "asset"
     static let html = "html"
     static let text = "text"
@@ -67,7 +66,7 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 1.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let Release = "Release"
-    static let ReleaseURL = "about:///asset/RELEASE"
+    static let ReleaseURL = "helium:///asset/RELEASE"
     static let ReleaseNotes = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
@@ -963,6 +962,9 @@ class Document : NSDocument {
         }
     }
     var settings: Settings
+    var items: [PlayList]
+    var contents: Any?
+    
     var docGroup : DocGroup {
         get {
             if let fileType = self.fileType {
@@ -1173,6 +1175,8 @@ class Document : NSDocument {
     // MARK: Initialization
     override init() {
         settings = Settings()
+        items = [PlayList]()
+        
         super.init()
     }
     
@@ -1202,66 +1206,53 @@ class Document : NSDocument {
     }
     
     override func data(ofType typeName: String) throws -> Data {
+        var array = [PlayList]()
+
         switch docGroup {
         case .playlist:
-            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
-
-            //  For Playlist doc group, write out dictionary of playlists, history and searches
-            var plists = [PlayList]()
-             
+            //  Write playlists, history and searches
+              
             // Save playlists - no maximum
-            plists.append(contentsOf: pvc.playlists)
-             
+            array += items
+            
             // Save histories - no maximum
-            plists.append(PlayList.init(name: UserSettings.HistoryList.keyPath , list: appDelegate.histories))
+            array.append(PlayList.init(name: UserSettings.HistoryList.keyPath , list: appDelegate.histories))
 
             //  Save searches - no maximum
-            plists.append(PlayList.init(name: UserSettings.SearchNames.keyPath, list: appDelegate.webSearches))
+            array.append(PlayList.init(name: UserSettings.SearchNames.keyPath, list: appDelegate.webSearches))
  
-            return NSKeyedArchiver.archivedData(withRootObject: plists)
-  
         default:
-            let ilists = [playitem()]
-            
-            return NSKeyedArchiver.archivedData(withRootObject: ilists)
+            array.append(PlayList.init(name: displayName, list: [playitem()]))
         }
+
+        return NSKeyedArchiver.archivedData(withRootObject: array)
     }
 
     override func read(from data: Data, ofType typeName: String) throws {
+        
+        guard let pdata = NSKeyedUnarchiver.unarchiveObject(with: data) else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        }
+        guard let plists : [PlayList] = pdata as? [PlayList] else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
+        }
+        
+        //  files are [playlist] extractions, presented as a sheet or window
+        items.append(contentsOf: plists)
+
         switch docGroup {
         case .playlist:
-            guard let pdata = NSKeyedUnarchiver.unarchiveObject(with: data) else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
-            guard let plists : [PlayList] = pdata as? [PlayList]  else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
+             break
             
-            //  files are [playlist] extractions, presented as a sheet or window
-            let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
-            pvc.playlists = plists
-            pvc.playlistArrayController.content = pvc.playlists
-
-            guard pvc.playlists.count > 0 else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
-             
         default:
-            guard let idata = NSKeyedUnarchiver.unarchiveObject(with: data) else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
-            guard let ilists : [PlayItem] = idata as? [PlayItem]  else {
-                throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
-            }
-        
-            for (i,item) in ilists.enumerated() {
+            for (i,item) in items.enumerated() {
                 switch i {
                 case 0:
                     restoreSettings(with: item.dictionary())
-                    fileURL = item.link
+                    fileURL = item.list.first?.link
                     
                 default:
-                    Swift.print("\(i) -> \(item.link.absoluteString)")
+                    Swift.print("\(i) -> \(item.description)")
                 }
             }
         }
@@ -1278,28 +1269,31 @@ class Document : NSDocument {
             try super.read(from: url, ofType: typeName)
 
         default:
-            let wvc : WebViewController = windowControllers.first!.contentViewController as! WebViewController
-            
             if url.isFileURL, [k.hpi].contains(url.pathExtension) {
                 try super.read(from: url, ofType: typeName)
             }
             else
-            if k.about == url.scheme {
-                //  "about" scheme formatted URLs: 'about:///<path>/<file>'
+            if k.helium == url.scheme {
+                //  helium scheme formatted URLs: 'helium:///<path>/<file>'
+                fileURL = url
+                
                 let paths = url.pathComponents
-                guard "/" == paths.first else { return }
-                let path = paths[1]
-                let file = paths[2]
-                if k.asset == path {
-                    wvc.webView.htmlContents = NSString.string(fromAsset: file)
-                }
-                else
-                if k.html == path {
+                guard "/" == paths.first, paths.count == 3 else { return }
+                let path = paths[1] // asset,html,text
+                let file = paths[2] // contents name
+                
+                switch path {
+                case k.asset:
+                    contents = NSString.string(fromAsset: file)
+                
+                case k.html:
                     Swift.print("load html: \(file)")
-                }
-                else
-                if k.text == path {
+                
+                case k.text:
                     Swift.print("load text: \(file)")
+                    
+                default:
+                    Swift.print("unknown asset type \(path)")
                 }
             }
         }
@@ -1318,11 +1312,12 @@ class Document : NSDocument {
             return
         }
 
-        //  non-file revert handling, either defaults or an asset (about:)
+        //  non-file revert handling, either defaults or an asset
         switch docGroup {
         case .playlist:
             let pvc : PlaylistViewController = windowControllers.first!.contentViewController as! PlaylistViewController
 
+            //  Since we're reverting, use the stored version
             pvc.playlists = appDelegate.restorePlaylists()
             pvc.playlistArrayController.content = pvc.playlists
             
@@ -1465,7 +1460,6 @@ class Document : NSDocument {
                             .autosaveElsewhereOperation     : .changeAutosaved,
                             .autosaveInPlaceOperation       : .changeAutosaved,
                             .autosaveAsOperation            : .changeAutosaved][saveOperation] ?? .changeCleared)
-        updateChangeCount(.changeCleared)
     }
     
     override var shouldRunSavePanelWithAccessoryView: Bool {
