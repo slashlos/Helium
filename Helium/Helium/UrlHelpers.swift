@@ -284,10 +284,8 @@ extension URL {
     }
     
     //  TAD encoded resource name URLs for data, html, text, …
-    //self.load(data, mimeType: <#T##String#>, characterEncodingName: UTF8, baseURL: <#T##URL#>)
-
     init?(cache data: Data) {
-        let name = String(format: "about:///data/%@", NSString.timeAndDate())
+        let name = String(format: "%@:///data/%@", k.helium, NSString.timeAndDate())
         self = URL.init(string: name)!
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
@@ -297,7 +295,7 @@ extension URL {
         UserDefaults.standard.set(dict, forKey: name)
     }
     init?(cache text: String, embed: Bool = false) {
-        let name = String(format: "about:///html/%@", NSString.timeAndDate())
+        let name = String(format: "%@:///html/%@", k.helium, NSString.timeAndDate())
         self = URL.init(string: name)!
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
@@ -309,7 +307,7 @@ extension URL {
         UserDefaults.standard.set(dict, forKey: name)
     }
     init?(cache text: NSAttributedString, embed: Bool = true) {
-        let name = String(format: "about:///html/%@", NSString.timeAndDate())
+        let name = String(format: "%@:///html/%@", k.helium, NSString.timeAndDate())
         self = URL.init(string: name)!
 
         do {
