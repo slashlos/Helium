@@ -255,7 +255,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                             Swift.print("unknown search \(playitem)")
                         }
                     }
-                    Swift.print("searches \(self._webSearches!.count) restored")
+                    Swift.print("\(self._webSearches!.count) search(es) restored")
                 }
             }
             return _webSearches!
@@ -263,13 +263,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         set (array) {
             _webSearches = array
         }
+        
+    }
+    fileprivate func addWebSearcheURL(_ seaString: String, searchURL: URL) {
+        let seaTime = Date.init().timeIntervalSinceReferenceDate
+        let item = PlayItem.init(name: seaString, link: searchURL, time: seaTime, rank: 0)
+        
+        webSearches.append(item)
     }
     
     var recentSearches : Array<String> {
         get {
             var searches = Array<String>()
             for search in webSearches {
-                searches.append(search.name)
+                searches.append(search.name.removingPercentEncoding!)
             }
             return searches
         }
@@ -491,7 +498,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         do {
             let typeName = url.pathExtension == k.hpl ? k.Playlist : k.Helium
             let doc = try docController.makeDocument(withContentsOf: url, ofType: typeName)
-            
+            if doc.windowControllers.count == 0 { doc.makeWindowControllers() }
             guard let wc = doc.windowControllers.first else { return false }
             
             guard let window = wc.window else { return false }
@@ -1008,7 +1015,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                             Swift.print("unknown history \(playitem)")
                         }
                     }
-                    Swift.print("histories \(self._histories!.count) restored")
+                    Swift.print("\(self._histories!.count) history(s) restored")
                 }
             }
             return _histories!
@@ -1139,17 +1146,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: NSEvent.EventTypeMask.flagsChanged) { (event) -> NSEvent? in
             return self.keyDownMonitor(event: event) ? nil : event
-        }
-        
-        // Asynchronous code running on the low priority queue
-        DispatchQueue.global(qos: .utility).async {
-
-            if let items = self.defaults.array(forKey: UserSettings.SearchNames.keyPath) {
-                for search in items {
-                    self.webSearches.append(PlayItem.init(with: (search as! Dictionary)))
-                }
-                Swift.print("searches \(self.webSearches.count) restored")
-            }
         }
         
         //  Remember item actions; use when toggle audio/video
@@ -1308,7 +1304,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
         guard UserSettings.HistorySaves.value else { return }
-        guard let itemURL = notification.object as? URL, itemURL.scheme != k.about,
+        guard let itemURL = notification.object as? URL, itemURL.scheme != k.helium,
             itemURL.absoluteString != UserSettings.HomePageURL.value else {
             return
         }
@@ -1530,10 +1526,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     let newWindow = (response == NSApplication.ModalResponse.alertThirdButtonReturn)
                     
                     urlString = UrlHelpers.ensureScheme(urlString)
-                    if UrlHelpers.isValidURL(urlString: urlString) {
-                        acceptHandler(newWindow,URL.init(string: urlString)!)
-                        Swift.print("search \(rawString)")
+                    guard UrlHelpers.isValidURL(urlString: urlString), let searchURL = URL.init(string: urlString) else {
+                        Swift.print("invalid: \(urlString)")
+                        return
                     }
+
+                    self.addWebSearcheURL(newUrlString!, searchURL: searchURL)
+                    acceptHandler(newWindow,searchURL)
+                    Swift.print("search \(rawString)")
 
                 default:
                     return
@@ -1556,6 +1556,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     Swift.print("invalid: \(urlString)")
                     return
                 }
+                
+                self.addWebSearcheURL(newUrlString!, searchURL: searchURL)
                 acceptHandler(newWindow,searchURL)
                 Swift.print("search \(rawString)")
 
