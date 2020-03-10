@@ -1132,6 +1132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         default:
             //  Only clear when true
             if shiftKeyDown { self.shiftKeyDown = false }
+            if optionKeyDown { self.optionKeyDown = false }
             if commandKeyDown { self.commandKeyDown = false }
             return false
         }
