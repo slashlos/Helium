@@ -1605,13 +1605,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         //  Form a filename: ~/"<app's name> View Shot <timestamp>"
         let dateFMT = DateFormatter()
-        dateFMT.dateFormat = "yyyy-dd-MM"
+        dateFMT.locale = Locale(identifier: "en_US_POSIX")
+        dateFMT.dateFormat = "yyyy-MM-dd"
         let timeFMT = DateFormatter()
+        timeFMT.locale = Locale(identifier: "en_US_POSIX")
         timeFMT.dateFormat = "h.mm.ss a"
         let now = Date()
 
         let path = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value).appendingPathComponent(
-            String(format: "%@ View Shot %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
+            String(format: "%@ View Shap %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
         
         let bitmapImageRep = NSBitmapImageRep(data: tiffData)
         
