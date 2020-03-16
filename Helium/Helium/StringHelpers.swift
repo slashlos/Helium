@@ -323,8 +323,10 @@ extension NSAttributedString {
 extension NSString {
     class func timeAndDate() -> String {
         let dateFMT = DateFormatter()
-        dateFMT.dateFormat = "yyddMM"
+        dateFMT.locale = Locale(identifier: "en_US_POSIX")
+        dateFMT.dateFormat = "yyMMdd"
         let timeFMT = DateFormatter()
+        timeFMT.locale = Locale(identifier: "en_US_POSIX")
         timeFMT.dateFormat = "HHmmss"
         let now = Date()
 
