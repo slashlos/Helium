@@ -1613,7 +1613,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         let now = Date()
 
         let path = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value).appendingPathComponent(
-            String(format: "%@ View Shap %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
+            String(format: "%@ Shapshot %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
         
         let bitmapImageRep = NSBitmapImageRep(data: tiffData)
         
