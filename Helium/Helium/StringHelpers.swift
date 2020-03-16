@@ -348,7 +348,7 @@ extension Data {
 
 //  https://codereview.stackexchange.com/questions/135424/hex-string-to-bytes-nsdata?newreg=06dfe1d5b9964b928631538c9e48d421
 extension String {
-    func dataFromHexString() -> NSData? {
+    func dataFromHexString() -> Data? {
 
         // Convert 0 ... 9, a ... f, A ...F to their decimal value,
         // return nil for all other input characters
@@ -366,9 +366,7 @@ extension String {
         }
 
         let utf16 = self.utf16
-        guard let data = NSMutableData(capacity: utf16.count/2) else {
-            return nil
-        }
+        guard let data = NSMutableData(capacity: utf16.count/2) else { return nil }
 
         var i = utf16.startIndex
         while i != utf16.endIndex {
@@ -382,7 +380,7 @@ extension String {
             data.append(&value, length: 1)
             i = index(i, offsetBy: 2, limitedBy: utf16.endIndex)!
         }
-        return data
+        return data as Data
     }
 }
 
