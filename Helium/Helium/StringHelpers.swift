@@ -10,6 +10,12 @@
 import Foundation
 import CoreAudioKit
 
+extension Collection {
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
 //https://stackoverflow.com/questions/21789770/determine-mime-type-from-nsdata
 extension Data {
     private static let mimeTypeSignatures: [UInt8 : String] = [
