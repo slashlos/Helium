@@ -73,7 +73,8 @@ internal struct UserSettings {
     static let HomePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
     //  NOTE: UserAgent default is loaded at run-time
-    static let UserAgent = Setting<String>("userAgent", defaultValue: "TBD")
+    static let UserAgent = Setting<String>("userAgent", defaultValue:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15")
 
     //  Snapshots path loading once
     static let SnapshotsURL = Setting<String>("snapshotsURL", defaultValue: "")
@@ -91,7 +92,9 @@ internal struct UserSettings {
     static let RestoreDocAttrs = Setting<Bool>("restoreDocAttrs", defaultValue: true)
     static let RestoreWebURLs = Setting<Bool>("restoreWebURLs", defaultValue: true)
     static let RestoreLocationSvcs = Setting<Bool>("restoreLocationSvcs", defaultValue: true)
-    
+    static let ShareWebCookies = Setting<Bool>("shareWebCookies", defaultValue: true)
+    static let StoreWebCookies = Setting<Bool>("storeeWebCookies", defaultValue: false)
+
     //  User non-document windows to restore
     static let KeepListName = Setting<String>("keepList", defaultValue: "Keep")
     
