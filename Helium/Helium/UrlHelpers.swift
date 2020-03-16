@@ -222,6 +222,13 @@ extension URL {
         let utiCheck = uti.takeRetainedValue()
         return UTTypeConformsTo(utiCheck, kUTTypeMovie) || UTTypeConformsTo(utiCheck, kUTTypeVideo)
     }
+    func hasDataContent() -> Bool {
+        let type = self.pathExtension as CFString
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil) else { return false }
+        
+        let utiCheck = uti.takeRetainedValue()
+        return UTTypeConformsTo(utiCheck, kUTTypeData) && !self.hasVideoContent() && !self.hasHTMLContent()
+    }
     var webloc : URL? {
         get {
             do {
@@ -285,29 +292,29 @@ extension URL {
     
     //  TAD encoded resource name URLs for data, html, text, …
     init?(cache data: Data) {
-        let name = String(format: "%@:///data/%@", k.helium, NSString.timeAndDate())
+        let name = String(format: "%@:///data/%@", k.scheme, NSString.timeAndDate())
         self = URL.init(string: name)!
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
-        dict[k.link] = self
+        dict[k.mime] = "data/data"
         dict[k.data] = data.hexEncodedString()
         
         UserDefaults.standard.set(dict, forKey: name)
     }
     init?(cache text: String, embed: Bool = false) {
-        let name = String(format: "%@:///html/%@", k.helium, NSString.timeAndDate())
+        let name = String(format: "%@:///html/%@", k.scheme, NSString.timeAndDate())
         self = URL.init(string: name)!
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
-        dict[k.link] = self
-        dict[k.html] = embed
+        dict[k.mime] = embed ? "text/html" : "text/plain-text"
+        dict[k.data] = embed
             ? String(format: "<html><body><code>%@</code></body></html>", text)
             : text
         
         UserDefaults.standard.set(dict, forKey: name)
     }
     init?(cache text: NSAttributedString, embed: Bool = true) {
-        let name = String(format: "%@:///html/%@", k.helium, NSString.timeAndDate())
+        let name = String(format: "%@:///html/%@", k.scheme, NSString.timeAndDate())
         self = URL.init(string: name)!
 
         do {
