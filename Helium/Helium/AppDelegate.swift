@@ -223,6 +223,73 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var os = ProcessInfo().operatingSystemVersion
     @objc @IBOutlet weak var magicURLMenu: NSMenuItem!
 
+    // MARK:- Shared webView resources
+    var _webProcessPool : WKProcessPool?
+    var  webProcessPool : WKProcessPool {
+        get {
+            if  _webProcessPool == nil {
+                _webProcessPool = WKProcessPool()
+            }
+            return _webProcessPool!
+        }
+    }
+    
+    var shareWebCookies = UserSettings.ShareWebCookies.value
+    var storeWebCookies = UserSettings.StoreWebCookies.value
+    
+    var _webConfiguration : WKWebViewConfiguration?
+    var  webConfiguration : WKWebViewConfiguration {
+        get {
+            if  _webConfiguration == nil {
+                _webConfiguration = WKWebViewConfiguration()
+ 
+                //  Prime process pool among views using share
+                _webConfiguration!.processPool = webProcessPool
+                
+                //  Prime our preferendes
+                _webConfiguration!.preferences = webPreferences
+                _webConfiguration!.suppressesIncrementalRendering = false
+
+                //  Support our internal (local) scheme
+                _webConfiguration!.setURLSchemeHandler(MySchemeHandler(), forURLScheme: k.scheme)
+
+                // Use nonPersistent() or default() depending on if you want cookies persisted to disk
+                // and shared between WKWebViews of the same app (default), or not persisted and not shared
+                // across WKWebViews in the same app.
+                if shareWebCookies {
+                    let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
+                    let dataStore = storeWebCookies ? WKWebsiteDataStore.default() : WKWebsiteDataStore.nonPersistent()
+                    let waitGroup = DispatchGroup()
+                    for cookie in cookies {
+                        waitGroup.enter()
+                        dataStore.httpCookieStore.setCookie(cookie) { waitGroup.leave() }
+                    }
+                    waitGroup.notify(queue: DispatchQueue.main, execute: {
+                        self._webConfiguration?.websiteDataStore = dataStore
+                    })
+                 }
+            }
+            return _webConfiguration!
+        }
+    }
+    var _webPreferences : WKPreferences?
+    var  webPreferences : WKPreferences {
+        get {
+            if  _webPreferences == nil {
+                _webPreferences = WKPreferences()
+                
+                // Allow plug-ins such as silverlight
+                _webPreferences!.plugInsEnabled = true
+                
+                ///_webPreferences!.minimumFontSize = 14
+                _webPreferences!.javaScriptCanOpenWindowsAutomatically = true;
+                _webPreferences!.javaScriptEnabled = true
+                _webPreferences!.javaEnabled = true
+            }
+            return _webPreferences!
+        }
+    }
+    
     //  MARK:- Global IBAction, but ship to keyWindow when able
     @objc @IBOutlet weak var appMenu: NSMenu!
 	var appStatusItem:NSStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -750,7 +817,70 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             return
         }
     }
-    
+    func userConfirmMessage(_ message: String, info: String?) -> Bool {
+        let alert = NSAlert()
+        var ok = false
+        alert.messageText = message
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        if info != nil {
+            alert.informativeText = info!
+        }
+        if let window = NSApp.keyWindow {
+            alert.beginSheetModal(for: window, completionHandler: { response in
+                ok = response == NSApplication.ModalResponse.alertFirstButtonReturn
+            })
+        }
+        else
+        {
+            ok = alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn
+        }
+        return ok
+    }
+    func userTextInput(_ prompt: String, defaultText: String?) -> String? {
+        var text : String? = nil
+
+        // Create alert
+        let alert = NSAlert()
+        alert.alertStyle = NSAlert.Style.informational
+        alert.messageText = prompt
+        
+        // Create urlField
+        let textField = URLField(withValue: defaultText, modalTitle: title)
+        textField.frame = NSRect(x: 0, y: 0, width: 300, height: 20)
+        alert.accessoryView = textField
+
+        // Add urlField and buttons to alert
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        
+        //  Have window, but make it active
+        NSApp.activate(ignoringOtherApps: true)
+        
+        if let keyWindow = NSApp.keyWindow {
+            alert.beginSheetModal(for: keyWindow, completionHandler: { response in
+                // buttons are accept, cancel, default
+                if response == NSApplication.ModalResponse.alertFirstButtonReturn {
+                    // swiftlint:disable:next force_cast
+                    text = (alert.accessoryView as! NSTextField).stringValue
+                 }
+            })
+        }
+        else
+        {
+            //  No window, so load panel modally
+            NSApp.activate(ignoringOtherApps: true)
+
+            if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
+                text = (alert.accessoryView as! NSTextField).stringValue
+            }
+        }
+        // Set focus on urlField
+        alert.accessoryView!.becomeFirstResponder()
+        
+        return text
+    }
+
     @objc func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.title.hasPrefix("Redo") {
             menuItem.isEnabled = self.canRedo
