@@ -1030,6 +1030,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc func updateTitleBar(didChange: Bool) {
         let mouseSeen = mouseOver && !mouseIdle
 
+        //  treat home URL specially
+        if nil == document?.fileURL {
+             NSAnimationContext.runAnimationGroup({ (context) in
+                 context.duration = 0.1
+                 panel.animator().titleVisibility = mouseOver ? .visible : .hidden
+                 titleDragButton?.animator().isBordered = mouseOver
+                 titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                 titleDragButton?.animator().isTransparent = mouseOver
+             })
+             return
+         }
+
          if didChange {
             NSAnimationContext.runAnimationGroup({ (context) in
                 context.duration = mouseIdle ? 1.0 : 0.2
