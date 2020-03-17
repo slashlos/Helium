@@ -911,6 +911,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     Swift.print ("snapshotURL \(url.absoluteString)")
                     desktopData = data
                 }
+                else
+                if let data = bookmarks[URL.init(string: String(format: "file:///Users/%@/Desktop/", NSUserName()))!] {
+                    desktopData = data
+                }
             }
         }
         
@@ -1169,9 +1173,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         
         //  Developer extras off by default
         UserSettings.DeveloperExtrasEnabled.value = false
-        
-        //  Capture default user agent string for this platform
-        UserSettings.UserAgent.default = WKWebView()._userAgent
         
         //  Restore auto save settings
         autoSaveDocs = UserSettings.AutoSaveDocs.value
