@@ -116,10 +116,10 @@ class AboutBoxController : NSViewController {
             AboutBoxController.versionState = 0
         }
 
-        let titles = [ versionData, versionLink, versionDate ]
+        let titles = [ versionData, versionLink, versionDate, "Privacy" ]
         versionButton.title = titles[AboutBoxController.versionState]!
 
-        let tooltip = [ "version", "build", "timestamp" ]
+        let tooltip = [ "version", "build", "timestamp", "privacy statement" ]
         versionButton.toolTip = tooltip[AboutBoxController.versionState];
     }
 
