@@ -355,3 +355,26 @@ extension String {
         }
     }
 }
+
+extension URL {
+    func saveAs(responseHandler: @escaping (URL?) -> Void) {
+        let savePanel = NSSavePanel()
+        
+        savePanel.canCreateDirectories = true
+        savePanel.nameFieldStringValue = self.lastPathComponent
+        savePanel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+        
+        if let keyWindow = NSApp.keyWindow {
+            savePanel.beginSheetModal(for: keyWindow, completionHandler: { result in
+                responseHandler( result == .OK ? savePanel.url : nil )
+             })
+        }
+        else
+        {
+            NSApp.activate(ignoringOtherApps: true)
+            
+            let result = savePanel.runModal()
+            responseHandler( result == .OK ? savePanel.url : nil )
+        }
+    }
+}
