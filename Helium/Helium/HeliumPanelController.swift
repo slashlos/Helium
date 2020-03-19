@@ -965,16 +965,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             let wvc = vindow.contentViewController as? WebViewController,
             let wpc = vindow.windowController as? HeliumPanelController else { return false }
 
+        //  Stop whatever is going on by brute force
         wvc.clear()
 
         vindow.ignoresMouseEvents = true
         wpc.setupTrackingAreas(false)
-        
-        //  Stop whatever is going on by brute force
-        //(panel.contentViewController as! WebViewController).viewWillDisappear()
-
-        //  Propagate to super after removal
-        wvc.setupTrackingAreas(false)
         
         // Wind down all observations
         NotificationCenter.default.removeObserver(self)
