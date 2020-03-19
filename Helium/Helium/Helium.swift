@@ -22,10 +22,13 @@ let docHelium : ViewOptions = []
 //  Global static strings
 struct k {
     static let Helium = "Helium" /// aka Playitem
+    static let scheme = "helium-local"
     static let helium = "helium"
     static let asset = "asset"
     static let html = "html"
     static let text = "text"
+    static let mime = "mime"
+    static let type = "type"
     static let desktop = "Desktop"
     static let docIcon = "docIcon"
     static let Playlist = "Playlist"
@@ -1271,30 +1274,6 @@ class Document : NSDocument {
         default:
             if url.isFileURL, [k.hpi].contains(url.pathExtension) {
                 try super.read(from: url, ofType: typeName)
-            }
-            else
-            if k.helium == url.scheme {
-                //  helium scheme formatted URLs: 'helium:///<path>/<file>'
-                fileURL = url
-                
-                let paths = url.pathComponents
-                guard "/" == paths.first, paths.count == 3 else { return }
-                let path = paths[1] // asset,html,text
-                let file = paths[2] // contents name
-                
-                switch path {
-                case k.asset:
-                    contents = NSString.string(fromAsset: file)
-                
-                case k.html:
-                    Swift.print("load html: \(file)")
-                
-                case k.text:
-                    Swift.print("load text: \(file)")
-                    
-                default:
-                    Swift.print("unknown asset type \(path)")
-                }
             }
         }
     }
