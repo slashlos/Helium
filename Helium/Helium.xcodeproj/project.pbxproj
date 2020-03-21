@@ -122,6 +122,7 @@
 		0FD6C7361E62286000D6F836 /* PlaylistPanelController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistPanelController.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FD6C7371E62286000D6F836 /* PlaylistViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaylistViewController.swift; sourceTree = "<group>"; usesTabs = 0; };
 		0FDE23EC1F040484009D4B16 /* Helium.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Helium.icns; path = Helium/Assets/Helium.icns; sourceTree = "<group>"; };
+		0FE4A0CF24210FE8003CC2EF /* Helium.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Helium.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		0FF0BB391EAA25FE009952D4 /* ValueTransformers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueTransformers.swift; sourceTree = "<group>"; usesTabs = 0; };
 		27199AB01BE422AC00E02297 /* HeliumShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HeliumShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		27199AB31BE422AC00E02297 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
@@ -256,6 +257,7 @@
 		4D867CB31AD6781200681331 /* Helium */ = {
 			isa = PBXGroup;
 			children = (
+				0FE4A0CF24210FE8003CC2EF /* Helium.playground */,
 				0F81BA9A1F8E3CD500BB53B6 /* Helium.entitlements */,
 				0F05C7EB1EFEC233001B5D02 /* AboutHelium.swift */,
 				4D867CB61AD6781200681331 /* AppDelegate.swift */,
