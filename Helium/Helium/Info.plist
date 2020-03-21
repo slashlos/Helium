@@ -70,18 +70,6 @@
 				<string>public.text</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleTypeIconFile</key>
-			<string>Helium</string>
-			<key>CFBundleTypeName</key>
-			<string>Release</string>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>NSDocumentClass</key>
-			<string>$(PRODUCT_MODULE_NAME).Document</string>
-		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -127,6 +115,10 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+		<key>NSIncludesSubdomains</key>
 		<true/>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
