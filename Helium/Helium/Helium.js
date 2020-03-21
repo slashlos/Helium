@@ -9,7 +9,7 @@ document.onkeyup     = getSelectionAndSendMessage ;
 
 //  https://stackoverflow.com/questions/21224327/how-to-detect-middle-mouse-button-click/21224428
 document.body.onclick = function (e) {
-  if (e && (e.which == 2 || e.button == 4 )) {
+  if (e && (e.which == 2 || e.button == 3 )) {
     sendLink;
   }
 }
