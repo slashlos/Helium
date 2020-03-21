@@ -271,7 +271,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 // across WKWebViews in the same app.
                 if shareWebCookies {
                     let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
-                    let dataStore = storeWebCookies ? WKWebsiteDataStore.default() : WKWebsiteDataStore.nonPersistent()
+                    let dataStore = shareWebCookies ? WKWebsiteDataStore.default() : WKWebsiteDataStore.nonPersistent()
                     let waitGroup = DispatchGroup()
                     for cookie in cookies {
                         waitGroup.enter()
