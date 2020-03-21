@@ -215,6 +215,13 @@ extension URL {
         
         return UTTypeConformsTo((uti?.takeRetainedValue())!, kUTTypeHTML)
     }
+    func hasUserContent() -> Bool {
+        let type = self.pathExtension as CFString
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil) else { return false }
+        
+        let utiCheck = uti.takeRetainedValue()
+        return  UTTypeConformsTo(utiCheck, kUTTypeContent)
+    }
     func hasVideoContent() -> Bool {
         let type = self.pathExtension as CFString
         guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, type, nil) else { return false }
@@ -297,6 +304,7 @@ extension URL {
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
         dict[k.mime] = "data/data"
+        dict[k.type] = k.data
         dict[k.data] = data.hexEncodedString()
         
         UserDefaults.standard.set(dict, forKey: name)
@@ -307,6 +315,7 @@ extension URL {
         var dict = Dictionary<String,Any>()
         dict[k.name] = name
         dict[k.mime] = embed ? "text/html" : "text/plain-text"
+        dict[k.type] = k.text
         dict[k.data] = embed
             ? String(format: "<html><body><code>%@</code></body></html>", text)
             : text

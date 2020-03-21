@@ -66,6 +66,10 @@ internal struct UserSettings {
         "homePageURL",
         defaultValue: "https://slashlos.github.io/Helium/helium_start.html"
     )
+    static let HomeStrkURL = Setting<String>(
+        "homeStrkURL",
+        defaultValue: "https://slashlos.github.io/Helium/helium_stark.html"
+    )
     static let HelpPageURL = Setting<String>(
         "helpPageURL",
         defaultValue: "https://slashlos.github.io/Helium/Help/index.html"
@@ -92,8 +96,9 @@ internal struct UserSettings {
     static let RestoreDocAttrs = Setting<Bool>("restoreDocAttrs", defaultValue: true)
     static let RestoreWebURLs = Setting<Bool>("restoreWebURLs", defaultValue: true)
     static let RestoreLocationSvcs = Setting<Bool>("restoreLocationSvcs", defaultValue: true)
+    static let AcceptWebCookie = Setting<Bool>("acceptWebCookie", defaultValue: true)
     static let ShareWebCookies = Setting<Bool>("shareWebCookies", defaultValue: true)
-    static let StoreWebCookies = Setting<Bool>("storeeWebCookies", defaultValue: false)
+    static let StoreWebCookies = Setting<Bool>("storeWebCookies", defaultValue: true)
 
     //  User non-document windows to restore
     static let KeepListName = Setting<String>("keepList", defaultValue: "Keep")

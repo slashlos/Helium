@@ -20,12 +20,6 @@ extension NSColor {
     }
 }
 
-fileprivate var homeURL : URL {
-    get {
-        return URL.init(string: UserSettings.HomePageURL.value)!
-    }
-}
-
 class HeliumTitleDragButton : NSButton {
 /* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
  *  Photo_Editor_WindowDraggableButton_swift.html#//
@@ -37,19 +31,31 @@ class HeliumTitleDragButton : NSButton {
             return self.window?.windowController as? HeliumPanelController
         }
     }
+    var homeURL : URL {
+        get {
+            if let hpc = self.hpc {
+                return hpc.homeURL
+            }
+            return URL.init(string: UserSettings.HomePageURL.value)!
+        }
+    }
+    var homeColor : NSColor {
+        get {
+            if let hpc = self.hpc {
+                return hpc.homeColor
+            }
+            return  NSColor(hex: 0x3399FF)
+        }
+    }
     var borderColor : NSColor {
         get {
             guard let window = self.window else { return NSColor.clear }
             if let url = window.representedURL, url != homeURL {
-                if url.isFileURL {
-                    return NSColor.controlDarkShadowColor
-                } else {
-                    return NSColor(hex: 0x3399FF/*0x44AAFF*/)///NSColor.clear
-                }
+                return url.isFileURL ? NSColor.controlDarkShadowColor : homeColor
             }
             else
             {
-                return NSColor(hex: 0x3399FF/*0x44AAFF*/)
+                return homeColor
             }
         }
     }
@@ -163,7 +169,23 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             return (self.window as! HeliumPanel)
         }
     }
-    
+    var incognito : Bool {
+        get {
+            guard let webView = webView else { return false }
+            return webView.incognito
+        }
+    }
+    var homeURL : URL {
+        get {
+            return URL.init(string: incognito ? UserSettings.HomeStrkURL.value : UserSettings.HomePageURL.value)!
+        }
+    }
+    var homeColor : NSColor {
+        get {
+            return  NSColor(hex: incognito ? 0x0000FF : 0x3399FF)
+        }
+    }
+
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
     var titleDragButton : HeliumTitleDragButton?
@@ -241,6 +263,15 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         NSApp.changeWindowsItem(panel, title: panel.title, filename: false)
     }
 
+    override var document: AnyObject? {
+        didSet {
+            if let document = self.document, let webView = self.webView {
+                webView.incognito = document.fileType == k.Incognito
+                documentDidLoad()
+            }
+        }
+    }
+        
     func documentDidLoad() {
         // Moved later, called by view, when document is available
         mouseOver = false

@@ -233,6 +233,37 @@
                                                             <action selector="autoHideTitlePress:" target="Voe-Tx-rLC" id="Cao-pT-szc"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem title="Cookies" id="ZFB-IL-hVD">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <menu key="submenu" title="Cookies" id="faF-qB-9yM">
+                                                            <items>
+                                                                <menuItem title="Accept" toolTip="accept new cookie(s)" id="a9Q-W9-ypw">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="acceptCookiePress:" target="Voe-Tx-rLC" id="qH2-6h-Ope"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Clear" toolTip="CLEAR all cookie(s)" id="pS8-AW-uMU">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="clearCookliesPress:" target="Voe-Tx-rLC" id="6h7-vk-TOI"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Share" toolTip="URL scope cookie sharing" id="brP-uP-RAx">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="shareCookiesPress:" target="Voe-Tx-rLC" id="RkZ-MG-nbo"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                                <menuItem title="Store" toolTip="persist cookie storage" id="pfy-s6-A57">
+                                                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                                                    <connections>
+                                                                        <action selector="storeCookiesPress:" target="Voe-Tx-rLC" id="OC0-mH-zBt"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </menuItem>
                                                     <menuItem title="Hide Helium in menu bar" id="2GK-ox-Nku" userLabel="Hide Helium in menu bar">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                         <connections>
@@ -393,6 +424,12 @@
                                         <menuItem title="New" tag="1" keyEquivalent="n" id="5z8-gm-Cg3">
                                             <connections>
                                                 <action selector="newDocument:" target="Ady-hI-5gd" id="MBG-Bq-nZh"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Incognito" alternate="YES" keyEquivalent="n" id="rzt-yA-tvg">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="altDocument:" target="Ady-hI-5gd" id="ie2-ID-G9V"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Open" id="wiF-om-ZaY">
@@ -580,6 +617,11 @@ CA
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="toggleTabOverview:" target="Ady-hI-5gd" id="IPS-Zu-K9B"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Stop Web Loading" hidden="YES" keyEquivalent="." id="Zx7-Nq-NAs">
+                                            <connections>
+                                                <action selector="cancel:" target="Ady-hI-5gd" id="Ge6-i8-3Qp"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="6nK-Nb-2IO"/>

@@ -234,6 +234,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         }
     }
     
+    var _sessionConfiguration : URLSessionConfiguration?
+    var  sessionConfiguration : URLSessionConfiguration {
+        get {
+            if  _sessionConfiguration == nil {
+                _sessionConfiguration = URLSessionConfiguration()
+                
+                _sessionConfiguration!.httpCookieAcceptPolicy = UserSettings.AcceptWebCookie.value ?.onlyFromMainDocumentDomain : .never
+                _sessionConfiguration!.httpShouldSetCookies = UserSettings.StoreWebCookies.value
+            }
+            return _sessionConfiguration!
+        }
+    }
+    var acceptWebCookie = UserSettings.AcceptWebCookie.value
     var shareWebCookies = UserSettings.ShareWebCookies.value
     var storeWebCookies = UserSettings.StoreWebCookies.value
     
@@ -410,7 +423,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         UserSettings.AutoHideTitle.value = (sender.state == .off)
      }
 
-    //  By default we auto save any document changes
+	//	Cookies...
+	@IBAction func acceptCookiePress(_ sender: NSMenuItem) {
+		UserSettings.AcceptWebCookie.value = (sender.state == .off)
+	}
+	@IBAction func clearCookliesPress(_ sender: NSMenuItem) {
+		if userConfirmMessage("Confirm clearing *all* cookies", info: "This cannot be undone!") {
+			HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
+		}
+	}
+	@IBAction func shareCookiesPress(_ sender: NSMenuItem) {
+		UserSettings.ShareWebCookies.value = (sender.state == .off)
+	}
+	@IBAction func storeCookiesPress(_ sender: NSMenuItem) {
+		UserSettings.StoreWebCookies.value = (sender.state == .off)
+	}
+	
+	//  By default we auto save any document changes
     @objc @IBOutlet weak var autoSaveDocsMenuItem: NSMenuItem!
     @objc @IBAction func autoSaveDocsPress(_ sender: NSMenuItem) {
         autoSaveDocs = (sender.state == .off)
@@ -905,7 +934,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 break
             case "Auto save documents":
                 menuItem.state = UserSettings.AutoSaveDocs.value ? .on : .off
-             case "Developer Extras":
+			case "Accept":
+				menuItem.state = UserSettings.AcceptWebCookie.value ? .on : .off
+			case "Share":
+				menuItem.state = UserSettings.ShareWebCookies.value ? .on : .off
+			case "Store":
+				menuItem.state = UserSettings.StoreWebCookies.value ? .on : .off
+			case "Developer Extras":
                 guard let type = NSApp.keyWindow?.className, type == "WKInspectorWindow" else {
                     guard let wc = NSApp.keyWindow?.windowController,
                         let hpc : HeliumPanelController = wc as? HeliumPanelController,
@@ -959,6 +994,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
+        
+        //  Wipe alll cookies and cache
+        HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
+
+        let websiteDataTypes = NSSet(array: [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+        let date = Date(timeIntervalSince1970: 0)
+        WKWebsiteDataStore.default().removeData(ofTypes: websiteDataTypes as! Set<String>, modifiedSince: date, completionHandler:{ })
         
         //  Clear any snapshots URL sandbox resources
         if nil != desktopData {

@@ -22,6 +22,7 @@ let docHelium : ViewOptions = []
 //  Global static strings
 struct k {
     static let Helium = "Helium" /// aka Playitem
+    static let Incognito = "Incognito"
     static let scheme = "helium-local"
     static let helium = "helium"
     static let asset = "asset"
@@ -29,6 +30,7 @@ struct k {
     static let text = "text"
     static let mime = "mime"
     static let type = "type"
+    static let utf8 = "UTF-8"
     static let desktop = "Desktop"
     static let docIcon = "docIcon"
     static let Playlist = "Playlist"
@@ -923,6 +925,17 @@ class HeliumDocumentController : NSDocumentController {
         return doc
     }
     
+    @objc @IBAction func altDocument(_ sender: Any?) {
+        var doc: Document
+        do {
+            doc = try makeUntitledDocument(ofType: k.Incognito) as! Document
+            if 0 == doc.windowControllers.count { doc.makeWindowControllers() }
+            doc.showWindows()
+        } catch let error {
+            NSApp.presentError(error)
+        }
+    }
+    
     class override func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier, state: NSCoder, completionHandler: @escaping (NSWindow?, Error?) -> Void) {
         if (NSApp.delegate as! AppDelegate).disableDocumentReOpening {
             completionHandler(nil, NSError.init(domain: NSCocoaErrorDomain, code: NSUserCancelledError, userInfo: nil) )
@@ -931,12 +944,6 @@ class HeliumDocumentController : NSDocumentController {
         {
             super.restoreWindow(withIdentifier: identifier, state: state, completionHandler: completionHandler)
         }
-    }
-}
-
-fileprivate var homeURL : URL {
-    get {
-        return URL.init(string: UserSettings.HomePageURL.value)!
     }
 }
 
@@ -986,7 +993,12 @@ class Document : NSDocument {
             return hpc
         }
     }
-    
+    var homeURL : URL {
+        get {
+            guard let hpc = heliumPanelController else { return URL.init(string: UserSettings.HomePageURL.value)! }
+            return hpc.homeURL
+        }
+    }
     var url : URL? {
         get {
             if let url = self.fileURL
@@ -1381,7 +1393,7 @@ class Document : NSDocument {
     
     override func save(to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType, completionHandler: @escaping (Error?) -> Void) {
         guard url != homeURL else {
-            cacheSettings(homeURL)
+            cacheSettings(url)
             updateChangeCount(.changeCleared)
             return
         }

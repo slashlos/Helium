@@ -72,6 +72,15 @@ class ProgressIndicator : NSProgressIndicator {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func mouseDown(with event: NSEvent) {
+        guard !isHidden else { return }
+        Swift.print("we want to stop something...")
+        
+        if let webView : MyWebView = self.superview as? MyWebView, webView.isLoading {
+            webView.stopLoading()
+        }
+    }
 }
 
 extension WKBackForwardListItem {
@@ -85,39 +94,57 @@ extension WKBackForwardListItem {
 
 class MySchemeHandler : NSObject,WKURLSchemeHandler {
     var task: WKURLSchemeTask?
-    var data: Data?
     
-    func fetchAndSendData() {
-        guard let task = task, let url = task.request.url, let dict = defaults.dictionary(forKey: url.absoluteString) else { return }
+    func fetchAndLoad() -> Dictionary<String,Any>? {
+        guard let task = task, let url = task.request.url, var dict = defaults.dictionary(forKey: url.absoluteString) else { return nil }
         
         let paths = url.pathComponents
-        guard "/" == paths.first, paths.count == 3 else { return }
         let type = paths[1]
+        guard "/" == paths.first, paths.count == 3 else { return nil }
 
+ 
         switch type {// type data,html,text
 
         case k.html,k.text:
-            guard let dataString : String = dict[k.text] as? String else { return }
-            data = dataString.data(using: .utf8)!
-
+            guard let html = dict[k.text] as? String else { return nil }
+            let data = html.dataFromHexString()
+            task.didReceive(URLResponse(url: url, mimeType: dict[k.mime] as? String, expectedContentLength: data!.count, textEncodingName: type))
+            task.didReceive(html.data(using: .utf8)!)
+ 
         case k.data:
-            guard let dataString : String = dict[k.data] as? String else { return }
-            data = dataString.dataFromHexString()!
+            guard let hexString : String = dict[k.data] as? String else { return nil }
+            let data = hexString.dataFromHexString()
+            task.didReceive(URLResponse(url: url, mimeType: dict[k.mime] as? String, expectedContentLength: data!.count, textEncodingName: type))
+            task.didReceive(data!)
+            dict[k.data] = data!
 
         default:
             Swift.print("unknown helium: type \(type)")
-            return
+            return nil
         }
-        
-        task.didReceive(URLResponse(url: url, mimeType: dict[k.type] as? String, expectedContentLength: data!.count, textEncodingName: nil))
-        task.didReceive(data!)
+                
         task.didFinish()
+        
+        return dict
     }
     
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         task = urlSchemeTask
             
-        fetchAndSendData()
+        if let dict = fetchAndLoad(), let type : String = dict[k.type] as? String {
+            switch type {
+            case k.data:
+                guard let data = dict[k.data] as? Data, let mime = dict[k.mime] as? String, let url  = task?.request.url else { return }
+                _ = webView.load(data, mimeType: mime, characterEncodingName: k.utf8, baseURL: url)
+                
+            case k.html,k.text:
+                guard let html = dict[k.text] as? String else { return }
+                _ = webView.loadHTMLString(html, baseURL: nil)
+                
+            default:
+                Swift.print("unknown helium: type \(type)")
+            }
+        }
     }
     
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
@@ -153,7 +180,12 @@ class MyWebView : WKWebView {
     
     var borderView = WebBorderView()
     var loadingIndicator = ProgressIndicator()
-
+    var incognito = false
+    var homeURL : URL {
+        get {
+            return URL.init(string: incognito ? UserSettings.HomeStrkURL.value : UserSettings.HomePageURL.default)!
+        }
+    }
     init() {
         super.init(frame: .zero, configuration: appDelegate.webConfiguration)
         
@@ -178,6 +210,16 @@ class MyWebView : WKWebView {
         if let menuItem = sender as? NSMenuItem {
             Swift.print("Menu \(menuItem.title) clicked")
         }
+    }
+    override func encodeRestorableState(with coder: NSCoder) {
+        super.encodeRestorableState(with: coder)
+        
+        coder.encode(incognito, forKey: "incognito")
+    }
+    override func restoreState(with coder: NSCoder) {
+        super.restoreState(with: coder)
+        
+        incognito = coder.decodeBool(forKey: "incognito")
     }
     
     @objc open func jump(to item: NSMenuItem) -> WKNavigation? {
@@ -311,7 +353,7 @@ class MyWebView : WKWebView {
         //  Fetch legal, relevant, authorized cookies
         for cookie in HTTPCookieStorage.shared.cookies(for: url) ?? [] {
             if cookie.name.contains("'") { continue } // contains a "'"
-            if !cookie.domain.hasPrefix(urlDomain!) { continue }
+            if !cookie.domain.hasSuffix(urlDomain!) { continue }
             if cookie.isSecure && !requestIsSecure { continue }
             cookies.append(cookie)
         }
@@ -1108,8 +1150,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     @available(OSX 10.13, *)
     public func cookiesDidChange(in cookieStore: WKHTTPCookieStore) {
         DispatchQueue.main.async {
+            let waitGroup = DispatchGroup()
+            guard let url = self.webView.url, let urlDomain = url.host else { return }
             cookieStore.getAllCookies { cookies in
-                // Process cookies
+                for cookie in cookies {
+                    if cookie.domain.hasSuffix(urlDomain) {
+                        waitGroup.enter()
+                        self.webView.configuration.websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: { waitGroup.leave() })
+                    }
+                }
             }
         }
     }
@@ -1267,11 +1316,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         // TODO: Watch click events
         // https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
-        /*
+        
         let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
         let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
         controller.addUserScript(clickMe)
-        controller.add(self, name: "clickMe")*/
+        controller.add(self, name: "clickMe")
         
         //  Dealing with cookie changes
         let cookieChangeScript = WKUserScript.init(source: "window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",
@@ -1306,6 +1355,19 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }*/
     
+    override func viewWillLayout() {
+        super.viewWillLayout()
+
+        //  the autolayout is complete only when the view has appeared.
+        webView.autoresizingMask = [.height,.width]
+        if 0 == webView.constraints.count { webView.fit(view) }
+        
+        borderView.autoresizingMask = [.height,.width]
+        if 0 == borderView.constraints.count { borderView.fit(view) }
+        
+        if 0 == loadingIndicator.constraints.count { loadingIndicator.center(view) }
+    }
+    
     override func viewWillAppear() {
         super.viewWillAppear()
         
@@ -1316,19 +1378,6 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         {
             clear()
         }
-    }
-    
-    override func viewWillLayout() {
-        super.viewWillLayout()
-        
-        //  the autolayout is complete only when the view has appeared.
-        webView.autoresizingMask = [.height,.width]
-        if 0 == webView.constraints.count { webView.fit(view) }
-        
-        borderView.autoresizingMask = [.height,.width]
-        if 0 == borderView.constraints.count { borderView.fit(view) }
-        
-        if 0 == loadingIndicator.constraints.count { loadingIndicator.center(view)}
     }
     
     override func viewDidAppear() {
@@ -1428,6 +1477,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @objc internal func optionKeyDown(_ notification : Notification) {
         
+    }
+    
+    @objc internal func cancel(_ sender: AnyObject)
+    {
+        webView.stopLoading()
     }
     
     @objc internal func commandKeyDown(_ notification : Notification) {
@@ -1773,11 +1827,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 Swift.print("new url -> \(url.absoluteString)")
             }
             
-///        case "clickMe":
-///            Swift.print("message: \(message.body)")
-///            break
+        case "clickMe":
+            Swift.print("message: \(message.body)")
+            break
             
         case "updateCookies":
+            guard appDelegate.shareWebCookies,appDelegate.storeWebCookies else { return }
             let updates = (message.body as! String).components(separatedBy: "; ")
             Swift.print("cookie(\(updates.count)) \(message.body)")
 
@@ -1786,12 +1841,14 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 guard keyval.count == 2 else { continue }
                 
                 if let url = webView.url, let cookies : [HTTPCookie] = HTTPCookieStorage.shared.cookies(for: url) {
+                    let cookieStorage = HTTPCookieStorage.shared
+
                     for cookie in cookies {
                         if cookie.name == keyval.first! {
                             var properties : Dictionary<HTTPCookiePropertyKey,Any> = (cookie.properties as AnyObject).mutableCopy() as! Dictionary<HTTPCookiePropertyKey, Any>
                             properties[HTTPCookiePropertyKey("HTTPCookieValue")] = keyval.last!
                             if let updated = HTTPCookie.init(properties: properties) {
-                                HTTPCookieStorage.shared.setCookie(updated)
+                                cookieStorage.setCookie(updated)
                             }
                         }
                         else
@@ -1803,7 +1860,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                 .name:      keyval.first!,
                                 .value:     keyval.last!,
                                 .secure:    url.scheme == "https"]) {
-                                HTTPCookieStorage.shared.setCookie(newbie)
+                                cookieStorage.setCookie(newbie)
                             }
                         }
                     }
@@ -1816,13 +1873,25 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     // MARK: Webview functions
+    // https://stackoverflow.com/a/56338070/564870
+    class func clean() {
+        guard #available(iOS 9.0, *) else {return}
+
+        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+            records.forEach { record in
+                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                #if DEBUG
+                    print("WKWebsiteDataStore record deleted:", record)
+                #endif
+            }
+        }
+    }
+    
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
-        guard let url = URL.init(string: UserSettings.HomePageURL.value) else {
-            _ = loadURL(url: URL.init(string: UserSettings.HomePageURL.default)!)
-            return
-        }
-        _ = webView.load(URLRequest.init(url: url))
+        _ = webView.load(URLRequest.init(url: webView.homeURL))
     }
 
 	var webView = MyWebView()
@@ -1856,7 +1925,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                 if percent == 100, let url = (self.webView.url) {
 
                     //  Initial recording for this url session
-                    if UserSettings.HistorySaves.value {
+                    if UserSettings.HistorySaves.value, !webView.incognito {
                         let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : false, k.view : self.webView as Any])
                         NotificationCenter.default.post(notif)
                     }
@@ -2115,15 +2184,17 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if #available(OSX 10.13, *) {
             if let headerFields = response.allHeaderFields as? [String:String] {
                 Swift.print("\(url.absoluteString) allHeaderFields:\n\(headerFields)")
+                let waitGroup = DispatchGroup()
 
                 let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
                 cookies.forEach({ cookie in
-                    webView.configuration.websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: nil)
+                    waitGroup.enter()
+                    webView.configuration.websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: { waitGroup.leave() })
                 })
             }
         }
         
-        guard url.hasDataContent(), let suggestion = response.suggestedFilename else { decisionHandler(.allow); return }
+        guard !url.hasUserContent(), url.hasDataContent(), let suggestion = response.suggestedFilename else { decisionHandler(.allow); return }
         let downloadDir = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
         let saveURL = downloadDir.appendingPathComponent(suggestion)
         saveURL.saveAs(responseHandler: { saveAsURL in
@@ -2145,7 +2216,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        Swift.print(String(format: "1LD: %p didStartProvisionalNavigation: %p", navigation, webView))
+        Swift.print(String(format: "1LD: %p didStartProvisionalNavigation: %p %@", navigation, webView, webView.url!.debugDescription))
         
         //  Restore setting not done by document controller
         if let hpc = heliumPanelController { hpc.documentDidLoad() }
@@ -2173,7 +2244,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         //  Finish recording of for this url session
-        if UserSettings.HistorySaves.value {
+        if UserSettings.HistorySaves.value, let webView = (webView as? MyWebView), !webView.incognito {
             let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
             NotificationCenter.default.post(notif)
         }
@@ -2215,6 +2286,11 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         Swift.print(String(format: "3DT: webViewWebContentProcessDidTerminate: %p", webView))
+        
+        //  If incognito tear down...
+        if let webView = (webView as? MyWebView), webView.incognito {
+            Swift.print("webView specific tear down for incognito...")
+        }
     }
     
     //  MARK:- UI Delegate
@@ -2474,7 +2550,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         else
         {
-            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
+            let session = URLSession(configuration: appDelegate.sessionConfiguration, delegate: nil, delegateQueue: nil)
             var request = URLRequest(url: sourceURL)
             request.httpMethod = "GET"
             let task = session.dataTask(with: request, completionHandler:
