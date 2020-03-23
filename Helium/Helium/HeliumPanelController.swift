@@ -64,7 +64,7 @@ class HeliumTitleDragButton : NSButton {
         super.init(frame: frameRect)
         self.cell?.controlView?.wantsLayer = true
         self.layer?.borderWidth = 2
-        self.layer?.borderColor = borderColor.cgColor/// NSColor(hex: 0x44AAFF).cgColor
+        self.layer?.borderColor = borderColor.cgColor
     }
       
     required init?(coder: NSCoder) {
@@ -84,7 +84,7 @@ class HeliumTitleDragButton : NSButton {
         }
         else
         {
-            self.layer?.backgroundColor = NSColor(hex: 0x3399FF).cgColor
+            self.layer?.backgroundColor = homeColor.cgColor
         }
         
         super.draw(dirtyRect)
@@ -208,7 +208,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             context.duration = mouseIdle ? 1.0 : 0.2
 
             panel.animator().titleVisibility = (autoHideTitlePreference != .never) ? mouseOver ? .visible : .hidden : .visible
-            titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+            titleDragButton?.animator().layer?.backgroundColor = mouseOver ? homeColor.cgColor : NSColor.clear.cgColor
             titleDragButton?.isTransparent = mouseOver
             titleDragButton?.animator().isHidden = !mouseOver
             titleDragButton?.animator().isBordered = mouseOver
@@ -1062,7 +1062,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                  context.duration = 0.1
                  panel.animator().titleVisibility = mouseOver ? .visible : .hidden
                  titleDragButton?.animator().isBordered = mouseOver
-                 titleDragButton?.animator().layer?.backgroundColor = mouseOver ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                 titleDragButton?.animator().layer?.backgroundColor = mouseOver ? homeColor.cgColor : NSColor.clear.cgColor
                  titleDragButton?.animator().isTransparent = mouseOver
              })
              return
@@ -1076,7 +1076,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     panel.animator().titleVisibility = mouseSeen ? .visible : .hidden
                     titleDragButton?.animator().isHidden = !mouseSeen
                     if let url = panel.representedURL, !url.isFileURL, url != homeURL {
-                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? homeColor.cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
                     }
@@ -1088,7 +1088,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     panel.animator().titleVisibility = .visible
                     titleDragButton?.animator().isHidden = false
                     if let url = panel.representedURL, !url.isFileURL, url != homeURL {
-                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? NSColor(hex: 0x3399FF).cgColor : NSColor.clear.cgColor
+                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? homeColor.cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
                     }
