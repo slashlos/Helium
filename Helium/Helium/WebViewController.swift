@@ -92,59 +92,52 @@ extension WKBackForwardListItem {
     }
 }
 
-class MySchemeHandler : NSObject,WKURLSchemeHandler {
+class CacheSchemeHandler : NSObject,WKURLSchemeHandler {
     var task: WKURLSchemeTask?
     
-    func fetchAndLoad() -> Dictionary<String,Any>? {
-        guard let task = task, let url = task.request.url, var dict = defaults.dictionary(forKey: url.absoluteString) else { return nil }
+    func cachePicker(_ webView : WKWebView) {
+        guard let task = task else { return }
         
+        let url = task.request.url!
         let paths = url.pathComponents
-        let type = paths[1]
-        guard "/" == paths.first, paths.count == 3 else { return nil }
+        let cache = String(format: "%@/%@", paths[1], paths[2])
+        let dict = defaults.dictionary(forKey: cache)!
+        let mime = dict[k.mime] as! String
+        var text = dict[k.text] as! String
+        var data: Data
 
- 
-        switch type {// type data,html,text
-
-        case k.html,k.text:
-            guard let html = dict[k.text] as? String else { return nil }
-            let data = html.dataFromHexString()
-            task.didReceive(URLResponse(url: url, mimeType: dict[k.mime] as? String, expectedContentLength: data!.count, textEncodingName: type))
-            task.didReceive(html.data(using: .utf8)!)
- 
+        //  paths *must* be [0]="/", [1]=type, [2]=cache-unique-name
+        switch paths[1] {// type: data,html,text
+             
         case k.data:
-            guard let hexString : String = dict[k.data] as? String else { return nil }
-            let data = hexString.dataFromHexString()
-            task.didReceive(URLResponse(url: url, mimeType: dict[k.mime] as? String, expectedContentLength: data!.count, textEncodingName: type))
-            task.didReceive(data!)
-            dict[k.data] = data!
+            data = text.dataFromHexString()!
+            
+        case k.text:
+            data = text.data(using: .utf8)!
+            
+        case k.html:
+            data = text.dataFromHexString()!
+            do {
+                let atrs = try NSAttributedString.init(data: data, options: [:], documentAttributes: nil)
+                text = String(format: "<html><body><code>%@</code></body></html>", atrs)
 
+            } catch let error as NSError {
+                Swift.print("attributedString <- data: \(error.code):\(error.localizedDescription): \(text)")
+            }
+            
         default:
-            Swift.print("unknown helium: type \(type)")
-            return nil
+            fatalError("unknown type(1): \(cache)")
         }
-                
-        task.didFinish()
         
-        return dict
-    }
+        task.didReceive(URLResponse(url: url, mimeType:mime, expectedContentLength: data.count, textEncodingName: nil))
+        task.didReceive(data)
+        task.didFinish()
+     }
     
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         task = urlSchemeTask
-            
-        if let dict = fetchAndLoad(), let type : String = dict[k.type] as? String {
-            switch type {
-            case k.data:
-                guard let data = dict[k.data] as? Data, let mime = dict[k.mime] as? String, let url  = task?.request.url else { return }
-                _ = webView.load(data, mimeType: mime, characterEncodingName: k.utf8, baseURL: url)
-                
-            case k.html,k.text:
-                guard let html = dict[k.text] as? String else { return }
-                _ = webView.loadHTMLString(html, baseURL: nil)
-                
-            default:
-                Swift.print("unknown helium: type \(type)")
-            }
-        }
+        
+        cachePicker(webView)
     }
     
     func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
@@ -163,7 +156,7 @@ class MyWebView : WKWebView {
 
     override class func handlesURLScheme(_ urlScheme: String) -> Bool {
         Swift.print("handleURLScheme: \(urlScheme)")
-        return urlScheme == k.scheme
+        return [k.scheme,k.caches].contains(urlScheme)
     }
     var selectedText : String?
     var selectedURL : URL?
@@ -421,12 +414,12 @@ class MyWebView : WKWebView {
             }
         }
         
-        guard let url = URL.init(cache: text) else { return false }
+        guard let url = URL.init(cache: text, embed: true) else { return false }
         return next(url: url)
     }
     
-    func text(attrributedString text: NSAttributedString) -> Bool {
-        guard let url = URL.init(cache: text) else { return false }
+    func text(attributedString text: NSAttributedString) -> Bool {
+        guard let url = URL.init(cache: text, embed: true) else { return false }
         return next(url: url)
     }
     
@@ -665,7 +658,7 @@ class MyWebView : WKWebView {
                     if let text = item.string(forType: type) {
                         handled += self.text(text) ? 1 : 0
                     }
-                    
+/*
                 case webarchive:
                     if let data = item.data(forType: type) {
                         let html = String(decoding: data, as: UTF8.self)
@@ -710,20 +703,20 @@ class MyWebView : WKWebView {
                         }
                     }
                     
-///                case .filePromise:
-///                    Swift.print(".filePromise")
-///                    break
-///
-///                case .promise:
-///                    Swift.print(".promise")
-///                    break
-                    
+                case .filePromise:
+                    Swift.print(".filePromise")
+                    break
+
+                case .promise:
+                    Swift.print(".promise")
+                    break
+*/
                 default:
                     Swift.print("unkn: \(type)")
 
-                    if let data = item.data(forType: type) {
-                        handled += self.data(data) ? 1 : 0
-                    }
+///                    if let data = item.data(forType: type) {
+///                        handled += self.data(data) ? 1 : 0
+///                    }
                 }
                 if handled == items?.count { break }
             }
@@ -2245,7 +2238,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         //  Finish recording of for this url session
         if UserSettings.HistorySaves.value, let webView = (webView as? MyWebView), !webView.incognito {
-            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true])
+            let notif = Notification(name: Notification.Name(rawValue: "HeliumNewURL"), object: url, userInfo: [k.fini : true, k.view : webView as Any])
             NotificationCenter.default.post(notif)
         }
     }

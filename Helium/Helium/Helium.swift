@@ -23,7 +23,8 @@ let docHelium : ViewOptions = []
 struct k {
     static let Helium = "Helium" /// aka Playitem
     static let Incognito = "Incognito"
-    static let scheme = "helium-local"
+    static let scheme = "helium"
+    static let caches = "helium-local" /// cache string
     static let helium = "helium"
     static let asset = "asset"
     static let html = "html"
@@ -71,7 +72,7 @@ struct k {
     static let ToolbarItemSpacer: CGFloat = 1.0
     static let ToolbarTextHeight: CGFloat = 12.0
     static let Release = "Release"
-    static let ReleaseURL = "helium:///asset/RELEASE"
+    static let ReleaseURL = k.caches + ":///asset/RELEASE"
     static let ReleaseNotes = "Helium Release Notes"
     static let bingInfo = "Microsoft Bing Search"
     static let bingName = "Bing"
@@ -1178,9 +1179,20 @@ class Document : NSDocument {
                 return fileURL.deletingPathExtension().lastPathComponent
             }
             else
-            {
-                return super.displayName
+            if k.caches == fileURL.scheme {
+                let paths = fileURL.pathComponents
+                let cache = paths[1]
+                let stamp = paths[2]
+
+                if let date = stamp.tad2Date() {
+                    let dateFMT = DateFormatter()
+                    dateFMT.locale = Locale(identifier: "en_US_POSIX")
+                    dateFMT.dateFormat = "MMM d, yy h:mm:ss a"
+
+                    return String(format: "%@ - %@", cache.capitalized, dateFMT.string(from: date))
+                }
             }
+            return super.displayName
         }
         set (newName) {
             super.displayName = newName

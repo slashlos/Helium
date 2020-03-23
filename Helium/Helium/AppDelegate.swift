@@ -264,7 +264,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 _webConfiguration!.suppressesIncrementalRendering = false
 
                 //  Support our internal (local) scheme
-                _webConfiguration!.setURLSchemeHandler(MySchemeHandler(), forURLScheme: k.scheme)
+                _webConfiguration!.setURLSchemeHandler(CacheSchemeHandler(), forURLScheme: k.caches)
 
                 // Use nonPersistent() or default() depending on if you want cookies persisted to disk
                 // and shared between WKWebViews of the same app (default), or not persisted and not shared
@@ -1478,13 +1478,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
         guard UserSettings.HistorySaves.value else { return }
-        guard let itemURL = notification.object as? URL, itemURL.scheme != k.helium,
-            itemURL.absoluteString != UserSettings.HomePageURL.value else {
-            return
-        }
+        guard let info = notification.userInfo, let webView : MyWebView = info[k.view] as? MyWebView else { return }
+        guard let itemURL = notification.object as? URL, itemURL != webView.homeURL else { return }
         
         let item : PlayItem = PlayItem.init()
-        let info = notification.userInfo!
         var fini = (info[k.fini] as AnyObject).boolValue == true
         
         //  If the title is already seen, update global and playlists
@@ -1525,6 +1522,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 seen.plays += 1
             }
         }
+        
         //  always synchronize this item to defaults - lazily
         defaults.set(item.dictionary(), forKey: item.link.absoluteString)
         

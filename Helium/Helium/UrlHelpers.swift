@@ -9,6 +9,12 @@
 
 import Foundation
 
+fileprivate var defaults : UserDefaults {
+    get {
+        return UserDefaults.standard
+    }
+}
+
 struct UrlHelpers {
     //   Prepends `http://` if scheme no scheme was found
     static func ensureScheme(_ urlString: String) -> String {
@@ -299,50 +305,40 @@ extension URL {
     
     //  TAD encoded resource name URLs for data, html, text, …
     init?(cache data: Data) {
-        let name = String(format: "%@:///data/%@", k.scheme, NSString.timeAndDate())
-        self = URL.init(string: name)!
-        var dict = Dictionary<String,Any>()
-        dict[k.name] = name
-        dict[k.mime] = "data/data"
-        dict[k.type] = k.data
-        dict[k.data] = data.hexEncodedString()
+        let name = String(format: "data/%@", String.timestamp())
+        self = URL.init(string: String(format: "%@:///%@", k.caches, name))!
         
-        UserDefaults.standard.set(dict, forKey: name)
+        let mime = "data/data"
+        let text = data.hexEncodedString()
+        let dict = [k.mime : mime, k.text : text]
+        
+        defaults.set(dict, forKey: name)
     }
     init?(cache text: String, embed: Bool = false) {
-        let name = String(format: "%@:///html/%@", k.scheme, NSString.timeAndDate())
-        self = URL.init(string: name)!
-        var dict = Dictionary<String,Any>()
-        dict[k.name] = name
-        dict[k.mime] = embed ? "text/html" : "text/plain-text"
-        dict[k.type] = k.text
-        dict[k.data] = embed
-            ? String(format: "<html><body><code>%@</code></body></html>", text)
-            : text
+        let name = String(format: "text/%@", String.timestamp())
+        self = URL.init(string: String(format: "%@:///%@", k.caches, name))!
         
-        UserDefaults.standard.set(dict, forKey: name)
+        let mime = embed ? "text/html" : "text/plain-text"
+        let text = embed ? String(format: "<html><body><code>%@</code></body></html>", text) : text
+        let dict = [k.mime : mime, k.text : text]
+        
+        defaults.set(dict, forKey: name)
     }
     init?(cache text: NSAttributedString, embed: Bool = true) {
-        let name = String(format: "%@:///html/%@", k.scheme, NSString.timeAndDate())
-        self = URL.init(string: name)!
-
+        let name = String(format: "html/%@", String.timestamp())
+        self = URL.init(string: String(format: "%@:///%@", k.caches, name))!
+        
         do {
             let docAttrs = [NSAttributedString.DocumentAttributeKey.documentType: NSAttributedString.DocumentType.html]
             let data = try text.data(from: NSMakeRange(0, text.length), documentAttributes: docAttrs)
-            if let attrs = String(data: data, encoding: .utf8) {
-                let html = embed
-                    ? String(format: "<html><body><code>%@</code></body></html>", attrs)
-                    : attrs
-
-                var dict = Dictionary<String,Any>()
-                dict[k.name] = name
-                dict[k.link] = self
-                dict[k.html] = html
-                
-                UserDefaults.standard.set(dict, forKey: name)
-            }
+               
+            let mime = "text/html"
+            let text = data.hexEncodedString()
+            let dict = [k.mime : mime, k.text : text]
+            
+            defaults.set(dict, forKey: name)
         } catch let error as NSError {
-            Swift.print("attributedString -> html: \(error.code):\(error.localizedDescription): \(text)")
+            Swift.print("attributedString -> data: \(error.code):\(error.localizedDescription): \(text)")
         }
     }
 }

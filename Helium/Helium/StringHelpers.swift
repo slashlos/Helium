@@ -326,17 +326,22 @@ extension NSAttributedString {
     }
 }
 
-extension NSString {
-    class func timeAndDate() -> String {
+extension String {
+    static func timestamp() -> String {
         let dateFMT = DateFormatter()
         dateFMT.locale = Locale(identifier: "en_US_POSIX")
-        dateFMT.dateFormat = "yyMMdd"
-        let timeFMT = DateFormatter()
-        timeFMT.locale = Locale(identifier: "en_US_POSIX")
-        timeFMT.dateFormat = "HHmmss"
+        dateFMT.dateFormat = "yyyyMMdd'T'HHmmss.SSSS"
         let now = Date()
 
-        return String(format: "%@:%@", dateFMT.string(from: now), timeFMT.string(from: now))
+        return String(format: "%@", dateFMT.string(from: now))
+    }
+
+    func tad2Date() -> Date? {
+        let dateFMT = DateFormatter()
+        dateFMT.locale = Locale(identifier: "en_US_POSIX")
+        dateFMT.dateFormat = "yyyyMMdd'T'HHmmss.SSSS"
+        
+        return dateFMT.date(from: self)
     }
 }
 
