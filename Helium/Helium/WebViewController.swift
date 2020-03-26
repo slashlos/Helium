@@ -1831,30 +1831,22 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
 
             for update in updates {
                 let keyval = update.components(separatedBy: "=")
-                guard keyval.count == 2 else { continue }
+                if keyval.count < 2 { continue }
                 
                 if let url = webView.url, let cookies : [HTTPCookie] = HTTPCookieStorage.shared.cookies(for: url) {
                     let cookieStorage = HTTPCookieStorage.shared
+                    var localCookie : HTTPCookie?
 
                     for cookie in cookies {
-                        if cookie.name == keyval.first! {
-                            var properties : Dictionary<HTTPCookiePropertyKey,Any> = (cookie.properties as AnyObject).mutableCopy() as! Dictionary<HTTPCookiePropertyKey, Any>
-                            properties[HTTPCookiePropertyKey("HTTPCookieValue")] = keyval.last!
-                            if let updated = HTTPCookie.init(properties: properties) {
-                                cookieStorage.setCookie(updated)
-                            }
-                        }
-                        else
-                        {
+                        if cookie.name == keyval.first! { localCookie = cookie; break }
+                    }
+                    
+                    if let cookie = localCookie {
+                        var properties : Dictionary<HTTPCookiePropertyKey,Any> = (cookie.properties as AnyObject).mutableCopy() as! Dictionary<HTTPCookiePropertyKey, Any>
+                        properties[HTTPCookiePropertyKey("HTTPCookieValue")] = keyval.last!
+                        if let updated = HTTPCookie.init(properties: properties) {
+                            cookieStorage.setCookie(updated)
                             Swift.print("+ cookie \(update)")
-                            if let newbie = HTTPCookie(properties: [
-                                .domain:    url.host!,
-                                .path:      "/",
-                                .name:      keyval.first!,
-                                .value:     keyval.last!,
-                                .secure:    url.scheme == "https"]) {
-                                cookieStorage.setCookie(newbie)
-                            }
                         }
                     }
                 }
