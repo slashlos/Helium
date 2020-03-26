@@ -907,12 +907,15 @@ class MyWebView : WKWebView {
         item.tag = 3
         menu.addItem(item)
         
-        item = NSMenuItem(title: "Load", action: #selector(menuClicked(_:)), keyEquivalent: "")
+        // MARK: TODO: Open/Load files in distinct windows
+        let openLoad = url?.isFileURL ?? false
+        item = NSMenuItem(title: openLoad ? "Open" : "Load", action: #selector(menuClicked(_:)), keyEquivalent: "")
         menu.addItem(item)
         let subOpen = NSMenu()
         item.submenu = subOpen
 
         item = NSMenuItem(title: "File…", action: #selector(WebViewController.openFilePress(_:)), keyEquivalent: "")
+        item.toolTip = openLoad ? "… in new tab window" : "… in window"
         item.target = wvc
         subOpen.addItem(item)
 
