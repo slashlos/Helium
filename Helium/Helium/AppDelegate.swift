@@ -1478,7 +1478,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     @objc fileprivate func haveNewTitle(_ notification: Notification) {
         guard UserSettings.HistorySaves.value else { return }
-        guard let info = notification.userInfo, let webView : MyWebView = info[k.view] as? MyWebView else { return }
+        guard let info = notification.userInfo, let webView : MyWebView = info[k.view] as? MyWebView, !webView.incognito else { return }
         guard let itemURL = notification.object as? URL, itemURL != webView.homeURL else { return }
         
         let item : PlayItem = PlayItem.init()
