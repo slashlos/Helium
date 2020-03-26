@@ -72,7 +72,7 @@ class ProgressIndicator : NSProgressIndicator {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+    /*
     override func mouseDown(with event: NSEvent) {
         guard !isHidden else { return }
         Swift.print("we want to stop something...")
@@ -80,7 +80,7 @@ class ProgressIndicator : NSProgressIndicator {
         if let webView : MyWebView = self.superview as? MyWebView, webView.isLoading {
             webView.stopLoading()
         }
-    }
+    }*/
 }
 
 extension WKBackForwardListItem {
@@ -1309,12 +1309,12 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         // TODO: Watch click events
         // https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
-        
+        /*
         let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
         let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
         controller.addUserScript(clickMe)
         controller.add(self, name: "clickMe")
-        
+        */
         //  Dealing with cookie changes
         let cookieChangeScript = WKUserScript.init(source: "window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",
             injectionTime: .atDocumentStart, forMainFrameOnly: false)
