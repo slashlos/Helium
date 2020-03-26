@@ -681,7 +681,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         let mouseSeen = mouseOver && !mouseIdle
 
         if let timer = fadeTimer, timer.isValid { timer.invalidate() }
-        self.fadeTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false, block: { (timer) in
+        self.fadeTimer = Timer.scheduledTimer(withTimeInterval: 3.97, repeats: false, block: { (timer) in
             if mouseSeen, timer.isValid {
                 timer.invalidate()
                 self.mouseIdle = true
