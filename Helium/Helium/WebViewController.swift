@@ -2323,6 +2323,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         Swift.print(String(format: "UI: %p runJavaScriptAlertPanelWithMessage: %@", webView, message))
 
         appDelegate.userAlertMessage(message, info: nil)
+        completionHandler()
     }
     
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: (Bool) -> Void) {
