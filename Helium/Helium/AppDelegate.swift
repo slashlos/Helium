@@ -1084,7 +1084,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     desktopData = data
                 }
                 else
-                if let data = bookmarks[URL.init(string: String(format: "file:///Users/%@/Desktop/", NSUserName()))!] {
+                if let url = URL.init(string: String(format: "file:///Users/%@/Desktop/", NSUserName())), let data = bookmarks[url] {
+                    UserSettings.SnapshotsURL.value = url.absoluteString
                     desktopData = data
                 }
             }

@@ -1628,15 +1628,20 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @IBAction func snapshot(_ sender: Any) {
         guard let window = self.view.window, window.isVisible else { return }
-        webView.takeSnapshot(with: nil) {image, error in
+        webView.takeSnapshot(with: nil) { image, error in
             if let image = image {
                 self.webImageView.image = image
-            } else {
-                print("Failed taking snapshot: \(error?.localizedDescription ?? "--")")
+                self.processSnapshotImage(image)
+            }
+            else
+            {
+                appDelegate.userAlertMessage("Failed taking snapshot", info: error?.localizedDescription)
                 self.webImageView.image = nil
             }
         }
-        guard let image = webImageView.image else { return }
+    }
+    
+    func processSnapshotImage(_ image: NSImage) {
         guard let tiffData = image.tiffRepresentation else { NSSound(named: "Sosumi")?.play(); return }
          
         //  1st around authenticate and cache sandbox data if needed
@@ -1659,10 +1664,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     _ = appDelegate.storeBookmark(url: desktop, options: appDelegate.rwOptions)
                     appDelegate.desktopData = appDelegate.bookmarks[desktop]
                     UserSettings.SnapshotsURL.value = desktop.absoluteString
-                    DispatchQueue.main.async {
-                        if !appDelegate.saveBookmarks() {
-                            Swift.print("Yoink, unable to save desktop booksmark(s)")
-                        }
+                    if !appDelegate.saveBookmarks() {
+                        Swift.print("Yoink, unable to save desktop booksmark(s)")
                     }
                 }
             }
@@ -1686,19 +1689,20 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         do
         {
             try bitmapImageRep?.representation(using: .png, properties: [:])?.write(to: path)
-            DispatchQueue.main.async {
-                // https://developer.apple.com/library/archive/qa/qa1913/_index.html
-                if let asset = NSDataAsset(name:"Grab") {
+            // https://developer.apple.com/library/archive/qa/qa1913/_index.html
+            if let asset = NSDataAsset(name:"Grab") {
 
-                    do {
-                        // Use NSDataAsset's data property to access the audio file stored in Sound.
-                         let player = try AVAudioPlayer(data:asset.data, fileTypeHint:"caf")
-                        // Play the above sound file.
-                        player.play()
-                    } catch {
-                        Swift.print("no sound for you")
-                    }
+                do {
+                    // Use NSDataAsset's data property to access the audio file stored in Sound.
+                    let player = try AVAudioPlayer(data:asset.data, fileTypeHint:"caf")
+                    // Play the above sound file.
+                    player.play()
+                } catch {
+                    Swift.print("no sound for you")
                 }
+            }
+            if path.hideFileExtensionInPath(), let name = path.lastPathComponent.removingPercentEncoding {
+                Swift.print("Snaphot => \(name)")
             }
         } catch let error {
             NSApp.presentError(error)
