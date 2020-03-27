@@ -327,6 +327,15 @@ extension NSAttributedString {
 }
 
 extension String {
+    static func prettyStamp() -> String {
+        let dateFMT = DateFormatter()
+        dateFMT.locale = .current
+        dateFMT.dateFormat = "YYYY'-'MM'-'dd 'at' HH.mm.ss"
+        let now = Date()
+
+        return String(format: "%@", dateFMT.string(from: now))
+    }
+    
     static func timestamp() -> String {
         let dateFMT = DateFormatter()
         dateFMT.locale = Locale(identifier: "en_US_POSIX")

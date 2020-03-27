@@ -950,6 +950,12 @@ CA
                                 <action selector="snapshot:" target="Ady-hI-5gd" id="7QW-wX-qa9"/>
                             </connections>
                         </menuItem>
+                        <menuItem title="Snapshot All" alternate="YES" id="zig-bH-kHt">
+                            <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                            <connections>
+                                <action selector="snapshotAll:" target="Ady-hI-5gd" id="eWR-Db-so1"/>
+                            </connections>
+                        </menuItem>
                         <menuItem title="Preferences" id="aQs-KB-lss">
                             <modifierMask key="keyEquivalentModifierMask"/>
                             <menu key="submenu" title="Preferences" id="t9b-07-eWX">

@@ -1141,7 +1141,7 @@ extension NSView {
     }
 }
 
-class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, NSTabViewDelegate, WKHTTPCookieStoreObserver, QLPreviewPanelDataSource, QLPreviewPanelDelegate, URLSessionDelegate,URLSessionTaskDelegate,URLSessionDownloadDelegate {
+class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, NSTabViewDelegate, WKHTTPCookieStoreObserver, QLPreviewPanelDataSource, QLPreviewPanelDelegate/*, URLSessionDelegate,URLSessionTaskDelegate,URLSessionDownloadDelegate*/ {
 
     @available(OSX 10.13, *)
     public func cookiesDidChange(in cookieStore: WKHTTPCookieStore) {
@@ -1631,7 +1631,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         webView.takeSnapshot(with: nil) { image, error in
             if let image = image {
                 self.webImageView.image = image
-                self.processSnapshotImage(image)
+                DispatchQueue.main.async {
+                    self.processSnapshotImage(image)
+                }
             }
             else
             {
@@ -1672,16 +1674,10 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
         
         //  Form a filename: ~/"<app's name> View Shot <timestamp>"
-        let dateFMT = DateFormatter()
-        dateFMT.locale = Locale(identifier: "en_US_POSIX")
-        dateFMT.dateFormat = "yyyy-MM-dd"
-        let timeFMT = DateFormatter()
-        timeFMT.locale = Locale(identifier: "en_US_POSIX")
-        timeFMT.dateFormat = "h.mm.ss a"
-        let now = Date()
-
+        var name : String
+        if let url = webView.url, url != webView.homeURL { name = url.lastPathComponent } else { name = appDelegate.appName }
         let path = URL.init(fileURLWithPath: UserSettings.SnapshotsURL.value).appendingPathComponent(
-            String(format: "%@ Shapshot %@ at %@.png", appDelegate.appName, dateFMT.string(from: now), timeFMT.string(from: now)))
+            String(format: "%@ Shapshot at %@.png", name, String.prettyStamp()))
         
         let bitmapImageRep = NSBitmapImageRep(data: tiffData)
         
@@ -2373,7 +2369,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             }
         }
     }
-    
+    /*
     //  MARK:- URLSessionDelegate
     @available(OSX 10.9, *)
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
@@ -2489,7 +2485,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         Swift.print(String(format: "session: %p downloadTask: %ld didResumeAtOffset:", session, downloadTask.taskIdentifier))
 
     }
-
+*/
     //  MARK:- TabView Delegate
     
     func tabView(_ tabView: NSTabView, willSelect tabViewItem: NSTabViewItem?) {
