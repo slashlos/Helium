@@ -547,14 +547,13 @@ CA
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="zTb-jP-kZR"/>
-                                        <menuItem title="Snapshot" id="XZA-7w-cCC">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        <menuItem title="Snapshot" keyEquivalent="y" id="XZA-7w-cCC">
                                             <connections>
                                                 <action selector="snapshot:" target="Ady-hI-5gd" id="gtn-Ys-r0W"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Snapshot All" tag="1" alternate="YES" id="dLl-Cr-uBv">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                        <menuItem title="Snapshot All" tag="1" alternate="YES" keyEquivalent="y" id="dLl-Cr-uBv">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                             <connections>
                                                 <action selector="snapshotAll:" target="Voe-Tx-rLC" id="7tE-o9-BbX"/>
                                             </connections>
