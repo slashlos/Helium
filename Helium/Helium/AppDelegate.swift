@@ -455,7 +455,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                     DispatchQueue.main.async {
                         doc.save(self.autoSaveDocsMenuItem)
                     }
-                 }
+                }
                 docController.saveAllDocuments(autoSaveDocsMenuItem)
             }
         }

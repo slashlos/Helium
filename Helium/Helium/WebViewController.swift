@@ -100,33 +100,46 @@ class CacheSchemeHandler : NSObject,WKURLSchemeHandler {
         
         let url = task.request.url!
         let paths = url.pathComponents
-        let cache = String(format: "%@/%@", paths[1], paths[2])
-        let dict = defaults.dictionary(forKey: cache)!
-        let mime = dict[k.mime] as! String
-        var text = dict[k.text] as! String
+        let group = paths[1]
+        let ident = paths[2]
+        var dict : Dictionary<String,String>
+        
+        //  group type 'asset' in our asset bundle, else defautls
+        switch group {
+        case k.asset:
+            dict = Dictionary<String,String>()
+            dict[k.text] = NSString.string(fromAsset: ident)
+            dict[k.mime] = "text/html"
+            
+        default:
+            let cache = String(format: "%@/%@", group, ident)
+            dict = defaults.dictionary(forKey: cache)! as! Dictionary<String, String>
+        }
+        
+        guard let mime = dict[k.mime], var text = dict[k.text] else { return }
         var data: Data
 
         //  paths *must* be [0]="/", [1]=type, [2]=cache-unique-name
-        switch paths[1] {// type: data,html,text
+        switch group {// type: asset,data,html,text
              
         case k.data:
             data = text.dataFromHexString()!
             
-        case k.text:
+        case k.asset,k.text:
             data = text.data(using: .utf8)!
             
         case k.html:
             data = text.dataFromHexString()!
             do {
                 let atrs = try NSAttributedString.init(data: data, options: [:], documentAttributes: nil)
-                text = String(format: "<html><body><code>%@</code></body></html>", atrs)
+                text = String(format: "<html><body><pre>%@</pre></body></html>", atrs)
 
             } catch let error as NSError {
                 Swift.print("attributedString <- data: \(error.code):\(error.localizedDescription): \(text)")
             }
             
         default:
-            fatalError("unknown type(1): \(cache)")
+            fatalError("unknown cache: \(group)/\(ident)")
         }
         
         task.didReceive(URLResponse(url: url, mimeType:mime, expectedContentLength: data.count, textEncodingName: nil))

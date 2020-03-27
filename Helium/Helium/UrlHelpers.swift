@@ -319,7 +319,7 @@ extension URL {
         self = URL.init(string: String(format: "%@:///%@", k.caches, name))!
         
         let mime = embed ? "text/html" : "text/plain-text"
-        let text = embed ? String(format: "<html><body><code>%@</code></body></html>", text) : text
+        let text = embed ? String(format: "<html><body><pre>%@</pre></body></html>", text) : text
         let dict = [k.mime : mime, k.text : text]
         
         defaults.set(dict, forKey: name)

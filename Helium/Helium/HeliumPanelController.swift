@@ -826,8 +826,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         installTitleFader()
 
         updateTitleBar(didChange: true)
-        
-        cacheSettings()
     }
     
     @objc @IBAction func floatOverAllSpacesPress(_ sender: NSMenuItem) {
@@ -839,7 +837,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             settings.floatAboveAllPreference.value.insert(.disabled)
         }
         setFloatOverFullScreenApps()
-        cacheSettings()
     }
     @objc @IBAction func floatOverFullScreenAppsPress(_ sender: NSMenuItem) {
         if sender.state == .on {
@@ -850,13 +847,11 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             settings.floatAboveAllPreference.value.insert(.screen)
         }
         setFloatOverFullScreenApps()
-        cacheSettings()
     }
     
     @objc @IBAction func percentagePress(_ sender: NSMenuItem) {
         settings.opacityPercentage.value = sender.tag
         willUpdateAlpha()
-        cacheSettings()
     }
     
     @IBAction func snapshot(_ sender: Any) {
@@ -967,7 +962,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     //MARK:- Notifications
     @objc func willUpdateAlpha() {
         didUpdateAlpha(settings.opacityPercentage.value)
-        cacheSettings()
     }
     func willUpdateTitleBar() {
         //  synchronize prefs to document's panel state
@@ -979,7 +973,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     @objc func willUpdateTranslucency() {
         translucencyPreference = settings.translucencyPreference.value
         updateTranslucency()
-        cacheSettings()
     }
     
     func windowDidResize(_ notification: Notification) {
@@ -988,7 +981,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         
         wpc.setupTrackingAreas(true)
         wpc.updateTranslucency()
-        cacheSettings()
     }
     
     func windowShouldClose(_ sender: NSWindow) -> Bool {
@@ -1015,7 +1007,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
         if note.object as? URL == webView.url {
             self.updateTitleBar(didChange: false)
-            cacheSettings()
         }
     }
     
@@ -1126,7 +1117,6 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         } else {
             panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
         }
-        cacheSettings()
     }
     
     @objc fileprivate func doPlaylistItem(_ notification: Notification) {
