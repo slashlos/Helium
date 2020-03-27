@@ -22,36 +22,165 @@ p.block {
 <h1>Release 3</h1>
 <h4>A running release summary of commit changes:</h4>
 
+<h2>Build 7226</h2>
+<p class="block">
+2063d5a|20/03/27 lazy cache; pre format; asset handling<br>
+27ccb85|20/03/26 snapshot 'pretty' naming, keyboard shortcuts<br>
+a83593d|20/03/26 %Y snapshot keyboard shortcut<br>
+b8e3e2b|20/03/26 fix and streamline snapshots<br>
+94962f7|20/03/26 call completion handler<br>
+21120e4|20/03/26 add file tooltips<br>
+fe1455c|20/03/26 incognito guards history as well<br>
+7b194e8|20/03/26 fix cookie match updating<br>
+bb01352|20/03/26 comment out clickMe debugger<br>
+c79c9ad|20/03/26 adjust fade timer seconds<br>
+25d5a55|20/03/22 color changes<br>
+fe01b0c|20/03/22 custom scheme changes and fixes<br>
+36d451f|20/03/21 added a playground<br>
+4e6c993|20/03/21 update asset properties<br>
+1c0b6fb|20/03/21 cookie sharing pref fix<br>
+a8a9d38|20/03/21 incognito support, session changes<br>
+39a2c0d|20/03/21 icon updates<br>
+af4e626|20/03/21 ATS restored<br>
+2d9d53c|20/03/21 stark background change<br>
+aaf4742|20/03/21 artwork updates<br>
+78b12a1|20/03/19 added saveAs URL extension<br>
+efe2b64|20/03/19 duplication removed<br>
+7d5f54f|20/03/19 scheme changes<br>
+e2faaab|20/03/19 programmatically create view(s), etc<br>
+6e1f7b4|20/03/17 watch mb3 not mb4<br>
+cfa90c2|20/03/16 programmatic webView creation changes<br>
+673a0ab|20/03/16 privacy update<br>
+3347189|20/03/16 treat home URL (none) specially<br>
+0c80365|20/03/16 snapshot edit<br>
+b233c23|20/03/16 update snapshot filename<br>
+c3b67f3|20/03/16 capture current UA string<br>
+f427578|20/03/16 scheme updates<br>
+aee0a32|20/03/16 add collection range checker<br>
+ae334fd|20/03/16 data to/from hex string<br>
+39706f9|20/03/16 date format change<br>
+55236d7|20/03/15 Update helium_start.html<br>
+63259e9|20/03/12 start file update<br>
+b417127|20/03/10 clear option state on key up<br>
+dfc9e95|20/03/09 flow changes, helium: scheme adoption<br>
+6adea94|20/03/09 adopt helium scheme(s) for internal URLs<br>
+643b899|20/03/09 move item loading to view load<br>
+0dc0525|20/03/09 remove needed private vars<br>
+e140a24|20/03/09 defer URL loading until view will appear<br>
+25d939b|20/03/08 add private vars<br>
+36d4a5c|20/03/08 note local playlist<br>
+6dd922a|20/03/07 removed home page guard<br>
+23f2faa|20/03/07 use proper URL parser<br>
+90a46f8|20/03/07 cleanups, fixes re: save handling<br>
+a9eac50|20/03/06 centralize document change counting<br>
+7d0c1ae|20/03/06 auto save changes<br>
+358e902|20/03/06 app icon updates re: stroke<br>
+ea180ea|20/03/06 notification changes re: move, resize<br>
+726c8f3|20/03/05 fix non-file save aka cache flush<br>
+619d7ca|20/03/05 code cleanups<br>
+9b3aba6|20/03/04 updated credit field tooltip text<br>
+f2ef530|20/03/04 expose privacy doc, update version shown<br>
+5361250|20/03/04 mouse idle, over optimizations<br>
+7343cb0|20/03/04 handle about: url scheme<br>
+57739de|20/03/04 data to hex string cache encoding<br>
+912ee56|20/03/04 URL unique cache factory methods<br>
+0c40270|20/03/02 title bar mouse over/outside coloring<br>
+24a3732|20/03/02 release doc update as URL<br>
+19ff818|20/03/02 keep windows menu item updated<br>
+6c241ac|20/03/02 drop .release docGroup<br>
+d057d06|20/03/01 add app open file url support functions<br>
+f23a33d|20/03/01 adjust 3NV nav message<br>
+82eb1a4|20/03/01 fix merge all guard test<br>
+7f12c0d|20/03/01 programmatically configure supporting views<br>
+513c306|20/03/01 keep windows menu item updated<br>
+5d44d0d|20/03/01 webView delegate settings<br>
+b8b2a19|20/03/01 programmatically create web views<br>
+b8f1bde|20/03/01 unify UI delegate  messages and format<br>
+4455ab5|20/03/01 unify navigation messages and format<br>
+dc255a9|20/03/01 http -> https upgrade changes<br>
+aae08e8|20/02/29 #248 JadenGeller addressed - CLI open(s)<br>
+4c1aee6|20/02/29 doc restore after application open event<br>
+c12373b|20/02/29 hpi are singleton playitem array<br>
+bb7561e|20/02/29 handle untitled release document restore<br>
+d3c894e|20/02/29 cleanups re: observing, return status<br>
+6a6545b|20/02/29 release document fixes<br>
+6416453|20/02/29 fix open file @window/tab bindings<br>
+4f752cc|20/02/29 overhaul document configuration flow<br>
+07e7683|20/02/26 document property changes<br>
+c68070e|20/02/26 auto layout fixes<br>
+d3dd8cb|20/02/26 document processing improvements<br>
+6c932eb|20/02/26 added revert menu item<br>
+9f5e3f7|20/02/26 renamed controller<br>
+2a2c3b6|20/02/26 search property changes<br>
+f25ab2e|20/02/26 uti, extension additions<br>
+e9a5a39|20/02/26 copyright update<br>
+fd488c9|20/02/26 "break" fixes<br>
+1e7bc35|20/02/23 quality, modernizations<br>
+598f4df|20/02/23 history actions and preferences<br>
+f67c2cc|20/02/23 added video url content test<br>
+8b277a0|20/02/17 move snapshots to location menu<br>
+8c14721|20/02/17 avoid blank titles<br>
+d9ec51c|20/02/17 isValid() renamed isValidUA()<br>
+b56751b|20/02/17 URL parser to host and components check<br>
+8801bd4|20/02/17 renamed isValid() -> isValidUA()<br>
+573b5d3|20/02/13 functions made to return state<br>
+67c8e88|20/02/10 code cleanups<br>
+a43ac97|20/02/10 sandbox updates<br>
+c7bccfc|20/02/10 added hasHTMLContent()<br>
+85f4cc3|20/02/10 update ensureSchema<br>
+6eb92b4|20/02/10 removed duplicate merge all windows item<br>
+d35241f|20/02/10 adopt animation re: titlebar<br>
+d10a800|20/02/10 document fixes<br>
+4082604|20/02/10 animation improvements<br>
+7481c97|20/02/08 guard store bookmark match sandboxed state<br>
+6eefd34|20/02/07 updated history<br>
+3bb0e72|20/02/06 Update History.txt<br>
+3106b1a|20/02/05 address app store missing keys<br>
+a411872|20/02/05 tab UI change<br>
+f48b430|20/02/04 tbd? click me playback state tracing<br>
+ad6b89a|20/02/04 tbd crafting modern cocoa app - drag-n-drop<br>
+920a716|20/02/04 removed unnecessary functions<br>
+598b6a6|20/02/04 updated tab  support<br>
+7e0fd38|20/02/04 added tab support<br>
+6e67eb1|20/02/04 auto-hide pref update<br>
+5624218|20/02/02 remove unnecessary instance methods<br>
+c1cc123|20/02/02 block doc restore hold OPTION at start<br>
+</p>
+
 <h2>Build 6287</h2>
 <p class="block">
-51f0103|20/01/26 moved snapshot menu item</br>
-1a32502|20/01/26 tabs, history UI overhaul</br>
-8c39445|20/01/25 isolate clickMe handler</br>
-ba3a459|20/01/25 cleanups</br>
-e5e58ab|20/01/25 show histories RONLY in file context</br>
-120f1bb|20/01/25 tableView UI updates</br>
-f7ecef9|20/01/25 snapshot key short cut</br>
-8321820|20/01/25 tab UI changes</br>
-c0543c5|20/01/25 snapshot support</br>
-374fa99|20/01/25 Finder snapshot sound: Grab</br>
-d5c5035|20/01/25 fixed display name handling</br>
-bc17c26|20/01/25 clear image on update handling</br>
-1330a62|20/01/25 clear image on update to reload</br>
-0432273|20/01/25 tab handling fixes</br>
-ccea952|20/01/25 web, document restore handling fixes</br>
-b9e733f|20/01/25 zoom pref deprecated</br>
-0cdad54|20/01/25 deprecated zoom pref</br>
-04789f1|20/01/25 fix rapid click of nil selection</br>
-1f54929|20/01/25 window bar icon UI uptakes</br>
-8a55da3|20/01/25 snapshot support</br>
-542bcfe|20/01/23 fix playlist name sort order</br>
-8c63d77|20/01/23 snapshot added; tag fixes</br>
-8d3c57a|20/01/22 fix opacity menu item state setting</br>
-a18ba9c|20/01/19 updated to Swift 5</br>
-0d17063|20/01/11 mouse over UI changes re: non-file URLs</br>
-db38967|20/01/11 comment out flipped view tracking</br>
-b2375b4|20/01/10 app icon updates</br>
-0ea43ae|20/01/10 mouse over optimizations and fixes</br>
+e96c871|20/02/02 added first/tab tab wrapper methods<br>
+a2f833d|20/02/02 added first/last tab hidden menu items<br>
+bec6a5c|20/02/02 removed exception entitlement<br>
+c96bb45|20/02/01 migration to cell based tableviews<br>
+1a0e9a8|20/02/01 rework snapshot all support<br>
+2934df7|20/01/29 stale binding fix<br>
+51f0103|20/01/26 moved snapshot menu item<br>
+1a32502|20/01/26 tabs, history UI overhaul<br>
+e5e58ab|20/01/25 histories RONLY in file context<br>
+120f1bb|20/01/25 tableView UI updates<br>
+f7ecef9|20/01/25 snapshot key short cut<br>
+8321820|20/01/25 tab UI changes<br>
+c0543c5|20/01/25 snapshot support<br>
+374fa99|20/01/25 Finder snapshot sound: Grab<br>
+d5c5035|20/01/25 fixed display name handling<br>
+bc17c26|20/01/25 clear image on update handling<br>
+1330a62|20/01/25 clear image on update to reload<br>
+0432273|20/01/25 tab handling fixes<br>
+ccea952|20/01/25 web, document restore handling fixes<br>
+b9e733f|20/01/25 zoom pref deprecated<br>
+0cdad54|20/01/25 deprecated zoom pref<br>
+04789f1|20/01/25 fix rapid click of nil selection<br>
+1f54929|20/01/25 window bar icon UI uptakes<br>
+8a55da3|20/01/25 snapshot support<br>
+542bcfe|20/01/23 fix playlist name sort order<br>
+8c63d77|20/01/23 snapshot added; tag fixes<br>
+8d3c57a|20/01/22 fix opacity menu item state setting<br>
+a18ba9c|20/01/19 updated to Swift 5<br>
+0d17063|20/01/11 mouse over UI changes re: non-file URLs<br>
+db38967|20/01/11 comment out flipped view tracking<br>
+b2375b4|20/01/10 app icon updates<br>
+0ea43ae|20/01/10 mouse over optimizations and fixes<br>
 </p>
 
 <h2>Build 5787</h2>
@@ -108,27 +237,27 @@ a6597cc|19/09/28 5264; UI, drag-n-drop, swift5<br>
 6d5717c|19/09/28 drag-n-drop, Swift5, UI improvements<br>
 8075883|19/09/28 update copyright<br>
 2381265|19/09/28 fix release notes URL<br>
-acdb3b6|19/09/18 center corner button within corner view</br>
-4e353f0|19/09/12 updated icon shadow</br>
-9f9eec3|19/09/12 make array controller data source</br>
-a68ab73|19/09/12 updated app icon</br>
-24868ac|19/09/12 restore history item instantiations</br>
-7a75bfb|19/09/11 fix document type <-> typename mapping</br>
-f9d3a84|19/09/11 5006; @objc restorations, additions</br>
-1591833|19/09/11 guard doc saving based on type</br>
-383fc10|19/09/11 whitespace indentation</br>
-c448916|19/09/11 restore @objc for validations, UI changes</br>
-20e174d|19/09/11 added docType -> type name mapping</br>
-ee0d05a|19/09/11 modernize control state codes</br>
-9a321ae|19/09/11 whitespace formatting</br>
-34243d6|19/09/10 app event, playlist fixes</br>
-7b5904a|19/09/10 single playlist file drop; fixes</br>
-ebfa60e|19/09/10 return app status</br>
-48a1da6|19/09/10 show doc windows after creation</br>
-fa3a898|19/09/10 sync drag-n-drop modernizations</br>
+acdb3b6|19/09/18 center corner button within corner view<br>
+4e353f0|19/09/12 updated icon shadow<br>
+9f9eec3|19/09/12 make array controller data source<br>
+a68ab73|19/09/12 updated app icon<br>
+24868ac|19/09/12 restore history item instantiations<br>
+7a75bfb|19/09/11 fix document type <-> typename mapping<br>
+f9d3a84|19/09/11 5006; @objc restorations, additions<br>
+1591833|19/09/11 guard doc saving based on type<br>
+383fc10|19/09/11 whitespace indentation<br>
+c448916|19/09/11 restore @objc for validations, UI changes<br>
+20e174d|19/09/11 added docType -> type name mapping<br>
+ee0d05a|19/09/11 modernize control state codes<br>
+9a321ae|19/09/11 whitespace formatting<br>
+34243d6|19/09/10 app event, playlist fixes<br>
+7b5904a|19/09/10 single playlist file drop; fixes<br>
+ebfa60e|19/09/10 return app status<br>
+48a1da6|19/09/10 show doc windows after creation<br>
+fa3a898|19/09/10 sync drag-n-drop modernizations<br>
 f77ba58|19/09/05 added border view; removed dup webView
-04fe542|19/09/03 sync to pensieve</br>
-16e4544|19/09/02 minimum base target OSX 10.13</br>
+04fe542|19/09/03 sync to pensieve<br>
+16e4544|19/09/02 minimum base target OSX 10.13<br>
 </p>
 
 <h2>Build 5006</h2>

@@ -24,7 +24,7 @@ p.block {
 
 <h2>Build 7226</h2>
 <p class="block">
-2063d5a|20/03/27 lazy cache updates; adopt pre format; asset handling<br>
+2063d5a|20/03/27 lazy cache; pre format; asset handling<br>
 27ccb85|20/03/26 snapshot 'pretty' naming, keyboard shortcuts<br>
 a83593d|20/03/26 %Y snapshot keyboard shortcut<br>
 b8e3e2b|20/03/26 fix and streamline snapshots<br>
