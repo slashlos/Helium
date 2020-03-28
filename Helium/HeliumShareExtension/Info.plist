@@ -9,7 +9,7 @@
 	<key>CFBuildMinor</key>
 	<string>0</string>
 	<key>CFBuildNumber</key>
-	<string>7226</string>
+	<string>7227</string>
 	<key>CFBuildPatch</key>
 	<string>1</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -33,7 +33,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>3.0.7226</string>
+	<string>3.0.7227</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
