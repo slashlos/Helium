@@ -76,9 +76,8 @@ internal struct UserSettings {
     )
     static let HomePageName = Setting<String>("homePageName", defaultValue: "helium_start")
     
-    //  NOTE: UserAgent default is loaded at run-time
-    static let UserAgent = Setting<String>("userAgent", defaultValue:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15")
+    // Empty means WKWebView should use the system default user agent.
+    static let UserAgent = Setting<String>("userAgent", defaultValue: "")
 
     //  Snapshots path loading once
     static let SnapshotsURL = Setting<String>("snapshotsURL", defaultValue: "")
@@ -109,4 +108,16 @@ internal struct UserSettings {
     
     //  Developer setting(s)
     static let DeveloperExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)
+
+    static func configuredHomePageURL(incognito: Bool) -> String {
+        return incognito ? HomeStrkURL.value : HomePageURL.value
+    }
+
+    static func legacyHostedHomePageURL(incognito: Bool) -> String {
+        return incognito ? HomeStrkURL.default : HomePageURL.default
+    }
+
+    static func usesBundledHomePage(_ urlString: String, incognito: Bool) -> Bool {
+        return urlString == legacyHostedHomePageURL(incognito: incognito)
+    }
 }

@@ -673,7 +673,7 @@ CA
                                                                 <menuItem title="All Spaces Disabled" tag="1" id="4hh-G0-MfV">
                                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                                     <connections>
-                                                                        <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
+                                                                        <action selector="floatOverAllSpacesPress:" target="Ady-hI-5gd" id="aZe-1C-6yI"/>
                                                                     </connections>
                                                                 </menuItem>
                                                                 <menuItem title="Full Screen" tag="2" keyEquivalent="F" id="YB7-sd-Ej8" userLabel="Full Screen">
@@ -989,7 +989,7 @@ CA
                                                         <action selector="floatOverAllSpacesPress:" target="Ady-hI-5gd" id="FWt-hS-9hm"/>
                                                     </connections>
                                                 </menuItem>
-                                                <menuItem title="Full Screen" tag="2" id="0Qb-CB-MgU">
+                                                <menuItem title="Float Over Full Screen Apps" tag="2" id="0Qb-CB-MgU">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <connections>
                                                         <action selector="floatOverFullScreenAppsPress:" target="Ady-hI-5gd" id="J9J-55-PHg"/>

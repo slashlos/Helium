@@ -35,6 +35,43 @@ struct UrlHelpers {
         let regex = try! NSRegularExpression(pattern: "^(https?://)[^\\s/$.?#].[^\\s]*$")
         return (regex.firstMatch(in: urlString, range: urlString.nsrange) != nil)
     }
+
+    static func validatedPasteboardURL(from rawText: String) -> URL? {
+        var candidate = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !candidate.isEmpty else { return nil }
+
+        if candidate.hasPrefix("<"), candidate.hasSuffix(">"), candidate.count > 2 {
+            candidate = String(candidate.dropFirst().dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        guard !candidate.isEmpty else { return nil }
+        guard !candidate.contains(where: { $0.isNewline }) else { return nil }
+
+        let lowercased = candidate.lowercased()
+        guard !lowercased.hasPrefix("javascript:"),
+              !lowercased.hasPrefix("data:"),
+              !lowercased.hasPrefix("about:") else { return nil }
+
+        if candidate.hasPrefix("/") || candidate.hasPrefix("~") {
+            let path = (candidate as NSString).expandingTildeInPath
+            var isDirectory = ObjCBool(false)
+            guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else { return nil }
+            return URL(fileURLWithPath: path, isDirectory: isDirectory.boolValue)
+        }
+
+        if let directURL = URL(string: candidate), let scheme = directURL.scheme?.lowercased(), !scheme.isEmpty {
+            guard ["http", "https", "file", "helium"].contains(scheme) else { return nil }
+            if scheme == "file" {
+                let path = directURL.path.removingPercentEncoding ?? directURL.path
+                guard FileManager.default.fileExists(atPath: path) else { return nil }
+            }
+            return UrlHelpers.doMagic(directURL) ?? directURL
+        }
+
+        let ensured = UrlHelpers.ensureScheme(candidate)
+        guard let webURL = URL(string: ensured), let host = webURL.host, !host.isEmpty else { return nil }
+        return UrlHelpers.doMagic(webURL) ?? webURL
+    }
 }
 
 // MARK: - Magic Handlers
@@ -183,37 +220,80 @@ extension UrlHelpers.Magic {
 // MARK: YouTube Handler
 extension UrlHelpers.Magic {
     fileprivate func hYouTube() -> Bool {
-        // (video id) (hours)?(minutes)?(seconds)
-        // swiftlint:disable:next force_try line_length
-        let YTRegExp = try! NSRegularExpression(pattern: "(?:https?://)?(?:www\\.)?(?:youtube\\.com/watch\\?v=|youtu.be/)([\\w\\_\\-]+)(?:[&?]t=(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s?))?")
-        
-        if let match = YTRegExp.firstMatch(in: self.urlString, range: self.urlString.nsrange) {
-            // Enforce https
-            self.modified.scheme = "https"
-            self.modified.host = "youtube.com"
-            self.modified.path = "/embed/" + self.urlString.substring(with: match.range(at: 1))!
-            
-            var start = 0
-            var multiplier = 60 * 60
-            for idx in 2...4 {
-                if let tStr = self.urlString.substring(with: match.range(at: idx)), let tInt = Int(tStr) {
-                    start += tInt * multiplier
-                }
-                multiplier /= 60
+        guard let components = URLComponents(url: self.url, resolvingAgainstBaseURL: false),
+              let host = components.host?.lowercased() else { return false }
+
+        let queryItems = components.queryItems ?? []
+        var videoID: String?
+
+        if ["youtube.com", "www.youtube.com", "m.youtube.com"].contains(host) {
+            if components.path == "/watch" {
+                videoID = queryItems.first(where: { $0.name == "v" })?.value
+            } else if components.path.hasPrefix("/shorts/") || components.path.hasPrefix("/embed/") {
+                videoID = components.path.split(separator: "/").dropFirst().first.map(String.init)
             }
-            if start != 0 {
-                self.modified.query = "start=" + String(start)
-            }
-            
-            return true
+        } else if ["youtu.be", "www.youtu.be"].contains(host) {
+            videoID = components.path.split(separator: "/").first.map(String.init)
         }
-        
-        return false
+
+        guard let id = videoID, !id.isEmpty else { return false }
+
+        let start = queryItems
+            .compactMap { item -> Int? in
+                guard ["t", "start"].contains(item.name), let value = item.value else { return nil }
+                return UrlHelpers.Magic.youTubeStartSeconds(from: value)
+            }
+            .first ?? 0
+
+        var watchComponents = URLComponents()
+        watchComponents.scheme = "https"
+        watchComponents.host = "www.youtube.com"
+        watchComponents.path = "/watch"
+
+        var watchQueryItems = [
+            URLQueryItem(name: "v", value: id)
+        ]
+        if start > 0 {
+            watchQueryItems.append(URLQueryItem(name: "t", value: String(start) + "s"))
+        }
+        watchComponents.queryItems = watchQueryItems
+
+        guard let url = watchComponents.url, url != self.url else { return false }
+        self.modified = watchComponents
+        return true
+    }
+
+    private static func youTubeStartSeconds(from value: String) -> Int? {
+        if let seconds = Int(value.trimmingCharacters(in: CharacterSet(charactersIn: "s"))) {
+            return seconds
+        }
+
+        let regex = try! NSRegularExpression(pattern: #"(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?"#)
+        let range = NSRange(value.startIndex..., in: value)
+        guard let match = regex.firstMatch(in: value, range: range), match.range == range else { return nil }
+
+        let multipliers = [3600, 60, 1]
+        return (1...3).reduce(0) { total, index in
+            guard let partRange = Range(match.range(at: index), in: value),
+                  let part = Int(value[partRange]) else { return total }
+            return total + part * multipliers[index - 1]
+        }
     }
 }
 
 //  read back webloc contents
 extension URL {
+    var isYouTubeWatchPage: Bool {
+        guard let components = URLComponents(url: self, resolvingAgainstBaseURL: false),
+              let host = components.host?.lowercased(),
+              ["youtube.com", "www.youtube.com", "m.youtube.com"].contains(host),
+              components.path == "/watch" else { return false }
+
+        return components.queryItems?.contains(where: { $0.name == "v" && !($0.value ?? "").isEmpty }) ?? false
+    }
+    var isYouTubeChromelessCandidate: Bool {
+        return isYouTubeWatchPage
+    }
 //  https://medium.com/@francishart/swift-how-to-determine-file-type-4c46fc2afce
     func hasHTMLContent() -> Bool {
         let type = self.pathExtension as CFString

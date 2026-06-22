@@ -143,6 +143,21 @@ class HeliumPanel: NSPanel, NSPasteboardWriting, NSDraggingSource {
     override var canBecomeMain: Bool {
         return true
     }
+
+    override func close() {
+        let shouldTerminateAfterClose = NSApp.windows.filter { window in
+            window !== self && window.windowController?.document != nil
+        }.isEmpty
+
+        super.close()
+
+        if shouldTerminateAfterClose {
+            DispatchQueue.main.async {
+                if !NSApp.isRunning { return }
+                NSApp.terminate(nil)
+            }
+        }
+    }
     
     func selectTabItem(_ sender: Any?) {
         if let item = (sender as? NSMenuItem), let window : NSWindow = item.representedObject as? NSWindow, let group = window.tabGroup {

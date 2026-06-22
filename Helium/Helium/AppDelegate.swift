@@ -246,44 +246,281 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             return _sessionConfiguration!
         }
     }
-    var acceptWebCookie = UserSettings.AcceptWebCookie.value
-    var shareWebCookies = UserSettings.ShareWebCookies.value
-    var storeWebCookies = UserSettings.StoreWebCookies.value
-    
-    var _webConfiguration : WKWebViewConfiguration?
-    var  webConfiguration : WKWebViewConfiguration {
-        get {
-            if  _webConfiguration == nil {
-                _webConfiguration = WKWebViewConfiguration()
- 
-                //  Prime process pool among views using share
-                _webConfiguration!.processPool = webProcessPool
-                
-                //  Prime our preferendes
-                _webConfiguration!.preferences = webPreferences
-                _webConfiguration!.suppressesIncrementalRendering = false
+    var acceptWebCookie: Bool { return UserSettings.AcceptWebCookie.value }
+    var shareWebCookies: Bool { return UserSettings.ShareWebCookies.value }
+    var storeWebCookies: Bool { return UserSettings.StoreWebCookies.value }
 
-                //  Support our internal (local) scheme
-                _webConfiguration!.setURLSchemeHandler(CacheSchemeHandler(), forURLScheme: k.caches)
+    fileprivate func pngData(for image: NSImage) -> Data? {
+        guard let tiffData = image.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData) else { return nil }
+        return bitmap.representation(using: .png, properties: [:])
+    }
 
-                // Use nonPersistent() or default() depending on if you want cookies persisted to disk
-                // and shared between WKWebViews of the same app (default), or not persisted and not shared
-                // across WKWebViews in the same app.
-                if shareWebCookies {
-                    let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
-                    let dataStore = shareWebCookies ? WKWebsiteDataStore.default() : WKWebsiteDataStore.nonPersistent()
-                    let waitGroup = DispatchGroup()
-                    for cookie in cookies {
-                        waitGroup.enter()
-                        dataStore.httpCookieStore.setCookie(cookie) { waitGroup.leave() }
-                    }
-                    waitGroup.notify(queue: DispatchQueue.main, execute: {
-                        self._webConfiguration?.websiteDataStore = dataStore
-                    })
-                 }
+    fileprivate func pngDataURL(named name: String) -> String {
+        guard let image = NSImage(named: NSImage.Name(name)),
+              let imageData = pngData(for: image) else { return "" }
+        return "data:image/png;base64," + imageData.base64EncodedString()
+    }
+
+    fileprivate func bundledHomePageHTML(incognito: Bool) -> String {
+        let balloonURL = pngDataURL(named: "helium_logo")
+        let title = incognito ? "Helium Private" : "Helium"
+        let subtitle = incognito ? "Private floating browser window" : "Floating browser window"
+        let accent = incognito ? "#8fb2ff" : "#7fe2ff"
+        let pageBackground = incognito ? "#102147" : "#3498f1"
+        let pageBackground2 = incognito ? "#08132d" : "#4ab4f4"
+        let textColor = incognito ? "#e6efff" : "#ffffff"
+        let shadowColor = incognito ? "rgba(0, 0, 0, 0.42)" : "rgba(0, 55, 110, 0.28)"
+        let secondaryText = incognito ? "Paste a link, drop a file, or open something directly." : "Paste a link, drop a file, or open something directly."
+        let badge = incognito ? "Private" : "Ready"
+
+        return """
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>\(title)</title>
+          <style>
+            :root {
+              color-scheme: light;
+              --accent: \(accent);
+              --background: \(pageBackground);
+              --background-2: \(pageBackground2);
+              --text: \(textColor);
+              --shadow: \(shadowColor);
             }
-            return _webConfiguration!
+            * { box-sizing: border-box; }
+            html, body {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              background:
+                radial-gradient(circle at 20% 18%, rgba(255,255,255,0.2), transparent 38%),
+                linear-gradient(145deg, var(--background), var(--background-2));
+              color: var(--text);
+            }
+            body {
+              display: grid;
+              grid-template-columns: minmax(260px, 1fr) minmax(220px, 46%);
+              align-items: stretch;
+            }
+            .panel {
+              padding: 26px 28px 24px 28px;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              min-width: 0;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 18px;
+            }
+            .brand {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              min-width: 0;
+            }
+            .badge {
+              display: inline-flex;
+              align-self: flex-start;
+              padding: 4px 10px;
+              border-radius: 999px;
+              background: rgba(255,255,255,0.14);
+              font-size: 11px;
+              font-weight: 600;
+              letter-spacing: 0.4px;
+              text-transform: uppercase;
+            }
+            h1 {
+              margin: 0;
+              font-size: 26px;
+              line-height: 1.05;
+              font-weight: 700;
+            }
+            .subtitle {
+              margin: 0;
+              font-size: 15px;
+              line-height: 1.45;
+              max-width: 30ch;
+              opacity: 0.92;
+            }
+            .actions {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 12px;
+              margin-top: 22px;
+            }
+            button {
+              appearance: none;
+              border: 0;
+              border-radius: 10px;
+              padding: 11px 16px;
+              font: inherit;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              color: #05284a;
+              background: white;
+              box-shadow: 0 10px 24px var(--shadow);
+            }
+            button.secondary {
+              color: var(--text);
+              background: rgba(255,255,255,0.16);
+              box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24);
+            }
+            .hint {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+              font-size: 14px;
+              line-height: 1.4;
+              opacity: 0.94;
+            }
+            .hint strong {
+              font-size: 18px;
+              font-weight: 650;
+            }
+            .balloon-stage {
+              position: relative;
+              display: flex;
+              align-items: flex-end;
+              justify-content: center;
+              padding: 22px 26px 10px 0;
+              min-width: 0;
+            }
+            .balloon-stage::after {
+              content: "";
+              position: absolute;
+              inset: auto 12% 5% 10%;
+              height: 22px;
+              background: rgba(0,0,0,0.16);
+              filter: blur(18px);
+              border-radius: 999px;
+            }
+            .balloon {
+              position: relative;
+              max-width: min(92%, 410px);
+              width: 100%;
+              object-fit: contain;
+              filter: drop-shadow(0 26px 34px var(--shadow));
+              user-select: none;
+              -webkit-user-drag: none;
+            }
+            @media (max-width: 720px) {
+              body {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+              }
+              .panel {
+                padding-bottom: 0;
+              }
+              .balloon-stage {
+                padding: 0 20px 14px 20px;
+                align-items: center;
+              }
+              .balloon {
+                max-width: min(72vw, 280px);
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <section class="panel">
+            <div class="brand">
+              <span class="badge">\(badge)</span>
+              <div class="header">
+                <div>
+                  <h1>\(title)</h1>
+                  <p class="subtitle">\(subtitle)</p>
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" onclick="openUrl()">Open URL…</button>
+                <button type="button" class="secondary" onclick="openFile()">Open File…</button>
+              </div>
+            </div>
+            <div class="hint">
+              <strong>Drop link, file or selection</strong>
+              <span>\(secondaryText)</span>
+            </div>
+          </section>
+          <section class="balloon-stage" aria-hidden="true">
+            <img class="balloon" src="\(balloonURL)" alt="">
+          </section>
+          <script>
+            function post(name) {
+              if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers[name]) {
+                window.webkit.messageHandlers[name].postMessage({});
+              }
+            }
+            function openUrl() { post("heliumHomeOpenLocation"); }
+            function openFile() { post("heliumHomeOpenFile"); }
+          </script>
+        </body>
+        </html>
+        """
+    }
+
+    fileprivate func bundledHomePageFileURL(incognito: Bool) -> URL {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent("HeliumHomePages", isDirectory: true)
+        let fileName = incognito ? "helium_stark_local.html" : "helium_start_local.html"
+        let fileURL = directory.appendingPathComponent(fileName)
+
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
+
+        let html = bundledHomePageHTML(incognito: incognito)
+        let data = html.data(using: .utf8) ?? Data()
+        let currentData = try? Data(contentsOf: fileURL)
+        if currentData != data {
+            try? data.write(to: fileURL, options: .atomic)
         }
+
+        return fileURL
+    }
+
+    func resolvedHomePageURL(incognito: Bool) -> URL {
+        let configuredURL = UserSettings.configuredHomePageURL(incognito: incognito)
+        if UserSettings.usesBundledHomePage(configuredURL, incognito: incognito) {
+            return bundledHomePageFileURL(incognito: incognito)
+        }
+        return URL(string: configuredURL) ?? bundledHomePageFileURL(incognito: incognito)
+    }
+
+    func makeWebConfiguration(incognito: Bool) -> WKWebViewConfiguration {
+        let configuration = WKWebViewConfiguration()
+
+        //  Prime process pool among views using share
+        configuration.processPool = webProcessPool
+
+        //  Prime our preferences
+        configuration.preferences = webPreferences
+        configuration.suppressesIncrementalRendering = false
+        configuration.allowsAirPlayForMediaPlayback = true
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+
+        //  Support our internal (local) scheme
+        configuration.setURLSchemeHandler(CacheSchemeHandler(), forURLScheme: k.caches)
+
+        let shouldPersistWebsiteData = !incognito && storeWebCookies
+        let websiteDataStore = shouldPersistWebsiteData ? WKWebsiteDataStore.default() : WKWebsiteDataStore.nonPersistent()
+        configuration.websiteDataStore = websiteDataStore
+
+        if shareWebCookies {
+            let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
+            for cookie in cookies {
+                websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: nil)
+            }
+        }
+
+        return configuration
     }
     var _webPreferences : WKPreferences?
     var  webPreferences : WKPreferences {
@@ -291,13 +528,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             if  _webPreferences == nil {
                 _webPreferences = WKPreferences()
                 
-                // Allow plug-ins such as silverlight
-                _webPreferences!.plugInsEnabled = true
-                
                 ///_webPreferences!.minimumFontSize = 14
                 _webPreferences!.javaScriptCanOpenWindowsAutomatically = true;
-                _webPreferences!.javaScriptEnabled = true
-                _webPreferences!.javaEnabled = true
             }
             return _webPreferences!
         }
@@ -417,6 +649,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
 
     //  Restore operations are progress until open
     @objc dynamic var openForBusiness = false
+    var pendingLaunchURL: URL?
+
+    fileprivate func activeHeliumWebViewController() -> WebViewController? {
+        if let key = NSApp.keyWindow?.contentViewController as? WebViewController {
+            return key
+        }
+        if let main = NSApp.mainWindow?.contentViewController as? WebViewController {
+            return main
+        }
+        return NSApp.windows
+            .compactMap { $0.contentViewController as? WebViewController }
+            .first
+    }
     
     //  By defaut we show document title bar
     @objc @IBAction func autoHideTitlePress(_ sender: NSMenuItem) {
@@ -490,9 +735,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     var fullScreen : NSRect? = nil
+    func isFullScreen(_ window: NSWindow?) -> Bool {
+        return window?.styleMask.contains(.fullScreen) ?? false
+    }
     @objc @IBAction func toggleFullScreen(_ sender: NSMenuItem) {
         if let keyWindow : HeliumPanel = NSApp.keyWindow as? HeliumPanel {
-            keyWindow.heliumPanelController.floatOverFullScreenAppsPress(sender)
+            keyWindow.heliumPanelController.toggleNativeFullScreen()
         }
     }
 
@@ -548,7 +796,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @objc @IBAction func openFilePress(_ sender: AnyObject) {
-        var viewOptions = ViewOptions(rawValue: sender.tag)
+        let senderTag = (sender as? NSMenuItem)?.tag ?? (sender as? NSControl)?.tag ?? 0
+        var viewOptions = ViewOptions(rawValue: senderTag)
         
         let open = NSOpenPanel()
         open.allowsMultipleSelection = true
@@ -584,6 +833,82 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     internal func openFileInNewWindow(_ url: URL, attachTo parentWindow: NSWindow? = nil) -> Bool {
         return openURLInNewWindow(url, attachTo: parentWindow)
     }
+
+    fileprivate func isReusableHomeWindow(_ controller: WebViewController) -> Bool {
+        let webView = controller.webView
+        let homeURL = webView.homeURL
+
+        if let currentURL = webView.url, currentURL != homeURL {
+            return false
+        }
+        if let representedURL = controller.view.window?.representedURL, representedURL != homeURL {
+            return false
+        }
+        return true
+    }
+
+    fileprivate func reusableHeliumWebViewController() -> WebViewController? {
+        if let keyController = NSApp.keyWindow?.contentViewController as? WebViewController,
+           isReusableHomeWindow(keyController) {
+            return keyController
+        }
+
+        let controllers = NSApp.windows.compactMap { $0.contentViewController as? WebViewController }
+        if controllers.count == 1, let controller = controllers.first, isReusableHomeWindow(controller) {
+            return controller
+        }
+
+        return nil
+    }
+
+    fileprivate func loadURLInReusableWindow(_ url: URL) -> Bool {
+        guard let controller = reusableHeliumWebViewController() else { return false }
+        return controller.loadURL(url: url)
+    }
+
+    fileprivate func restorableWebURLs() -> [URL] {
+        guard let keep = defaults.array(forKey: UserSettings.KeepListName.value) as? [String] else {
+            return []
+        }
+
+        let legacyHomePage = UserSettings.legacyHostedHomePageURL(incognito: false)
+        let configuredHomePage = UserSettings.configuredHomePageURL(incognito: false)
+
+        return keep.compactMap { item in
+            let candidate = item.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !candidate.isEmpty,
+                  candidate != legacyHomePage,
+                  candidate != configuredHomePage,
+                  let directURL = URL(string: candidate),
+                  let scheme = directURL.scheme?.lowercased(),
+                  ["http", "https", "file", "helium"].contains(scheme) else {
+                return nil
+            }
+
+            if scheme == "file" {
+                let path = directURL.path.removingPercentEncoding ?? directURL.path
+                guard FileManager.default.fileExists(atPath: path) else { return nil }
+            }
+
+            return UrlHelpers.doMagic(directURL) ?? directURL
+        }
+    }
+
+    fileprivate func queueLaunchURL(_ url: URL) {
+        pendingLaunchURL = url
+        disableDocumentReOpening = true
+    }
+
+    fileprivate func flushPendingLaunchURL() -> Bool {
+        guard let launchURL = pendingLaunchURL else { return false }
+        pendingLaunchURL = nil
+
+        if loadURLInReusableWindow(launchURL) {
+            return true
+        }
+
+        return openURLInNewWindow(launchURL)
+    }
     
     func openURLInNewWindow(_ url: URL, attachTo parentWindow : NSWindow? = nil) -> Bool {
         if url.isFileURL, isSandboxed() != storeBookmark(url: url) {
@@ -618,7 +943,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     @objc @IBAction func openLocationPress(_ sender: AnyObject) {
-        let viewOptions = ViewOptions(rawValue: sender.tag)
+        let senderTag = (sender as? NSMenuItem)?.tag ?? (sender as? NSControl)?.tag ?? 0
+        let viewOptions = ViewOptions(rawValue: senderTag)
         var urlString = UserSettings.HomePageURL.value
         
         //  No window, so load alert modally
@@ -634,7 +960,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                           onWindow: nil,
                           title: "Enter URL",
                           acceptHandler: { (urlString: String) in
-                            guard let newURL = URL.init(string: urlString) else { return }
+                            guard let newURL = UrlHelpers.validatedPasteboardURL(from: urlString) else { return }
                             
                             if viewOptions.contains(.t_view), let parent = sender.representedObject {
                                 _ = self.openURLInNewWindow(newURL, attachTo: parent as? NSWindow)
@@ -663,6 +989,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                          acceptHandler: { (newWindow,searchURL: URL) in
                             _ = self.openURLInNewWindow(searchURL, attachTo: sender.representedObject as? NSWindow)
         })
+    }
+
+    @objc @IBAction func paste(_ sender: Any?) {
+        guard let webViewController = activeHeliumWebViewController() else {
+            NSSound.beep()
+            return
+        }
+        webViewController.handlePaste(sender)
     }
     
     @objc @IBAction func pickSearchPress(_ sender: NSMenuItem) {
@@ -1041,6 +1375,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
             Swift.print("option at start")
             disableDocumentReOpening = true
         }
+
+        documentsToRestore = !disableDocumentReOpening && !restorableWebURLs().isEmpty
         
         //  We were started as a login item startup save this
         launchedAsLogInItem = event.eventID == kAEOpenApplication &&
@@ -1205,8 +1541,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     var hiddenWindows = Dictionary<String, Any>()
 
     func applicationOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        let docCount = docController.documents.count
-        return docCount > 0
+        if docController.documents.count > 0 {
+            return true
+        }
+
+        do {
+            _ = try docController.openUntitledDocumentAndDisplay(true)
+            return true
+        } catch let error {
+            NSApp.presentError(error)
+            return false
+        }
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -1215,6 +1560,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         Swift.print("applicationShouldHandleReopen: \(reopenMessage) docs:\(hasVisibleDocs)")
         if !flag && 0 == docController.documents.count { return !applicationOpenUntitledFile(sender) }
         return !disableDocumentReOpening || flag
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return false
     }
 
     //  Local/global event monitor: CTRL+OPTION+COMMAND to toggle windows' alpha / audio values
@@ -1350,15 +1699,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  Restore auto save settings
         autoSaveDocs = UserSettings.AutoSaveDocs.value
 
+        if flushPendingLaunchURL() { return }
+
         //  Restore our web (non file://) document windows if any via
         guard !disableDocumentReOpening else { return }
-        if let keep = defaults.array(forKey: UserSettings.KeepListName.value) {
-            for item in keep {
-                guard let urlString = (item as? String) else { continue }
-                if urlString == UserSettings.HomePageURL.value { continue }
-                guard let url = URL.init(string: urlString ) else { continue }
-                _ = self.openURLInNewWindow(url)
-                Swift.print("restore \(item)")
+        for url in restorableWebURLs() {
+            _ = self.openURLInNewWindow(url)
+            Swift.print("restore \(url.absoluteString)")
+        }
+
+        let hasDocumentWindow = NSApp.windows.contains { window in
+            window.windowController?.document != nil
+        }
+
+        if !hasDocumentWindow {
+            do {
+                _ = try docController.openUntitledDocumentAndDisplay(true)
+            } catch let error {
+                NSApp.presentError(error)
             }
         }
         
@@ -1379,7 +1737,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        
         //  Forget key down monitoring
         NSEvent.removeMonitor(localKeyDownMonitor!)
         NSEvent.removeMonitor(globalKeyDownMonitor!)
@@ -1839,6 +2196,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         //  strip helium://
         let index = rawString.index(rawString.startIndex, offsetBy: 9)
         let urlString = rawString.suffix(from: index)
+        guard let url = URL.init(string: String(urlString)) else { return }
+
+        if !openForBusiness {
+            queueLaunchURL(url)
+            return
+        }
         
         //  Handle new window here to narrow cast to new or current panel controller
         if (viewOptions == sameWindow || !openForBusiness), let wc = NSApp.keyWindow?.windowController {
@@ -1847,9 +2210,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 return
             }
         }
+        else if loadURLInReusableWindow(url) {
+            return
+        }
         else
         {
-            _ = openURLInNewWindow(URL.init(string: String(urlString))!)
+            _ = openURLInNewWindow(url)
         }
     }
 
@@ -1909,6 +2275,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
     }
     
     func application(_ application: NSApplication, openURL: URL) -> Bool {
+        if !openForBusiness {
+            queueLaunchURL(openURL)
+            return true
+        }
+
+        if loadURLInReusableWindow(openURL) {
+            disableDocumentReOpening = true
+            return true
+        }
+
         disableDocumentReOpening = openURLInNewWindow(openURL)
         return disableDocumentReOpening
     }
@@ -2101,4 +2477,3 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
         return fetch
     }
 }
-

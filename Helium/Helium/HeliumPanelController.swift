@@ -20,11 +20,19 @@ extension NSColor {
     }
 }
 
-class HeliumTitleDragButton : NSButton {
+class HeliumTitleDragButton : NSView {
 /* https://developer.apple.com/library/archive/samplecode/PhotoEditor/Listings/
  *  Photo_Editor_WindowDraggableButton_swift.html#//
  *  apple_ref/doc/uid/TP40017384-Photo_Editor_WindowDraggableButton_swift-DontLinkElementID_22
  */
+    @objc dynamic var isBordered: Bool = false {
+        didSet { needsDisplay = true }
+    }
+    @objc dynamic var isTransparent: Bool = true {
+        didSet { needsDisplay = true }
+    }
+    @objc dynamic var title: String = ""
+
     //  once our controller appear, update
     var hpc : HeliumPanelController? {
         get {
@@ -47,22 +55,27 @@ class HeliumTitleDragButton : NSButton {
             return  NSColor(hex: 0x3399FF)
         }
     }
+    var titleBarFillColor : NSColor {
+        get {
+            if let hpc = self.hpc {
+                return hpc.titleBarFillColor
+            }
+            return NSColor(hex: 0x3A7CC4)
+        }
+    }
     var borderColor : NSColor {
         get {
+            if let hpc = self.hpc {
+                return hpc.titleBarBorderColor
+            }
             guard let window = self.window else { return NSColor.clear }
-            if let url = window.representedURL, url != homeURL {
-                return url.isFileURL ? NSColor.controlDarkShadowColor : homeColor
-            }
-            else
-            {
-                return homeColor
-            }
+            return window.representedURL == homeURL ? homeColor : titleBarFillColor
         }
     }
     
     required override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
-        self.cell?.controlView?.wantsLayer = true
+        wantsLayer = true
         self.layer?.borderWidth = 2
         self.layer?.borderColor = borderColor.cgColor
     }
@@ -75,27 +88,19 @@ class HeliumTitleDragButton : NSButton {
     override func draw(_ dirtyRect: NSRect) {
         let path = NSBezierPath(rect: NSRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
 
-        if let window = self.window, let url = window.representedURL, url.isFileURL {
-            if !url.hasVideoContent() {
-                self.layer?.backgroundColor = NSColor.controlDarkShadowColor.cgColor
-            } else {
-                self.layer?.backgroundColor = NSColor.clear.cgColor
-            }
-        }
-        else
-        {
-            self.layer?.backgroundColor = homeColor.cgColor
-        }
-        
         super.draw(dirtyRect)
         
         guard let hpc = self.hpc else { return }
-        
-        if hpc.autoHideTitlePreference == .never || hpc.mouseOver {
+
+        if !isTransparent || hpc.autoHideTitlePreference == .never || hpc.mouseOver {
             let color = self.borderColor
             self.layer?.borderColor = color.cgColor
-            color.setStroke(); color.setFill()
-            path.stroke(); path.fill()
+            titleBarFillColor.setFill()
+            path.fill()
+            color.setStroke()
+            path.stroke()
+        } else {
+            self.layer?.borderColor = NSColor.clear.cgColor
         }
     }
     
@@ -103,7 +108,7 @@ class HeliumTitleDragButton : NSButton {
         let window = self.window!
         let startingPoint = mouseDownEvent.locationInWindow
         
-        highlight(true)
+        isBordered = true
         
         // Track events until the mouse is up (in which we interpret as a click), or a drag starts (in which we pass off to the Window Server to perform the drag)
         var shouldCallSuper = false
@@ -137,7 +142,7 @@ class HeliumTitleDragButton : NSButton {
                     }
                     
                     if (abs(currentPoint.x - startingPoint.x) >= 5 || abs(currentPoint.y - startingPoint.y) >= 5) {
-                        self.highlight(false)
+                        self.isBordered = false
                         stop.pointee = true
                         window.performDrag(with: event!)
                     }
@@ -151,9 +156,29 @@ class HeliumTitleDragButton : NSButton {
             super.mouseDown(with: mouseDownEvent)
         }
     }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard let hitView = super.hitTest(point) else { return nil }
+        if hitView == self { return self }
+
+        var view: NSView? = hitView
+        while let current = view, current != self {
+            if current is NSButton {
+                return hitView
+            }
+            view = current.superview
+        }
+
+        return self
+    }
 }
 
 class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseProviderDelegate,NSDraggingSource,NSPasteboardWriting {
+    var appDelegate: AppDelegate {
+        get {
+            return NSApp.delegate as! AppDelegate
+        }
+    }
     var webViewController: WebViewController {
         get {
             return self.window?.contentViewController as! WebViewController
@@ -177,29 +202,51 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     }
     var homeURL : URL {
         get {
-            return URL.init(string: incognito ? UserSettings.HomeStrkURL.value : UserSettings.HomePageURL.value)!
+            return appDelegate.resolvedHomePageURL(incognito: incognito)
         }
     }
     var homeColor : NSColor {
         get {
-            return  NSColor(hex: incognito ? 0x0000FF : 0x3399FF)
+            return NSColor(hex: incognito ? 0x4D63D9 : 0x4EA3F1)
+        }
+    }
+    var titleBarFillColor : NSColor {
+        get {
+            if let representedURL = window?.representedURL, representedURL == homeURL {
+                return NSColor(hex: incognito ? 0x3A52B8 : 0x3E8EDE)
+            }
+            return NSColor(hex: incognito ? 0x28334F : 0x2F3E57)
+        }
+    }
+    var titleBarBorderColor : NSColor {
+        get {
+            if let representedURL = window?.representedURL, representedURL == homeURL {
+                return homeColor
+            }
+            return NSColor(hex: incognito ? 0x50689B : 0x4E6B96)
         }
     }
 
     // MARK: Window lifecycle
     var hoverBar : PanelButtonBar?
     var titleDragButton : HeliumTitleDragButton?
+    fileprivate var wasFloatingPanelBeforeNativeFullScreen: Bool?
+    fileprivate var hidesOnDeactivateBeforeNativeFullScreen: Bool?
+    fileprivate var collectionBehaviorBeforeNativeFullScreen: NSWindow.CollectionBehavior?
+    fileprivate var levelBeforeNativeFullScreen: NSWindow.Level?
     
     fileprivate func configureTitleDrag() {
-        panel.standardWindowButton(.closeButton)?.image = NSImage.init()
-        
         //  Overlay title with our drag title button if needed
         var dragFrame = titleView?.frame
-        dragFrame?.size.height += 2
+        let titleHeight = dragFrame?.size.height ?? 0.0
+        let expandedHeight = max(titleHeight, 28.0) + 6.0
+        let dragHeight = max(titleHeight + 2.0, floor(expandedHeight * 0.7))
+        dragFrame?.size.height = dragHeight
         dragFrame?.size.width += 2
         titleDragButton = HeliumTitleDragButton.init(frame: dragFrame!)
         self.contentViewController?.view.addSubview(titleDragButton!)
         titleDragButton?.top((titleDragButton?.superview)!)
+        titleDragButton?.heightAnchor.constraint(equalToConstant: dragHeight).isActive = true
         titleDragButton?.addSubview(titleView!)
         titleView?.fit(titleDragButton!)
         titleDragButton?.title = ""
@@ -208,20 +255,28 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             context.duration = mouseIdle ? 1.0 : 0.2
 
             panel.animator().titleVisibility = (autoHideTitlePreference != .never) ? mouseOver ? .visible : .hidden : .visible
-            titleDragButton?.animator().layer?.backgroundColor = mouseOver ? homeColor.cgColor : NSColor.clear.cgColor
+            titleDragButton?.animator().layer?.backgroundColor = mouseOver ? titleBarFillColor.cgColor : NSColor.clear.cgColor
             titleDragButton?.isTransparent = mouseOver
             titleDragButton?.animator().isHidden = !mouseOver
             titleDragButton?.animator().isBordered = mouseOver
         })
  
-        // place the hover bar
-        hoverBar = PanelButtonBar.init(frame: NSMakeRect(5, -3, 80, 19))
-        self.titleView?.superview?.addSubview(hoverBar!)
-        
-        //  we want our own hover bar of buttons (no mini or zoom was visible)
-        if let panelButton = hoverBar!.closeButton, let windowButton = window?.standardWindowButton(.closeButton) {
-            panelButton.target = windowButton.target
-            panelButton.action = windowButton.action
+        hoverBar?.removeFromSuperview()
+        hoverBar = nil
+
+        panel.standardWindowButton(.closeButton)?.target = self
+        panel.standardWindowButton(.closeButton)?.action = #selector(closePanelButtonPressed(_:))
+    }
+
+    @objc fileprivate func closePanelButtonPressed(_ sender: Any?) {
+        let shouldTerminateAfterClose = NSApp.windows.filter { window in
+            window !== panel && window.windowController?.document != nil
+        }.isEmpty
+
+        if shouldTerminateAfterClose {
+            NSApp.terminate(sender)
+        } else {
+            panel.performClose(sender)
         }
     }
     
@@ -231,6 +286,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         //  Default to not dragging by content
         panel.isMovableByWindowBackground = false
         panel.isFloatingPanel = true
+        panel.hidesOnDeactivate = false
         
         //  We want to allow miniaturizations
         self.panel.styleMask.formUnion(.miniaturizable)
@@ -261,12 +317,18 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
         // Remember for later restoration
         NSApp.changeWindowsItem(panel, title: panel.title, filename: false)
+
+        if let document = self.document, let webViewController = window?.contentViewController as? WebViewController {
+            webViewController.configureWebView(incognito: document.fileType == k.Incognito)
+        }
     }
 
     override var document: AnyObject? {
         didSet {
-            if let document = self.document, let webView = self.webView {
-                webView.incognito = document.fileType == k.Incognito
+            if let document = self.document {
+                if let webViewController = window?.contentViewController as? WebViewController {
+                    webViewController.configureWebView(incognito: document.fileType == k.Incognito)
+                }
                 documentDidLoad()
             }
         }
@@ -276,7 +338,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         // Moved later, called by view, when document is available
         mouseOver = false
 
-        setFloatOverFullScreenApps()
+        refreshFloatingState()
         
         willUpdateTitleBar()
         
@@ -315,6 +377,78 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             hvc.setupTrackingAreas(false)
         }
         setupTrackingAreas(false)
+
+        let closingWindow = notification.object as? NSWindow
+        DispatchQueue.main.async {
+            let remainingDocumentWindows = NSApp.windows.filter { window in
+                window !== closingWindow && window.windowController?.document != nil
+            }
+            if remainingDocumentWindows.isEmpty {
+                NSApp.terminate(nil)
+            }
+        }
+    }
+
+    @objc func toggleNativeFullScreen() {
+        if !panel.styleMask.contains(.fullScreen) {
+            wasFloatingPanelBeforeNativeFullScreen = panel.isFloatingPanel
+            hidesOnDeactivateBeforeNativeFullScreen = panel.hidesOnDeactivate
+            collectionBehaviorBeforeNativeFullScreen = panel.collectionBehavior
+            levelBeforeNativeFullScreen = panel.level
+
+            var fullScreenBehavior = panel.collectionBehavior
+            fullScreenBehavior.remove(.fullScreenAuxiliary)
+            fullScreenBehavior.insert(.fullScreenPrimary)
+            panel.collectionBehavior = fullScreenBehavior
+            panel.level = .normal
+            panel.isFloatingPanel = false
+            panel.hidesOnDeactivate = false
+        }
+
+        panel.toggleFullScreen(nil)
+    }
+
+    fileprivate func refreshFloatingState(orderFrontRegardless: Bool = false) {
+        guard !panel.styleMask.contains(.fullScreen), !panel.isMiniaturized else { return }
+        setFloatOverFullScreenApps()
+        if orderFrontRegardless {
+            panel.orderFrontRegardless()
+        }
+    }
+
+    func windowDidEnterFullScreen(_ notification: Notification) {
+        appDelegate.fullScreen = panel.frame
+    }
+
+    func windowDidExitFullScreen(_ notification: Notification) {
+        appDelegate.fullScreen = nil
+
+        if let wasFloatingPanelBeforeNativeFullScreen = wasFloatingPanelBeforeNativeFullScreen {
+            panel.isFloatingPanel = wasFloatingPanelBeforeNativeFullScreen
+            self.wasFloatingPanelBeforeNativeFullScreen = nil
+        }
+        if let hidesOnDeactivateBeforeNativeFullScreen = hidesOnDeactivateBeforeNativeFullScreen {
+            panel.hidesOnDeactivate = hidesOnDeactivateBeforeNativeFullScreen
+            self.hidesOnDeactivateBeforeNativeFullScreen = nil
+        }
+        if let collectionBehaviorBeforeNativeFullScreen = collectionBehaviorBeforeNativeFullScreen {
+            panel.collectionBehavior = collectionBehaviorBeforeNativeFullScreen
+            self.collectionBehaviorBeforeNativeFullScreen = nil
+        }
+        if let levelBeforeNativeFullScreen = levelBeforeNativeFullScreen {
+            panel.level = levelBeforeNativeFullScreen
+            self.levelBeforeNativeFullScreen = nil
+        }
+
+        refreshFloatingState(orderFrontRegardless: true)
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        refreshFloatingState()
+    }
+
+    func windowDidResignKey(_ notification: Notification) {
+        refreshFloatingState(orderFrontRegardless: true)
     }
     
     // MARK:- Mouse events
@@ -988,6 +1122,10 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
             let wvc = vindow.contentViewController as? WebViewController,
             let wpc = vindow.windowController as? HeliumPanelController else { return false }
 
+        let shouldTerminateAfterClose = NSApp.windows.filter { window in
+            window !== sender && window.windowController?.document != nil
+        }.isEmpty
+
         //  Stop whatever is going on by brute force
         wvc.clear()
 
@@ -996,6 +1134,12 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         
         // Wind down all observations
         NotificationCenter.default.removeObserver(self)
+
+        if shouldTerminateAfterClose {
+            DispatchQueue.main.async {
+                NSApp.terminate(nil)
+            }
+        }
         
         return true
     }
@@ -1053,7 +1197,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                  context.duration = 0.1
                  panel.animator().titleVisibility = mouseOver ? .visible : .hidden
                  titleDragButton?.animator().isBordered = mouseOver
-                 titleDragButton?.animator().layer?.backgroundColor = mouseOver ? homeColor.cgColor : NSColor.clear.cgColor
+                 titleDragButton?.animator().layer?.backgroundColor = mouseOver ? titleBarFillColor.cgColor : NSColor.clear.cgColor
                  titleDragButton?.animator().isTransparent = mouseOver
              })
              return
@@ -1067,7 +1211,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     panel.animator().titleVisibility = mouseSeen ? .visible : .hidden
                     titleDragButton?.animator().isHidden = !mouseSeen
                     if let url = panel.representedURL, !url.isFileURL, url != homeURL {
-                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? homeColor.cgColor : NSColor.clear.cgColor
+                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? titleBarFillColor.cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
                     }
@@ -1079,7 +1223,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
                     panel.animator().titleVisibility = .visible
                     titleDragButton?.animator().isHidden = false
                     if let url = panel.representedURL, !url.isFileURL, url != homeURL {
-                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? homeColor.cgColor : NSColor.clear.cgColor
+                        titleDragButton?.animator().layer?.backgroundColor = mouseSeen ? titleBarFillColor.cgColor : NSColor.clear.cgColor
                     } else {
                         titleDragButton?.animator().layer?.backgroundColor = NSColor.clear.cgColor
                     }
@@ -1107,6 +1251,8 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
         }
     }
     @objc func setFloatOverFullScreenApps() {
+        panel.isFloatingPanel = true
+        panel.hidesOnDeactivate = false
         if settings.floatAboveAllPreference.value.contains(.disabled) {
             panel.collectionBehavior = [NSWindow.CollectionBehavior.moveToActiveSpace, NSWindow.CollectionBehavior.fullScreenAuxiliary]
         } else {
@@ -1128,12 +1274,14 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
 
     @objc fileprivate func didBecomeActive() {
         panel.ignoresMouseEvents = false
+        refreshFloatingState()
     }
     
     @objc fileprivate func willResignActive() {
         if currentlyTranslucent {
             panel.ignoresMouseEvents = true
         }
+        refreshFloatingState(orderFrontRegardless: true)
     }
     
     func didUpdateAlpha(_ intAlpha: Int) {
@@ -1153,4 +1301,3 @@ class ReleasePanelController : HeliumPanelController {
         NSApp.changeWindowsItem(panel, title: window?.title ?? k.ReleaseNotes, filename: false)
     }
 }
-

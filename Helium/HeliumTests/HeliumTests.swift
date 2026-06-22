@@ -9,29 +9,101 @@
 
 import Cocoa
 import XCTest
+@testable import Helium
 
 class HeliumTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    func testYouTubeShortURLConvertsToWatchURL() {
+        let url = URL(string: "https://youtu.be/jNQXAC9IVRw")!
+        let converted = UrlHelpers.doMagic(url)!
+
+        XCTAssertEqual(converted.scheme, "https")
+        XCTAssertEqual(converted.host, "www.youtube.com")
+        XCTAssertEqual(converted.path, "/watch")
+        XCTAssertEqual(queryValue("v", in: converted), "jNQXAC9IVRw")
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testYouTubeShortURLPreservesTimestamp() {
+        let url = URL(string: "https://youtu.be/jNQXAC9IVRw?t=10s")!
+        let converted = UrlHelpers.doMagic(url)!
+
+        XCTAssertEqual(converted.host, "www.youtube.com")
+        XCTAssertEqual(converted.path, "/watch")
+        XCTAssertEqual(queryValue("v", in: converted), "jNQXAC9IVRw")
+        XCTAssertEqual(queryValue("t", in: converted), "10s")
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+
+    func testYouTubeWatchURLIgnoresExtraQueryParameters() {
+        let url = URL(string: "https://www.youtube.com/watch?v=jNQXAC9IVRw&feature=share&list=abc")!
+        let converted = UrlHelpers.doMagic(url)!
+
+        XCTAssertEqual(converted.host, "www.youtube.com")
+        XCTAssertEqual(converted.path, "/watch")
+        XCTAssertEqual(queryValue("v", in: converted), "jNQXAC9IVRw")
+        XCTAssertNil(queryValue("feature", in: converted))
+        XCTAssertNil(queryValue("list", in: converted))
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-		self.measure() {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testYouTubeWatchURLIsChromelessCandidate() {
+        let url = URL(string: "https://www.youtube.com/watch?v=jNQXAC9IVRw")!
+
+        XCTAssertTrue(url.isYouTubeWatchPage)
+        XCTAssertTrue(url.isYouTubeChromelessCandidate)
     }
-    
+
+    func testYouTubeSigninPageIsNotChromelessCandidate() {
+        let url = URL(string: "https://accounts.google.com/signin/v2/identifier")!
+
+        XCTAssertFalse(url.isYouTubeWatchPage)
+        XCTAssertFalse(url.isYouTubeChromelessCandidate)
+    }
+
+    func testValidatedPasteboardURLAcceptsHTTPSURL() {
+        let url = UrlHelpers.validatedPasteboardURL(from: "https://www.youtube.com/watch?v=jNQXAC9IVRw")
+
+        XCTAssertEqual(url?.host, "www.youtube.com")
+        XCTAssertEqual(queryValue("v", in: url!), "jNQXAC9IVRw")
+    }
+
+    func testValidatedPasteboardURLAcceptsBareDomain() {
+        let url = UrlHelpers.validatedPasteboardURL(from: "youtube.com/watch?v=jNQXAC9IVRw")
+
+        XCTAssertEqual(url?.host, "www.youtube.com")
+        XCTAssertEqual(queryValue("v", in: url!), "jNQXAC9IVRw")
+    }
+
+    func testValidatedPasteboardURLAcceptsExistingFilePath() {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        let fileURL = directory.appendingPathComponent(UUID().uuidString + ".txt")
+        try! Data("hi".utf8).write(to: fileURL)
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let parsed = UrlHelpers.validatedPasteboardURL(from: fileURL.path)
+
+        XCTAssertEqual(parsed?.standardizedFileURL, fileURL.standardizedFileURL)
+    }
+
+    func testValidatedPasteboardURLRejectsMultilineProse() {
+        XCTAssertNil(UrlHelpers.validatedPasteboardURL(from: "hello\nhttps://example.com"))
+    }
+
+    func testValidatedPasteboardURLRejectsJavaScriptScheme() {
+        XCTAssertNil(UrlHelpers.validatedPasteboardURL(from: "javascript:alert(1)"))
+    }
+
+    func testBundledHomePageResolverMatchesLegacyDefault() {
+        XCTAssertTrue(UserSettings.usesBundledHomePage(UserSettings.HomePageURL.default, incognito: false))
+        XCTAssertTrue(UserSettings.usesBundledHomePage(UserSettings.HomeStrkURL.default, incognito: true))
+    }
+
+    func testBundledHomePageResolverLeavesCustomHomePageAlone() {
+        XCTAssertFalse(UserSettings.usesBundledHomePage("https://example.com/start.html", incognito: false))
+    }
+
+    private func queryValue(_ name: String, in url: URL) -> String? {
+        return URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?
+            .first(where: { $0.name == name })?
+            .value
+    }
 }
