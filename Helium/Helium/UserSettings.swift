@@ -109,4 +109,9 @@ internal struct UserSettings {
     
     //  Developer setting(s)
     static let DeveloperExtrasEnabled = Setting<Bool>("developerExtrasEnabled", defaultValue: false)
+    
+    //  Identify ourselves
+    static let ApplicationName = Setting<String>("applicationName", defaultValue: "Helium")
+    static let ApplicationVersion = Setting<String>("applicationVersion", defaultValue: "3.0.0")
+
 }

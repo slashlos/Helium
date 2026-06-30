@@ -1287,7 +1287,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         
         // WebView KVO - load progress, title
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
-        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.loading), options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.isLoading), options: .new, context: nil)
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
     
         //  Intercept drags

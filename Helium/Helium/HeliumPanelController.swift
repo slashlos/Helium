@@ -638,7 +638,7 @@ class HeliumPanelController : NSWindowController,NSWindowDelegate,NSFilePromiseP
     struct FloatAboveAllPreference: OptionSet {
         let rawValue: Int
         
-        static let spaces   = FloatAboveAllPreference(rawValue: 0)
+        static let spaces   = FloatAboveAllPreference([])
         static let disabled = FloatAboveAllPreference(rawValue: 1)
         static let screen   = FloatAboveAllPreference(rawValue: 2)
     }

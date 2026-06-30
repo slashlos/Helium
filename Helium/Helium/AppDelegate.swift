@@ -242,6 +242,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 
                 _sessionConfiguration!.httpCookieAcceptPolicy = UserSettings.AcceptWebCookie.value ?.onlyFromMainDocumentDomain : .never
                 _sessionConfiguration!.httpShouldSetCookies = UserSettings.StoreWebCookies.value
+                
+                let whoami = UserSettings.ApplicationName.value + "/" + UserSettings.ApplicationVersion.value
+                _sessionConfiguration!.httpAdditionalHeaders = ["User-Agent": whoami]
             }
             return _sessionConfiguration!
         }
@@ -266,6 +269,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 //  Support our internal (local) scheme
                 _webConfiguration!.setURLSchemeHandler(CacheSchemeHandler(), forURLScheme: k.caches)
 
+                
                 // Use nonPersistent() or default() depending on if you want cookies persisted to disk
                 // and shared between WKWebViews of the same app (default), or not persisted and not shared
                 // across WKWebViews in the same app.
