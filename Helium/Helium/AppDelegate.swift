@@ -242,6 +242,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, CLLocationMa
                 
                 _sessionConfiguration!.httpCookieAcceptPolicy = UserSettings.AcceptWebCookie.value ?.onlyFromMainDocumentDomain : .never
                 _sessionConfiguration!.httpShouldSetCookies = UserSettings.StoreWebCookies.value
+                
+                let whoami = UserSettings.ApplicationName.value + "/" + UserSettings.ApplicationVersion.value
+                _sessionConfiguration!.httpAdditionalHeaders = ["User-Agent": whoami]
             }
             return _sessionConfiguration!
         }

@@ -1626,7 +1626,57 @@ html.${STATE_CLASS} #content.ytd-app {
         let newDidAddSubviewImplementation = imp_implementationWithBlock(unsafeBitCast(newDidAddSubviewImplementationBlock, to: AnyObject.self))
         method_setImplementation(originalDidAddSubviewMethod!, newDidAddSubviewImplementation)*/
         
-        installWebView()
+        // WebView KVO - load progress, title
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.isLoading), options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
+    
+        //  Intercept drags
+        webView.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
+        webView.registerForDraggedTypes([NSPasteboard.PasteboardType.fileURL])
+        webView.registerForDraggedTypes(Array(webView.acceptableTypes))
+        observing = true
+        
+        //  Watch javascript selection messages unless already done
+        let controller = webView.configuration.userContentController
+        guard controller.userScripts.count == 0 else { return }
+        
+        controller.add(self, name: "newWindowWithUrlDetected")
+        controller.add(self, name: "newSelectionDetected")
+        controller.add(self, name: "newUrlDetected")
+
+        let js = NSString.string(fromAsset: "Helium-js")
+        let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        controller.addUserScript(script)
+        
+        //  make http: -> https: guarded by preference
+        if #available(OSX 10.13, *), UserSettings.PromoteHTTPS.value {
+            //  https://developer.apple.com/videos/play/wwdc2017/220/ 14:05, 21:04
+            let jsonString = """
+                [{
+                    "trigger" : { "url-filter" : ".*" },
+                    "action" : { "type" : "make-https" }
+                }]
+            """
+            WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "httpRuleList", encodedContentRuleList: jsonString, completionHandler: {(list, error) in
+                guard let contentRuleList = list else { fatalError("emptyRulelist after compilation!") }
+                controller.add(contentRuleList)
+            })
+        }
+        
+        // TODO: Watch click events
+        // https://stackoverflow.com/questions/45062929/handling-javascript-events-in-wkwebview/45063303#45063303
+        /*
+        let source = "document.addEventListener('click', function(){ window.webkit.messageHandlers.clickMe.postMessage('clickMe clickMe!'); })"
+        let clickMe = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        controller.addUserScript(clickMe)
+        controller.add(self, name: "clickMe")
+        */
+        //  Dealing with cookie changes
+        let cookieChangeScript = WKUserScript.init(source: "window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",
+            injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        controller.addUserScript(cookieChangeScript)
+        controller.add(self, name: "updateCookies")
     }
     /*
     @objc func avPlayerView(_ note: NSNotification) {

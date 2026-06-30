@@ -120,4 +120,9 @@ internal struct UserSettings {
     static func usesBundledHomePage(_ urlString: String, incognito: Bool) -> Bool {
         return urlString == legacyHostedHomePageURL(incognito: incognito)
     }
+    
+    //  Identify ourselves
+    static let ApplicationName = Setting<String>("applicationName", defaultValue: "Helium")
+    static let ApplicationVersion = Setting<String>("applicationVersion", defaultValue: "3.0.0")
+
 }

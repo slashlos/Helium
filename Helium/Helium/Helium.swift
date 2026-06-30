@@ -14,7 +14,7 @@ import QuickLook
 struct DocGroup : OptionSet {
     let rawValue: Int
 
-    static let helium       = DocGroup(rawValue: 0)
+    static let helium       = DocGroup([])
     static let playlist     = DocGroup(rawValue: 1)
 }
 let docHelium : ViewOptions = []
