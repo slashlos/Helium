@@ -996,7 +996,7 @@ class Document : NSDocument {
     }
     var homeURL : URL {
         get {
-            guard let hpc = heliumPanelController else { return URL.init(string: UserSettings.HomePageURL.value)! }
+            guard let hpc = heliumPanelController else { return appDelegate.resolvedHomePageURL(incognito: false) }
             return hpc.homeURL
         }
     }
@@ -1112,7 +1112,7 @@ class Document : NSDocument {
         if let agent : String = dictionary[k.agent] as? String, agent != settings.customUserAgent.value {
             self.settings.customUserAgent.value = agent
             if let hpc = heliumPanelController, let webView = hpc.webView {
-                webView.customUserAgent = agent
+                webView.customUserAgent = agent.isEmpty ? nil : agent
             }
         }
         if let tabby : Bool = dictionary[k.tabby] as? Bool, tabby != self.settings.tabby.value {

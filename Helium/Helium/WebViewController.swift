@@ -187,16 +187,22 @@ class MyWebView : WKWebView {
     var borderView = WebBorderView()
     var loadingIndicator = ProgressIndicator()
     var incognito = false
+    let usesPersistentWebsiteDataStore: Bool
     var homeURL : URL {
         get {
-            return URL.init(string: incognito ? UserSettings.HomeStrkURL.value : UserSettings.HomePageURL.default)!
+            return appDelegate.resolvedHomePageURL(incognito: incognito)
         }
     }
-    init() {
-        super.init(frame: .zero, configuration: appDelegate.webConfiguration)
+    init(incognito: Bool) {
+        self.usesPersistentWebsiteDataStore = !incognito && appDelegate.storeWebCookies
+        super.init(frame: .zero, configuration: appDelegate.makeWebConfiguration(incognito: incognito))
+        self.incognito = incognito
         
-        // Custom user agent string for Netflix HTML5 support
-        customUserAgent = UserSettings.UserAgent.value
+        // Empty means use WKWebView's current system user agent.
+        let userAgent = UserSettings.UserAgent.value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !userAgent.isEmpty {
+            customUserAgent = userAgent
+        }
         
         // Allow zooming
         allowsMagnification = true
@@ -209,6 +215,7 @@ class MyWebView : WKWebView {
     }
     
     required init?(coder: NSCoder) {
+        usesPersistentWebsiteDataStore = appDelegate.storeWebCookies
         super.init(coder: coder)
     }
     
@@ -351,6 +358,10 @@ class MyWebView : WKWebView {
             return super.load(original) }
         guard let url = original.url else { return super.load(original) }
         Swift.print("load(_:Request) <= \(request)")
+
+        guard !usesPersistentWebsiteDataStore, appDelegate.shareWebCookies else {
+            return super.load(request as URLRequest)
+        }
         
         let urlDomain = url.host
         let requestIsSecure = url.scheme == "https"
@@ -794,7 +805,7 @@ class MyWebView : WKWebView {
                 if item.title.hasSuffix("Enter Full Screen") {
                     item.target = appDelegate
                     item.action = #selector(appDelegate.toggleFullScreen(_:))
-                    item.state = appDelegate.fullScreen != nil ? .on : .off
+                    item.state = appDelegate.isFullScreen(hpc.window) ? .on : .off
                 }
                 else
                 if self.url != nil {
@@ -1002,7 +1013,7 @@ class MyWebView : WKWebView {
         item.target = hpc
         subFloat.addItem(item)
 
-        item = NSMenuItem(title: "Full Screen", action: #selector(hpc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
+        item = NSMenuItem(title: "Float Over Full Screen Apps", action: #selector(hpc.floatOverFullScreenAppsPress(_:)), keyEquivalent: "")
         item.state = settings.floatAboveAllPreference.value.contains(.screen) ? .on : .off
         item.target = hpc
         subFloat.addItem(item)
@@ -1155,6 +1166,253 @@ extension NSView {
 }
 
 class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, NSMenuDelegate, NSTabViewDelegate, WKHTTPCookieStoreObserver, QLPreviewPanelDataSource, QLPreviewPanelDelegate/*, URLSessionDelegate,URLSessionTaskDelegate,URLSessionDownloadDelegate*/ {
+    private static let youTubeFullscreenMessageName = "youtubeFullscreen"
+    private static let homeOpenLocationMessageName = "heliumHomeOpenLocation"
+    private static let homeOpenFileMessageName = "heliumHomeOpenFile"
+    private static let editablePasteTargetScript = """
+        (function() {
+            var element = document.activeElement;
+            if (!element) { return false; }
+            var tag = (element.tagName || '').toLowerCase();
+            var editableInput = (tag === 'textarea') ||
+                (tag === 'input' && !element.readOnly && !element.disabled);
+            return editableInput || element.isContentEditable === true;
+        })();
+        """
+    private static let youTubePlayerModeRefreshScript = "window.__heliumYouTubePlayerMode && window.__heliumYouTubePlayerMode.refresh && window.__heliumYouTubePlayerMode.refresh();"
+    private static let youTubePlayerModeScript = #"""
+(function() {
+    if (window.__heliumYouTubePlayerMode) {
+        window.__heliumYouTubePlayerMode.refresh();
+        return;
+    }
+
+    const STATE_CLASS = 'helium-youtube-player-mode';
+    let styleNodeState = { node: null };
+    let observer = new MutationObserver(scheduleRefresh);
+    let trackedRoot = document.documentElement;
+    let trackedEvents = [];
+    let state = { lastHref: location.href, refreshPending: false };
+
+    function isEligibleUrl() {
+        try {
+            const url = new URL(window.location.href);
+            const host = url.hostname.toLowerCase();
+            if (!['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+                return false;
+            }
+            return url.pathname === '/watch' && !!url.searchParams.get('v');
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function getPlayerShell() {
+        return document.querySelector('#movie_player, .html5-video-player');
+    }
+
+    function getFullscreenButtonTarget(target) {
+        return target && target.closest ? target.closest('.ytp-fullscreen-button') : null;
+    }
+
+    function canApplyMode() {
+        if (!isEligibleUrl()) {
+            return false;
+        }
+        return !!(getPlayerShell() && document.querySelector('video'));
+    }
+
+    function ensureStyle() {
+        if (styleNodeState.node) {
+            return;
+        }
+        styleNodeState.node = document.createElement('style');
+        styleNodeState.node.id = 'helium-youtube-player-mode';
+        styleNodeState.node.textContent = `
+html.${STATE_CLASS},
+html.${STATE_CLASS} body {
+  overflow: hidden !important;
+  background: #000 !important;
+}
+html.${STATE_CLASS} ytd-masthead,
+html.${STATE_CLASS} #masthead-container,
+html.${STATE_CLASS} #guide,
+html.${STATE_CLASS} tp-yt-app-drawer,
+html.${STATE_CLASS} #secondary,
+html.${STATE_CLASS} #secondary-inner,
+html.${STATE_CLASS} #below,
+html.${STATE_CLASS} #related,
+html.${STATE_CLASS} #comments,
+html.${STATE_CLASS} ytd-merch-shelf-renderer,
+html.${STATE_CLASS} ytd-watch-next-secondary-results-renderer,
+html.${STATE_CLASS} ytd-watch-metadata,
+html.${STATE_CLASS} ytd-video-secondary-info-renderer,
+html.${STATE_CLASS} ytd-video-primary-info-renderer {
+  display: none !important;
+}
+html.${STATE_CLASS} ytd-app,
+html.${STATE_CLASS} #content.ytd-app,
+html.${STATE_CLASS} #page-manager.ytd-app,
+html.${STATE_CLASS} ytd-watch-flexy,
+html.${STATE_CLASS} #columns,
+html.${STATE_CLASS} #primary,
+html.${STATE_CLASS} #primary-inner,
+html.${STATE_CLASS} #full-bleed-container,
+html.${STATE_CLASS} #player-full-bleed-container,
+html.${STATE_CLASS} #player-container-outer,
+html.${STATE_CLASS} #player-container-inner,
+html.${STATE_CLASS} #player,
+html.${STATE_CLASS} #movie_player,
+html.${STATE_CLASS} .html5-video-player,
+html.${STATE_CLASS} .html5-video-container,
+html.${STATE_CLASS} video {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+html.${STATE_CLASS} ytd-watch-flexy,
+html.${STATE_CLASS} #columns,
+html.${STATE_CLASS} #primary,
+html.${STATE_CLASS} #primary-inner,
+html.${STATE_CLASS} #full-bleed-container,
+html.${STATE_CLASS} #player-full-bleed-container,
+html.${STATE_CLASS} #player,
+html.${STATE_CLASS} #movie_player,
+html.${STATE_CLASS} .html5-video-player {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+html.${STATE_CLASS} ytd-watch-flexy[full-bleed-player] #player-full-bleed-container,
+html.${STATE_CLASS} ytd-watch-flexy[theater] #player-theater-container {
+  min-height: 100vh !important;
+}
+html.${STATE_CLASS} #page-manager,
+html.${STATE_CLASS} #content.ytd-app {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+`;
+        document.head.appendChild(styleNodeState.node);
+    }
+
+    function disableMode() {
+        document.documentElement.classList.remove(STATE_CLASS);
+        if (document.body) {
+            document.body.classList.remove(STATE_CLASS);
+        }
+        if (styleNodeState.node) {
+            styleNodeState.node.remove();
+            styleNodeState.node = null;
+        }
+    }
+
+    function applyMode() {
+        if (!canApplyMode()) {
+            disableMode();
+            return false;
+        }
+        ensureStyle();
+        document.documentElement.classList.add(STATE_CLASS);
+        if (document.body) {
+            document.body.classList.add(STATE_CLASS);
+        }
+        return true;
+    }
+
+    function isTypingTarget() {
+        const active = document.activeElement;
+        if (!active) {
+            return false;
+        }
+        const tagName = active.tagName || '';
+        return active.isContentEditable || tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+    }
+
+    function postFullscreenToggle(reason) {
+        try {
+            window.webkit.messageHandlers.youtubeFullscreen.postMessage({
+                reason: reason,
+                url: window.location.href
+            });
+        } catch (error) {
+        }
+    }
+
+    function handleFullscreenRequest(event, reason) {
+        if (!applyMode()) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+        }
+        postFullscreenToggle(reason);
+    }
+
+    function onClick(event) {
+        if (!getFullscreenButtonTarget(event.target)) {
+            return;
+        }
+        handleFullscreenRequest(event, 'button');
+    }
+
+    function onDoubleClick(event) {
+        const player = event.target && event.target.closest ? event.target.closest('#movie_player, .html5-video-player, video') : null;
+        if (!player) {
+            return;
+        }
+        handleFullscreenRequest(event, 'doubleClick');
+    }
+
+    function onKeyDown(event) {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || isTypingTarget()) {
+            return;
+        }
+        if (event.key === 'f' || event.key === 'F') {
+            handleFullscreenRequest(event, 'keyboard');
+        }
+    }
+
+    function scheduleRefresh() {
+        if (state.refreshPending) {
+            return;
+        }
+        state.refreshPending = true;
+        window.requestAnimationFrame(function() {
+            state.refreshPending = false;
+            refresh();
+        });
+    }
+
+    function refresh() {
+        if (state.lastHref !== window.location.href) {
+            state.lastHref = window.location.href;
+        }
+        applyMode();
+    }
+
+    trackedEvents.push(['click', onClick, true]);
+    trackedEvents.push(['dblclick', onDoubleClick, true]);
+    trackedEvents.push(['keydown', onKeyDown, true]);
+    trackedEvents.forEach(function(args) {
+        document.addEventListener(args[0], args[1], args[2]);
+    });
+    observer.observe(trackedRoot, { childList: true, subtree: true });
+    window.setInterval(function() {
+        if (state.lastHref !== window.location.href) {
+            state.lastHref = window.location.href;
+            scheduleRefresh();
+        }
+    }, 500);
+
+    window.__heliumYouTubePlayerMode = {
+        refresh: refresh
+    };
+    refresh();
+})();
+"""#
 
     @available(OSX 10.13, *)
     public func cookiesDidChange(in cookieStore: WKHTTPCookieStore) {
@@ -1197,15 +1455,25 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         }
     }
 
-    // MARK: View lifecycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    func configureWebView(incognito: Bool) {
+        let wantsPersistentWebsiteDataStore = !incognito && appDelegate.storeWebCookies
+        guard webView.incognito != incognito || webView.usesPersistentWebsiteDataStore != wantsPersistentWebsiteDataStore else { return }
 
-        //  Programmatically create a new web view
-        //  with shared config, prefs, cookies(?).
+        if isViewLoaded {
+            teardownWebView()
+        }
+
+        webView = MyWebView(incognito: incognito)
+
+        if isViewLoaded {
+            installWebView()
+        }
+    }
+
+    private func installWebView() {
         webView.frame = view.frame
         view.addSubview(webView)
-        
+
         //  Wire in ourselves as its delegate
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -1214,6 +1482,79 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         view.addSubview(borderView)
 
         view.addSubview(loadingIndicator)
+
+        // WebView KVO - load progress, title
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.loading), options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
+
+        //  Intercept drags
+        webView.registerForDraggedTypes(NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0)})
+        webView.registerForDraggedTypes([NSPasteboard.PasteboardType.fileURL])
+        webView.registerForDraggedTypes(Array(webView.acceptableTypes))
+        observing = true
+
+        //  Watch javascript selection messages unless already done
+        let controller = webView.configuration.userContentController
+        guard controller.userScripts.count == 0 else { return }
+
+        controller.add(self, name: "newWindowWithUrlDetected")
+        controller.add(self, name: "newSelectionDetected")
+        controller.add(self, name: "newUrlDetected")
+        controller.add(self, name: Self.youTubeFullscreenMessageName)
+        controller.add(self, name: Self.homeOpenLocationMessageName)
+        controller.add(self, name: Self.homeOpenFileMessageName)
+
+        let js = NSString.string(fromAsset: "Helium-js")
+        let script = WKUserScript.init(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        controller.addUserScript(script)
+        let youTubeScript = WKUserScript.init(source: Self.youTubePlayerModeScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        controller.addUserScript(youTubeScript)
+
+        //  make http: -> https: guarded by preference
+        if #available(OSX 10.13, *), UserSettings.PromoteHTTPS.value {
+            //  https://developer.apple.com/videos/play/wwdc2017/220/ 14:05, 21:04
+            let jsonString = """
+                [{
+                    "trigger" : { "url-filter" : ".*" },
+                    "action" : { "type" : "make-https" }
+                }]
+            """
+            WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "httpRuleList", encodedContentRuleList: jsonString, completionHandler: {(list, error) in
+                guard let contentRuleList = list else { fatalError("emptyRulelist after compilation!") }
+                controller.add(contentRuleList)
+            })
+        }
+
+        //  Dealing with cookie changes
+        let cookieChangeScript = WKUserScript.init(source: "window.webkit.messageHandlers.updateCookies.postMessage(document.cookie);",
+            injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        controller.addUserScript(cookieChangeScript)
+        controller.add(self, name: "updateCookies")
+    }
+
+    private func teardownWebView() {
+        if let navDelegate : NSObject = webView.navigationDelegate as? NSObject {
+            webView.stopLoading()
+            webView.uiDelegate = nil
+            webView.navigationDelegate = nil
+
+            if observing {
+                webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
+                webView.removeObserver(navDelegate, forKeyPath: "loading")
+                webView.removeObserver(navDelegate, forKeyPath: "title")
+                observing = false
+            }
+        }
+
+        webView.borderView.removeFromSuperview()
+        webView.loadingIndicator.removeFromSuperview()
+        webView.removeFromSuperview()
+    }
+
+    // MARK: View lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
         NotificationCenter.default.addObserver(
             self,
@@ -1443,20 +1784,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         super .viewWillDisappear()
         
         guard let wc = self.view.window?.windowController, !wc.isKind(of: ReleasePanelController.self) else { return }
-        if let navDelegate : NSObject = webView.navigationDelegate as? NSObject {
-        
-            webView.stopLoading()
-            webView.uiDelegate = nil
-            webView.navigationDelegate = nil
-
-            // Wind down all observations
-            if observing {
-                webView.removeObserver(navDelegate, forKeyPath: "estimatedProgress")
-                webView.removeObserver(navDelegate, forKeyPath: "loading")
-                webView.removeObserver(navDelegate, forKeyPath: "title")
-                observing = false
-            }
-        }
+        teardownWebView()
     }
 
     // MARK: Actions
@@ -1523,7 +1851,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
 
     @objc @IBAction func openFilePress(_ sender: AnyObject) {
-        var viewOptions = ViewOptions(rawValue: sender.tag)
+        let senderTag = (sender as? NSMenuItem)?.tag ?? (sender as? NSControl)?.tag ?? 0
+        var viewOptions = ViewOptions(rawValue: senderTag)
         let window = self.view.window
         let open = NSOpenPanel()
         
@@ -1565,7 +1894,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     }
     
     @objc @IBAction func openLocationPress(_ sender: AnyObject) {
-        let viewOptions = ViewOptions(rawValue: sender.tag)
+        let senderTag = (sender as? NSMenuItem)?.tag ?? (sender as? NSControl)?.tag ?? 0
+        let viewOptions = ViewOptions(rawValue: senderTag)
         let window = self.view.window
         var urlString = currentURLString
         
@@ -1582,7 +1912,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                       onWindow: window as? HeliumPanel,
                                       title: "Enter URL",
                                       acceptHandler: { (urlString: String) in
-                                        guard let newURL = URL.init(string: urlString) else { return }
+                                        guard let newURL = UrlHelpers.validatedPasteboardURL(from: urlString) else { return }
                                         
                                         if viewOptions.contains(.t_view) {
                                             _ = appDelegate.openURLInNewWindow(newURL, attachTo: window)
@@ -1597,6 +1927,35 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                                         }
         })
     }
+
+    fileprivate func focusedElementAcceptsTextInput(_ completion: @escaping (Bool) -> Void) {
+        webView.evaluateJavaScript(Self.editablePasteTargetScript) { result, _ in
+            completion((result as? Bool) ?? false)
+        }
+    }
+
+    @objc func handlePaste(_ sender: Any?) {
+        focusedElementAcceptsTextInput { acceptsTextInput in
+            if acceptsTextInput {
+                if let responder = self.view.window?.firstResponder,
+                   responder.tryToPerform(#selector(NSText.paste(_:)), with: sender) {
+                    return
+                }
+                if NSApp.sendAction(#selector(NSText.paste(_:)), to: self.webView, from: sender) {
+                    return
+                }
+            }
+
+            guard let rawString = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string),
+                  let url = UrlHelpers.validatedPasteboardURL(from: rawString) else {
+                NSSound.beep()
+                return
+            }
+
+            _ = self.webView.next(url: url)
+        }
+    }
+
     @objc @IBAction func openSearchPress(_ sender: AnyObject) {
         let viewOptions = ViewOptions(rawValue: sender.tag)
         let window = self.view.window
@@ -1721,7 +2080,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     @objc @IBAction func userAgentPress(_ sender: AnyObject) {
         appDelegate.didRequestUserAgent(RequestUserStrings (
-            currentURLString:   webView.customUserAgent,
+            currentURLString:   webView.customUserAgent ?? "",
             alertMessageText:   "Custom user agent",
             alertButton1stText: "Set",      alertButton1stInfo: nil,
             alertButton2ndText: "Cancel",   alertButton2ndInfo: nil,
@@ -1729,7 +2088,8 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                             onWindow: NSApp.keyWindow as? HeliumPanel,
                             title: "Custom User Agent",
                             acceptHandler: { (newUserAgent: String) in
-                                self.webView.customUserAgent = newUserAgent
+                                let userAgent = newUserAgent.trimmingCharacters(in: .whitespacesAndNewlines)
+                                self.webView.customUserAgent = userAgent.isEmpty ? nil : userAgent
         }
         )
     }
@@ -1867,6 +2227,15 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
                     }
                 }
             }
+
+        case Self.youTubeFullscreenMessageName:
+            heliumPanelController?.toggleNativeFullScreen()
+
+        case Self.homeOpenLocationMessageName:
+            openLocationPress(self)
+
+        case Self.homeOpenFileMessageName:
+            openFilePress(self)
             
         default:
             appDelegate.userAlertMessage("Unhandled user controller message", info: message.name)
@@ -1892,10 +2261,18 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
     
     func clear() {
         // Reload to home page (or default if no URL stored in UserDefaults)
-        _ = webView.load(URLRequest.init(url: webView.homeURL))
+        document?.fileURL = nil
+        view.window?.representedURL = webView.homeURL
+        if webView.homeURL.isFileURL {
+            _ = webView.loadFileURL(webView.homeURL, allowingReadAccessTo: webView.homeURL.deletingLastPathComponent())
+        }
+        else
+        {
+            _ = webView.load(URLRequest.init(url: webView.homeURL))
+        }
     }
 
-	var webView = MyWebView()
+	var webView = MyWebView(incognito: false)
 	var webImageView = NSImageView.init()
 	var webSize = CGSize(width: 0,height: 0)
     
@@ -2145,6 +2522,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             {
                 _ = loadURL(url: newUrl)
             }
+            return
         }
         
         Swift.print("navType: \(navigationAction.navigationType.name)")
@@ -2243,6 +2621,9 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
         if let doc = self.document, let dict = defaults.dictionary(forKey: url.absoluteString) {
             doc.restoreSettings(with: dict)
         }
+        if url.isYouTubeChromelessCandidate {
+            webView.evaluateJavaScript(Self.youTubePlayerModeRefreshScript, completionHandler: nil)
+        }
         
         //  Finish recording of for this url session
         if UserSettings.HistorySaves.value, let webView = (webView as? MyWebView), !webView.incognito {
@@ -2313,7 +2694,7 @@ class WebViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, W
             do {
                 let doc = try NSDocumentController.shared.makeDocument(withContentsOf: newURL, ofType: k.Custom)
                 if let hpc = doc.windowControllers.first, let window = hpc.window, let wvc = window.contentViewController as? WebViewController {
-                    newWebView = MyWebView()
+                    newWebView = MyWebView(incognito: doc.fileType == k.Incognito)
                     wvc.webView = newWebView as! MyWebView
                     wvc.viewDidLoad()
                     
